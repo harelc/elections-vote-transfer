@@ -33,9 +33,7 @@ def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
 
 def solve_transfer_coefficients(x_data, y_data, verbose):
     M = cvx.Variable([x_data.shape[1], y_data.shape[1]])
-    print(x_data.shape, y_data.shape)
     constraints = [0 <= M, M <= 1, cvx.sum(M, axis=1) == 1]
-
     objective = cvx.Minimize(cvx.sum_squares((x_data @ M) - y_data))
     prob = cvx.Problem(objective, constraints)
     prob.solve(solver='SCS', verbose=True)
@@ -93,7 +91,7 @@ if __name__ == '__main__':
     v22 = np.divide(v22, v22.sum(axis=1)[:, np.newaxis])
 
     #### method 1: closed-form solution with no non-negative constraint
-    # M = v2.T @ v1 @ np.linalg.pinv(v1.T @ v1)
+    # M = v22.T @ v21 @ np.linalg.pinv(v21.T @ v21)
 
     ### method 2: non-negative least square solution
     # M = np.zeros((v22.shape[1], v21.shape[1]))
@@ -114,6 +112,6 @@ if __name__ == '__main__':
     print(M.sum(axis=1))
 
     vote_movements = M * b21.sum(axis=0).values
-    sankey(b21.columns.values, b22.columns.values, vote_movements)
+    sankey(vote_movements, b21.columns.values, b22.columns.values)
 
 
