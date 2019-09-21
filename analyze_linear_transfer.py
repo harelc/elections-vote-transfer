@@ -34,7 +34,7 @@ def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
 def solve_transfer_coefficients(x_data, y_data, verbose):
     M = cvx.Variable([x_data.shape[1], y_data.shape[1]])
     constraints = [0 <= M, M <= 1, cvx.sum(M, axis=1) == 1]
-    objective = cvx.Minimize(cvx.sum_squares((x_data @ M) - y_data))
+    objective = cvx.Minimize(cvx.norm((x_data @ M) - y_data, 'fro'))
     prob = cvx.Problem(objective, constraints)
     prob.solve(solver='SCS', verbose=True)
     M = M.value
@@ -87,8 +87,8 @@ if __name__ == '__main__':
     v22 = b22.loc[u.index].values
 
     # normalize each ballot - it helps with the regression, but can be removed
-    v21 = np.divide(v21, v21.sum(axis=1)[:, np.newaxis])
-    v22 = np.divide(v22, v22.sum(axis=1)[:, np.newaxis])
+    # v21 = np.divide(v21, v21.sum(axis=1)[:, np.newaxis])
+    # v22 = np.divide(v22, v22.sum(axis=1)[:, np.newaxis])
 
     #### method 1: closed-form solution with no non-negative constraint
     # M = v22.T @ v21 @ np.linalg.pinv(v21.T @ v21)
@@ -106,10 +106,15 @@ if __name__ == '__main__':
 
     ### method 3: use convex solver with constraints
     M = solve_transfer_coefficients(v21, v22, True).T
-    M[M<0.01] = 0.
+
+    wrongly_explained = np.sum(np.abs(b21.loc[u.index].values @ M.T - b22.loc[u.index].values))
+    total_22 = b22.loc[u.index].values.sum()
+    print('{:.4f}% of votes correctly explained'.format(100* (1. - (wrongly_explained / total_22))))
 
     print(M.sum(axis=0))
     print(M.sum(axis=1))
+
+    M[M<0.01] = 0.
 
     vote_movements = M * b21.sum(axis=0).values
     sankey(vote_movements, b21.columns.values, b22.columns.values)
