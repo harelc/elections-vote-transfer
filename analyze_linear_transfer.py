@@ -6,6 +6,8 @@ import numpy as np
 import plotly.graph_objects as go
 import pandas as pd
 from scipy.optimize import nnls
+import streamlit as st
+
 
 DESTINATION_PARTY_COLORS = [
     'rgba(31, 119, 180, 0.4)',
@@ -25,10 +27,12 @@ def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
     df = df.set_index('ballot_id')
     eligible_voters = df['בזב']
     total_voters = df['מצביעים']
+    print(total_voters.sum())
     df = df[parties]
     df = df.reindex(sorted(df.columns), axis=1)
     if include_no_vote:
         df['לא הצביע'] = eligible_voters - total_voters
+    df['tot'] = total_voters
     return df
 
 def solve_transfer_coefficients(x_data, y_data, verbose):
@@ -46,7 +50,8 @@ def solve_transfer_coefficients(x_data, y_data, verbose):
         print(M.sum(axis=1).max())  # should be close to 1
     return M
 
-def sankey(vote_movements, before_labels, after_labels):
+def sankey(vote_movements, before_labels, after_labels, n_ballots):
+    import time
     source, target = np.meshgrid(np.arange(0, len(before_labels)),
                                  np.arange(len(before_labels), len(before_labels) + len(after_labels)))
     source = source.flatten()
@@ -66,32 +71,42 @@ def sankey(vote_movements, before_labels, after_labels):
             color=[DESTINATION_PARTY_COLORS[x - len(before_labels)] for x in target],
         ))])
 
+    # מתבסס על {} קלפיות שנספרו והופיעו בשתי מערכות הבחירותXX
+    # נוצר על ידי הראל קין ב{}
+    # .replace('XX', '\n').format(n_ballots, time.strftime('%Y/%m/%d %H%:%M')
     fig.update_layout(title_text="""
-    ניתוח נדידת הקולות בין מערכות הבחירות לכנסת ה-21 וה-22
-    """,
-
-                      font_size=16)
+    ניתוח נדידת הקולות בין מערכות הבחירות לכנסת ה-22 וה-23
+    """, font_size=14)
     fig.show()
 
 if __name__ == '__main__':
-    b21 = pd.read_csv('ballot21.csv', encoding='iso8859_8')
-    b22 = pd.read_csv('ballot22.csv', encoding='iso8859_8')
-    parties21 = 'מחל פה שס ג ום אמת ל טב מרצ כ דעם נ ז נר'.split()
-    parties22 = 'פה מחל ודעם שס ל ג טב אמת מרצ כף'.split()
+    b21 = pd.read_csv('ballot22.csv', encoding='iso8859_8')
+    b22 = pd.read_csv('ballot23new.csv', encoding='iso8859_8')
+    #parties21 = 'מחל פה שס ג ום אמת ל טב מרצ כ דעם נ ז נר'.split()
+    parties21 = 'פה מחל ודעם שס ל ג טב אמת מרצ כף זץ'.split()
+    parties22 = 'פה מחל ודעם שס ל ג טב אמת'.split()
 
-    b21 = adapt_df(b21, parties21, include_no_vote=False, ballot_number_field_name='מספר קלפי')
-    b22 = adapt_df(b22, parties22, include_no_vote=False, ballot_number_field_name='קלפי')
+    #print(b22[b22['סמל ישוב']==9999]['קלפי'].head())
+
+    b21 = adapt_df(b21, parties21, include_no_vote=True, ballot_number_field_name= 'קלפי')
+    b22 = adapt_df(b22, parties22, include_no_vote=True, ballot_number_field_name='קלפי')
 
     u = pd.merge(b21, b22, how='inner', left_index=True, right_index=True)
+
+    print('Analyzing {} ballots common to both elections. Largest ballot has {} votes.'.format(
+        len(u),
+        u.sum(axis=1).max()
+    ))
     v21 = b21.loc[u.index].values
     v22 = b22.loc[u.index].values
+    print(v21[:,:-1].sum(), v22[:,:-1].sum())
 
     # normalize each ballot - it helps with the regression, but can be removed
     # v21 = np.divide(v21, v21.sum(axis=1)[:, np.newaxis])
     # v22 = np.divide(v22, v22.sum(axis=1)[:, np.newaxis])
 
     #### method 1: closed-form solution with no non-negative constraint
-    # M = v22.T @ v21 @ np.linalg.pinv(v21.T @ v21)
+    #M = v22.T @ v21 @ np.linalg.pinv(v21.T @ v21)
 
     ### method 2: non-negative least square solution
     # M = np.zeros((v22.shape[1], v21.shape[1]))
@@ -102,21 +117,39 @@ if __name__ == '__main__':
     #     res = pred - v22[:, i]
     #     print(b22.columns[i])
     #     # print MSE, MAE, sum of error
-    #     print(r2, np.mean(np.abs(res)), res.sum())sum
+    #     print(r2, np.mean(np.abs(res)), res.sum())
 
     ### method 3: use convex solver with constraints
     M = solve_transfer_coefficients(v21, v22, True).T
 
-    wrongly_explained = np.sum(np.abs(b21.loc[u.index].values @ M.T - b22.loc[u.index].values))
-    total_22 = b22.loc[u.index].values.sum()
-    print('{:.4f}% of votes correctly explained'.format(100* (1. - (wrongly_explained / total_22))))
+    wrongly_explained = np.abs(b21.loc[u.index].values @ M.T - b22.loc[u.index].values)
+    l2_error = np.linalg.norm(b21.loc[u.index].values @ M.T - b22.loc[u.index].values, axis=1)
+    most_suspicious = np.argsort(-l2_error)[:50]
+    print(l2_error[most_suspicious])
 
+    total_22 = b22.loc[u.index].values.sum()
+
+    print('{:.4f}% of votes correctly explained'.format(100 * (1. - (wrongly_explained.sum() / total_22))))
     print(M.sum(axis=0))
     print(M.sum(axis=1))
 
-    M[M<0.01] = 0.
+    #wedf = pd.DataFrame(wrongly_explained.sum(axis=0), index=b22.columns.values)
+    #print(wedf)
 
     vote_movements = M * b21.sum(axis=0).values
-    sankey(vote_movements, b21.columns.values, b22.columns.values)
+    vote_movements[vote_movements < 5000] = 0.
+
+    sankey(vote_movements, b21.columns.values, b22.columns.values, n_ballots=len(u))
+    Mdf = pd.DataFrame(M.T, index=b21.columns.values, columns=b22.columns.values)
+
+    # for ballot_id in u.iloc[most_suspicious].index:
+    #     city, ballot_number = ballot_id.split('__')
+    #     city = int(city)
+    #     ballot_number = int(float(ballot_number))
+    #     print(city, ballot_number)
+    #     print('https://votes22.bechirot.gov.il/ballotresults?cityID={}&BallotNumber={}\n'
+    #           'https://votes23.bechirot.gov.il/ballotresults?cityID={}&BallotNumber={}'.format(
+    #         city, ballot_number, city, ballot_number))
+
 
 
