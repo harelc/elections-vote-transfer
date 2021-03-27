@@ -5,6 +5,7 @@ import cvxpy as cvx
 import numpy as np
 import plotly.graph_objects as go
 import pandas as pd
+pd.options.mode.chained_assignment = None  # default='warn'
 from scipy.optimize import nnls
 import streamlit as st
 
@@ -17,22 +18,31 @@ DESTINATION_PARTY_COLORS = [
     'rgba(148, 103, 189, 0.4)',
     'rgba(140, 86, 75, 0.4)',
     'rgba(227, 119, 194, 0.4)',
-    'rgba(127, 127, 127, 0.4)',
+    'rgba(255, 235, 135, 0.4)',
     'rgba(188, 189, 34, 0.4)',
     'rgba(23, 190, 207, 0.4)',
-    'rgba(0, 0 ,0 ,0.4)']
+    'rgba(201, 201, 255, 0.4)',
+    'rgba(255, 189, 189, 0.4)',
+    'rgba(181, 234, 215, 0.4)',
+    'rgba(0, 0 ,0 , 0.4)']
 
 def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
-    df['ballot_id'] = df['סמל ישוב'].astype(str) + '__' + df[ballot_number_field_name].astype(str)
+    print(f'{len(df)} ballots analyzed')
+    df = df[df['סמל ישוב'] != 9999]
+    print(f'{len(df)} ballots after throwing out 9999')
+
+    df['ballot_id'] = df['סמל ישוב'].astype(str) + '__' + \
+                      df[ballot_number_field_name].astype(str).copy()
+    # df['ballot_id_sup'] = df['סמל ישוב'].astype(str) + '__' + \
+    #                   df[ballot_number_field_name].astype(str).apply(lambda x: '.'.join(x.split('.')[:-1])).copy()
     df = df.set_index('ballot_id')
     eligible_voters = df['בזב']
     total_voters = df['מצביעים']
-    print(total_voters.sum())
-    df = df[parties]
+    df = df[parties][total_voters<750]
+    print(df.sum(axis=1).sum(axis=0))
     df = df.reindex(sorted(df.columns), axis=1)
     if include_no_vote:
         df['לא הצביע'] = eligible_voters - total_voters
-    df['tot'] = total_voters
     return df
 
 def solve_transfer_coefficients(x_data, y_data, verbose):
@@ -71,22 +81,17 @@ def sankey(vote_movements, before_labels, after_labels, n_ballots):
             color=[DESTINATION_PARTY_COLORS[x - len(before_labels)] for x in target],
         ))])
 
-    # מתבסס על {} קלפיות שנספרו והופיעו בשתי מערכות הבחירותXX
-    # נוצר על ידי הראל קין ב{}
-    # .replace('XX', '\n').format(n_ballots, time.strftime('%Y/%m/%d %H%:%M')
+
     fig.update_layout(title_text="""
-    ניתוח נדידת הקולות בין מערכות הבחירות לכנסת ה-22 וה-23
-    """, font_size=14)
+Vote transfer analysis between elections for the 23rd and 24th Knesset<br>Based on {} voting stations with same serial number that appeared in both<br>Created by Harel Cain on {}
+    """.format(n_ballots, time.strftime('%d.%m.%Y %H%:%M'), title_font_size=13, font_size=14))
     fig.show()
 
 if __name__ == '__main__':
-    b21 = pd.read_csv('ballot22.csv', encoding='iso8859_8')
-    b22 = pd.read_csv('ballot23new.csv', encoding='iso8859_8')
-    #parties21 = 'מחל פה שס ג ום אמת ל טב מרצ כ דעם נ ז נר'.split()
-    parties21 = 'פה מחל ודעם שס ל ג טב אמת מרצ כף זץ'.split()
-    parties22 = 'פה מחל ודעם שס ל ג טב אמת'.split()
-
-    #print(b22[b22['סמל ישוב']==9999]['קלפי'].head())
+    b21 = pd.read_csv('ballot23final.csv', encoding='iso8859_8')
+    b22 = pd.read_csv('ballot24.csv', encoding='iso8859_8')
+    parties21 = 'פה מחל ודעם שס ל ג טב אמת'.split()
+    parties22 = 'פה מחל ודעם שס ל ג ט אמת ב מרצ עם כן ת'.split()
 
     b21 = adapt_df(b21, parties21, include_no_vote=True, ballot_number_field_name= 'קלפי')
     b22 = adapt_df(b22, parties22, include_no_vote=True, ballot_number_field_name='קלפי')
@@ -125,7 +130,7 @@ if __name__ == '__main__':
     wrongly_explained = np.abs(b21.loc[u.index].values @ M.T - b22.loc[u.index].values)
     l2_error = np.linalg.norm(b21.loc[u.index].values @ M.T - b22.loc[u.index].values, axis=1)
     most_suspicious = np.argsort(-l2_error)[:50]
-    print(l2_error[most_suspicious])
+    #print(l2_error[most_suspicious])
 
     total_22 = b22.loc[u.index].values.sum()
 
@@ -141,15 +146,5 @@ if __name__ == '__main__':
 
     sankey(vote_movements, b21.columns.values, b22.columns.values, n_ballots=len(u))
     Mdf = pd.DataFrame(M.T, index=b21.columns.values, columns=b22.columns.values)
-
-    # for ballot_id in u.iloc[most_suspicious].index:
-    #     city, ballot_number = ballot_id.split('__')
-    #     city = int(city)
-    #     ballot_number = int(float(ballot_number))
-    #     print(city, ballot_number)
-    #     print('https://votes22.bechirot.gov.il/ballotresults?cityID={}&BallotNumber={}\n'
-    #           'https://votes23.bechirot.gov.il/ballotresults?cityID={}&BallotNumber={}'.format(
-    #         city, ballot_number, city, ballot_number))
-
 
 
