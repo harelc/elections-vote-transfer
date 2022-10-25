@@ -4,11 +4,10 @@
 import cvxpy as cvx
 import numpy as np
 import plotly.graph_objects as go
+
 import pandas as pd
 pd.options.mode.chained_assignment = None  # default='warn'
 from scipy.optimize import nnls
-import streamlit as st
-
 
 DESTINATION_PARTY_COLORS = [
     'rgba(31, 119, 180, 0.4)',
@@ -18,13 +17,14 @@ DESTINATION_PARTY_COLORS = [
     'rgba(148, 103, 189, 0.4)',
     'rgba(140, 86, 75, 0.4)',
     'rgba(227, 119, 194, 0.4)',
-    'rgba(255, 235, 135, 0.4)',
+    'rgba(205, 155, 105, 0.4)',
     'rgba(188, 189, 34, 0.4)',
     'rgba(23, 190, 207, 0.4)',
     'rgba(201, 201, 255, 0.4)',
     'rgba(255, 189, 189, 0.4)',
     'rgba(181, 234, 215, 0.4)',
-    'rgba(0, 0 ,0 , 0.4)']
+#    'rgba(177, 117, 189, 0.4)',
+    'rgba(50, 50 ,50 , 0.4)']
 
 def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
     print(f'{len(df)} ballots analyzed')
@@ -38,7 +38,7 @@ def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
     df = df.set_index('ballot_id')
     eligible_voters = df['בזב']
     total_voters = df['מצביעים']
-    df = df[parties][total_voters<750]
+    df = df[parties]
     print(df.sum(axis=1).sum(axis=0))
     df = df.reindex(sorted(df.columns), axis=1)
     if include_no_vote:
@@ -64,6 +64,8 @@ def sankey(vote_movements, before_labels, after_labels, n_ballots):
     import time
     source, target = np.meshgrid(np.arange(0, len(before_labels)),
                                  np.arange(len(before_labels), len(before_labels) + len(after_labels)))
+    before_labels = [x + '_23' for x in before_labels]
+    after_labels = [x + '_24' for x in after_labels]
     source = source.flatten()
     target = target.flatten()
 
@@ -83,68 +85,60 @@ def sankey(vote_movements, before_labels, after_labels, n_ballots):
 
 
     fig.update_layout(title_text="""
-Vote transfer analysis between elections for the 23rd and 24th Knesset<br>Based on {} voting stations with same serial number that appeared in both<br>Created by Harel Cain on {}
+    ניתוח נדידת קולות בין הבחירות לכנסת העשרים וארבע לבחירות לכנסת העשרים וחמש על סמך ניתוח {} קלפיות בעלות מספר סידורי זהה שהופיעו שהשתתפו בשתיהן
+    <br>נוצר על ידי הראל קין, בשעה {}
     """.format(n_ballots, time.strftime('%d.%m.%Y %H%:%M'), title_font_size=13, font_size=14))
+    fig.write_html("index.html")
     fig.show()
 
+
 if __name__ == '__main__':
-    b21 = pd.read_csv('ballot23final.csv', encoding='iso8859_8')
-    b22 = pd.read_csv('ballot24.csv', encoding='iso8859_8')
-    parties21 = 'פה מחל ודעם שס ל ג טב אמת'.split()
-    parties22 = 'פה מחל ודעם שס ל ג ט אמת ב מרצ עם כן ת'.split()
+    ballot_previous = pd.read_csv('ballot23final.csv', encoding='iso8859_8')
+    ballot_current = pd.read_csv('ballot24.csv', encoding='iso8859_8')
+    parties_previous = 'פה מחל ודעם שס ל ג טב אמת'.split()
+    parties_current = 'פה מחל ודעם שס ל ג ט אמת ב מרצ עם כן ת'.split()
 
-    b21 = adapt_df(b21, parties21, include_no_vote=True, ballot_number_field_name= 'קלפי')
-    b22 = adapt_df(b22, parties22, include_no_vote=True, ballot_number_field_name='קלפי')
+    ballot_previous = adapt_df(ballot_previous, parties_previous, include_no_vote=True, ballot_number_field_name='קלפי')
+    ballot_current = adapt_df(ballot_current, parties_current, include_no_vote=True, ballot_number_field_name='קלפי')
 
-    u = pd.merge(b21, b22, how='inner', left_index=True, right_index=True)
+    u = pd.merge(ballot_previous, ballot_current, how='inner', left_index=True, right_index=True)
 
     print('Analyzing {} ballots common to both elections. Largest ballot has {} votes.'.format(
         len(u),
         u.sum(axis=1).max()
     ))
-    v21 = b21.loc[u.index].values
-    v22 = b22.loc[u.index].values
-    print(v21[:,:-1].sum(), v22[:,:-1].sum())
-
-    # normalize each ballot - it helps with the regression, but can be removed
-    # v21 = np.divide(v21, v21.sum(axis=1)[:, np.newaxis])
-    # v22 = np.divide(v22, v22.sum(axis=1)[:, np.newaxis])
+    values_previous = ballot_previous.loc[u.index].values
+    values_current = ballot_current.loc[u.index].values
+    print(values_previous[:,:-1].sum(), values_current[:,:-1].sum())
 
     #### method 1: closed-form solution with no non-negative constraint
-    #M = v22.T @ v21 @ np.linalg.pinv(v21.T @ v21)
+    # M = values_current.T @ values_previous @ np.linalg.pinv(values_previous.T @ values_previous)
 
     ### method 2: non-negative least square solution
-    # M = np.zeros((v22.shape[1], v21.shape[1]))
-    # for i in range(v22.shape[1]):
-    #     sol, r2 = nnls(v21, v22[:, i])
+    # M = np.zeros((values_current.shape[1], values_previous.shape[1]))
+    # for i in range(values_current.shape[1]):
+    #     sol, r2 = nnls(values_previous, values_current[:, i])
     #     M[i,:] = sol
-    #     pred = v21 @ sol
-    #     res = pred - v22[:, i]
-    #     print(b22.columns[i])
+    #     pred = values_previous @ sol
+    #     res = pred - values_current[:, i]
     #     # print MSE, MAE, sum of error
-    #     print(r2, np.mean(np.abs(res)), res.sum())
+    #     # print(r2, np.mean(np.abs(res)), res.sum())
 
     ### method 3: use convex solver with constraints
-    M = solve_transfer_coefficients(v21, v22, True).T
+    M = solve_transfer_coefficients(values_previous, values_current, True).T
 
-    wrongly_explained = np.abs(b21.loc[u.index].values @ M.T - b22.loc[u.index].values)
-    l2_error = np.linalg.norm(b21.loc[u.index].values @ M.T - b22.loc[u.index].values, axis=1)
-    most_suspicious = np.argsort(-l2_error)[:50]
-    #print(l2_error[most_suspicious])
-
-    total_22 = b22.loc[u.index].values.sum()
-
-    print('{:.4f}% of votes correctly explained'.format(100 * (1. - (wrongly_explained.sum() / total_22))))
+    y_bar = values_current.mean(axis=0)
+    ss_tot = ((values_current - y_bar) ** 2).sum()
+    ss_res = ((values_current - values_previous @ M.T) ** 2).sum()
+    print('R^2 is {:3.3f}'.format(1. - ss_res/ss_tot))
     print(M.sum(axis=0))
     print(M.sum(axis=1))
 
-    #wedf = pd.DataFrame(wrongly_explained.sum(axis=0), index=b22.columns.values)
-    #print(wedf)
-
-    vote_movements = M * b21.sum(axis=0).values
+    print(M.shape)
+    vote_movements = M * ballot_previous.sum(axis=0).values
+    print('Removing vote movements smaller than 5000')
     vote_movements[vote_movements < 5000] = 0.
 
-    sankey(vote_movements, b21.columns.values, b22.columns.values, n_ballots=len(u))
-    Mdf = pd.DataFrame(M.T, index=b21.columns.values, columns=b22.columns.values)
+    sankey(vote_movements, ballot_previous.columns.values, ballot_current.columns.values, n_ballots=len(u))
 
 
