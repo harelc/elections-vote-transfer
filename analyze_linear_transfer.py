@@ -6,6 +6,7 @@ import numpy as np
 import plotly.graph_objects as go
 
 import pandas as pd
+
 pd.options.mode.chained_assignment = None  # default='warn'
 from scipy.optimize import nnls
 
@@ -23,13 +24,15 @@ DESTINATION_PARTY_COLORS = [
     'rgba(201, 201, 255, 0.4)',
     'rgba(255, 189, 189, 0.4)',
     'rgba(181, 234, 215, 0.4)',
-#    'rgba(177, 117, 189, 0.4)',
+    #    'rgba(177, 117, 189, 0.4)',
     'rgba(50, 50 ,50 , 0.4)']
 
-def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
-    print(f'{len(df)} ballots analyzed')
+
+def adapt_df(df, parties_symbols, parties_full_names, include_no_vote=True, ballot_number_field_name='קלפי'):
+    assert (len(parties_symbols) == len(parties_full_names))
+    print(f'{len(df)} precincts analyzed')
     df = df[df['סמל ישוב'] != 9999]
-    print(f'{len(df)} ballots after throwing out 9999')
+    print(f'{len(df)} precincts after discarding city symbol 9999')
 
     df['ballot_id'] = df['סמל ישוב'].astype(str) + '__' + \
                       df[ballot_number_field_name].astype(str).copy()
@@ -38,12 +41,14 @@ def adapt_df(df, parties, include_no_vote=False, ballot_number_field_name=None):
     df = df.set_index('ballot_id')
     eligible_voters = df['בזב']
     total_voters = df['מצביעים']
-    df = df[parties]
+    df = df[parties_symbols]
+    df.rename(columns={x: y for x, y in zip(parties_symbols, parties_full_names)}, inplace=True)
     print(df.sum(axis=1).sum(axis=0))
     df = df.reindex(sorted(df.columns), axis=1)
     if include_no_vote:
         df['לא הצביע'] = eligible_voters - total_voters
     return df
+
 
 def solve_transfer_coefficients(x_data, y_data, verbose):
     M = cvx.Variable((x_data.shape[1], y_data.shape[1]))
@@ -59,6 +64,7 @@ def solve_transfer_coefficients(x_data, y_data, verbose):
         print(M.sum(axis=1).min())  # should be close to 1
         print(M.sum(axis=1).max())  # should be close to 1
     return M
+
 
 def sankey(vote_movements, before_labels, after_labels, n_ballots):
     import time
@@ -83,10 +89,9 @@ def sankey(vote_movements, before_labels, after_labels, n_ballots):
             color=[DESTINATION_PARTY_COLORS[x - len(before_labels)] for x in target],
         ))])
 
-
     fig.update_layout(title_text=f"""
 Analysis of vote transfer between the elections for the 24th and the 25th Knessets.
-<br>Based on analysis of {n_ballots} ballots whose serial number appeared in both. 
+<br>Based on analysis of {n_ballots} precincts whose serial number appeared in both. 
 <br>Created by Harel Cain on {time.strftime('%d.%m.%Y %H%:%M')}. All rights reserved.
 <br>Source code: https://github.com/harelc/elections-vote-transfer/
 <br>
@@ -96,34 +101,44 @@ Analysis of vote transfer between the elections for the 24th and the 25th Knesse
 
 
 if __name__ == '__main__':
-    method = "convex solver"
-    ballot_previous = pd.read_csv('ballot23final.csv', encoding='iso8859_8')
-    ballot_current = pd.read_csv('ballot24.csv', encoding='iso8859_8')
+    method = "convex solver"  # "nnls", "closed form"
+    df_previous = pd.read_csv('ballot23final.csv', encoding='iso8859_8')
+    df_current = pd.read_csv('ballot24final.csv', encoding='iso8859_8')
+
+    # 23rd knesset
+    parties_previous_full = 'יש_עתיד ליכוד המשותפת ש״ס ישראל_ביתנו יהדות_התורה ימינה העבודה'.split()
     parties_previous = 'פה מחל ודעם שס ל ג טב אמת'.split()
+
+    # 24th knesset
+    parties_current_full = 'יש_עתיד הליכוד המשותפת ש״ס ישראל_ביתנו יהדות_התורה הציונות_הדתית העבודה ימינה מרצ רע״ם כחול_לבן תקווה_חדשה '.split()
     parties_current = 'פה מחל ודעם שס ל ג ט אמת ב מרצ עם כן ת'.split()
 
-    ballot_previous = adapt_df(ballot_previous, parties_previous, include_no_vote=True, ballot_number_field_name='קלפי')
-    ballot_current = adapt_df(ballot_current, parties_current, include_no_vote=True, ballot_number_field_name='קלפי')
+    # 25th knesset
+    # parties_current = 'אמת אצ ב ג ד ום ט כן ל מחל מרצ עם פה שס'.split()
+    # parties_current_full = 'העבודה אביר_קארה הבית_היהודי יהדות_התורה בל״ד חד״ש_תע״ל הציונות_הדתית המחנה_הממלכתי ישראל_ביתנו הליכוד מרצ רע״ם יש_עתיד ש״ס'.split()
 
-    u = pd.merge(ballot_previous, ballot_current, how='inner', left_index=True, right_index=True)
+    df_previous = adapt_df(df_previous, parties_previous, parties_previous_full, include_no_vote=True)
+    df_current = adapt_df(df_current, parties_current, parties_current_full, include_no_vote=True)
 
-    print('Analyzing {} ballots common to both elections. Largest ballot has {} votes.'.format(
-        len(u),
-        u.sum(axis=1).max()
+    merged_df = pd.merge(df_previous, df_current, how='inner', left_index=True, right_index=True)
+
+    print('Analyzing {} precincts common to both elections. Largest ballot has {} votes.'.format(
+        len(merged_df),
+        merged_df.sum(axis=1).max()
     ))
-    values_previous = ballot_previous.loc[u.index].values
-    values_current = ballot_current.loc[u.index].values
+    values_previous = df_previous.loc[merged_df.index].values
+    values_current = df_current.loc[merged_df.index].values
 
     if method == "closed form":
         #### method 1: closed-form solution with no non-negative constraint
-        M = values_current.T @ values_previous @ np.linalg.pinv(values_previous.T @ values_previous)
+        transfer_matrix = values_current.T @ values_previous @ np.linalg.pinv(values_previous.T @ values_previous)
 
     elif method == "nnls":
         ### method 2: non-negative least square solution
-        M = np.zeros((values_current.shape[1], values_previous.shape[1]))
+        transfer_matrix = np.zeros((values_current.shape[1], values_previous.shape[1]))
         for i in range(values_current.shape[1]):
             sol, r2 = nnls(values_previous, values_current[:, i])
-            M[i,:] = sol
+            transfer_matrix[i, :] = sol
             pred = values_previous @ sol
             res = pred - values_current[:, i]
             # print MSE, MAE, sum of error
@@ -131,19 +146,18 @@ if __name__ == '__main__':
 
     elif method == "convex solver":
         ## method 3: use convex solver with constraints
-        M = solve_transfer_coefficients(values_previous, values_current, verbose=True).T
+        transfer_matrix = solve_transfer_coefficients(values_previous, values_current, verbose=True).T
 
     y_bar = values_current.mean(axis=0)
     ss_tot = ((values_current - y_bar) ** 2).sum()
-    ss_res = ((values_current - values_previous @ M.T) ** 2).sum()
-    print('R^2 is {:3.3f}'.format(1. - ss_res/ss_tot))
-    print(M.sum(axis=0))
-    print(M.sum(axis=1))
+    ss_res = ((values_current - values_previous @ transfer_matrix.T) ** 2).sum()
+    print('R^2 is {:3.3f}'.format(1. - ss_res / ss_tot))
+    print(transfer_matrix.sum(axis=0))
+    print(transfer_matrix.sum(axis=1))
 
-    vote_movements = M * ballot_previous.sum(axis=0).values
+    vote_movements = transfer_matrix * df_previous.sum(axis=0).values
     print('Removing vote movements smaller than 5000')
     vote_movements[vote_movements < 5000] = 0.
 
-    sankey(vote_movements, ballot_previous.columns.values, ballot_current.columns.values, n_ballots=len(u))
-
-
+    sankey(vote_movements, df_previous.columns.values, df_current.columns.values, n_ballots=len(merged_df))
+    # sankey(vote_movements, parties_previous_full, parties_current_full, n_ballots=len(u))
