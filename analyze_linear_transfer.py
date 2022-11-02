@@ -55,7 +55,7 @@ def solve_transfer_coefficients(x_data, y_data, verbose):
     constraints = [0 <= M, M <= 1, cvx.sum(M, axis=1) == 1]
     objective = cvx.Minimize(cvx.norm((x_data @ M) - y_data, 'fro'))
     prob = cvx.Problem(objective, constraints)
-    prob.solve(solver='SCS', verbose=True)
+    prob.solve(solver='SCS', verbose=True, max_iters=20000)
     M = M.value
 
     if verbose:
