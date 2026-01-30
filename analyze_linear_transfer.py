@@ -117,9 +117,8 @@ if __name__ == '__main__':
     parties_current_full = 'העבודה אביר_קארה הבית_היהודי יהדות_התורה בל״ד חד״ש_תע״ל הציונות_הדתית המחנה_הממלכתי ישראל_ביתנו הליכוד מרצ רע״ם יש_עתיד ש״ס'.split()
     parties_current = 'אמת אצ ב ג ד ום ט כן ל מחל מרצ עם פה שס'.split()
 
-    df_previous, df_previous_full = adapt_df(df_previous, parties_previous, parties_previous_full, include_no_vote=True)
-    df_current, df_current_full = adapt_df(df_current, parties_current, parties_current_full, include_no_vote=True)
-
+    df_previous, df_previous_full = adapt_df(df_previous, parties_previous, parties_previous_full, include_no_vote=False)
+    df_current, df_current_full = adapt_df(df_current, parties_current, parties_current_full, include_no_vote=False)
     merged_df = pd.merge(df_previous, df_current, how='inner', left_index=True, right_index=True)
 
     print('Analyzing {} precincts common to both elections. Largest ballot has {} votes.'.format(
