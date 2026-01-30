@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קולות נודדים - ניתוח מעבר קולות בבחירות לכנסת</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Animated sand dunes - חולות נודדים -->
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="site-title">
+                    <span class="title-icon">🗳️</span>
+                    קולות נודדים
+                </h1>
+                <p class="site-subtitle">ניתוח מעבר קולות בין בחירות לכנסת ישראל</p>
+            </div>
+        </header>
+
+        <nav class="election-nav">
+            <div class="nav-container">
+                <button class="nav-btn" data-transition="21_to_22">
+                    <span class="nav-from">21</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">22</span>
+                </button>
+                <button class="nav-btn" data-transition="22_to_23">
+                    <span class="nav-from">22</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">23</span>
+                </button>
+                <button class="nav-btn" data-transition="23_to_24">
+                    <span class="nav-from">23</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">24</span>
+                </button>
+                <button class="nav-btn active" data-transition="24_to_25">
+                    <span class="nav-from">24</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">25</span>
+                </button>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="info-panel">
+                <div class="election-info">
+                    <div class="election-card from-election">
+                        <span class="election-label">מבחירות</span>
+                        <h3 class="election-name" id="from-election-name">הכנסת ה-24</h3>
+                        <span class="election-date" id="from-election-date">23.03.2021</span>
+                        <div class="election-stats">
+                            <span class="election-stat"><span id="from-eligible">6,578,084</span> בעלי זכות</span>
+                            <span class="election-stat"><span id="from-votes">4,436,365</span> הצביעו</span>
+                            <span class="election-stat"><span id="from-turnout">67.4%</span> אחוז הצבעה</span>
+                        </div>
+                    </div>
+                    <div class="arrow-container">
+                        <svg class="flow-arrow" viewBox="0 0 50 24">
+                            <path d="M50 12 L10 12 M20 4 L8 12 L20 20" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                    <div class="election-card to-election">
+                        <span class="election-label">לבחירות</span>
+                        <h3 class="election-name" id="to-election-name">הכנסת ה-25</h3>
+                        <span class="election-date" id="to-election-date">01.11.2022</span>
+                        <div class="election-stats">
+                            <span class="election-stat"><span id="to-eligible">6,788,804</span> בעלי זכות</span>
+                            <span class="election-stat"><span id="to-votes">4,794,593</span> הצביעו</span>
+                            <span class="election-stat"><span id="to-turnout">70.6%</span> אחוז הצבעה</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-precincts">6,857</span>
+                        <span class="stat-label">קלפיות משותפות</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-r2">0.896</span>
+                        <span class="stat-label">R² (מידת התאמה)</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization-container">
+                <div class="legend-container legend-from">
+                    <h4 id="legend-from-title">מפלגות מקור</h4>
+                    <div id="legend-from" class="legend-grid"></div>
+                </div>
+                <div class="sankey-wrapper">
+                    <div id="sankey-chart"></div>
+                </div>
+                <div class="legend-container legend-to">
+                    <h4 id="legend-to-title">מפלגות יעד</h4>
+                    <div id="legend-to" class="legend-grid"></div>
+                </div>
+            </div>
+
+            <div class="tooltip" id="tooltip"></div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="methodology">
+                    <strong>מתודולוגיה:</strong>
+                    כל קלפי מהווה תצפית רועשת (noisy observation) של דפוס מעבר הקולות הארצי.
+                    המצביעים בכל קלפי נוהגים באופן דומה לאוכלוסייה הכללית, אך גודל המדגם הקטן (מאות בוחרים) יוצר רעש סטטיסטי.
+                    על ידי רגרסיה על אלפי קלפיות ברחבי הארץ, ניתן לשחזר את מטריצת המעבר הארצית האמיתית.
+                    הניתוח מבוסס על אופטימיזציה קמורה (Convex Optimization) עם אילוצים סטוכסטיים -
+                    המודל מחשב הסתברויות מעבר תחת האילוץ שסכום ההסתברויות מכל מפלגה שווה ל-1.
+                </p>
+                <p class="credits">
+                    נוצר על ידי הראל קין |
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="sankey.js"></script>
+</body>
+</html>
