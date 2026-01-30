@@ -12,6 +12,7 @@ class VoteTransferSankey {
         this.currentTransition = '24_to_25';
         this.svg = null;
         this.g = null;
+        this.percentMode = 'source'; // 'source' or 'target'
 
         this.margin = { top: 20, right: 100, bottom: 20, left: 100 };
 
@@ -44,6 +45,20 @@ class VoteTransferSankey {
                 }
             }, 250);
         });
+
+        // Percent mode toggle
+        const toggleBtn = document.getElementById('percent-toggle');
+        if (toggleBtn) {
+            toggleBtn.addEventListener('click', () => {
+                this.percentMode = this.percentMode === 'source' ? 'target' : 'source';
+                const toggleValue = document.getElementById('toggle-value');
+                if (toggleValue) {
+                    toggleValue.textContent = this.percentMode === 'source'
+                        ? 'מהבחירות הקודמות'
+                        : 'מהבחירות החדשות';
+                }
+            });
+        }
     }
 
     async loadTransition(transitionId) {
@@ -317,6 +332,15 @@ class VoteTransferSankey {
     }
 
     showLinkTooltip(event, link) {
+        // Calculate reverse percentage (what % of target's votes came from source)
+        const reversePercent = link.target.votes > 0
+            ? ((link.value / link.target.votes) * 100).toFixed(1)
+            : 0;
+
+        const percentText = this.percentMode === 'source'
+            ? `${link.percentage}% מקולות ${link.sourceName} בבחירות הקודמות`
+            : `${reversePercent}% מקולות ${link.targetName} בבחירות החדשות`;
+
         const html = `
             <div class="tooltip-flow">
                 <div class="tooltip-flow-parties">
@@ -324,8 +348,8 @@ class VoteTransferSankey {
                     <span class="tooltip-flow-arrow">←</span>
                     <span class="tooltip-flow-party">${link.targetName}</span>
                 </div>
-                <div class="tooltip-flow-value">${link.value.toLocaleString('he-IL')} קולות</div>
-                <div class="tooltip-flow-percent">${link.percentage}% מקולות ${link.sourceName}</div>
+                <div class="tooltip-flow-value">${percentText}</div>
+                <div class="tooltip-flow-note">${link.value.toLocaleString('he-IL')} קולות (מתוך הקלפיות המשותפות בלבד)</div>
             </div>
         `;
 
@@ -337,12 +361,17 @@ class VoteTransferSankey {
     moveTooltip(event) {
         const tooltipRect = this.tooltip.getBoundingClientRect();
 
-        let x = event.clientX + 15;
+        // RTL: prefer placing tooltip to the left of cursor
+        let x = event.clientX - tooltipRect.width - 15;
         let y = event.clientY - 10;
 
-        // Keep tooltip in viewport
+        // If overflows left, place to the right
+        if (x < 20) {
+            x = event.clientX + 15;
+        }
+        // If still overflows right, clamp to right edge
         if (x + tooltipRect.width > window.innerWidth - 20) {
-            x = event.clientX - tooltipRect.width - 15;
+            x = window.innerWidth - tooltipRect.width - 20;
         }
         if (y + tooltipRect.height > window.innerHeight - 20) {
             y = window.innerHeight - tooltipRect.height - 20;

@@ -340,6 +340,39 @@ body {
     color: var(--text-muted);
 }
 
+.toggle-item {
+    display: flex;
+    align-items: center;
+}
+
+.percent-toggle {
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.percent-toggle:hover {
+    background: var(--bg-secondary);
+    border-color: var(--accent-primary);
+}
+
+.toggle-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.toggle-value {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-primary);
+}
+
 /* Visualization */
 .visualization-container {
     display: grid;
@@ -448,6 +481,7 @@ body {
     opacity: 0;
     transition: opacity var(--transition-fast);
     z-index: 1000;
+    max-width: calc(100vw - 40px);
     max-width: 320px;
     direction: rtl;
 }
@@ -586,6 +620,7 @@ body {
 /* Flow tooltip */
 .tooltip-flow {
     text-align: center;
+    white-space: nowrap;
 }
 
 .tooltip-flow-parties {
@@ -604,15 +639,20 @@ body {
     color: var(--text-muted);
 }
 
-.tooltip-flow-value {
-    font-size: 1.25rem;
-    font-weight: 700;
-    color: var(--accent-primary);
+.tooltip-flow-value,
+.tooltip-flow-percent {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0.25rem 0;
 }
 
-.tooltip-flow-percent {
-    color: var(--text-secondary);
-    font-size: 0.9rem;
+.tooltip-flow-note {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--border-color);
 }
 
 /* Footer */
