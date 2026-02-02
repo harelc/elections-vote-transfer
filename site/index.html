@@ -27,6 +27,10 @@
                     קולות נודדים
                 </h1>
                 <p class="site-subtitle">ניתוח מעבר קולות בין בחירות לכנסת ישראל</p>
+                <nav class="view-switcher">
+                    <span class="view-btn active">תרשים סנקי</span>
+                    <a href="tsne.html" class="view-btn">מפת קלפיות</a>
+                </nav>
             </div>
         </header>
 
@@ -117,6 +121,40 @@
             </div>
 
             <div class="tooltip" id="tooltip"></div>
+
+            <!-- Mobile bottom sheet -->
+            <div class="bottom-sheet" id="bottom-sheet">
+                <div class="bottom-sheet-handle"></div>
+                <div class="bottom-sheet-content" id="bottom-sheet-content"></div>
+            </div>
+
+            <!-- Mobile legends overlay -->
+            <div class="legends-overlay" id="legends-overlay">
+                <div class="legends-overlay-content">
+                    <div class="legends-overlay-header">
+                        <span class="legends-overlay-title">מפלגות</span>
+                        <button class="legends-overlay-close" id="close-legends">×</button>
+                    </div>
+                    <div class="legends-section">
+                        <div class="legends-section-title" id="overlay-from-title">בחירות קודמות</div>
+                        <div class="legends-list" id="overlay-from-list"></div>
+                    </div>
+                    <div class="legends-section">
+                        <div class="legends-section-title" id="overlay-to-title">בחירות חדשות</div>
+                        <div class="legends-list" id="overlay-to-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile controls -->
+            <div class="mobile-controls">
+                <button class="mobile-btn" id="show-legends-btn">
+                    <span>מפלגות</span>
+                </button>
+                <button class="mobile-btn" id="mobile-percent-toggle">
+                    <span id="mobile-toggle-value">% מהקודמות</span>
+                </button>
+            </div>
         </main>
 
         <footer class="main-footer">

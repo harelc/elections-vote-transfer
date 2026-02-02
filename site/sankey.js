@@ -8,6 +8,9 @@ class VoteTransferSankey {
         this.containerId = containerId;
         this.container = document.getElementById(containerId);
         this.tooltip = document.getElementById('tooltip');
+        this.bottomSheet = document.getElementById('bottom-sheet');
+        this.bottomSheetContent = document.getElementById('bottom-sheet-content');
+        this.legendsOverlay = document.getElementById('legends-overlay');
         this.data = null;
         this.currentTransition = '24_to_25';
         this.svg = null;
@@ -17,9 +20,14 @@ class VoteTransferSankey {
         this.margin = { top: 20, right: 100, bottom: 20, left: 100 };
 
         this.setupEventListeners();
+        this.setupMobileListeners();
 
         // Load initial data
         this.loadTransition(this.currentTransition);
+    }
+
+    isMobile() {
+        return window.innerWidth <= 768;
     }
 
     setupEventListeners() {
@@ -46,18 +54,224 @@ class VoteTransferSankey {
             }, 250);
         });
 
-        // Percent mode toggle
+        // Percent mode toggle (desktop)
         const toggleBtn = document.getElementById('percent-toggle');
         if (toggleBtn) {
-            toggleBtn.addEventListener('click', () => {
-                this.percentMode = this.percentMode === 'source' ? 'target' : 'source';
-                const toggleValue = document.getElementById('toggle-value');
-                if (toggleValue) {
-                    toggleValue.textContent = this.percentMode === 'source'
-                        ? 'מהבחירות הקודמות'
-                        : 'מהבחירות החדשות';
+            toggleBtn.addEventListener('click', () => this.togglePercentMode());
+        }
+    }
+
+    setupMobileListeners() {
+        // Mobile percent toggle
+        const mobileToggle = document.getElementById('mobile-percent-toggle');
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => this.togglePercentMode());
+        }
+
+        // Show legends button
+        const showLegendsBtn = document.getElementById('show-legends-btn');
+        if (showLegendsBtn) {
+            showLegendsBtn.addEventListener('click', () => this.showLegendsOverlay());
+        }
+
+        // Close legends button
+        const closeLegendsBtn = document.getElementById('close-legends');
+        if (closeLegendsBtn) {
+            closeLegendsBtn.addEventListener('click', () => this.hideLegendsOverlay());
+        }
+
+        // Close legends on overlay background click
+        if (this.legendsOverlay) {
+            this.legendsOverlay.addEventListener('click', (e) => {
+                if (e.target === this.legendsOverlay) {
+                    this.hideLegendsOverlay();
                 }
             });
+        }
+
+        // Close bottom sheet on handle click
+        if (this.bottomSheet) {
+            this.bottomSheet.addEventListener('click', (e) => {
+                if (e.target.classList.contains('bottom-sheet-handle')) {
+                    this.hideBottomSheet();
+                }
+            });
+        }
+
+        // Close bottom sheet when clicking outside (on the chart area)
+        document.addEventListener('click', (e) => {
+            if (this.bottomSheet && this.bottomSheet.classList.contains('visible')) {
+                const isClickInSheet = this.bottomSheet.contains(e.target);
+                const isClickOnLink = e.target.classList.contains('sankey-link');
+                if (!isClickInSheet && !isClickOnLink) {
+                    this.hideBottomSheet();
+                }
+            }
+        });
+    }
+
+    togglePercentMode() {
+        this.percentMode = this.percentMode === 'source' ? 'target' : 'source';
+        const isSource = this.percentMode === 'source';
+
+        // Update desktop toggle
+        const toggleValue = document.getElementById('toggle-value');
+        if (toggleValue) {
+            toggleValue.textContent = isSource ? 'מהבחירות הקודמות' : 'מהבחירות החדשות';
+        }
+
+        // Update mobile toggle
+        const mobileToggleValue = document.getElementById('mobile-toggle-value');
+        if (mobileToggleValue) {
+            mobileToggleValue.textContent = isSource ? '% מהקודמות' : '% מהחדשות';
+        }
+    }
+
+    showBottomSheet(link) {
+        if (!this.bottomSheet || !this.bottomSheetContent) return;
+
+        const reversePercent = link.target.votes > 0
+            ? ((link.value / link.target.votes) * 100).toFixed(1)
+            : 0;
+
+        const isSource = this.percentMode === 'source';
+        const percent = isSource ? link.percentage : reversePercent;
+        const description = isSource
+            ? `מקולות ${link.sourceName} בבחירות הקודמות`
+            : `מקולות ${link.targetName} בבחירות החדשות`;
+
+        this.bottomSheetContent.innerHTML = `
+            <div class="sheet-parties">
+                <span class="sheet-party">
+                    <span class="sheet-party-color" style="background: ${link.source.color}"></span>
+                    ${link.sourceName}
+                </span>
+                <span class="sheet-arrow">←</span>
+                <span class="sheet-party">
+                    <span class="sheet-party-color" style="background: ${link.target.color}"></span>
+                    ${link.targetName}
+                </span>
+            </div>
+            <div class="sheet-percent">${percent}%</div>
+            <div class="sheet-description">${description}</div>
+            <div class="sheet-votes">${link.value.toLocaleString('he-IL')} קולות (מתוך הקלפיות המשותפות)</div>
+        `;
+
+        this.bottomSheet.classList.add('visible');
+    }
+
+    hideBottomSheet() {
+        if (this.bottomSheet) {
+            this.bottomSheet.classList.remove('visible');
+        }
+    }
+
+    showPartyBottomSheet(node) {
+        if (!this.bottomSheet || !this.bottomSheetContent) return;
+
+        const info = node.info || {};
+        const electionType = node.side === 'from' ? 'בבחירות הקודמות' : 'בבחירות החדשות';
+
+        this.bottomSheetContent.innerHTML = `
+            <div class="sheet-party-details">
+                <div class="sheet-party-header">
+                    <span class="sheet-party-color" style="background: ${node.color}"></span>
+                    <span class="sheet-party-name">${node.name}</span>
+                </div>
+                <div class="sheet-party-votes">${node.votes.toLocaleString('he-IL')} קולות ${electionType}</div>
+                ${node.seats ? `<div class="sheet-party-seats">${node.seats} מנדטים</div>` : ''}
+                ${info.leader ? `
+                    <div class="sheet-party-leader">
+                        ${info.leader_image ? `<img class="sheet-leader-img" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">` : ''}
+                        <div class="sheet-leader-info">
+                            <span class="sheet-leader-label">מנהיג:</span>
+                            <span class="sheet-leader-name">${info.leader}</span>
+                        </div>
+                    </div>
+                ` : ''}
+                ${info.ideology ? `<div class="sheet-party-ideology">${info.ideology}</div>` : ''}
+                ${info.description ? `<div class="sheet-party-description">${info.description}</div>` : ''}
+            </div>
+        `;
+
+        this.bottomSheet.classList.add('visible');
+    }
+
+    showLegendsOverlay() {
+        if (!this.legendsOverlay || !this.data) return;
+
+        // Populate from list
+        const fromList = document.getElementById('overlay-from-list');
+        const toList = document.getElementById('overlay-to-list');
+        const fromTitle = document.getElementById('overlay-from-title');
+        const toTitle = document.getElementById('overlay-to-title');
+
+        if (fromTitle) fromTitle.textContent = this.data.from_election.name;
+        if (toTitle) toTitle.textContent = this.data.to_election.name;
+
+        if (fromList) {
+            fromList.innerHTML = this.data.nodes_from
+                .sort((a, b) => b.votes - a.votes)
+                .map(p => this.createLegendRowHTML(p))
+                .join('');
+            this.setupLegendRowListeners(fromList);
+        }
+
+        if (toList) {
+            toList.innerHTML = this.data.nodes_to
+                .sort((a, b) => b.votes - a.votes)
+                .map(p => this.createLegendRowHTML(p))
+                .join('');
+            this.setupLegendRowListeners(toList);
+        }
+
+        this.legendsOverlay.classList.add('visible');
+    }
+
+    createLegendRowHTML(party) {
+        const info = party.info || {};
+        const hasDetails = info.leader || info.ideology || info.description;
+
+        let detailsHTML = '';
+        if (hasDetails) {
+            detailsHTML = `
+                <div class="legend-row-details">
+                    ${info.leader ? `
+                        <div class="legend-row-leader">
+                            ${info.leader_image ? `<img class="legend-row-leader-img" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">` : ''}
+                            <span class="legend-row-leader-name">${info.leader}</span>
+                        </div>
+                    ` : ''}
+                    ${info.ideology ? `<div class="legend-row-ideology">${info.ideology}</div>` : ''}
+                    ${info.description ? `<div class="legend-row-description">${info.description}</div>` : ''}
+                </div>
+            `;
+        }
+
+        return `
+            <div class="legend-row" ${hasDetails ? 'data-expandable="true"' : ''}>
+                <div class="legend-row-main">
+                    <span class="legend-row-color" style="background: ${party.color}"></span>
+                    <span class="legend-row-name">${party.name}</span>
+                    <span class="legend-row-votes">${party.votes.toLocaleString('he-IL')}</span>
+                    ${hasDetails ? '<span class="legend-row-chevron">▼</span>' : ''}
+                </div>
+                ${detailsHTML}
+            </div>
+        `;
+    }
+
+    setupLegendRowListeners(container) {
+        container.querySelectorAll('.legend-row[data-expandable]').forEach(row => {
+            row.addEventListener('click', () => {
+                row.classList.toggle('expanded');
+            });
+        });
+    }
+
+    hideLegendsOverlay() {
+        if (this.legendsOverlay) {
+            this.legendsOverlay.classList.remove('visible');
         }
     }
 
@@ -130,10 +344,15 @@ class VoteTransferSankey {
         const width = rect.width || 800;
         const height = rect.height || 600;
 
-        const innerWidth = width - this.margin.left - this.margin.right;
-        const innerHeight = height - this.margin.top - this.margin.bottom;
+        // Use smaller margins on mobile
+        const margin = this.isMobile()
+            ? { top: 10, right: 50, bottom: 10, left: 50 }
+            : this.margin;
 
-        console.log('Rendering with dimensions:', width, height);
+        const innerWidth = width - margin.left - margin.right;
+        const innerHeight = height - margin.top - margin.bottom;
+
+        console.log('Rendering with dimensions:', width, height, 'mobile:', this.isMobile());
 
         // Create SVG
         this.svg = d3.select(this.container)
@@ -142,7 +361,7 @@ class VoteTransferSankey {
             .attr('height', height);
 
         this.g = this.svg.append('g')
-            .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
+            .attr('transform', `translate(${margin.left},${margin.top})`);
 
         const { nodes_from, nodes_to, transfers } = this.data;
 
@@ -225,14 +444,28 @@ class VoteTransferSankey {
             .attr('stroke-width', d => Math.max(1, d.width))
             .style('fill', 'none')
             .style('stroke-opacity', 0.4)
+            .style('cursor', 'pointer')
             .on('mouseenter', (event, d) => {
-                this.showLinkTooltip(event, d);
+                if (!this.isMobile()) {
+                    this.showLinkTooltip(event, d);
+                }
                 d3.select(event.currentTarget).style('stroke-opacity', 0.7);
             })
-            .on('mousemove', (event) => this.moveTooltip(event))
+            .on('mousemove', (event) => {
+                if (!this.isMobile()) {
+                    this.moveTooltip(event);
+                }
+            })
             .on('mouseleave', (event) => {
-                this.hideTooltip();
+                if (!this.isMobile()) {
+                    this.hideTooltip();
+                }
                 d3.select(event.currentTarget).style('stroke-opacity', 0.4);
+            })
+            .on('click', (event, d) => {
+                if (this.isMobile()) {
+                    this.showBottomSheet(d);
+                }
             });
 
         // Draw nodes
@@ -241,14 +474,23 @@ class VoteTransferSankey {
             .join('g')
             .attr('class', 'sankey-node')
             .attr('transform', d => `translate(${d.x0},${d.y0})`)
+            .style('cursor', 'pointer')
             .on('mouseenter', (event, d) => {
                 this.highlightNode(d);
-                this.showNodeTooltip(event, d);
+                if (!this.isMobile()) {
+                    this.showNodeTooltip(event, d);
+                }
             })
-            .on('mousemove', (event) => this.moveTooltip(event))
+            .on('mousemove', (event) => {
+                if (!this.isMobile()) {
+                    this.moveTooltip(event);
+                }
+            })
             .on('mouseleave', () => {
                 this.unhighlightAll();
-                this.hideTooltip();
+                if (!this.isMobile()) {
+                    this.hideTooltip();
+                }
             });
 
         // Node rectangles
@@ -262,15 +504,45 @@ class VoteTransferSankey {
 
         // Node labels - RTL: from nodes on right (label on right), to nodes on left (label on left)
         this.nodes.append('text')
-            .attr('x', d => d.side === 'from' ? (d.x1 - d.x0) + 8 : -8)
+            .attr('x', d => d.side === 'from' ? (d.x1 - d.x0) + 6 : -6)
             .attr('y', d => (d.y1 - d.y0) / 2)
             .attr('dy', '0.35em')
             .attr('text-anchor', d => d.side === 'from' ? 'start' : 'end')
             .text(d => d.name)
-            .style('font-size', '13px')
+            .style('font-size', this.isMobile() ? '10px' : '13px')
             .style('font-weight', '500')
             .style('fill', '#f0f0f5')
             .style('pointer-events', 'none');
+
+        // Mobile info buttons
+        if (this.isMobile()) {
+            const infoButtons = this.nodes.append('g')
+                .attr('class', 'node-info-btn')
+                .attr('transform', d => {
+                    const x = d.side === 'from' ? (d.x1 - d.x0) + 6 : -18;
+                    const y = -8;
+                    return `translate(${x}, ${y})`;
+                })
+                .style('cursor', 'pointer')
+                .on('click', (event, d) => {
+                    event.stopPropagation();
+                    this.showPartyBottomSheet(d);
+                });
+
+            infoButtons.append('circle')
+                .attr('r', 8)
+                .attr('fill', 'var(--bg-tertiary)')
+                .attr('stroke', 'var(--border-light)')
+                .attr('stroke-width', 1);
+
+            infoButtons.append('text')
+                .attr('text-anchor', 'middle')
+                .attr('dy', '0.35em')
+                .attr('fill', 'var(--text-secondary)')
+                .attr('font-size', '10px')
+                .attr('font-weight', '600')
+                .text('i');
+        }
 
         console.log('Render complete');
     }
