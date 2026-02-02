@@ -499,6 +499,20 @@ body {
     white-space: nowrap;
 }
 
+.legend-seats.below {
+    color: var(--text-muted);
+    font-weight: normal;
+    font-size: 0.75rem;
+}
+
+.legend-item.below-threshold {
+    opacity: 0.6;
+}
+
+.legend-item.below-threshold:hover {
+    opacity: 0.9;
+}
+
 /* Tooltip */
 .tooltip {
     position: fixed;

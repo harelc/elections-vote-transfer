@@ -159,7 +159,7 @@ def generate_tsne_json(election_id, compact=True):
     # Compute T-SNE projection
     stations, party_names, party_symbols = compute_tsne_projection(df, config)
 
-    # Build party info for legend (compact version)
+    # Build party info for legend (always include info for tooltips)
     parties = []
     for i, name in enumerate(party_names):
         symbol = party_symbols[i]
@@ -168,9 +168,12 @@ def generate_tsne_json(election_id, compact=True):
             'name': name,
             'symbol': symbol,
             'color': info['color'],
+            'info': {
+                'leader': info.get('leader', ''),
+                'ideology': info.get('ideology', ''),
+                'description': info.get('description', ''),
+            }
         }
-        if not compact:
-            party_data['info'] = info
         parties.append(party_data)
 
     # For compact mode, simplify station data

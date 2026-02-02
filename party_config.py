@@ -15,8 +15,8 @@ PARTY_COLORS = {
     'meretz': '#16a34a',      # Green
     'yisrael_beiteinu': '#db2777', # Pink/Magenta
     'joint_list': '#059669',  # Teal
-    'raam': '#10b981',        # Emerald
-    'hadash_taal': '#14b8a6', # Teal light
+    'raam': '#84cc16',        # Lime green (Islamic green)
+    'hadash_taal': '#f43f5e', # Rose (communist red)
     'balad': '#065f46',       # Dark green
     'yamina': '#ea580c',      # Orange
     'religious_zionism': '#92400e', # Brown

@@ -12,6 +12,7 @@ class VoteTransferSankey {
         this.bottomSheetContent = document.getElementById('bottom-sheet-content');
         this.legendsOverlay = document.getElementById('legends-overlay');
         this.data = null;
+        this.officialResults = null;
         this.currentTransition = '24_to_25';
         this.svg = null;
         this.g = null;
@@ -22,8 +23,10 @@ class VoteTransferSankey {
         this.setupEventListeners();
         this.setupMobileListeners();
 
-        // Load initial data
-        this.loadTransition(this.currentTransition);
+        // Load official results then initial data
+        this.loadOfficialResults().then(() => {
+            this.loadTransition(this.currentTransition);
+        });
     }
 
     isMobile() {
@@ -58,6 +61,18 @@ class VoteTransferSankey {
         const toggleBtn = document.getElementById('percent-toggle');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => this.togglePercentMode());
+        }
+    }
+
+    async loadOfficialResults() {
+        try {
+            const response = await fetch('/data/wiki_official_results.json');
+            if (response.ok) {
+                this.officialResults = await response.json();
+                console.log('Official results loaded:', this.officialResults);
+            }
+        } catch (error) {
+            console.warn('Could not load official results:', error);
         }
     }
 
@@ -659,26 +674,35 @@ class VoteTransferSankey {
     }
 
     updateLegend() {
-        // Update "from" legend (older election)
+        // Get election IDs from current transition
+        const [fromId, toId] = this.currentTransition.split('_to_');
+
+        // Get official results if available
+        const fromOfficial = this.officialResults ? this.officialResults[fromId] : null;
+        const toOfficial = this.officialResults ? this.officialResults[toId] : null;
+
+        // Update "from" legend (older election) - use official results
         this.updateLegendPanel(
             'legend-from',
             'legend-from-title',
-            this.data.nodes_from,
+            fromOfficial || this.data.nodes_from,
             this.data.from_election.name,
-            'from'
+            'from',
+            this.data.nodes_from // for color lookup
         );
 
-        // Update "to" legend (newer election)
+        // Update "to" legend (newer election) - use official results
         this.updateLegendPanel(
             'legend-to',
             'legend-to-title',
-            this.data.nodes_to,
+            toOfficial || this.data.nodes_to,
             this.data.to_election.name,
-            'to'
+            'to',
+            this.data.nodes_to // for color lookup
         );
     }
 
-    updateLegendPanel(legendId, titleId, parties, electionName, side) {
+    updateLegendPanel(legendId, titleId, parties, electionName, side, sankeyNodes) {
         const legend = document.getElementById(legendId);
         const title = document.getElementById(titleId);
 
@@ -688,7 +712,15 @@ class VoteTransferSankey {
 
         // Update title
         if (title) {
-            title.textContent = `מפלגות בכנסת ה-${electionName.replace('הכנסת ה-', '')}`;
+            title.textContent = `תוצאות רשמיות - כנסת ה-${electionName.replace('הכנסת ה-', '')}`;
+        }
+
+        // Create a color lookup from sankey nodes
+        const colorMap = {};
+        if (sankeyNodes) {
+            sankeyNodes.forEach(n => {
+                colorMap[n.name] = n.color;
+            });
         }
 
         // Sort by votes descending
@@ -697,9 +729,18 @@ class VoteTransferSankey {
         sortedParties.forEach(party => {
             const item = document.createElement('div');
             item.className = 'legend-item';
-            const seatsText = party.seats ? `<span class="legend-seats">${party.seats} מנדטים</span>` : '';
+            if (party.seats === 0) {
+                item.classList.add('below-threshold');
+            }
+
+            // Get color from sankey nodes or use default
+            const color = party.color || colorMap[party.name] || '#6b7280';
+            const seatsText = party.seats > 0
+                ? `<span class="legend-seats">${party.seats} מנדטים</span>`
+                : `<span class="legend-seats below">לא עברה</span>`;
+
             item.innerHTML = `
-                <div class="legend-color" style="background-color: ${party.color}"></div>
+                <div class="legend-color" style="background-color: ${color}"></div>
                 <span class="legend-name">${party.name}</span>
                 <span class="legend-votes">${party.votes.toLocaleString('he-IL')} קולות</span>
                 ${seatsText}
@@ -713,7 +754,9 @@ class VoteTransferSankey {
                         }
                     });
                 }
-                this.showPartyTooltip(event, party);
+                // Use sankey node data for tooltip if available
+                const sankeyParty = sankeyNodes?.find(n => n.name === party.name) || party;
+                this.showPartyTooltip(event, { ...sankeyParty, votes: party.votes, seats: party.seats });
             });
 
             item.addEventListener('mousemove', (event) => this.moveTooltip(event));
