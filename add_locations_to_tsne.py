@@ -46,11 +46,20 @@ def load_tsne_data(election_id):
         return json.load(f), tsne_file
 
 
+def normalize_ballot_number(ballot):
+    """Normalize ballot number - remove trailing .0 if present."""
+    ballot = str(ballot)
+    if ballot.endswith('.0'):
+        ballot = ballot[:-2]
+    return ballot
+
+
 def match_location(station, locations_data, election_config):
     """Try to match a station with its ballot location."""
     # Get station info (handle both compact and full formats)
     settlement_name = station.get('n') or station.get('settlement_name', '')
     ballot_number = str(station.get('b') or station.get('ballot_number', ''))
+    ballot_normalized = normalize_ballot_number(ballot_number)
 
     if not settlement_name or not ballot_number:
         return None
@@ -60,17 +69,20 @@ def match_location(station, locations_data, election_config):
         if sdata['name'] == settlement_name:
             # Found the settlement, now find the ballot
             for ballot in sdata.get('ballots', []):
-                if ballot['ballot'] == ballot_number:
+                # Compare both original and normalized versions
+                if ballot['ballot'] == ballot_number or ballot['ballot'] == ballot_normalized:
                     return ballot['location']
 
     # Try the flat mapping
     # We need to find the settlement ID first
     for settlement_id, sdata in locations_data.get('settlements', {}).items():
         if sdata['name'] == settlement_name:
-            key = f"{settlement_id}:{ballot_number}"
-            location = locations_data.get('ballot_to_location', {}).get(key)
-            if location:
-                return location
+            # Try both original and normalized ballot numbers
+            for bn in [ballot_number, ballot_normalized]:
+                key = f"{settlement_id}:{bn}"
+                location = locations_data.get('ballot_to_location', {}).get(key)
+                if location:
+                    return location
 
     return None
 
