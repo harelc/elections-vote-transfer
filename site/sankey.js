@@ -62,6 +62,169 @@ class VoteTransferSankey {
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => this.togglePercentMode());
         }
+
+        // Export PNG button
+        const exportBtn = document.getElementById('export-png');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => this.exportPNG());
+        }
+    }
+
+    generateQRCodeDataURL() {
+        // Pre-computed QR code for https://kolot-nodedim.netlify.app/
+        const qrMatrix = [
+            [1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,1,0,0,1,0,1,1,0,0,0,1,0,1,0,0,0,0,0,1],
+            [1,0,1,1,1,0,1,0,1,1,0,0,0,1,1,0,1,0,1,0,1,1,1,0,1],
+            [1,0,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,1,1,0,1],
+            [1,0,1,1,1,0,1,0,1,0,1,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
+            [1,0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0],
+            [1,0,1,1,0,1,1,1,1,0,1,0,0,0,1,0,0,1,1,0,0,1,0,1,0],
+            [0,1,0,0,1,0,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,0,1,0,1],
+            [1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,1,0],
+            [0,0,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,0,1],
+            [0,0,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,0,0],
+            [0,1,1,0,0,1,0,1,0,1,1,0,0,1,0,0,0,0,1,1,0,0,0,1,1],
+            [1,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,0,0],
+            [0,1,0,1,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,0,0,1],
+            [1,0,0,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,0,1,0],
+            [0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,1,1],
+            [1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,1,1,0,0],
+            [1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,1,0,1],
+            [1,0,1,1,1,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,1,0,1,0],
+            [1,0,1,1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,0,0,0,0,1],
+            [1,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,1,0,1,1,0,1,1,0],
+            [1,0,0,0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0,1,1,0,0,1,1],
+            [1,1,1,1,1,1,1,0,1,0,0,1,1,0,1,0,0,1,0,0,1,1,1,0,0]
+        ];
+
+        const size = 25;
+        const cellSize = 4;
+        const canvasSize = size * cellSize;
+        const canvas = document.createElement('canvas');
+        canvas.width = canvasSize;
+        canvas.height = canvasSize;
+        const ctx = canvas.getContext('2d');
+
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+        ctx.fillStyle = '#000000';
+        for (let y = 0; y < size; y++) {
+            for (let x = 0; x < size; x++) {
+                if (qrMatrix[y][x]) {
+                    ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+
+        return canvas.toDataURL('image/png');
+    }
+
+    exportPNG() {
+        const svgElement = this.container.querySelector('svg');
+        if (!svgElement || !this.data) return;
+
+        // Clone the SVG to avoid modifying the original
+        const svgClone = svgElement.cloneNode(true);
+
+        // Add background color
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('width', '100%');
+        rect.setAttribute('height', '100%');
+        rect.setAttribute('fill', '#1e1e2a');
+        svgClone.insertBefore(rect, svgClone.firstChild);
+
+        // Get SVG dimensions
+        const svgWidth = parseInt(svgElement.getAttribute('width') || svgElement.clientWidth);
+        const svgHeight = parseInt(svgElement.getAttribute('height') || svgElement.clientHeight);
+
+        // Layout settings - simple header + chart + watermark (no extra legends needed)
+        const headerHeight = 60;
+        const watermarkHeight = 60;
+        const scale = 2;
+        const totalHeight = svgHeight + headerHeight + watermarkHeight;
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = svgWidth * scale;
+        canvas.height = totalHeight * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
+
+        // Draw background for entire canvas
+        ctx.fillStyle = '#0a0a0f';
+        ctx.fillRect(0, 0, svgWidth, totalHeight);
+
+        // Draw header with election info
+        ctx.fillStyle = '#12121a';
+        ctx.fillRect(0, 0, svgWidth, headerHeight);
+
+        ctx.fillStyle = '#f8fafc';
+        ctx.font = 'bold 18px Heebo, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`מעבר קולות: ${this.data.from_election.name} ← ${this.data.to_election.name}`, svgWidth / 2, 28);
+
+        // Stats line
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '12px Heebo, sans-serif';
+        ctx.fillText(`קלפיות משותפות: ${this.data.stats.common_precincts.toLocaleString()} | R² (מידת התאמה): ${this.data.stats.r_squared.toFixed(3)}`, svgWidth / 2, 50);
+
+        // Draw chart area background
+        ctx.fillStyle = '#1e1e2a';
+        ctx.fillRect(0, headerHeight, svgWidth, svgHeight);
+
+        // Serialize and draw SVG
+        const svgData = new XMLSerializer().serializeToString(svgClone);
+        const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, headerHeight);
+            URL.revokeObjectURL(url);
+
+            // Draw watermark section
+            const watermarkY = totalHeight - watermarkHeight;
+            ctx.fillStyle = '#1a1a25';
+            ctx.fillRect(0, watermarkY, svgWidth, watermarkHeight);
+
+            // Draw separator line
+            ctx.strokeStyle = '#2a2a3a';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(0, watermarkY);
+            ctx.lineTo(svgWidth, watermarkY);
+            ctx.stroke();
+
+            // Draw QR code
+            const qrDataURL = this.generateQRCodeDataURL();
+            const qrImg = new Image();
+            qrImg.onload = () => {
+                const qrSize = 45;
+                ctx.drawImage(qrImg, 15, watermarkY + 7, qrSize, qrSize);
+
+                // Draw watermark text
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 14px Heebo, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', svgWidth - 15, watermarkY + 25);
+
+                ctx.fillStyle = '#64748b';
+                ctx.font = '12px Heebo, sans-serif';
+                ctx.fillText('https://kolot-nodedim.netlify.app/', svgWidth - 15, watermarkY + 45);
+
+                // Download
+                const link = document.createElement('a');
+                link.download = `sankey-${this.currentTransition}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+            qrImg.src = qrDataURL;
+        };
+        img.src = url;
     }
 
     async loadOfficialResults() {

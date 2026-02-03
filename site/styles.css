@@ -177,8 +177,13 @@ body {
 .view-switcher {
     display: flex;
     justify-content: center;
+    align-items: center;
     gap: var(--spacing-xs);
     margin-top: var(--spacing-md);
+    position: relative;
+    padding-left: 120px;
+    padding-right: 120px;
+    flex-wrap: nowrap;
 }
 
 .view-btn {
@@ -401,6 +406,31 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--accent-primary);
+}
+
+.export-btn {
+    padding: 0.5rem 1rem;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.export-btn:hover {
+    background: var(--border-color);
+    border-color: var(--accent-primary);
+    color: var(--text-primary);
+}
+
+.header-export {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 /* Visualization */
@@ -805,6 +835,10 @@ body {
 }
 
 .bottom-sheet {
+    display: none;
+}
+
+.legends-overlay {
     display: none;
 }
 

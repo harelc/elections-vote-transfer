@@ -27,13 +27,14 @@
                     קולות נודדים
                 </h1>
                 <p class="site-subtitle">ניתוח מעבר קולות בין בחירות לכנסת ישראל</p>
-                <nav class="view-switcher">
-                    <span class="view-btn active">נדידת קולות</span>
-                    <a href="tsne.html" class="view-btn">מפת קלפיות</a>
-                    <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
-                    <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
-                </nav>
             </div>
+            <nav class="view-switcher">
+                <span class="view-btn active">נדידת קולות</span>
+                <a href="tsne.html" class="view-btn">מפת קלפיות</a>
+                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
+                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+            </nav>
         </header>
 
         <nav class="election-nav">
@@ -179,7 +180,47 @@
 
     <script src="sankey.js"></script>
 
-    <!-- Buy Me a Coffee widget -->
-    <script data-name="BMC-Widget" data-cfasync="false" src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js" data-id="harelc" data-description="Support me on Buy me a coffee!" data-message="אם אהבתם את הפרוייקט ואתם רוצים לעזור לקדם אותו ולתמוך בהוצאות האתר, קנו לי כוס קפה ☕" data-color="#3b82f6" data-position="Left" data-x_margin="18" data-y_margin="18"></script>
+    <!-- Buy Me a Coffee button -->
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
+        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+    </a>
+    <style>
+        .bmc-button {
+            position: fixed;
+            bottom: 18px;
+            left: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #FFDD00;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #000;
+            font-family: 'Heebo', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+        }
+        .bmc-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .bmc-button img {
+            width: 24px;
+            height: 24px;
+        }
+        .bmc-button span {
+            display: none;
+            max-width: 200px;
+            line-height: 1.4;
+        }
+        .bmc-button:hover span {
+            display: inline-block;
+        }
+    </style>
 </body>
 </html>
