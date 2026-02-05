@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מפת קלפיות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Animated sand dunes background */
+        .dunes-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 250px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .dune {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+        }
+
+        .dune-1 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23c9a66b' fill-opacity='0.15' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1440px 180px;
+            animation: dune-move-1 30s linear infinite;
+            opacity: 0.9;
+        }
+
+        .dune-2 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23d4a574' fill-opacity='0.12' d='M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,229.3C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1200px 150px;
+            animation: dune-move-2 25s linear infinite;
+            opacity: 0.8;
+        }
+
+        .dune-3 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23e6c9a8' fill-opacity='0.1' d='M0,256L60,245.3C120,235,240,213,360,218.7C480,224,600,256,720,261.3C840,267,960,245,1080,229.3C1200,213,1320,203,1380,197.3L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1600px 200px;
+            animation: dune-move-3 40s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes dune-move-1 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes dune-move-2 {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes dune-move-3 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 1rem;
+            position: relative;
+            padding-left: 120px;
+            padding-right: 120px;
+            flex-wrap: nowrap;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .view-btn:hover {
+            background: #252535;
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Navigation */
+        .election-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .nav-btn:hover {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .nav-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Legend panel */
+        .legend-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+
+        .legend-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            margin-bottom: 0.25rem;
+        }
+
+        .legend-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .legend-item.active {
+            background: var(--bg-tertiary);
+            box-shadow: inset 3px 0 0 var(--accent-primary);
+        }
+
+        .legend-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 0.75rem 0;
+        }
+
+        .legend-section-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            padding: 0 0.5rem;
+        }
+
+        /* Settlement search */
+        .search-container {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .settlement-search {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+            transition: var(--transition-fast);
+        }
+
+        .settlement-search:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .settlement-search::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .search-results.visible {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .search-result-item .station-count {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+        }
+
+        .selected-settlements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .settlement-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.35rem 0.5rem;
+            background: var(--accent-primary);
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .settlement-tag .remove-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1rem;
+            line-height: 1;
+            opacity: 0.7;
+            transition: var(--transition-fast);
+            padding: 0 0.1rem;
+        }
+
+        .settlement-tag .remove-btn:hover {
+            opacity: 1;
+        }
+
+        .selected-station {
+            display: none;
+            padding: 0.5rem 0.75rem;
+            background: var(--accent-secondary);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+        }
+
+        .selected-station.visible {
+            display: block;
+        }
+
+        .selected-station-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .selected-station-name {
+            font-weight: 600;
+        }
+
+        .selected-station-details {
+            font-size: 0.75rem;
+            opacity: 0.9;
+        }
+
+        .selected-station .clear-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            line-height: 1;
+            opacity: 0.7;
+        }
+
+        .selected-station .clear-btn:hover {
+            opacity: 1;
+        }
+
+        .station-highlight {
+            fill: none;
+            stroke: #fff;
+            stroke-width: 3;
+            pointer-events: none;
+        }
+
+        .station-highlight-pulse {
+            fill: none;
+            stroke: #06b6d4;
+            stroke-width: 2;
+            pointer-events: none;
+            animation: pulse-ring 1.5s ease-out infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2.5); opacity: 0; }
+        }
+
+
+
+        .legend-color {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .legend-name {
+            font-size: 0.9rem;
+            flex: 1;
+        }
+
+        .clear-selection {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .clear-selection:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .export-btn:hover {
+            background: var(--border-color);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .header-export {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Visualization area */
+        .visualization-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            min-height: 600px;
+        }
+
+        #tsne-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .station-dot {
+            cursor: pointer;
+            transition: opacity 0.1s ease;
+            stroke: rgba(0, 0, 0, 0.3);
+            stroke-width: 0.5;
+        }
+
+        .station-dot-bg {
+            pointer-events: none;
+        }
+
+        .zoom-hint {
+            position: absolute;
+            bottom: 1rem;
+            left: 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            max-width: 300px;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .tooltip-cluster {
+            font-weight: 400;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .tooltip-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .tooltip-location {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-style: italic;
+        }
+
+        .tooltip-turnout {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tooltip-turnout .turnout-pct {
+            color: var(--accent-primary);
+            font-weight: 600;
+        }
+
+        .tooltip-votes {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .tooltip-party-row {
+            display: contents;
+        }
+
+        .tooltip-party-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            display: inline-block;
+            margin-left: 0.25rem;
+        }
+
+        .tooltip-party-name {
+            color: var(--text-secondary);
+        }
+
+        .tooltip-party-pct {
+            color: var(--text-primary);
+            text-align: left;
+            font-weight: 500;
+        }
+
+        .tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tooltip-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .tooltip-symbol {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .tooltip-body {
+            font-size: 0.85rem;
+        }
+
+        .tooltip-stat {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .tooltip-stat-label {
+            color: var(--text-muted);
+        }
+
+        .tooltip-stat-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .tooltip-description {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        /* Color scale legend */
+        .color-scale {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            display: none;
+        }
+
+        .color-scale.visible {
+            display: block;
+        }
+
+        .color-scale-title {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .color-scale-bar {
+            width: 150px;
+            height: 12px;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+        }
+
+        .color-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            direction: ltr;
+        }
+
+        .color-scale-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            cursor: pointer;
+        }
+
+        .color-scale-toggle.hidden {
+            display: none;
+        }
+
+        .color-scale-toggle input {
+            cursor: pointer;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .legend-panel {
+                max-height: none;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.5rem;
+            }
+
+            .legend-title {
+                width: 100%;
+            }
+
+            .legend-item {
+                flex: 0 0 auto;
+            }
+
+            .clear-selection {
+                flex: 0 0 100%;
+            }
+        }
+
+        /* Loading indicator */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+            color: var(--text-secondary);
+        }
+
+        .loading::after {
+            content: '';
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .main-footer {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .methodology {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .methodology strong {
+            color: var(--text-primary);
+        }
+
+        .credits {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .credits a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .credits a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated sand dunes - חולות נודדים -->
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
+            <p class="subtitle">מיפוי T-SNE של קלפיות לפי התפלגות ההצבעה</p>
+            <nav class="view-switcher">
+                <a href="index.html" class="view-btn">נדידת קולות</a>
+                <span class="view-btn active">מפת קלפיות</span>
+                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
+                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+            </nav>
+        </header>
+
+        <nav class="election-nav">
+            <button class="nav-btn" data-election="21">כנסת 21</button>
+            <button class="nav-btn" data-election="22">כנסת 22</button>
+            <button class="nav-btn" data-election="23">כנסת 23</button>
+            <button class="nav-btn" data-election="24">כנסת 24</button>
+            <button class="nav-btn active" data-election="25">כנסת 25</button>
+        </nav>
+
+        <main class="main-content">
+            <aside class="legend-panel">
+                <h3 class="legend-title">סינון לפי יישוב</h3>
+                <div class="search-container">
+                    <input type="text" id="settlement-search" class="settlement-search" placeholder="חפש יישוב..." autocomplete="off">
+                    <div id="search-results" class="search-results"></div>
+                </div>
+                <div id="selected-settlements" class="selected-settlements"></div>
+
+                <div class="legend-divider"></div>
+                <h3 class="legend-title">חיפוש קלפי</h3>
+                <div class="search-container">
+                    <input type="text" id="station-search" class="settlement-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                    <div id="station-search-results" class="search-results"></div>
+                </div>
+                <div id="selected-station" class="selected-station"></div>
+
+                <div class="legend-divider"></div>
+                <h3 class="legend-title">צביעה לפי</h3>
+                <div class="legend-item active" id="turnout-option" data-mode="turnout">
+                    <span class="legend-color" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
+                    <span class="legend-name">שיעור הצבעה</span>
+                </div>
+                <div class="legend-item" id="socioeconomic-option" data-mode="socioeconomic">
+                    <span class="legend-color" style="background: linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142);"></span>
+                    <span class="legend-name">אשכול חברתי-כלכלי</span>
+                </div>
+                <div class="legend-divider"></div>
+                <div id="legend-items"></div>
+
+            </aside>
+
+            <div class="visualization-container">
+                <svg id="tsne-chart"></svg>
+                <div class="tooltip" id="tooltip"></div>
+                <div class="zoom-hint">גודל = מספר מצביעים | גלגל לזום | גרירה להזזה</div>
+                <div class="color-scale" id="color-scale">
+                    <div class="color-scale-title">שיעור הצבעה</div>
+                    <div class="color-scale-bar" id="color-scale-bar"></div>
+                    <div class="color-scale-labels">
+                        <span id="color-scale-min">0%</span>
+                        <span id="color-scale-max">100%</span>
+                    </div>
+                    <label class="color-scale-toggle hidden" id="color-scale-toggle">
+                        <input type="checkbox" id="dynamic-range-toggle" checked>
+                        <span>טווח דינמי</span>
+                    </label>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="methodology">
+                    <strong>מתודולוגיה:</strong>
+                    מפת הקלפיות מבוססת על אלגוריתם T-SNE (t-distributed Stochastic Neighbor Embedding) -
+                    טכניקת הפחתת מימדים שממירה נתונים רב-מימדיים (התפלגות ההצבעה לפי מפלגות) לנקודות דו-מימדיות.
+                    קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו במפה.
+                    גודל הנקודה משקף את מספר המצביעים, והצבע מציג את שיעור ההצבעה או תמיכה במפלגה נבחרת.
+                </p>
+                <p class="credits">
+                    כל הזכויות שמורות להראל קין |
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        class TSNEVisualization {
+            constructor() {
+                this.data = null;
+                this.selectedParty = null;
+                this.colorMode = 'turnout'; // 'turnout', 'party', or 'socioeconomic'
+                this.dynamicRange = true; // Use dynamic color range for parties
+                this.socioeconomicData = null; // Settlement name -> cluster (1-10)
+                this.selectedSettlements = []; // Array of selected settlement names
+                this.selectedStation = null; // Single highlighted station
+                this.settlements = [];
+                this.svg = null;
+                this.tooltip = d3.select('#tooltip');
+                this.colorScale = d3.select('#color-scale');
+
+                this.init();
+            }
+
+            init() {
+                // Navigation buttons
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.loadElection(btn.dataset.election);
+                    });
+                });
+
+                // Turnout option
+                document.getElementById('turnout-option').addEventListener('click', () => {
+                    this.selectTurnoutMode();
+                });
+
+                // Socioeconomic option
+                document.getElementById('socioeconomic-option').addEventListener('click', () => {
+                    this.selectSocioeconomicMode();
+                });
+
+                // Dynamic range toggle
+                document.getElementById('dynamic-range-toggle').addEventListener('change', (e) => {
+                    this.dynamicRange = e.target.checked;
+                    if (this.selectedParty) {
+                        this.selectParty(this.selectedParty);
+                    }
+                });
+
+                // Settlement search
+                const searchInput = document.getElementById('settlement-search');
+                const searchResults = document.getElementById('search-results');
+
+                searchInput.addEventListener('input', (e) => {
+                    this.handleSearchInput(e.target.value);
+                });
+
+                searchInput.addEventListener('focus', () => {
+                    if (searchInput.value.length > 0) {
+                        this.handleSearchInput(searchInput.value);
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.search-container')) {
+                        searchResults.classList.remove('visible');
+                        document.getElementById('station-search-results').classList.remove('visible');
+                    }
+                });
+
+                // Station search
+                const stationSearchInput = document.getElementById('station-search');
+                stationSearchInput.addEventListener('input', (e) => {
+                    this.handleStationSearch(e.target.value);
+                });
+                stationSearchInput.addEventListener('focus', () => {
+                    if (stationSearchInput.value.length > 0) {
+                        this.handleStationSearch(stationSearchInput.value);
+                    }
+                });
+
+                // Window resize
+                window.addEventListener('resize', () => {
+                    if (this.data) this.render();
+                });
+
+                // Export PNG button
+                document.getElementById('export-png').addEventListener('click', () => this.exportPNG());
+
+                // Load initial election
+                this.loadElection('25');
+            }
+
+            buildSettlementsList() {
+                // Count stations per settlement
+                const counts = {};
+                this.data.stations.forEach(s => {
+                    const name = s.n || s.settlement_name;
+                    counts[name] = (counts[name] || 0) + 1;
+                });
+
+                // Sort by station count (descending)
+                this.settlements = Object.entries(counts)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a, b) => b.count - a.count);
+            }
+
+            handleSearchInput(query) {
+                const searchResults = document.getElementById('search-results');
+
+                if (query.length < 1) {
+                    searchResults.classList.remove('visible');
+                    return;
+                }
+
+                const matches = this.settlements
+                    .filter(s => s.name.includes(query))
+                    .slice(0, 15);
+
+                if (matches.length === 0) {
+                    searchResults.classList.remove('visible');
+                    return;
+                }
+
+                searchResults.innerHTML = matches.map(s => `
+                    <div class="search-result-item" data-settlement="${s.name}">
+                        ${s.name}
+                        <span class="station-count">${s.count} קלפיות</span>
+                    </div>
+                `).join('');
+
+                searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.selectSettlement(item.dataset.settlement);
+                    });
+                });
+
+                searchResults.classList.add('visible');
+            }
+
+            selectSettlement(name) {
+                // Don't add if already selected
+                if (this.selectedSettlements.includes(name)) {
+                    return;
+                }
+
+                this.selectedSettlements.push(name);
+
+                // Update UI
+                document.getElementById('settlement-search').value = '';
+                document.getElementById('search-results').classList.remove('visible');
+
+                this.renderSettlementTags();
+                this.render();
+            }
+
+            removeSettlement(name) {
+                this.selectedSettlements = this.selectedSettlements.filter(s => s !== name);
+                this.renderSettlementTags();
+                this.render();
+            }
+
+            renderSettlementTags() {
+                const container = document.getElementById('selected-settlements');
+
+                if (this.selectedSettlements.length === 0) {
+                    container.innerHTML = '';
+                    return;
+                }
+
+                container.innerHTML = this.selectedSettlements.map(name => `
+                    <span class="settlement-tag" data-settlement="${name}">
+                        ${name}
+                        <button class="remove-btn" title="הסר">&times;</button>
+                    </span>
+                `).join('');
+
+                container.querySelectorAll('.settlement-tag').forEach(tag => {
+                    tag.querySelector('.remove-btn').addEventListener('click', () => {
+                        this.removeSettlement(tag.dataset.settlement);
+                    });
+                });
+            }
+
+            clearSettlementFilter() {
+                this.selectedSettlements = [];
+                document.getElementById('selected-settlements').innerHTML = '';
+                this.render();
+            }
+
+            handleStationSearch(query) {
+                const resultsContainer = document.getElementById('station-search-results');
+
+                if (query.length < 2) {
+                    resultsContainer.classList.remove('visible');
+                    return;
+                }
+
+                const queryLower = query.toLowerCase();
+                const matches = this.data.stations
+                    .filter(s => {
+                        const name = (s.n || s.settlement_name || '').toLowerCase();
+                        const ballot = String(s.b || s.ballot_number || '');
+                        const location = (s.l || '').toLowerCase();
+                        return name.includes(queryLower) ||
+                               ballot.includes(query) ||
+                               location.includes(queryLower);
+                    })
+                    .slice(0, 20);
+
+                if (matches.length === 0) {
+                    resultsContainer.classList.remove('visible');
+                    return;
+                }
+
+                resultsContainer.innerHTML = matches.map((s, idx) => {
+                    const name = s.n || s.settlement_name;
+                    const ballot = s.b || s.ballot_number;
+                    const location = s.l || '';
+                    return `
+                        <div class="search-result-item" data-station-idx="${idx}">
+                            <strong>${name}</strong> - קלפי ${ballot}
+                            ${location ? `<br><span class="station-count">${location}</span>` : ''}
+                        </div>
+                    `;
+                }).join('');
+
+                // Store matches for selection
+                this._stationSearchMatches = matches;
+
+                resultsContainer.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const idx = parseInt(item.dataset.stationIdx);
+                        this.selectStation(this._stationSearchMatches[idx]);
+                    });
+                });
+
+                resultsContainer.classList.add('visible');
+            }
+
+            selectStation(station) {
+                this.selectedStation = station;
+
+                // Update UI
+                document.getElementById('station-search').value = '';
+                document.getElementById('station-search-results').classList.remove('visible');
+
+                const name = station.n || station.settlement_name;
+                const ballot = station.b || station.ballot_number;
+                const location = station.l || '';
+
+                const selectedEl = document.getElementById('selected-station');
+                selectedEl.innerHTML = `
+                    <div class="selected-station-header">
+                        <span class="selected-station-name">${name} - קלפי ${ballot}</span>
+                        <button class="clear-btn" title="נקה">&times;</button>
+                    </div>
+                    ${location ? `<div class="selected-station-details">${location}</div>` : ''}
+                `;
+                selectedEl.classList.add('visible');
+
+                selectedEl.querySelector('.clear-btn').addEventListener('click', () => {
+                    this.clearStationSelection();
+                });
+
+                this.render();
+                this.zoomToStation(station);
+            }
+
+            clearStationSelection() {
+                this.selectedStation = null;
+                document.getElementById('selected-station').classList.remove('visible');
+                this.render();
+            }
+
+            zoomToStation(station) {
+                // Zoom and pan to the selected station
+                const svg = d3.select('#tsne-chart');
+                const x = this.xScale(station.x);
+                const y = this.yScale(station.y);
+
+                const width = svg.node().clientWidth;
+                const height = svg.node().clientHeight;
+
+                // Calculate transform to center on station with zoom level 3
+                const scale = 3;
+                const translateX = width / 2 - x * scale;
+                const translateY = height / 2 - y * scale;
+
+                svg.transition()
+                    .duration(750)
+                    .call(
+                        d3.zoom().transform,
+                        d3.zoomIdentity.translate(translateX, translateY).scale(scale)
+                    );
+            }
+
+            selectTurnoutMode() {
+                this.colorMode = 'turnout';
+                this.selectedParty = null;
+
+                // Update legend active state
+                document.querySelectorAll('.legend-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.getElementById('turnout-option').classList.add('active');
+
+                // Update color scale for turnout
+                this.colorScale.classed('visible', true);
+                d3.select('#color-scale-bar').style('background', 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)');
+                d3.select('.color-scale-title').text('שיעור הצבעה');
+                d3.select('#color-scale-min').text('40%');
+                d3.select('#color-scale-max').text('90%');
+                document.getElementById('color-scale-toggle').classList.add('hidden');
+
+                this.updateColors();
+            }
+
+            normalizeName(name) {
+                // Normalize settlement name for matching
+                if (!name) return name;
+                // Remove dashes and spaces
+                let normalized = name.replace(/[-–\s]+/g, '');
+                // Normalize double-yod to single (קריית -> קרית)
+                normalized = normalized.replace(/יי/g, 'י');
+                return normalized;
+            }
+
+            async selectSocioeconomicMode() {
+                this.colorMode = 'socioeconomic';
+                this.selectedParty = null;
+
+                // Load socioeconomic data if not loaded
+                if (!this.socioeconomicData) {
+                    try {
+                        const response = await fetch('data/socioeconomic_clusters.json');
+                        const data = await response.json();
+                        // Build lookup by settlement name (both original and normalized)
+                        this.socioeconomicData = {};
+                        data.forEach(item => {
+                            this.socioeconomicData[item.name] = item.cluster;
+                            this.socioeconomicData[this.normalizeName(item.name)] = item.cluster;
+                        });
+                    } catch (e) {
+                        console.error('Could not load socioeconomic data:', e);
+                        return;
+                    }
+                }
+
+                // Update legend active state
+                document.querySelectorAll('.legend-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                document.getElementById('socioeconomic-option').classList.add('active');
+
+                // Update color scale for socioeconomic - discrete 10 colors
+                this.colorScale.classed('visible', true);
+                const discreteColors = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
+                const gradient = `linear-gradient(to left, ${discreteColors.slice().reverse().join(', ')})`;
+                d3.select('#color-scale-bar').style('background', gradient);
+                d3.select('.color-scale-title').text('אשכול חברתי-כלכלי');
+                d3.select('#color-scale-min').text('1');
+                d3.select('#color-scale-max').text('10');
+                document.getElementById('color-scale-toggle').classList.add('hidden');
+
+                this.updateColors();
+            }
+
+            async loadPartyInfo(electionId) {
+                // Map election ID to transfer file and which side has the party info
+                const transferMap = {
+                    '21': { file: 'transfer_21_to_22.json', side: 'nodes_from' },
+                    '22': { file: 'transfer_22_to_23.json', side: 'nodes_from' },
+                    '23': { file: 'transfer_23_to_24.json', side: 'nodes_from' },
+                    '24': { file: 'transfer_24_to_25.json', side: 'nodes_from' },
+                    '25': { file: 'transfer_24_to_25.json', side: 'nodes_to' },
+                };
+
+                const mapping = transferMap[electionId];
+                if (!mapping) return;
+
+                try {
+                    const response = await fetch(`data/${mapping.file}`);
+                    const transferData = await response.json();
+                    const nodes = transferData[mapping.side];
+
+                    // Build lookup by party name
+                    const partyInfoLookup = {};
+                    nodes.forEach(node => {
+                        partyInfoLookup[node.name] = node.info;
+                    });
+
+                    // Merge party info into our data
+                    this.data.parties.forEach(party => {
+                        if (partyInfoLookup[party.name]) {
+                            party.info = partyInfoLookup[party.name];
+                        }
+                    });
+                } catch (e) {
+                    console.warn('Could not load party info:', e);
+                }
+            }
+
+            async loadElection(electionId) {
+                this.currentElection = electionId;
+                const container = document.querySelector('.visualization-container');
+                container.innerHTML = '<div class="loading">טוען נתונים...</div>';
+
+                // Preserve current color mode
+                const previousColorMode = this.colorMode;
+                const previousPartyName = this.selectedParty ? this.selectedParty.name : null;
+
+                try {
+                    const response = await fetch(`data/tsne_${electionId}.json`);
+                    this.data = await response.json();
+                    this.selectedParty = null;
+                    this.colorMode = 'turnout'; // Temporary, will restore below
+
+                    // Load party info from transfer data
+                    await this.loadPartyInfo(electionId);
+
+                    container.innerHTML = `
+                        <svg id="tsne-chart"></svg>
+                        <div class="tooltip" id="tooltip"></div>
+                        <div class="zoom-hint">גודל = מספר מצביעים | גלגל לזום | גרירה להזזה</div>
+                        <div class="color-scale visible" id="color-scale">
+                            <div class="color-scale-title">שיעור הצבעה</div>
+                            <div class="color-scale-bar" id="color-scale-bar" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></div>
+                            <div class="color-scale-labels">
+                                <span id="color-scale-min">40%</span>
+                                <span id="color-scale-max">90%</span>
+                            </div>
+                            <label class="color-scale-toggle hidden" id="color-scale-toggle">
+                                <input type="checkbox" id="dynamic-range-toggle" ${this.dynamicRange ? 'checked' : ''}>
+                                <span>טווח דינמי</span>
+                            </label>
+                        </div>
+                    `;
+
+                    // Re-attach toggle event listener
+                    document.getElementById('dynamic-range-toggle').addEventListener('change', (e) => {
+                        this.dynamicRange = e.target.checked;
+                        if (this.selectedParty) {
+                            this.selectParty(this.selectedParty);
+                        }
+                    });
+
+                    this.tooltip = d3.select('#tooltip');
+                    this.colorScale = d3.select('#color-scale');
+
+                    // Reset legend active state (will be updated when restoring mode)
+                    document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active'));
+                    document.getElementById('turnout-option').classList.add('active');
+
+                    // Reset settlement filter
+                    this.selectedSettlements = [];
+                    document.getElementById('selected-settlements').innerHTML = '';
+                    document.getElementById('settlement-search').value = '';
+
+                    // Reset station selection
+                    this.selectedStation = null;
+                    document.getElementById('selected-station').classList.remove('visible');
+                    document.getElementById('station-search').value = '';
+
+                    // Build settlements list for search
+                    this.buildSettlementsList();
+
+                    this.updateLegend();
+                    this.render();
+
+                    // Restore previous color mode
+                    if (previousColorMode === 'socioeconomic') {
+                        this.selectSocioeconomicMode();
+                    } else if (previousColorMode === 'party' && previousPartyName) {
+                        // Try to find the same party in the new election
+                        const party = this.data.parties.find(p => p.name === previousPartyName);
+                        if (party) {
+                            this.selectParty(party);
+                        } else {
+                            this.selectTurnoutMode();
+                        }
+                    } else {
+                        this.selectTurnoutMode();
+                    }
+                } catch (error) {
+                    console.error('Failed to load election data:', error);
+                    container.innerHTML = '<div class="loading" style="color: #ef4444;">שגיאה בטעינת הנתונים</div>';
+                }
+            }
+
+            updateLegend() {
+                const container = document.getElementById('legend-items');
+                container.innerHTML = '';
+
+                this.data.parties.forEach(party => {
+                    const item = document.createElement('div');
+                    item.className = 'legend-item';
+                    item.dataset.party = party.name;
+                    item.innerHTML = `
+                        <span class="legend-color" style="background: ${party.color}"></span>
+                        <span class="legend-name">${party.name}</span>
+                    `;
+                    item.addEventListener('click', () => this.selectParty(party));
+                    item.addEventListener('mouseenter', (event) => this.showPartyTooltip(event, party));
+                    item.addEventListener('mousemove', (event) => this.moveTooltip(event));
+                    item.addEventListener('mouseleave', () => this.hideTooltip());
+                    container.appendChild(item);
+                });
+            }
+
+            showPartyTooltip(event, party) {
+                const info = party.info || {};
+                const html = `
+                    <div class="tooltip-header">
+                        <div class="tooltip-color" style="background-color: ${party.color}"></div>
+                        <span class="tooltip-title">${party.name}</span>
+                        <span class="tooltip-symbol">(${party.symbol})</span>
+                    </div>
+                    <div class="tooltip-body">
+                        ${info.leader ? `<div class="tooltip-stat">
+                            <span class="tooltip-stat-label">מנהיג:</span>
+                            <span class="tooltip-stat-value">${info.leader}</span>
+                        </div>` : ''}
+                        ${info.ideology ? `<div class="tooltip-stat">
+                            <span class="tooltip-stat-label">אידיאולוגיה:</span>
+                            <span class="tooltip-stat-value">${info.ideology}</span>
+                        </div>` : ''}
+                        ${info.description ? `<div class="tooltip-description">${info.description}</div>` : ''}
+                    </div>
+                `;
+                this.tooltip.html(html).classed('visible', true);
+                this.moveTooltip(event);
+            }
+
+            selectParty(party) {
+                this.colorMode = 'party';
+                this.selectedParty = party;
+
+                // Update legend active state
+                document.querySelectorAll('.legend-item').forEach(item => {
+                    item.classList.remove('active');
+                    if (party && item.dataset.party === party.name) {
+                        item.classList.add('active');
+                    }
+                });
+
+                // Update color scale
+                if (party) {
+                    // Calculate actual support range for this party
+                    const partyName = party.name;
+                    const values = this.data.stations
+                        .map(s => (s.p || s.proportions)[partyName] || 0)
+                        .filter(v => v > 0);
+
+                    // Use 98th percentile for max to avoid outliers
+                    values.sort((a, b) => a - b);
+                    const p98 = values[Math.floor(values.length * 0.98)] || 50;
+
+                    // Min always 0, max depends on toggle
+                    this.partyScaleMin = 0;
+                    this.partyScaleMax = this.dynamicRange ? Math.ceil(p98) : 50;
+
+                    this.colorScale.classed('visible', true);
+                    const gradient = `linear-gradient(to left, ${party.color}, ${this.lightenColor(party.color, 0.8)})`;
+                    d3.select('#color-scale-bar').style('background', gradient);
+                    // Handle Hebrew: drop ה from beginning when adding ב prefix
+                    const partyNameForLabel = party.name.startsWith('ה') ? party.name.slice(1) : party.name;
+                    d3.select('.color-scale-title').text(`תמיכה ב${partyNameForLabel}`);
+                    d3.select('#color-scale-min').text(`${this.partyScaleMin}%`);
+                    d3.select('#color-scale-max').text(`${this.partyScaleMax}%`);
+
+                    // Show the toggle
+                    document.getElementById('color-scale-toggle').classList.remove('hidden');
+                } else {
+                    // No party selected - show gray
+                    this.colorScale.classed('visible', false);
+                    document.getElementById('color-scale-toggle').classList.add('hidden');
+                }
+
+                // Re-render with new colors
+                this.updateColors();
+            }
+
+            lightenColor(color, factor) {
+                // Convert hex to RGB and lighten
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+
+                const newR = Math.round(r + (255 - r) * factor);
+                const newG = Math.round(g + (255 - g) * factor);
+                const newB = Math.round(b + (255 - b) * factor);
+
+                return `rgb(${newR}, ${newG}, ${newB})`;
+            }
+
+            render() {
+                const container = document.querySelector('.visualization-container');
+                const width = container.clientWidth;
+                const height = Math.max(container.clientHeight, 600);
+
+                const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+                const innerWidth = width - margin.left - margin.right;
+                const innerHeight = height - margin.top - margin.bottom;
+
+                // Clear and setup SVG
+                d3.select('#tsne-chart').selectAll('*').remove();
+
+                const svg = d3.select('#tsne-chart')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                // Add zoom behavior
+                const zoom = d3.zoom()
+                    .scaleExtent([0.5, 20])
+                    .on('zoom', (event) => {
+                        this.svg.attr('transform', event.transform);
+                    });
+
+                svg.call(zoom);
+
+                this.svg = svg.append('g')
+                    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+                // Compute scales
+                const xExtent = d3.extent(this.data.stations, d => d.x);
+                const yExtent = d3.extent(this.data.stations, d => d.y);
+
+                const xScale = d3.scaleLinear()
+                    .domain([xExtent[0] - 5, xExtent[1] + 5])
+                    .range([0, innerWidth]);
+
+                const yScale = d3.scaleLinear()
+                    .domain([yExtent[0] - 5, yExtent[1] + 5])
+                    .range([innerHeight, 0]);
+
+                this.xScale = xScale;
+                this.yScale = yScale;
+
+                // Filter stations by selected settlements
+                const stations = this.selectedSettlements.length > 0
+                    ? this.data.stations.filter(s => this.selectedSettlements.includes(s.n || s.settlement_name))
+                    : this.data.stations;
+
+                // Draw based on view mode
+                const voterExtent = d3.extent(this.data.stations, d => d.v || d.total_voters);
+                const radiusScale = d3.scaleSqrt()
+                    .domain(voterExtent)
+                    .range([2, 6]);
+
+                const hasFilter = this.selectedSettlements.length > 0;
+
+                // If filtering, also show other stations as very faint background
+                if (hasFilter) {
+                    this.svg.selectAll('.station-dot-bg')
+                        .data(this.data.stations)
+                        .join('circle')
+                        .attr('class', 'station-dot-bg')
+                        .attr('cx', d => xScale(d.x))
+                        .attr('cy', d => yScale(d.y))
+                        .attr('r', 2)
+                        .attr('fill', '#374151')
+                        .attr('opacity', 0.3);
+                }
+
+                this.svg.selectAll('.station-dot')
+                    .data(stations)
+                    .join('circle')
+                    .attr('class', 'station-dot')
+                    .attr('cx', d => xScale(d.x))
+                    .attr('cy', d => yScale(d.y))
+                    .attr('r', d => hasFilter ? radiusScale(d.v || d.total_voters) * 1.5 : radiusScale(d.v || d.total_voters))
+                    .attr('fill', d => this.getDotColor(d) || '#374151')
+                    .attr('opacity', d => {
+                        const color = this.getDotColor(d);
+                        if (color === null) return 0.15; // Non-covered in socioeconomic mode
+                        return hasFilter ? 1 : 0.7;
+                    })
+                    .on('mouseenter', (event, d) => this.showTooltip(event, d))
+                    .on('mousemove', (event, d) => this.moveTooltip(event))
+                    .on('mouseleave', () => this.hideTooltip());
+
+                // Draw highlight for selected station
+                if (this.selectedStation) {
+                    const s = this.selectedStation;
+                    const r = radiusScale(s.v || s.total_voters);
+
+                    // Pulsing outer ring
+                    this.svg.append('circle')
+                        .attr('class', 'station-highlight-pulse')
+                        .attr('cx', xScale(s.x))
+                        .attr('cy', yScale(s.y))
+                        .attr('r', r + 8);
+
+                    // Solid highlight ring
+                    this.svg.append('circle')
+                        .attr('class', 'station-highlight')
+                        .attr('cx', xScale(s.x))
+                        .attr('cy', yScale(s.y))
+                        .attr('r', r + 5);
+                }
+
+            }
+
+            getDotColor(station) {
+                if (this.colorMode === 'turnout') {
+                    // Turnout coloring: red (low) -> yellow (medium) -> green (high)
+                    const turnout = station.t || station.turnout || 0;
+                    const colorScale = d3.scaleLinear()
+                        .domain([40, 65, 90])
+                        .range(['#ef4444', '#fbbf24', '#10b981'])
+                        .clamp(true);
+                    return colorScale(turnout);
+                }
+
+                if (this.colorMode === 'socioeconomic') {
+                    // Socioeconomic coloring: discrete 10-color scale (spectral-like)
+                    const settlementName = station.n || station.settlement_name;
+                    // Try direct match first, then normalized match
+                    let cluster = this.socioeconomicData ? this.socioeconomicData[settlementName] : null;
+                    if (cluster === null || cluster === undefined) {
+                        cluster = this.socioeconomicData ? this.socioeconomicData[this.normalizeName(settlementName)] : null;
+                    }
+
+                    if (cluster === null || cluster === undefined) {
+                        // No data - return special marker for low opacity handling
+                        return null;
+                    }
+
+                    // Discrete 10-color scale (dark red to dark blue via yellow/green)
+                    const discreteColors = [
+                        '#9e0142', // 1 - dark red
+                        '#d53e4f', // 2 - red
+                        '#f46d43', // 3 - orange-red
+                        '#fdae61', // 4 - orange
+                        '#fee08b', // 5 - yellow
+                        '#e6f598', // 6 - yellow-green
+                        '#abdda4', // 7 - light green
+                        '#66c2a5', // 8 - teal
+                        '#3288bd', // 9 - blue
+                        '#5e4fa2', // 10 - purple
+                    ];
+                    return discreteColors[Math.min(Math.max(cluster, 1), 10) - 1];
+                }
+
+                if (!this.selectedParty) {
+                    // No selection: gray
+                    return '#64748b';
+                }
+
+                // Party coloring
+                const partyName = this.selectedParty.name;
+                const proportions = station.p || station.proportions;
+                const pct = proportions[partyName] || 0;
+
+                // Create color scale using party's actual support range
+                const minVal = this.partyScaleMin || 0;
+                const maxVal = this.partyScaleMax || 50;
+                const colorScale = d3.scaleLinear()
+                    .domain([minVal, maxVal])
+                    .range([this.lightenColor(this.selectedParty.color, 0.85), this.selectedParty.color])
+                    .clamp(true);
+
+                return colorScale(pct);
+            }
+
+            updateColors() {
+                const hasFilter = this.selectedSettlements.length > 0;
+                this.svg.selectAll('.station-dot')
+                    .transition()
+                    .duration(300)
+                    .attr('fill', d => this.getDotColor(d) || '#374151')
+                    .attr('opacity', d => {
+                        const color = this.getDotColor(d);
+                        if (color === null) return 0.15; // Non-covered in socioeconomic mode
+                        return hasFilter ? 1 : 0.7;
+                    });
+            }
+
+            showTooltip(event, station) {
+                // Build tooltip content - using compact keys
+                const proportions = station.p || station.proportions;
+                const topParties = Object.entries(proportions)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+
+                const partyRows = topParties.map(([name, pct]) => {
+                    const party = this.data.parties.find(p => p.name === name);
+                    const color = party ? party.color : '#64748b';
+                    return `
+                        <div class="tooltip-party-row">
+                            <span class="tooltip-party-name">
+                                <span class="tooltip-party-color" style="background: ${color}"></span>
+                                ${name}
+                            </span>
+                            <span class="tooltip-party-pct">${pct}%</span>
+                        </div>
+                    `;
+                }).join('');
+
+                const settlementName = station.n || station.settlement_name;
+                const ballotNumber = station.b || station.ballot_number;
+                const totalVoters = station.v || station.total_voters;
+                const eligibleVoters = station.e || station.eligible_voters || 0;
+                const turnout = station.t || station.turnout || 0;
+                const location = station.l || ''; // Ballot location (e.g., school name)
+
+                // Get socioeconomic cluster
+                let cluster = this.socioeconomicData ? this.socioeconomicData[settlementName] : null;
+                if (cluster === null || cluster === undefined) {
+                    cluster = this.socioeconomicData ? this.socioeconomicData[this.normalizeName(settlementName)] : null;
+                }
+                const clusterHtml = cluster ? ` <span class="tooltip-cluster">(אשכול ${cluster})</span>` : '';
+
+                const locationHtml = location
+                    ? `<div class="tooltip-location">${location}</div>`
+                    : '';
+
+                this.tooltip.html(`
+                    <div class="tooltip-title">${settlementName}${clusterHtml}</div>
+                    <div class="tooltip-subtitle">קלפי ${ballotNumber}</div>
+                    ${locationHtml}
+                    <div class="tooltip-turnout">
+                        <span>${eligibleVoters.toLocaleString()} רשומים</span>
+                        <span>${totalVoters.toLocaleString()} הצביעו</span>
+                        <span class="turnout-pct">${turnout}% שיעור הצבעה</span>
+                    </div>
+                    <div class="tooltip-votes">
+                        ${partyRows}
+                    </div>
+                `);
+
+                this.tooltip.classed('visible', true);
+                this.moveTooltip(event);
+            }
+
+            moveTooltip(event) {
+                const container = document.querySelector('.visualization-container');
+                const rect = container.getBoundingClientRect();
+
+                let x = event.clientX - rect.left + 15;
+                let y = event.clientY - rect.top + 15;
+
+                // Keep tooltip within bounds
+                const tooltipRect = this.tooltip.node().getBoundingClientRect();
+                if (x + tooltipRect.width > rect.width) {
+                    x = event.clientX - rect.left - tooltipRect.width - 15;
+                }
+                if (y + tooltipRect.height > rect.height) {
+                    y = event.clientY - rect.top - tooltipRect.height - 15;
+                }
+
+                this.tooltip
+                    .style('left', x + 'px')
+                    .style('top', y + 'px');
+            }
+
+            hideTooltip() {
+                this.tooltip.classed('visible', false);
+            }
+
+            generateQRCodeDataURL() {
+                // Pre-computed QR code for https://kolot-nodedim.netlify.app/
+                const qrMatrix = [
+                    [1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,1,0,0,1,0,1,1,0,0,0,1,0,1,0,0,0,0,0,1],
+                    [1,0,1,1,1,0,1,0,1,1,0,0,0,1,1,0,1,0,1,0,1,1,1,0,1],
+                    [1,0,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,1,1,0,1],
+                    [1,0,1,1,1,0,1,0,1,0,1,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
+                    [1,0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+                    [0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0],
+                    [1,0,1,1,0,1,1,1,1,0,1,0,0,0,1,0,0,1,1,0,0,1,0,1,0],
+                    [0,1,0,0,1,0,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,0,1,0,1],
+                    [1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,1,0],
+                    [0,0,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,0,1],
+                    [0,0,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,0,0],
+                    [0,1,1,0,0,1,0,1,0,1,1,0,0,1,0,0,0,0,1,1,0,0,0,1,1],
+                    [1,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,0,0],
+                    [0,1,0,1,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,0,0,1],
+                    [1,0,0,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,0,1,0],
+                    [0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,1,1],
+                    [1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,1,1,0,0],
+                    [1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,1,0,1],
+                    [1,0,1,1,1,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,1,0,1,0],
+                    [1,0,1,1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,0,0,0,0,1],
+                    [1,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,1,0,1,1,0,1,1,0],
+                    [1,0,0,0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0,1,1,0,0,1,1],
+                    [1,1,1,1,1,1,1,0,1,0,0,1,1,0,1,0,0,1,0,0,1,1,1,0,0]
+                ];
+
+                const size = 25;
+                const cellSize = 4;
+                const canvasSize = size * cellSize;
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasSize;
+                canvas.height = canvasSize;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+                ctx.fillStyle = '#000000';
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        if (qrMatrix[y][x]) {
+                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        }
+                    }
+                }
+
+                return canvas.toDataURL('image/png');
+            }
+
+            exportPNG() {
+                const svgElement = document.getElementById('tsne-chart');
+                if (!svgElement || !this.data) return;
+
+                // Clone the SVG
+                const svgClone = svgElement.cloneNode(true);
+
+                // Add background
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('width', '100%');
+                rect.setAttribute('height', '100%');
+                rect.setAttribute('fill', '#12121a');
+                svgClone.insertBefore(rect, svgClone.firstChild);
+
+                // Get dimensions
+                const svgWidth = parseInt(svgElement.getAttribute('width') || svgElement.clientWidth);
+                const svgHeight = parseInt(svgElement.getAttribute('height') || svgElement.clientHeight);
+
+                // Layout - simple with header and info bar
+                const headerHeight = 70;
+                const watermarkHeight = 60;
+                const scale = 2;
+                const totalHeight = svgHeight + headerHeight + watermarkHeight;
+
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = svgWidth * scale;
+                canvas.height = totalHeight * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(scale, scale);
+
+                // Draw background
+                ctx.fillStyle = '#0a0a0f';
+                ctx.fillRect(0, 0, svgWidth, totalHeight);
+
+                // Draw header
+                ctx.fillStyle = '#12121a';
+                ctx.fillRect(0, 0, svgWidth, headerHeight);
+
+                // Title
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 18px Heebo, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`מפת קלפיות t-SNE - בחירות לכנסת ה-${this.currentElection}`, svgWidth / 2, 28);
+
+                // Explanation
+                ctx.fillStyle = '#a0a0b0';
+                ctx.font = '12px Heebo, sans-serif';
+                ctx.fillText('כל נקודה מייצגת קלפי. קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו.', svgWidth / 2, 48);
+
+                // Color and size info
+                // Get color scale info from DOM
+                const colorScaleTitle = document.querySelector('.color-scale-title');
+                const colorScaleMin = document.getElementById('color-scale-min');
+                const colorScaleMax = document.getElementById('color-scale-max');
+
+                let colorModeText = 'צבע לפי שיעור הצבעה';
+                let colorRangeText = '';
+                if (this.selectedParty && this.selectedParty.name) {
+                    colorModeText = `צבע לפי תמיכה ב${this.selectedParty.name}`;
+                }
+                if (colorScaleMin && colorScaleMax) {
+                    colorRangeText = ` (${colorScaleMin.textContent} - ${colorScaleMax.textContent})`;
+                }
+
+                const stationCount = this.data.stations ? this.data.stations.length : 0;
+                ctx.fillStyle = '#64748b';
+                ctx.font = '11px Heebo, sans-serif';
+                // Draw info line in parts to avoid RTL issues with mixed content
+                const infoText = `${colorModeText}${colorRangeText} | גודל נקודה = מספר מצביעים | סה״כ קלפיות: ${stationCount.toLocaleString()}`;
+                ctx.fillText(infoText, svgWidth / 2, 65);
+
+                // Chart background
+                ctx.fillStyle = '#12121a';
+                ctx.fillRect(0, headerHeight, svgWidth, svgHeight);
+
+                // Serialize and draw SVG
+                const svgData = new XMLSerializer().serializeToString(svgClone);
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, headerHeight);
+                    URL.revokeObjectURL(url);
+
+                    // Draw watermark section
+                    const watermarkY = totalHeight - watermarkHeight;
+                    ctx.fillStyle = '#1a1a25';
+                    ctx.fillRect(0, watermarkY, svgWidth, watermarkHeight);
+
+                    ctx.strokeStyle = '#2a2a3a';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, watermarkY);
+                    ctx.lineTo(svgWidth, watermarkY);
+                    ctx.stroke();
+
+                    // Draw QR code
+                    const qrDataURL = this.generateQRCodeDataURL();
+                    const qrImg = new Image();
+                    qrImg.onload = () => {
+                        const qrSize = 45;
+                        ctx.drawImage(qrImg, 15, watermarkY + 7, qrSize, qrSize);
+
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.font = 'bold 14px Heebo, sans-serif';
+                        ctx.textAlign = 'right';
+                        ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', svgWidth - 15, watermarkY + 25);
+
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '12px Heebo, sans-serif';
+                        ctx.fillText('https://kolot-nodedim.netlify.app/', svgWidth - 15, watermarkY + 45);
+
+                        // Download
+                        const link = document.createElement('a');
+                        link.download = `tsne-knesset-${this.currentElection}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    };
+                    qrImg.src = qrDataURL;
+                };
+                img.src = url;
+            }
+        }
+
+        // Initialize
+        new TSNEVisualization();
+    </script>
+
+    <!-- Buy Me a Coffee button -->
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
+        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+    </a>
+    <style>
+        .bmc-button {
+            position: fixed;
+            bottom: 18px;
+            left: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #FFDD00;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #000;
+            font-family: 'Heebo', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+        }
+        .bmc-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .bmc-button img {
+            width: 24px;
+            height: 24px;
+        }
+        .bmc-button span {
+            display: none;
+            max-width: 200px;
+            line-height: 1.4;
+        }
+        .bmc-button:hover span {
+            display: inline-block;
+        }
+    </style>
+</body>
+</html>
