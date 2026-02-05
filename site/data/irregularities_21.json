@@ -1,0 +1,4986 @@
+{
+  "election": {
+    "id": "21",
+    "name": "הכנסת ה-21",
+    "name_en": "21st Knesset",
+    "date": "2019-04-09",
+    "total_ballots": 10765,
+    "analyzed_ballots": 10746,
+    "irregular_found": 79
+  },
+  "parties": [
+    {
+      "symbol": "מחל",
+      "name": "הליכוד",
+      "color": "#2563eb",
+      "votes": 1140370,
+      "proportion": "26.46%",
+      "description": "מפלגת הימין הגדולה בישראל, שולטת בפוליטיקה הישראלית מאז 1977",
+      "ideology": "ימין, לאומנות, ליברליזם כלכלי",
+      "leader": "בנימין נתניהו"
+    },
+    {
+      "symbol": "פה",
+      "name": "כחול לבן",
+      "color": "#8b5cf6",
+      "votes": 1125881,
+      "proportion": "26.13%",
+      "description": "ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ",
+      "ideology": "מרכז, ביטחוניות, ממלכתיות",
+      "leader": "בני גנץ"
+    },
+    {
+      "symbol": "שס",
+      "name": "ש״ס",
+      "color": "#1e3a8a",
+      "votes": 258275,
+      "proportion": "5.99%",
+      "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי",
+      "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
+      "leader": "אריה דרעי"
+    },
+    {
+      "symbol": "ג",
+      "name": "יהדות התורה",
+      "color": "#4b5563",
+      "votes": 249049,
+      "proportion": "5.78%",
+      "description": "יהדות התורה בהנהגת יעקב ליצמן",
+      "ideology": "חרדית אשכנזית, שמרנות דתית",
+      "leader": "יעקב ליצמן"
+    },
+    {
+      "symbol": "ום",
+      "name": "חד״ש-תע״ל",
+      "color": "#f43f5e",
+      "votes": 193442,
+      "proportion": "4.49%",
+      "description": "החזית הדמוקרטית לשלום ושוויון, מפלגה יהודית-ערבית משותפת",
+      "ideology": "שמאל, קומוניזם, שוויון יהודי-ערבי",
+      "leader": "איימן עודה"
+    },
+    {
+      "symbol": "אמת",
+      "name": "העבודה",
+      "color": "#dc2626",
+      "votes": 190870,
+      "proportion": "4.43%",
+      "description": "מפלגת העבודה בהנהגת אבי גבאי",
+      "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה, ציונות",
+      "leader": "אבי גבאי"
+    },
+    {
+      "symbol": "ל",
+      "name": "ישראל ביתנו",
+      "color": "#db2777",
+      "votes": 173004,
+      "proportion": "4.01%",
+      "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר",
+      "ideology": "ימין חילוני, לאומנות, חילוניות",
+      "leader": "אביגדור ליברמן"
+    },
+    {
+      "symbol": "טב",
+      "name": "איחוד מפלגות הימין",
+      "color": "#ea580c",
+      "votes": 159468,
+      "proportion": "3.70%",
+      "description": "ברית הבית היהודי, האיחוד הלאומי ועוצמה יהודית",
+      "ideology": "ימין דתי-לאומי, התנחלויות",
+      "leader": "רפי פרץ"
+    },
+    {
+      "symbol": "מרצ",
+      "name": "מרצ",
+      "color": "#16a34a",
+      "votes": 156473,
+      "proportion": "3.63%",
+      "description": "מפלגת מרצ בהנהגת תמר זנדברג",
+      "ideology": "שמאל, סוציאל-דמוקרטיה, ליברליזם חברתי",
+      "leader": "תמר זנדברג"
+    },
+    {
+      "symbol": "כ",
+      "name": "כולנו",
+      "color": "#eab308",
+      "votes": 152756,
+      "proportion": "3.54%",
+      "description": "כולנו הימין השפוי בראשות משה כחלון",
+      "ideology": "מרכז, כלכלה חברתית",
+      "leader": "משה כחלון"
+    },
+    {
+      "symbol": "דעם",
+      "name": "רע״ם-בל״ד",
+      "color": "#84cc16",
+      "votes": 143666,
+      "proportion": "3.33%",
+      "description": "רשימה משותפת של רע״ם ובל״ד בבחירות 2019",
+      "ideology": "ערבי-אסלאמי, שמרנות חברתית",
+      "leader": "מנסור עבאס"
+    },
+    {
+      "symbol": "נ",
+      "name": "הימין החדש",
+      "color": "#1e40af",
+      "votes": 138598,
+      "proportion": "3.22%",
+      "description": "הימין החדש בראשות שקד ובנט, לא עברה את אחוז החסימה",
+      "ideology": "ימין, ליברלי-לאומי",
+      "leader": "נפתלי בנט ואיילת שקד"
+    },
+    {
+      "symbol": "ז",
+      "name": "זהות",
+      "color": "#ffde15",
+      "votes": 118031,
+      "proportion": "2.74%",
+      "description": "זהות - תנועה ישראלית יהודית בהנהגת משה פייגלין",
+      "ideology": "חברתי",
+      "leader": "משה פייגלין"
+    },
+    {
+      "symbol": "נר",
+      "name": "גשר",
+      "color": "#056fab",
+      "votes": 74701,
+      "proportion": "1.73%",
+      "description": "גשר בראשות אורלי לוי אבקסיס",
+      "ideology": "רפורמה פוליטית",
+      "leader": "מוש חוג'ה"
+    },
+    {
+      "symbol": "ן",
+      "name": "ן",
+      "color": "#6b7280",
+      "votes": 4618,
+      "proportion": "0.11%",
+      "description": "רשימה שלא עברה את אחוז החסימה",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ר",
+      "name": "הרשימה הערבית",
+      "color": "#2d8a4e",
+      "votes": 4135,
+      "proportion": "0.10%",
+      "description": "הרשימה הערבית בראשות מוחמד כנעאן",
+      "ideology": "ערבי",
+      "leader": "מוחמד כנעאן"
+    },
+    {
+      "symbol": "צק",
+      "name": "צדק חברתי",
+      "color": "#6b7280",
+      "votes": 3843,
+      "proportion": "0.09%",
+      "description": "צדק חברתי",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "נץ",
+      "name": "מגן",
+      "color": "#4ea9ff",
+      "votes": 3394,
+      "proportion": "0.08%",
+      "description": "מגן בראשות גל הירש",
+      "ideology": "עסקים קטנים",
+      "leader": "גל הירש"
+    },
+    {
+      "symbol": "ק",
+      "name": "צדק לכל",
+      "color": "#6cb334",
+      "votes": 3281,
+      "proportion": "0.08%",
+      "description": "צדק לכל כי הגיעה העת למען החי, האדם והאדמה",
+      "ideology": "סביבה",
+      "leader": ""
+    },
+    {
+      "symbol": "זץ",
+      "name": "צומת",
+      "color": "#262558",
+      "votes": 2417,
+      "proportion": "0.06%",
+      "description": "מפלגה ציונית לאומית, מתמקדת במעמד החקלאים",
+      "ideology": "ימין לאומי",
+      "leader": "משה גרין"
+    },
+    {
+      "symbol": "י",
+      "name": "ישר",
+      "color": "#70b9b8",
+      "votes": 1438,
+      "proportion": "0.03%",
+      "description": "ישר - דמוקרטיה אמיתית",
+      "ideology": "חילוניות",
+      "leader": ""
+    },
+    {
+      "symbol": "נז",
+      "name": "זכויותינו בקולנו",
+      "color": "#6b7280",
+      "votes": 1316,
+      "proportion": "0.03%",
+      "description": "זכויותינו בקולנו",
+      "ideology": "עולים",
+      "leader": ""
+    },
+    {
+      "symbol": "זי",
+      "name": "מפלגת האזרחים הוותיקים",
+      "color": "#6b7280",
+      "votes": 1168,
+      "proportion": "0.03%",
+      "description": "מפלגת האזרחים הוותיקים",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "קף",
+      "name": "כל ישראל אחים ופעולה לישראל",
+      "color": "#6b7280",
+      "votes": 1140,
+      "proportion": "0.03%",
+      "description": "כל ישראל אחים ופעולה לישראל",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ףז",
+      "name": "הפיראטים",
+      "color": "#6b7280",
+      "votes": 819,
+      "proportion": "0.02%",
+      "description": "הפיראטים בראשות האינטרנט פתק לשלשול",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ףי",
+      "name": "פשוט אהבה",
+      "color": "#6b7280",
+      "votes": 733,
+      "proportion": "0.02%",
+      "description": "פשוט אהבה - כי כולן/ם בני אדם",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "קי",
+      "name": "ארץ ישראל שלנו",
+      "color": "#0002fd",
+      "votes": 701,
+      "proportion": "0.02%",
+      "description": "ארץ ישראל שלנו",
+      "ideology": "שלום",
+      "leader": "אלי יוסף"
+    },
+    {
+      "symbol": "ףץ",
+      "name": "נ נח",
+      "color": "#6b7280",
+      "votes": 624,
+      "proportion": "0.01%",
+      "description": "נ נח - הרשימה הממלכתית - תרימו את הראש",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "קן",
+      "name": "מהתחלה",
+      "color": "#6b7280",
+      "votes": 603,
+      "proportion": "0.01%",
+      "description": "מהתחלה",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ךק",
+      "name": "התקווה לשינוי",
+      "color": "#6b7280",
+      "votes": 562,
+      "proportion": "0.01%",
+      "description": "התקווה לשינוי",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ץ",
+      "name": "כלכלה ירוקה",
+      "color": "#6b7280",
+      "votes": 556,
+      "proportion": "0.01%",
+      "description": "כלכלה ירוקה - מדינה אחת",
+      "ideology": "חברתי",
+      "leader": ""
+    },
+    {
+      "symbol": "ףך",
+      "name": "חינוך",
+      "color": "#6b7280",
+      "votes": 518,
+      "proportion": "0.01%",
+      "description": "חינוך",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "יץ",
+      "name": "אחריות למייסדים",
+      "color": "#6b7280",
+      "votes": 428,
+      "proportion": "0.01%",
+      "description": "אחריות למייסדים בראשות חיים דיין",
+      "ideology": "גמלאים ונכים",
+      "leader": "אורי דויד חי"
+    },
+    {
+      "symbol": "ןך",
+      "name": "כבוד האדם",
+      "color": "#6b7280",
+      "votes": 404,
+      "proportion": "0.01%",
+      "description": "כבוד האדם",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ףנ",
+      "name": "שווים",
+      "color": "#6b7280",
+      "votes": 401,
+      "proportion": "0.01%",
+      "description": "שווים",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ןנ",
+      "name": "מנהיגות חברתית",
+      "color": "#6b7280",
+      "votes": 385,
+      "proportion": "0.01%",
+      "description": "מנהיגות חברתית",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "ץי",
+      "name": "אני ואתה",
+      "color": "#6b7280",
+      "votes": 368,
+      "proportion": "0.01%",
+      "description": "אני ואתה-מפלגת העם הישראלית בהובלת דר' אלון גלעדי",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "יז",
+      "name": "הכלכלית החדשה",
+      "color": "#fcaf12",
+      "votes": 353,
+      "proportion": "0.01%",
+      "description": "מפלגה המתמקדת בנושאים כלכליים, הוקמה ע\"י החשב הכללי לשעבר",
+      "ideology": "כלכלי",
+      "leader": "ירון זליכה"
+    },
+    {
+      "symbol": "ין",
+      "name": "איחוד בני הברית",
+      "color": "#6b7280",
+      "votes": 265,
+      "proportion": "0.01%",
+      "description": "איחוד בני הברית בראשות רב חובל בשארה שליאן",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "זך",
+      "name": "ברית עולם",
+      "color": "#aeda91",
+      "votes": 216,
+      "proportion": "0.01%",
+      "description": "ברית עולם",
+      "ideology": "זכויות אדם",
+      "leader": "דורית בירן"
+    }
+  ],
+  "irregularities": [
+    {
+      "id": "נחף_4.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "4.0",
+      "eligible": 624,
+      "voted": 310,
+      "valid": 309,
+      "invalid": 1,
+      "votes": {
+        "דעם": 65,
+        "ום": 90,
+        "כ": 1,
+        "ךק": 1,
+        "מחל": 1,
+        "מרצ": 7,
+        "נז": 3,
+        "פה": 5,
+        "ףי": 2,
+        "ק": 1,
+        "ר": 133
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 133,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "446.02"
+          }
+        },
+        {
+          "type": "extreme_dominance",
+          "severity": "high",
+          "description": "שליטה קיצונית של מפלגה אחת",
+          "details": {
+            "party": "ר",
+            "party_name": "הרשימה הערבית",
+            "proportion": "43.0%",
+            "votes": 133,
+            "type": "small_party_dominance"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 133,
+              "proportion": "43.04%",
+              "national_avg": "0.096%",
+              "ratio": "430x"
+            }
+          ]
+        }
+      ],
+      "score": 243.16268761341325,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_5.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "5.0",
+      "eligible": 646,
+      "voted": 317,
+      "valid": 317,
+      "invalid": 0,
+      "votes": {
+        "ג": 1,
+        "דעם": 64,
+        "ום": 97,
+        "מחל": 1,
+        "מרצ": 7,
+        "נר": 1,
+        "פה": 3,
+        "ץ": 1,
+        "ר": 142
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 142,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "445.19"
+          }
+        },
+        {
+          "type": "extreme_dominance",
+          "severity": "high",
+          "description": "שליטה קיצונית של מפלגה אחת",
+          "details": {
+            "party": "ר",
+            "party_name": "הרשימה הערבית",
+            "proportion": "44.8%",
+            "votes": 142,
+            "type": "small_party_dominance"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 142,
+              "proportion": "44.79%",
+              "national_avg": "0.096%",
+              "ratio": "448x"
+            }
+          ]
+        }
+      ],
+      "score": 242.834691813147,
+      "status": "verified"
+    },
+    {
+      "id": "ג'דיידה-מכר_7.0",
+      "settlement": "ג'דיידה-מכר",
+      "settlement_code": 1292,
+      "ballot": "7.0",
+      "eligible": 721,
+      "voted": 336,
+      "valid": 335,
+      "invalid": 1,
+      "votes": {
+        "אמת": 4,
+        "דעם": 72,
+        "ום": 183,
+        "ין": 1,
+        "כ": 2,
+        "מחל": 1,
+        "מרצ": 19,
+        "פה": 9,
+        "ףנ": 1,
+        "צק": 11,
+        "ץי": 1,
+        "ק": 1,
+        "קף": 1,
+        "ר": 28,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 1,
+              "unexpected_votes": 28,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "444.35"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 28,
+              "proportion": "8.36%",
+              "national_avg": "0.096%",
+              "ratio": "84x"
+            }
+          ]
+        }
+      ],
+      "score": 240.1753021903088,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_3.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "3.0",
+      "eligible": 644,
+      "voted": 283,
+      "valid": 282,
+      "invalid": 1,
+      "votes": {
+        "אמת": 2,
+        "דעם": 80,
+        "ום": 133,
+        "ז": 2,
+        "כ": 1,
+        "ל": 1,
+        "מחל": 1,
+        "מרצ": 3,
+        "פה": 6,
+        "ץי": 1,
+        "קי": 1,
+        "ר": 50,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 1,
+              "unexpected_votes": 50,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.51"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 50,
+              "proportion": "17.73%",
+              "national_avg": "0.096%",
+              "ratio": "177x"
+            }
+          ]
+        }
+      ],
+      "score": 239.7543919482651,
+      "status": "verified"
+    },
+    {
+      "id": "ג'דיידה-מכר_19.0",
+      "settlement": "ג'דיידה-מכר",
+      "settlement_code": 1292,
+      "ballot": "19.0",
+      "eligible": 648,
+      "voted": 247,
+      "valid": 242,
+      "invalid": 5,
+      "votes": {
+        "אמת": 1,
+        "דעם": 89,
+        "ום": 129,
+        "ל": 1,
+        "מחל": 1,
+        "מרצ": 2,
+        "ןנ": 1,
+        "פה": 2,
+        "ףנ": 1,
+        "קי": 1,
+        "ר": 13,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 1,
+              "unexpected_votes": 13,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.13"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 13,
+              "proportion": "5.37%",
+              "national_avg": "0.096%",
+              "ratio": "54x"
+            }
+          ]
+        }
+      ],
+      "score": 239.5647117564891,
+      "status": "verified"
+    },
+    {
+      "id": "ג'דיידה-מכר_15.0",
+      "settlement": "ג'דיידה-מכר",
+      "settlement_code": 1292,
+      "ballot": "15.0",
+      "eligible": 723,
+      "voted": 300,
+      "valid": 297,
+      "invalid": 3,
+      "votes": {
+        "אמת": 6,
+        "דעם": 72,
+        "ום": 158,
+        "מחל": 5,
+        "מרצ": 16,
+        "פה": 12,
+        "ףך": 1,
+        "ףץ": 1,
+        "צק": 8,
+        "ק": 1,
+        "ר": 16,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 1,
+              "unexpected_votes": 16,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.11"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 16,
+              "proportion": "5.39%",
+              "national_avg": "0.096%",
+              "ratio": "54x"
+            }
+          ]
+        }
+      ],
+      "score": 239.55257634340458,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_9.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "9.0",
+      "eligible": 714,
+      "voted": 381,
+      "valid": 381,
+      "invalid": 0,
+      "votes": {
+        "אמת": 4,
+        "ג": 1,
+        "דעם": 117,
+        "ום": 164,
+        "ז": 3,
+        "מחל": 1,
+        "מרצ": 28,
+        "פה": 7,
+        "ףך": 1,
+        "ףץ": 1,
+        "ר": 53,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 1,
+              "unexpected_votes": 53,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.99"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 53,
+              "proportion": "13.91%",
+              "national_avg": "0.096%",
+              "ratio": "139x"
+            }
+          ]
+        }
+      ],
+      "score": 239.4942815310976,
+      "status": "verified"
+    },
+    {
+      "id": "ג'דיידה-מכר_20.0",
+      "settlement": "ג'דיידה-מכר",
+      "settlement_code": 1292,
+      "ballot": "20.0",
+      "eligible": 561,
+      "voted": 297,
+      "valid": 294,
+      "invalid": 3,
+      "votes": {
+        "אמת": 7,
+        "דעם": 108,
+        "ום": 126,
+        "כ": 1,
+        "מחל": 1,
+        "מרצ": 15,
+        "נר": 1,
+        "פה": 11,
+        "ףך": 1,
+        "ףנ": 1,
+        "צק": 1,
+        "ר": 21
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 21,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.92"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 21,
+              "proportion": "7.14%",
+              "national_avg": "0.096%",
+              "ratio": "71x"
+            }
+          ]
+        }
+      ],
+      "score": 239.45981469461827,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_1.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "1.0",
+      "eligible": 739,
+      "voted": 510,
+      "valid": 506,
+      "invalid": 4,
+      "votes": {
+        "אמת": 2,
+        "דעם": 160,
+        "ום": 189,
+        "כ": 41,
+        "מחל": 2,
+        "מרצ": 38,
+        "נ": 1,
+        "נץ": 1,
+        "נר": 20,
+        "פה": 7,
+        "ףז": 1,
+        "צק": 1,
+        "ק": 1,
+        "קי": 1,
+        "ר": 36,
+        "שס": 5
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 5,
+              "unexpected_votes": 36,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.86"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 36,
+              "proportion": "7.11%",
+              "national_avg": "0.096%",
+              "ratio": "71x"
+            }
+          ]
+        }
+      ],
+      "score": 239.43037060281682,
+      "status": "verified"
+    },
+    {
+      "id": "נצרת_37.0",
+      "settlement": "נצרת",
+      "settlement_code": 7300,
+      "ballot": "37.0",
+      "eligible": 722,
+      "voted": 347,
+      "valid": 341,
+      "invalid": 6,
+      "votes": {
+        "אמת": 3,
+        "דעם": 98,
+        "ום": 172,
+        "מחל": 5,
+        "מרצ": 26,
+        "נר": 1,
+        "פה": 13,
+        "ףץ": 1,
+        "ץ": 1,
+        "ר": 21
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 21,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.63"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 21,
+              "proportion": "6.16%",
+              "national_avg": "0.096%",
+              "ratio": "62x"
+            }
+          ]
+        }
+      ],
+      "score": 239.3144081774874,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_12.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "12.0",
+      "eligible": 728,
+      "voted": 404,
+      "valid": 403,
+      "invalid": 1,
+      "votes": {
+        "דעם": 103,
+        "ום": 228,
+        "טב": 1,
+        "מחל": 2,
+        "מרצ": 27,
+        "פה": 3,
+        "קן": 1,
+        "קף": 1,
+        "ר": 36,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 1,
+              "unexpected_votes": 36,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.42"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 36,
+              "proportion": "8.93%",
+              "national_avg": "0.096%",
+              "ratio": "89x"
+            }
+          ]
+        }
+      ],
+      "score": 239.2083542274445,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_11.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "11.0",
+      "eligible": 729,
+      "voted": 447,
+      "valid": 445,
+      "invalid": 2,
+      "votes": {
+        "ג": 1,
+        "דעם": 125,
+        "ום": 255,
+        "ז": 1,
+        "טב": 2,
+        "י": 1,
+        "יץ": 1,
+        "כ": 1,
+        "ךק": 1,
+        "ל": 1,
+        "מחל": 2,
+        "מרצ": 13,
+        "פה": 9,
+        "קף": 1,
+        "ר": 31
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 31,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.29"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 31,
+              "proportion": "6.97%",
+              "national_avg": "0.096%",
+              "ratio": "70x"
+            }
+          ]
+        }
+      ],
+      "score": 239.1467809249681,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_1.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "1.0",
+      "eligible": 751,
+      "voted": 401,
+      "valid": 398,
+      "invalid": 3,
+      "votes": {
+        "דעם": 129,
+        "ום": 142,
+        "טב": 1,
+        "כ": 6,
+        "מחל": 1,
+        "מרצ": 40,
+        "פה": 2,
+        "ק": 1,
+        "ר": 76
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 76,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.18"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 76,
+              "proportion": "19.10%",
+              "national_avg": "0.096%",
+              "ratio": "191x"
+            }
+          ]
+        }
+      ],
+      "score": 239.0887567533215,
+      "status": "verified"
+    },
+    {
+      "id": "פוריידיס_9.0",
+      "settlement": "פוריידיס",
+      "settlement_code": 537,
+      "ballot": "9.0",
+      "eligible": 657,
+      "voted": 217,
+      "valid": 215,
+      "invalid": 2,
+      "votes": {
+        "אמת": 2,
+        "דעם": 26,
+        "ום": 86,
+        "ז": 2,
+        "טב": 1,
+        "כ": 14,
+        "ךק": 1,
+        "מחל": 13,
+        "מרצ": 49,
+        "פה": 8,
+        "צק": 2,
+        "ר": 11
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 11,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.11"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 11,
+              "proportion": "5.12%",
+              "national_avg": "0.096%",
+              "ratio": "51x"
+            }
+          ]
+        }
+      ],
+      "score": 239.0531263801542,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_15.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "15.0",
+      "eligible": 704,
+      "voted": 367,
+      "valid": 364,
+      "invalid": 3,
+      "votes": {
+        "אמת": 2,
+        "דעם": 161,
+        "ום": 140,
+        "כ": 6,
+        "מרצ": 24,
+        "נץ": 1,
+        "פה": 5,
+        "ףך": 1,
+        "ק": 1,
+        "ר": 20,
+        "שס": 3
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 3,
+              "unexpected_votes": 20,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.09"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 20,
+              "proportion": "5.49%",
+              "national_avg": "0.096%",
+              "ratio": "55x"
+            }
+          ]
+        }
+      ],
+      "score": 239.04274519322206,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_29.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "29.0",
+      "eligible": 751,
+      "voted": 427,
+      "valid": 424,
+      "invalid": 3,
+      "votes": {
+        "דעם": 119,
+        "ום": 188,
+        "זי": 1,
+        "זץ": 1,
+        "טב": 2,
+        "כ": 17,
+        "מחל": 3,
+        "מרצ": 20,
+        "פה": 7,
+        "צק": 1,
+        "ץי": 1,
+        "ר": 61,
+        "שס": 3
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 3,
+              "unexpected_votes": 61,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.99"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 61,
+              "proportion": "14.39%",
+              "national_avg": "0.096%",
+              "ratio": "144x"
+            }
+          ]
+        }
+      ],
+      "score": 238.9929024564863,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_25.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "25.0",
+      "eligible": 724,
+      "voted": 408,
+      "valid": 406,
+      "invalid": 2,
+      "votes": {
+        "אמת": 3,
+        "דעם": 143,
+        "ום": 189,
+        "כ": 10,
+        "מחל": 3,
+        "מרצ": 22,
+        "נז": 1,
+        "נץ": 3,
+        "פה": 2,
+        "קן": 1,
+        "ר": 25,
+        "שס": 4
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 4,
+              "unexpected_votes": 25,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.98"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 25,
+              "proportion": "6.16%",
+              "national_avg": "0.096%",
+              "ratio": "62x"
+            }
+          ]
+        }
+      ],
+      "score": 238.9889489895382,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_2.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "2.0",
+      "eligible": 692,
+      "voted": 318,
+      "valid": 318,
+      "invalid": 0,
+      "votes": {
+        "אמת": 2,
+        "דעם": 100,
+        "ום": 133,
+        "טב": 1,
+        "י": 1,
+        "כ": 8,
+        "מחל": 1,
+        "מרצ": 12,
+        "פה": 1,
+        "צק": 1,
+        "ר": 55,
+        "שס": 3
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 3,
+              "unexpected_votes": 55,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.97"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 55,
+              "proportion": "17.30%",
+              "national_avg": "0.096%",
+              "ratio": "173x"
+            }
+          ]
+        }
+      ],
+      "score": 238.9844201433558,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_20.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "20.0",
+      "eligible": 740,
+      "voted": 372,
+      "valid": 372,
+      "invalid": 0,
+      "votes": {
+        "דעם": 87,
+        "ום": 175,
+        "זי": 1,
+        "כ": 4,
+        "ל": 1,
+        "מחל": 1,
+        "מרצ": 17,
+        "פה": 17,
+        "ר": 66,
+        "שס": 3
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 3,
+              "unexpected_votes": 66,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.93"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 66,
+              "proportion": "17.74%",
+              "national_avg": "0.096%",
+              "ratio": "177x"
+            }
+          ]
+        }
+      ],
+      "score": 238.9656954358059,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_7.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "7.0",
+      "eligible": 679,
+      "voted": 352,
+      "valid": 350,
+      "invalid": 2,
+      "votes": {
+        "אמת": 2,
+        "דעם": 143,
+        "ום": 138,
+        "טב": 1,
+        "כ": 4,
+        "מרצ": 12,
+        "ק": 1,
+        "ר": 46,
+        "שס": 3
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 3,
+              "unexpected_votes": 46,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.81"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 46,
+              "proportion": "13.14%",
+              "national_avg": "0.096%",
+              "ratio": "131x"
+            }
+          ]
+        }
+      ],
+      "score": 238.9050600872921,
+      "status": "verified"
+    },
+    {
+      "id": "דמיידה_1.0",
+      "settlement": "דמיידה",
+      "settlement_code": 1317,
+      "ballot": "1.0",
+      "eligible": 315,
+      "voted": 153,
+      "valid": 151,
+      "invalid": 2,
+      "votes": {
+        "אמת": 2,
+        "דעם": 68,
+        "ום": 42,
+        "טב": 1,
+        "כ": 2,
+        "מחל": 3,
+        "מרצ": 11,
+        "נז": 1,
+        "נץ": 1,
+        "ן": 1,
+        "פה": 11,
+        "ר": 8
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 8,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.68"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 8,
+              "proportion": "5.30%",
+              "national_avg": "0.096%",
+              "ratio": "53x"
+            }
+          ]
+        }
+      ],
+      "score": 238.84150961254767,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_10.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "10.0",
+      "eligible": 646,
+      "voted": 387,
+      "valid": 387,
+      "invalid": 0,
+      "votes": {
+        "אמת": 2,
+        "דעם": 158,
+        "ום": 192,
+        "טב": 1,
+        "מחל": 1,
+        "מרצ": 11,
+        "פה": 2,
+        "ר": 20
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "שס",
+              "unexpected": "ר",
+              "missing_votes": 0,
+              "unexpected_votes": 20,
+              "expected_missing": "6.0%",
+              "expected_unexpected": "0.1%",
+              "missing_position": 43,
+              "unexpected_position": 42,
+              "direction": "←",
+              "adjacent_symbols": "ר ← שס"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.39"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 20,
+              "proportion": "5.17%",
+              "national_avg": "0.096%",
+              "ratio": "52x"
+            }
+          ]
+        }
+      ],
+      "score": 238.69337057225374,
+      "status": "verified"
+    },
+    {
+      "id": "חורפיש_4.0",
+      "settlement": "חורפיש",
+      "settlement_code": 496,
+      "ballot": "4.0",
+      "eligible": 613,
+      "voted": 307,
+      "valid": 307,
+      "invalid": 0,
+      "votes": {
+        "אמת": 21,
+        "ום": 7,
+        "ז": 1,
+        "זץ": 2,
+        "י": 29,
+        "כ": 3,
+        "ל": 18,
+        "מחל": 7,
+        "מרצ": 47,
+        "נ": 1,
+        "נז": 1,
+        "נר": 1,
+        "פה": 128,
+        "צק": 22,
+        "קן": 3,
+        "שס": 16
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.82"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "י",
+              "party_name": "ישר",
+              "votes": 29,
+              "proportion": "9.45%",
+              "national_avg": "0.033%",
+              "ratio": "94x"
+            },
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 22,
+              "proportion": "7.17%",
+              "national_avg": "0.089%",
+              "ratio": "72x"
+            }
+          ]
+        }
+      ],
+      "score": 237.9081608906885,
+      "status": "verified"
+    },
+    {
+      "id": "מעלות-תרשיחא_5.0",
+      "settlement": "מעלות-תרשיחא",
+      "settlement_code": 1063,
+      "ballot": "5.0",
+      "eligible": 716,
+      "voted": 388,
+      "valid": 383,
+      "invalid": 5,
+      "votes": {
+        "אמת": 9,
+        "דעם": 125,
+        "ום": 122,
+        "י": 4,
+        "כ": 1,
+        "ל": 3,
+        "מחל": 8,
+        "מרצ": 31,
+        "נץ": 31,
+        "פה": 9,
+        "ץי": 1,
+        "ר": 28,
+        "שס": 11
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.75"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 31,
+              "proportion": "8.09%",
+              "national_avg": "0.079%",
+              "ratio": "81x"
+            },
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 28,
+              "proportion": "7.31%",
+              "national_avg": "0.096%",
+              "ratio": "73x"
+            }
+          ]
+        }
+      ],
+      "score": 237.37272059152252,
+      "status": "verified"
+    },
+    {
+      "id": "יאנוח-ג'ת_5.0",
+      "settlement": "יאנוח-ג'ת",
+      "settlement_code": 1295,
+      "ballot": "5.0",
+      "eligible": 758,
+      "voted": 515,
+      "valid": 512,
+      "invalid": 3,
+      "votes": {
+        "אמת": 1,
+        "ום": 3,
+        "טב": 1,
+        "י": 6,
+        "כ": 11,
+        "ל": 14,
+        "מחל": 13,
+        "מרצ": 8,
+        "נץ": 3,
+        "נר": 2,
+        "פה": 106,
+        "צק": 342,
+        "ץי": 2
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "451.63"
+          }
+        },
+        {
+          "type": "extreme_dominance",
+          "severity": "high",
+          "description": "שליטה קיצונית של מפלגה אחת",
+          "details": {
+            "party": "צק",
+            "party_name": "צדק חברתי",
+            "proportion": "66.8%",
+            "votes": 342,
+            "type": "small_party_dominance"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 342,
+              "proportion": "66.80%",
+              "national_avg": "0.089%",
+              "ratio": "668x"
+            }
+          ]
+        }
+      ],
+      "score": 237.1564828428224,
+      "status": "verified"
+    },
+    {
+      "id": "לוד_4.0",
+      "settlement": "לוד",
+      "settlement_code": 7000,
+      "ballot": "4.0",
+      "eligible": 523,
+      "voted": 146,
+      "valid": 139,
+      "invalid": 7,
+      "votes": {
+        "אמת": 1,
+        "דעם": 27,
+        "ום": 74,
+        "מחל": 1,
+        "מרצ": 7,
+        "נז": 1,
+        "נץ": 19,
+        "פה": 4,
+        "ףז": 2,
+        "ףץ": 1,
+        "צק": 1,
+        "ץי": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "455.83"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 19,
+              "proportion": "13.67%",
+              "national_avg": "0.079%",
+              "ratio": "137x"
+            }
+          ]
+        }
+      ],
+      "score": 235.91618185530905,
+      "status": "verified"
+    },
+    {
+      "id": "מעטפות חיצוניות_168.0",
+      "settlement": "מעטפות חיצוניות",
+      "settlement_code": 99999,
+      "ballot": "168.0",
+      "eligible": 0,
+      "voted": 450,
+      "valid": 440,
+      "invalid": 10,
+      "votes": {
+        "אמת": 17,
+        "ג": 31,
+        "דעם": 11,
+        "ום": 8,
+        "ז": 17,
+        "זך": 1,
+        "זץ": 1,
+        "טב": 24,
+        "כ": 16,
+        "ל": 7,
+        "מחל": 141,
+        "מרצ": 9,
+        "נ": 17,
+        "נר": 9,
+        "ן": 1,
+        "ןך": 91,
+        "ףנ": 1,
+        "ץי": 1,
+        "קף": 1,
+        "שס": 36
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "455.53"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ןך",
+              "party_name": "כבוד האדם",
+              "votes": 91,
+              "proportion": "20.68%",
+              "national_avg": "0.009%",
+              "ratio": "207x"
+            }
+          ]
+        }
+      ],
+      "score": 235.76439817098066,
+      "status": "verified"
+    },
+    {
+      "id": "לוד_30.0",
+      "settlement": "לוד",
+      "settlement_code": 7000,
+      "ballot": "30.0",
+      "eligible": 700,
+      "voted": 471,
+      "valid": 471,
+      "invalid": 0,
+      "votes": {
+        "אמת": 10,
+        "דעם": 19,
+        "ז": 7,
+        "טב": 56,
+        "כ": 23,
+        "ל": 5,
+        "מחל": 185,
+        "מרצ": 2,
+        "נ": 38,
+        "נר": 3,
+        "ןנ": 39,
+        "פה": 53,
+        "קן": 1,
+        "שס": 30
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "454.22"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ןנ",
+              "party_name": "מנהיגות חברתית",
+              "votes": 39,
+              "proportion": "8.28%",
+              "national_avg": "0.009%",
+              "ratio": "83x"
+            }
+          ]
+        }
+      ],
+      "score": 235.11095980918006,
+      "status": "verified"
+    },
+    {
+      "id": "חורפיש_1.0",
+      "settlement": "חורפיש",
+      "settlement_code": 496,
+      "ballot": "1.0",
+      "eligible": 625,
+      "voted": 364,
+      "valid": 363,
+      "invalid": 1,
+      "votes": {
+        "אמת": 6,
+        "ום": 6,
+        "י": 109,
+        "כ": 9,
+        "ל": 8,
+        "מחל": 1,
+        "מרצ": 69,
+        "נ": 3,
+        "נז": 1,
+        "נר": 1,
+        "פה": 147,
+        "צק": 2,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "449.09"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "י",
+              "party_name": "ישר",
+              "votes": 109,
+              "proportion": "30.03%",
+              "national_avg": "0.033%",
+              "ratio": "300x"
+            }
+          ]
+        }
+      ],
+      "score": 232.54540143654862,
+      "status": "verified"
+    },
+    {
+      "id": "זרזיר_1.0",
+      "settlement": "זרזיר",
+      "settlement_code": 975,
+      "ballot": "1.0",
+      "eligible": 759,
+      "voted": 243,
+      "valid": 239,
+      "invalid": 4,
+      "votes": {
+        "אמת": 4,
+        "ג": 1,
+        "דעם": 19,
+        "ום": 14,
+        "יץ": 1,
+        "כ": 12,
+        "ךק": 1,
+        "מחל": 5,
+        "מרצ": 7,
+        "נ": 1,
+        "נץ": 34,
+        "פה": 134,
+        "ףך": 1,
+        "ףנ": 2,
+        "ץי": 1,
+        "קף": 1,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "447.80"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 34,
+              "proportion": "14.23%",
+              "national_avg": "0.079%",
+              "ratio": "142x"
+            }
+          ]
+        }
+      ],
+      "score": 231.90118483197924,
+      "status": "verified"
+    },
+    {
+      "id": "מנשית זבדה_2.0",
+      "settlement": "מנשית זבדה",
+      "settlement_code": 994,
+      "ballot": "2.0",
+      "eligible": 398,
+      "voted": 185,
+      "valid": 182,
+      "invalid": 3,
+      "votes": {
+        "אמת": 5,
+        "ג": 1,
+        "דעם": 75,
+        "ום": 18,
+        "ךק": 1,
+        "מחל": 4,
+        "מרצ": 14,
+        "נץ": 24,
+        "פה": 35,
+        "ףי": 1,
+        "ץי": 1,
+        "קן": 1,
+        "קף": 1,
+        "ר": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "447.53"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 24,
+              "proportion": "13.19%",
+              "national_avg": "0.079%",
+              "ratio": "132x"
+            }
+          ]
+        }
+      ],
+      "score": 231.76569136460557,
+      "status": "verified"
+    },
+    {
+      "id": "מגאר_20.0",
+      "settlement": "מגאר",
+      "settlement_code": 481,
+      "ballot": "20.0",
+      "eligible": 680,
+      "voted": 363,
+      "valid": 357,
+      "invalid": 6,
+      "votes": {
+        "אמת": 1,
+        "דעם": 33,
+        "ום": 117,
+        "יז": 1,
+        "כ": 1,
+        "ל": 6,
+        "מחל": 8,
+        "מרצ": 26,
+        "נ": 3,
+        "נז": 20,
+        "ןנ": 2,
+        "פה": 121,
+        "ףז": 1,
+        "ףי": 1,
+        "ר": 1,
+        "שס": 15
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "447.33"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נז",
+              "party_name": "זכויותינו בקולנו",
+              "votes": 20,
+              "proportion": "5.60%",
+              "national_avg": "0.031%",
+              "ratio": "56x"
+            }
+          ]
+        }
+      ],
+      "score": 231.66662970154735,
+      "status": "verified"
+    },
+    {
+      "id": "מנשית זבדה_1.0",
+      "settlement": "מנשית זבדה",
+      "settlement_code": 994,
+      "ballot": "1.0",
+      "eligible": 429,
+      "voted": 233,
+      "valid": 228,
+      "invalid": 5,
+      "votes": {
+        "אמת": 4,
+        "דעם": 59,
+        "ום": 37,
+        "טב": 1,
+        "יץ": 1,
+        "ל": 1,
+        "מחל": 1,
+        "מרצ": 21,
+        "נז": 1,
+        "נץ": 18,
+        "ןנ": 1,
+        "פה": 75,
+        "ץי": 1,
+        "קן": 2,
+        "קף": 2,
+        "ר": 1,
+        "שס": 2
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "446.88"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 18,
+              "proportion": "7.89%",
+              "national_avg": "0.079%",
+              "ratio": "79x"
+            }
+          ]
+        }
+      ],
+      "score": 231.4420398627455,
+      "status": "verified"
+    },
+    {
+      "id": "רומת הייב_1.0",
+      "settlement": "רומת הייב",
+      "settlement_code": 997,
+      "ballot": "1.0",
+      "eligible": 631,
+      "voted": 208,
+      "valid": 208,
+      "invalid": 0,
+      "votes": {
+        "אמת": 3,
+        "דעם": 13,
+        "ום": 9,
+        "טב": 1,
+        "כ": 3,
+        "מחל": 8,
+        "מרצ": 7,
+        "נץ": 44,
+        "נר": 1,
+        "פה": 88,
+        "ףץ": 1,
+        "קי": 2,
+        "קף": 1,
+        "שס": 27
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "446.43"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 44,
+              "proportion": "21.15%",
+              "national_avg": "0.079%",
+              "ratio": "212x"
+            }
+          ]
+        }
+      ],
+      "score": 231.21722650786108,
+      "status": "verified"
+    },
+    {
+      "id": "כפר כנא_17.0",
+      "settlement": "כפר כנא",
+      "settlement_code": 509,
+      "ballot": "17.0",
+      "eligible": 750,
+      "voted": 478,
+      "valid": 466,
+      "invalid": 12,
+      "votes": {
+        "אמת": 8,
+        "ג": 1,
+        "דעם": 176,
+        "ום": 129,
+        "טב": 1,
+        "כ": 35,
+        "מחל": 4,
+        "מרצ": 9,
+        "נץ": 72,
+        "פה": 16,
+        "ףז": 1,
+        "צק": 1,
+        "ץ": 1,
+        "קן": 1,
+        "קף": 2,
+        "ר": 1,
+        "שס": 8
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "445.19"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 72,
+              "proportion": "15.45%",
+              "national_avg": "0.079%",
+              "ratio": "155x"
+            }
+          ]
+        }
+      ],
+      "score": 230.59467451306904,
+      "status": "verified"
+    },
+    {
+      "id": "רומת הייב_2.0",
+      "settlement": "רומת הייב",
+      "settlement_code": 997,
+      "ballot": "2.0",
+      "eligible": 702,
+      "voted": 318,
+      "valid": 312,
+      "invalid": 6,
+      "votes": {
+        "אמת": 18,
+        "דעם": 2,
+        "ום": 10,
+        "ז": 1,
+        "זץ": 2,
+        "כ": 3,
+        "מחל": 5,
+        "מרצ": 6,
+        "נץ": 102,
+        "פה": 157,
+        "קי": 1,
+        "שס": 5
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "445.08"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 102,
+              "proportion": "32.69%",
+              "national_avg": "0.079%",
+              "ratio": "327x"
+            }
+          ]
+        }
+      ],
+      "score": 230.5412643181673,
+      "status": "verified"
+    },
+    {
+      "id": "כעביה-טבאש-חג'אג'רה_1.0",
+      "settlement": "כעביה-טבאש-חג'אג'רה",
+      "settlement_code": 978,
+      "ballot": "1.0",
+      "eligible": 716,
+      "voted": 344,
+      "valid": 328,
+      "invalid": 16,
+      "votes": {
+        "אמת": 42,
+        "ג": 1,
+        "דעם": 39,
+        "ום": 61,
+        "ז": 1,
+        "טב": 6,
+        "ין": 1,
+        "כ": 4,
+        "מחל": 4,
+        "מרצ": 13,
+        "נץ": 18,
+        "פה": 120,
+        "ףי": 1,
+        "ףץ": 1,
+        "צק": 1,
+        "קן": 1,
+        "ר": 14
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "444.42"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 18,
+              "proportion": "5.49%",
+              "national_avg": "0.079%",
+              "ratio": "55x"
+            }
+          ]
+        }
+      ],
+      "score": 230.2077055525588,
+      "status": "verified"
+    },
+    {
+      "id": "בועיינה-נוג'ידאת_5.0",
+      "settlement": "בועיינה-נוג'ידאת",
+      "settlement_code": 482,
+      "ballot": "5.0",
+      "eligible": 701,
+      "voted": 333,
+      "valid": 329,
+      "invalid": 4,
+      "votes": {
+        "אמת": 9,
+        "דעם": 136,
+        "ום": 48,
+        "טב": 1,
+        "כ": 5,
+        "ל": 1,
+        "מחל": 6,
+        "מרצ": 16,
+        "נז": 1,
+        "נץ": 26,
+        "פה": 61,
+        "ףץ": 1,
+        "צק": 1,
+        "ץ": 1,
+        "ץי": 1,
+        "קף": 1,
+        "ר": 1,
+        "שס": 13
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "444.14"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 26,
+              "proportion": "7.90%",
+              "national_avg": "0.079%",
+              "ratio": "79x"
+            }
+          ]
+        }
+      ],
+      "score": 230.06881363173727,
+      "status": "verified"
+    },
+    {
+      "id": "יאנוח-ג'ת_1.0",
+      "settlement": "יאנוח-ג'ת",
+      "settlement_code": 1295,
+      "ballot": "1.0",
+      "eligible": 756,
+      "voted": 447,
+      "valid": 445,
+      "invalid": 2,
+      "votes": {
+        "ום": 1,
+        "טב": 3,
+        "י": 1,
+        "כ": 4,
+        "ל": 31,
+        "מחל": 28,
+        "מרצ": 9,
+        "נ": 9,
+        "נז": 1,
+        "נר": 1,
+        "ןך": 1,
+        "פה": 232,
+        "ףץ": 2,
+        "צק": 119,
+        "ק": 1,
+        "שס": 2
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "444.02"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 119,
+              "proportion": "26.74%",
+              "national_avg": "0.089%",
+              "ratio": "267x"
+            }
+          ]
+        }
+      ],
+      "score": 230.01188619194573,
+      "status": "verified"
+    },
+    {
+      "id": "תל אביב - יפו_777.0",
+      "settlement": "תל אביב - יפו",
+      "settlement_code": 5000,
+      "ballot": "777.0",
+      "eligible": 536,
+      "voted": 330,
+      "valid": 328,
+      "invalid": 2,
+      "votes": {
+        "אמת": 5,
+        "ג": 5,
+        "דעם": 1,
+        "ום": 1,
+        "ז": 6,
+        "זי": 18,
+        "יז": 1,
+        "כ": 5,
+        "ל": 6,
+        "מחל": 158,
+        "מרצ": 6,
+        "נ": 3,
+        "נר": 3,
+        "ן": 1,
+        "פה": 35,
+        "שס": 74
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "444.01"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "זי",
+              "party_name": "מפלגת האזרחים הוותיקים",
+              "votes": 18,
+              "proportion": "5.49%",
+              "national_avg": "0.027%",
+              "ratio": "55x"
+            }
+          ]
+        }
+      ],
+      "score": 230.00640626189443,
+      "status": "verified"
+    },
+    {
+      "id": "חורפיש_2.0",
+      "settlement": "חורפיש",
+      "settlement_code": 496,
+      "ballot": "2.0",
+      "eligible": 604,
+      "voted": 280,
+      "valid": 280,
+      "invalid": 0,
+      "votes": {
+        "אמת": 6,
+        "ג": 1,
+        "דעם": 2,
+        "ום": 13,
+        "טב": 2,
+        "י": 42,
+        "כ": 5,
+        "ל": 20,
+        "מחל": 15,
+        "מרצ": 96,
+        "נ": 1,
+        "פה": 72,
+        "צק": 1,
+        "שס": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.65"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "י",
+              "party_name": "ישר",
+              "votes": 42,
+              "proportion": "15.00%",
+              "national_avg": "0.033%",
+              "ratio": "150x"
+            }
+          ]
+        }
+      ],
+      "score": 229.82256540939798,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_30.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "30.0",
+      "eligible": 751,
+      "voted": 394,
+      "valid": 393,
+      "invalid": 1,
+      "votes": {
+        "אמת": 2,
+        "דעם": 119,
+        "ום": 212,
+        "ז": 1,
+        "כ": 3,
+        "מרצ": 16,
+        "נר": 1,
+        "פה": 2,
+        "ףי": 1,
+        "ףץ": 1,
+        "צק": 5,
+        "קן": 2,
+        "ר": 24,
+        "שס": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.61"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 24,
+              "proportion": "6.11%",
+              "national_avg": "0.096%",
+              "ratio": "61x"
+            }
+          ]
+        }
+      ],
+      "score": 229.80746037578675,
+      "status": "verified"
+    },
+    {
+      "id": "יאנוח-ג'ת_2.0",
+      "settlement": "יאנוח-ג'ת",
+      "settlement_code": 1295,
+      "ballot": "2.0",
+      "eligible": 769,
+      "voted": 433,
+      "valid": 432,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "ום": 3,
+        "ז": 1,
+        "זך": 1,
+        "טב": 21,
+        "י": 2,
+        "כ": 45,
+        "ךק": 1,
+        "ל": 174,
+        "מחל": 22,
+        "מרצ": 20,
+        "נז": 2,
+        "נר": 5,
+        "פה": 91,
+        "ףז": 1,
+        "צק": 27,
+        "שס": 15
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.58"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 27,
+              "proportion": "6.25%",
+              "national_avg": "0.089%",
+              "ratio": "62x"
+            }
+          ]
+        }
+      ],
+      "score": 229.7904920116425,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_23.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "23.0",
+      "eligible": 766,
+      "voted": 385,
+      "valid": 384,
+      "invalid": 1,
+      "votes": {
+        "דעם": 148,
+        "ום": 132,
+        "יץ": 1,
+        "כ": 1,
+        "מחל": 1,
+        "מרצ": 25,
+        "נז": 4,
+        "נץ": 3,
+        "פה": 7,
+        "ףי": 1,
+        "ק": 1,
+        "קי": 1,
+        "קן": 1,
+        "ר": 48,
+        "שס": 10
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.41"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 48,
+              "proportion": "12.50%",
+              "national_avg": "0.096%",
+              "ratio": "125x"
+            }
+          ]
+        }
+      ],
+      "score": 229.7041437572354,
+      "status": "verified"
+    },
+    {
+      "id": "כעביה-טבאש-חג'אג'רה_4.0",
+      "settlement": "כעביה-טבאש-חג'אג'רה",
+      "settlement_code": 978,
+      "ballot": "4.0",
+      "eligible": 685,
+      "voted": 330,
+      "valid": 319,
+      "invalid": 11,
+      "votes": {
+        "אמת": 43,
+        "ג": 1,
+        "דעם": 22,
+        "ום": 61,
+        "טב": 3,
+        "י": 1,
+        "כ": 6,
+        "ךק": 1,
+        "מחל": 14,
+        "מרצ": 17,
+        "נ": 1,
+        "נץ": 21,
+        "פה": 121,
+        "צק": 1,
+        "קי": 1,
+        "קן": 1,
+        "ר": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.31"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 21,
+              "proportion": "6.58%",
+              "national_avg": "0.079%",
+              "ratio": "66x"
+            }
+          ]
+        }
+      ],
+      "score": 229.65252706987636,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_24.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "24.0",
+      "eligible": 742,
+      "voted": 441,
+      "valid": 441,
+      "invalid": 0,
+      "votes": {
+        "אמת": 12,
+        "דעם": 98,
+        "ום": 185,
+        "טב": 1,
+        "כ": 6,
+        "ךק": 1,
+        "מחל": 1,
+        "מרצ": 23,
+        "נז": 1,
+        "נץ": 4,
+        "פה": 9,
+        "ףנ": 1,
+        "ק": 1,
+        "קף": 1,
+        "ר": 86,
+        "שס": 11
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.30"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 86,
+              "proportion": "19.50%",
+              "national_avg": "0.096%",
+              "ratio": "195x"
+            }
+          ]
+        }
+      ],
+      "score": 229.64936370148374,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_5.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "5.0",
+      "eligible": 718,
+      "voted": 415,
+      "valid": 409,
+      "invalid": 6,
+      "votes": {
+        "דעם": 132,
+        "ום": 196,
+        "טב": 1,
+        "כ": 4,
+        "מחל": 2,
+        "מרצ": 19,
+        "פה": 5,
+        "ףז": 1,
+        "ק": 1,
+        "ר": 42,
+        "שס": 6
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.29"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 42,
+              "proportion": "10.27%",
+              "national_avg": "0.096%",
+              "ratio": "103x"
+            }
+          ]
+        }
+      ],
+      "score": 229.64262576129838,
+      "status": "verified"
+    },
+    {
+      "id": "שפרעם_34.0",
+      "settlement": "שפרעם",
+      "settlement_code": 8800,
+      "ballot": "34.0",
+      "eligible": 735,
+      "voted": 418,
+      "valid": 412,
+      "invalid": 6,
+      "votes": {
+        "אמת": 2,
+        "דעם": 88,
+        "ום": 109,
+        "י": 3,
+        "ין": 1,
+        "כ": 21,
+        "ל": 109,
+        "מחל": 5,
+        "מרצ": 25,
+        "נץ": 44,
+        "צק": 1,
+        "ץ": 1,
+        "ק": 1,
+        "שס": 2
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.11"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 44,
+              "proportion": "10.68%",
+              "national_avg": "0.079%",
+              "ratio": "107x"
+            }
+          ]
+        }
+      ],
+      "score": 229.55736666385025,
+      "status": "verified"
+    },
+    {
+      "id": "חורפיש_6.0",
+      "settlement": "חורפיש",
+      "settlement_code": 496,
+      "ballot": "6.0",
+      "eligible": 647,
+      "voted": 324,
+      "valid": 324,
+      "invalid": 0,
+      "votes": {
+        "אמת": 9,
+        "ום": 3,
+        "טב": 2,
+        "י": 31,
+        "כ": 19,
+        "ל": 113,
+        "מחל": 5,
+        "מרצ": 59,
+        "נ": 2,
+        "פה": 72,
+        "קן": 1,
+        "שס": 8
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.04"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "י",
+              "party_name": "ישר",
+              "votes": 31,
+              "proportion": "9.57%",
+              "national_avg": "0.033%",
+              "ratio": "96x"
+            }
+          ]
+        }
+      ],
+      "score": 229.52027805349297,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_21.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "21.0",
+      "eligible": 752,
+      "voted": 390,
+      "valid": 387,
+      "invalid": 3,
+      "votes": {
+        "אמת": 3,
+        "ג": 1,
+        "דעם": 97,
+        "ום": 126,
+        "טב": 1,
+        "מרצ": 32,
+        "ן": 2,
+        "פה": 8,
+        "ר": 106,
+        "שס": 11
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "443.01"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 106,
+              "proportion": "27.39%",
+              "national_avg": "0.096%",
+              "ratio": "274x"
+            }
+          ]
+        }
+      ],
+      "score": 229.5038706552308,
+      "status": "verified"
+    },
+    {
+      "id": "כעביה-טבאש-חג'אג'רה_6.0",
+      "settlement": "כעביה-טבאש-חג'אג'רה",
+      "settlement_code": 978,
+      "ballot": "6.0",
+      "eligible": 789,
+      "voted": 482,
+      "valid": 482,
+      "invalid": 0,
+      "votes": {
+        "אמת": 164,
+        "דעם": 99,
+        "ום": 35,
+        "טב": 8,
+        "כ": 3,
+        "מחל": 4,
+        "מרצ": 13,
+        "נץ": 55,
+        "נר": 1,
+        "פה": 91,
+        "צק": 1,
+        "ץי": 1,
+        "ק": 1,
+        "ר": 6
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.79"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 55,
+              "proportion": "11.41%",
+              "national_avg": "0.079%",
+              "ratio": "114x"
+            }
+          ]
+        }
+      ],
+      "score": 229.39555288097145,
+      "status": "verified"
+    },
+    {
+      "id": "כפר כנא_7.0",
+      "settlement": "כפר כנא",
+      "settlement_code": 509,
+      "ballot": "7.0",
+      "eligible": 754,
+      "voted": 357,
+      "valid": 355,
+      "invalid": 2,
+      "votes": {
+        "אמת": 14,
+        "דעם": 213,
+        "ום": 57,
+        "כ": 14,
+        "מחל": 3,
+        "מרצ": 3,
+        "נץ": 22,
+        "פה": 22,
+        "ףנ": 1,
+        "צק": 1,
+        "ץ": 1,
+        "ר": 3,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.59"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 22,
+              "proportion": "6.20%",
+              "national_avg": "0.079%",
+              "ratio": "62x"
+            }
+          ]
+        }
+      ],
+      "score": 229.29672365792285,
+      "status": "verified"
+    },
+    {
+      "id": "בועיינה-נוג'ידאת_3.0",
+      "settlement": "בועיינה-נוג'ידאת",
+      "settlement_code": 482,
+      "ballot": "3.0",
+      "eligible": 690,
+      "voted": 339,
+      "valid": 333,
+      "invalid": 6,
+      "votes": {
+        "אמת": 9,
+        "דעם": 142,
+        "ום": 42,
+        "כ": 4,
+        "מחל": 14,
+        "מרצ": 11,
+        "נ": 1,
+        "נז": 2,
+        "נץ": 25,
+        "ןנ": 1,
+        "פה": 74,
+        "קן": 1,
+        "ר": 3,
+        "שס": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.54"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 25,
+              "proportion": "7.51%",
+              "national_avg": "0.079%",
+              "ratio": "75x"
+            }
+          ]
+        }
+      ],
+      "score": 229.2696566996546,
+      "status": "verified"
+    },
+    {
+      "id": "שעב_5.0",
+      "settlement": "שעב",
+      "settlement_code": 538,
+      "ballot": "5.0",
+      "eligible": 641,
+      "voted": 303,
+      "valid": 301,
+      "invalid": 2,
+      "votes": {
+        "דעם": 94,
+        "ום": 137,
+        "כ": 3,
+        "מחל": 1,
+        "מרצ": 9,
+        "נץ": 1,
+        "נר": 3,
+        "פה": 6,
+        "ףץ": 1,
+        "צק": 1,
+        "ר": 40,
+        "שס": 5
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.50"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 40,
+              "proportion": "13.29%",
+              "national_avg": "0.096%",
+              "ratio": "133x"
+            }
+          ]
+        }
+      ],
+      "score": 229.25213121009025,
+      "status": "verified"
+    },
+    {
+      "id": "נחף_6.0",
+      "settlement": "נחף",
+      "settlement_code": 522,
+      "ballot": "6.0",
+      "eligible": 732,
+      "voted": 332,
+      "valid": 331,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "דעם": 138,
+        "ום": 129,
+        "י": 1,
+        "כ": 2,
+        "ל": 1,
+        "מרצ": 9,
+        "פה": 4,
+        "ףי": 1,
+        "קף": 1,
+        "ר": 39,
+        "שס": 5
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.49"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 39,
+              "proportion": "11.78%",
+              "national_avg": "0.096%",
+              "ratio": "118x"
+            }
+          ]
+        }
+      ],
+      "score": 229.24284402487348,
+      "status": "verified"
+    },
+    {
+      "id": "ג'דיידה-מכר_3.0",
+      "settlement": "ג'דיידה-מכר",
+      "settlement_code": 1292,
+      "ballot": "3.0",
+      "eligible": 710,
+      "voted": 315,
+      "valid": 313,
+      "invalid": 2,
+      "votes": {
+        "אמת": 1,
+        "דעם": 58,
+        "ום": 193,
+        "כ": 1,
+        "מחל": 1,
+        "מרצ": 12,
+        "נז": 1,
+        "ן": 1,
+        "פה": 9,
+        "צק": 23,
+        "ץי": 1,
+        "ר": 2,
+        "שס": 10
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.48"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 23,
+              "proportion": "7.35%",
+              "national_avg": "0.089%",
+              "ratio": "73x"
+            }
+          ]
+        }
+      ],
+      "score": 229.23927521781192,
+      "status": "verified"
+    },
+    {
+      "id": "כפר כנא_16.0",
+      "settlement": "כפר כנא",
+      "settlement_code": 509,
+      "ballot": "16.0",
+      "eligible": 760,
+      "voted": 354,
+      "valid": 351,
+      "invalid": 3,
+      "votes": {
+        "אמת": 10,
+        "דעם": 188,
+        "ום": 75,
+        "ז": 1,
+        "כ": 13,
+        "מחל": 1,
+        "מרצ": 8,
+        "נץ": 27,
+        "פה": 24,
+        "ץי": 1,
+        "ר": 1,
+        "שס": 2
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.44"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 27,
+              "proportion": "7.69%",
+              "national_avg": "0.079%",
+              "ratio": "77x"
+            }
+          ]
+        }
+      ],
+      "score": 229.22022471657775,
+      "status": "verified"
+    },
+    {
+      "id": "בענה_2.0",
+      "settlement": "בענה",
+      "settlement_code": 483,
+      "ballot": "2.0",
+      "eligible": 702,
+      "voted": 468,
+      "valid": 459,
+      "invalid": 9,
+      "votes": {
+        "דעם": 128,
+        "ום": 241,
+        "כ": 3,
+        "מרצ": 4,
+        "קן": 1,
+        "ר": 76,
+        "שס": 6
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.43"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 76,
+              "proportion": "16.56%",
+              "national_avg": "0.096%",
+              "ratio": "166x"
+            }
+          ]
+        }
+      ],
+      "score": 229.2164915092669,
+      "status": "verified"
+    },
+    {
+      "id": "חורפיש_3.0",
+      "settlement": "חורפיש",
+      "settlement_code": 496,
+      "ballot": "3.0",
+      "eligible": 685,
+      "voted": 365,
+      "valid": 364,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "ום": 7,
+        "ז": 1,
+        "טב": 20,
+        "י": 35,
+        "כ": 2,
+        "ל": 54,
+        "מחל": 10,
+        "מרצ": 46,
+        "נז": 1,
+        "פה": 149,
+        "צק": 10,
+        "שס": 28
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.37"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "י",
+              "party_name": "ישר",
+              "votes": 35,
+              "proportion": "9.62%",
+              "national_avg": "0.033%",
+              "ratio": "96x"
+            }
+          ]
+        }
+      ],
+      "score": 229.1839828258403,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_3.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "3.0",
+      "eligible": 763,
+      "voted": 537,
+      "valid": 535,
+      "invalid": 2,
+      "votes": {
+        "אמת": 1,
+        "ג": 1,
+        "דעם": 208,
+        "ום": 212,
+        "זך": 1,
+        "טב": 1,
+        "כ": 5,
+        "מחל": 3,
+        "מרצ": 32,
+        "נז": 1,
+        "נר": 3,
+        "פה": 6,
+        "ףץ": 1,
+        "ר": 53,
+        "שס": 7
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.36"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 53,
+              "proportion": "9.91%",
+              "national_avg": "0.096%",
+              "ratio": "99x"
+            }
+          ]
+        }
+      ],
+      "score": 229.1798644076649,
+      "status": "verified"
+    },
+    {
+      "id": "יאנוח-ג'ת_3.0",
+      "settlement": "יאנוח-ג'ת",
+      "settlement_code": 1295,
+      "ballot": "3.0",
+      "eligible": 774,
+      "voted": 434,
+      "valid": 430,
+      "invalid": 4,
+      "votes": {
+        "דעם": 1,
+        "ום": 26,
+        "טב": 6,
+        "י": 1,
+        "כ": 13,
+        "ךק": 1,
+        "ל": 61,
+        "מחל": 21,
+        "מרצ": 31,
+        "נר": 1,
+        "פה": 190,
+        "צק": 74,
+        "שס": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.31"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 74,
+              "proportion": "17.21%",
+              "national_avg": "0.089%",
+              "ratio": "172x"
+            }
+          ]
+        }
+      ],
+      "score": 229.15633216775439,
+      "status": "verified"
+    },
+    {
+      "id": "יאנוח-ג'ת_6.0",
+      "settlement": "יאנוח-ג'ת",
+      "settlement_code": 1295,
+      "ballot": "6.0",
+      "eligible": 720,
+      "voted": 377,
+      "valid": 377,
+      "invalid": 0,
+      "votes": {
+        "אמת": 1,
+        "ום": 3,
+        "זך": 1,
+        "טב": 5,
+        "י": 3,
+        "כ": 57,
+        "ל": 137,
+        "מחל": 28,
+        "מרצ": 25,
+        "נ": 1,
+        "נר": 11,
+        "פה": 77,
+        "צק": 25,
+        "קן": 1,
+        "שס": 2
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.30"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 25,
+              "proportion": "6.63%",
+              "national_avg": "0.089%",
+              "ratio": "66x"
+            }
+          ]
+        }
+      ],
+      "score": 229.1499281090427,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_4.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "4.0",
+      "eligible": 745,
+      "voted": 440,
+      "valid": 437,
+      "invalid": 3,
+      "votes": {
+        "אמת": 3,
+        "דעם": 159,
+        "ום": 189,
+        "ז": 1,
+        "כ": 2,
+        "מחל": 3,
+        "מרצ": 24,
+        "נז": 1,
+        "פה": 3,
+        "ץ": 1,
+        "קף": 1,
+        "ר": 43,
+        "שס": 7
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.21"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 43,
+              "proportion": "9.84%",
+              "national_avg": "0.096%",
+              "ratio": "98x"
+            }
+          ]
+        }
+      ],
+      "score": 229.1072293748461,
+      "status": "verified"
+    },
+    {
+      "id": "בועיינה-נוג'ידאת_2.0",
+      "settlement": "בועיינה-נוג'ידאת",
+      "settlement_code": 482,
+      "ballot": "2.0",
+      "eligible": 681,
+      "voted": 370,
+      "valid": 364,
+      "invalid": 6,
+      "votes": {
+        "דעם": 147,
+        "ום": 160,
+        "כ": 1,
+        "מרצ": 31,
+        "נץ": 19,
+        "פה": 4,
+        "קן": 1,
+        "ר": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.15"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 19,
+              "proportion": "5.22%",
+              "national_avg": "0.079%",
+              "ratio": "52x"
+            }
+          ]
+        }
+      ],
+      "score": 229.07698235666237,
+      "status": "verified"
+    },
+    {
+      "id": "ג'ולס_5.0",
+      "settlement": "ג'ולס",
+      "settlement_code": 485,
+      "ballot": "5.0",
+      "eligible": 766,
+      "voted": 447,
+      "valid": 447,
+      "invalid": 0,
+      "votes": {
+        "אמת": 1,
+        "ום": 1,
+        "ז": 1,
+        "זץ": 1,
+        "יץ": 1,
+        "כ": 12,
+        "ל": 5,
+        "מחל": 27,
+        "מרצ": 31,
+        "נ": 5,
+        "נז": 1,
+        "נץ": 42,
+        "ןנ": 1,
+        "פה": 301,
+        "ףי": 1,
+        "צק": 10,
+        "שס": 6
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.11"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 42,
+              "proportion": "9.40%",
+              "national_avg": "0.079%",
+              "ratio": "94x"
+            }
+          ]
+        }
+      ],
+      "score": 229.05605908676955,
+      "status": "verified"
+    },
+    {
+      "id": "חורפיש_7.0",
+      "settlement": "חורפיש",
+      "settlement_code": 496,
+      "ballot": "7.0",
+      "eligible": 679,
+      "voted": 346,
+      "valid": 345,
+      "invalid": 1,
+      "votes": {
+        "אמת": 3,
+        "דעם": 1,
+        "ום": 12,
+        "טב": 3,
+        "י": 25,
+        "כ": 5,
+        "ל": 37,
+        "מחל": 5,
+        "מרצ": 74,
+        "נץ": 1,
+        "פה": 150,
+        "צק": 6,
+        "שס": 23
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "442.01"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "י",
+              "party_name": "ישר",
+              "votes": 25,
+              "proportion": "7.25%",
+              "national_avg": "0.033%",
+              "ratio": "72x"
+            }
+          ]
+        }
+      ],
+      "score": 229.00278248879744,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_28.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "28.0",
+      "eligible": 753,
+      "voted": 391,
+      "valid": 388,
+      "invalid": 3,
+      "votes": {
+        "אמת": 3,
+        "דעם": 166,
+        "ום": 137,
+        "מחל": 1,
+        "מרצ": 28,
+        "נז": 1,
+        "ן": 2,
+        "ןנ": 1,
+        "פה": 9,
+        "צק": 5,
+        "ק": 1,
+        "ר": 28,
+        "שס": 6
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.97"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 28,
+              "proportion": "7.22%",
+              "national_avg": "0.096%",
+              "ratio": "72x"
+            }
+          ]
+        }
+      ],
+      "score": 228.98312944123398,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_16.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "16.0",
+      "eligible": 718,
+      "voted": 398,
+      "valid": 398,
+      "invalid": 0,
+      "votes": {
+        "אמת": 1,
+        "ג": 1,
+        "דעם": 172,
+        "ום": 151,
+        "טב": 1,
+        "כ": 10,
+        "מחל": 5,
+        "מרצ": 28,
+        "פה": 3,
+        "ףץ": 1,
+        "צק": 1,
+        "ר": 20,
+        "שס": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.96"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 20,
+              "proportion": "5.03%",
+              "national_avg": "0.096%",
+              "ratio": "50x"
+            }
+          ]
+        }
+      ],
+      "score": 228.9786648071636,
+      "status": "verified"
+    },
+    {
+      "id": "כסרא-סמיע_6.0",
+      "settlement": "כסרא-סמיע",
+      "settlement_code": 1296,
+      "ballot": "6.0",
+      "eligible": 692,
+      "voted": 601,
+      "valid": 601,
+      "invalid": 0,
+      "votes": {
+        "אמת": 1,
+        "ג": 1,
+        "ום": 1,
+        "טב": 24,
+        "י": 38,
+        "כ": 2,
+        "ל": 304,
+        "מחל": 111,
+        "מרצ": 67,
+        "נץ": 6,
+        "פה": 37,
+        "צק": 9
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.91"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "י",
+              "party_name": "ישר",
+              "votes": 38,
+              "proportion": "6.32%",
+              "national_avg": "0.033%",
+              "ratio": "63x"
+            }
+          ]
+        }
+      ],
+      "score": 228.9542002919793,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_27.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "27.0",
+      "eligible": 712,
+      "voted": 438,
+      "valid": 433,
+      "invalid": 5,
+      "votes": {
+        "אמת": 1,
+        "דעם": 163,
+        "ום": 179,
+        "כ": 5,
+        "ךק": 1,
+        "מחל": 5,
+        "מרצ": 30,
+        "נז": 1,
+        "פה": 4,
+        "ר": 35,
+        "שס": 9
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.85"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 35,
+              "proportion": "8.08%",
+              "national_avg": "0.096%",
+              "ratio": "81x"
+            }
+          ]
+        }
+      ],
+      "score": 228.92336274755954,
+      "status": "verified"
+    },
+    {
+      "id": "אלישיב_1.0",
+      "settlement": "אלישיב",
+      "settlement_code": 204,
+      "ballot": "1.0",
+      "eligible": 473,
+      "voted": 367,
+      "valid": 367,
+      "invalid": 0,
+      "votes": {
+        "אמת": 12,
+        "ג": 1,
+        "ז": 18,
+        "טב": 15,
+        "כ": 24,
+        "ל": 1,
+        "מחל": 162,
+        "מרצ": 1,
+        "נ": 18,
+        "נץ": 20,
+        "פה": 83,
+        "ףך": 1,
+        "שס": 11
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.85"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 20,
+              "proportion": "5.45%",
+              "national_avg": "0.079%",
+              "ratio": "54x"
+            }
+          ]
+        }
+      ],
+      "score": 228.922560584508,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_13.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "13.0",
+      "eligible": 736,
+      "voted": 374,
+      "valid": 373,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "דעם": 119,
+        "ום": 140,
+        "כ": 2,
+        "מחל": 1,
+        "מרצ": 39,
+        "ן": 1,
+        "פה": 8,
+        "ר": 40,
+        "שס": 22
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.75"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 40,
+              "proportion": "10.72%",
+              "national_avg": "0.096%",
+              "ratio": "107x"
+            }
+          ]
+        }
+      ],
+      "score": 228.8728119888978,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_22.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "22.0",
+      "eligible": 749,
+      "voted": 412,
+      "valid": 410,
+      "invalid": 2,
+      "votes": {
+        "דעם": 128,
+        "ום": 181,
+        "טב": 1,
+        "כ": 6,
+        "מרצ": 20,
+        "נז": 1,
+        "נץ": 3,
+        "פה": 5,
+        "ר": 51,
+        "שס": 14
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.69"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 51,
+              "proportion": "12.44%",
+              "national_avg": "0.096%",
+              "ratio": "124x"
+            }
+          ]
+        }
+      ],
+      "score": 228.84575472043335,
+      "status": "verified"
+    },
+    {
+      "id": "יאנוח-ג'ת_4.0",
+      "settlement": "יאנוח-ג'ת",
+      "settlement_code": 1295,
+      "ballot": "4.0",
+      "eligible": 715,
+      "voted": 391,
+      "valid": 387,
+      "invalid": 4,
+      "votes": {
+        "אמת": 3,
+        "ז": 1,
+        "טב": 1,
+        "כ": 16,
+        "ל": 37,
+        "מחל": 183,
+        "מרצ": 53,
+        "נר": 29,
+        "פה": 33,
+        "צק": 29,
+        "ץ": 1,
+        "ק": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.59"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "צק",
+              "party_name": "צדק חברתי",
+              "votes": 29,
+              "proportion": "7.49%",
+              "national_avg": "0.089%",
+              "ratio": "75x"
+            }
+          ]
+        }
+      ],
+      "score": 228.79494162368738,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_19.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "19.0",
+      "eligible": 769,
+      "voted": 337,
+      "valid": 334,
+      "invalid": 3,
+      "votes": {
+        "דעם": 75,
+        "ום": 180,
+        "זי": 1,
+        "כ": 5,
+        "מחל": 1,
+        "מרצ": 22,
+        "ןך": 1,
+        "ןנ": 1,
+        "פה": 10,
+        "צק": 1,
+        "ר": 19,
+        "שס": 18
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.55"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 19,
+              "proportion": "5.69%",
+              "national_avg": "0.096%",
+              "ratio": "57x"
+            }
+          ]
+        }
+      ],
+      "score": 228.77710543207837,
+      "status": "verified"
+    },
+    {
+      "id": "עוזייר_1.0",
+      "settlement": "עוזייר",
+      "settlement_code": 528,
+      "ballot": "1.0",
+      "eligible": 650,
+      "voted": 229,
+      "valid": 229,
+      "invalid": 0,
+      "votes": {
+        "דעם": 85,
+        "ום": 81,
+        "כ": 1,
+        "מחל": 2,
+        "מרצ": 14,
+        "נץ": 13,
+        "פה": 5,
+        "שס": 28
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.51"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "מגן",
+              "votes": 13,
+              "proportion": "5.68%",
+              "national_avg": "0.079%",
+              "ratio": "57x"
+            }
+          ]
+        }
+      ],
+      "score": 228.75501718284946,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_7.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "7.0",
+      "eligible": 762,
+      "voted": 469,
+      "valid": 469,
+      "invalid": 0,
+      "votes": {
+        "אמת": 2,
+        "ג": 1,
+        "דעם": 114,
+        "ום": 294,
+        "טב": 1,
+        "כ": 4,
+        "מרצ": 9,
+        "פה": 3,
+        "צק": 1,
+        "ר": 30,
+        "שס": 10
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.42"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 30,
+              "proportion": "6.40%",
+              "national_avg": "0.096%",
+              "ratio": "64x"
+            }
+          ]
+        }
+      ],
+      "score": 228.70830442750793,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_2.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "2.0",
+      "eligible": 717,
+      "voted": 616,
+      "valid": 616,
+      "invalid": 0,
+      "votes": {
+        "אמת": 2,
+        "דעם": 205,
+        "ום": 290,
+        "כ": 7,
+        "מחל": 4,
+        "מרצ": 28,
+        "פה": 6,
+        "ר": 35,
+        "שס": 39
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.38"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 35,
+              "proportion": "5.68%",
+              "national_avg": "0.096%",
+              "ratio": "57x"
+            }
+          ]
+        }
+      ],
+      "score": 228.69187458196782,
+      "status": "verified"
+    },
+    {
+      "id": "טמרה_26.0",
+      "settlement": "טמרה",
+      "settlement_code": 8900,
+      "ballot": "26.0",
+      "eligible": 725,
+      "voted": 438,
+      "valid": 437,
+      "invalid": 1,
+      "votes": {
+        "דעם": 158,
+        "ום": 177,
+        "טב": 2,
+        "כ": 13,
+        "ל": 1,
+        "מחל": 7,
+        "מרצ": 40,
+        "נ": 1,
+        "פה": 6,
+        "צק": 1,
+        "ר": 22,
+        "שס": 9
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "441.35"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "הרשימה הערבית",
+              "votes": 22,
+              "proportion": "5.03%",
+              "national_avg": "0.096%",
+              "ratio": "50x"
+            }
+          ]
+        }
+      ],
+      "score": 228.6755323867192,
+      "status": "verified"
+    }
+  ]
+}

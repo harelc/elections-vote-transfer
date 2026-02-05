@@ -1,0 +1,803 @@
+{
+  "election": {
+    "id": "24",
+    "name": "הכנסת ה-24",
+    "name_en": "24th Knesset",
+    "date": "2021-03-23",
+    "total_ballots": 12926,
+    "analyzed_ballots": 12903,
+    "irregular_found": 8
+  },
+  "parties": [
+    {
+      "symbol": "מחל",
+      "name": "הליכוד",
+      "color": "#2563eb",
+      "votes": 1066892,
+      "proportion": "24.19%",
+      "description": "מפלגת הימין הגדולה בישראל, שולטת בפוליטיקה הישראלית מאז 1977",
+      "ideology": "ימין, לאומנות, ליברליזם כלכלי",
+      "leader": "בנימין נתניהו"
+    },
+    {
+      "symbol": "פה",
+      "name": "יש עתיד",
+      "color": "#06b6d4",
+      "votes": 614112,
+      "proportion": "13.93%",
+      "description": "מפלגת מרכז ליברלית, התמקדה בנושאי מעמד הביניים והפרדת דת ומדינה",
+      "ideology": "מרכז, ליברליזם, חילוניות",
+      "leader": "יאיר לפיד"
+    },
+    {
+      "symbol": "שס",
+      "name": "ש״ס",
+      "color": "#1e3a8a",
+      "votes": 316008,
+      "proportion": "7.17%",
+      "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי",
+      "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
+      "leader": "אריה דרעי"
+    },
+    {
+      "symbol": "כן",
+      "name": "כחול לבן",
+      "color": "#8b5cf6",
+      "votes": 292257,
+      "proportion": "6.63%",
+      "description": "כחול לבן לאחר הפיצול מיש עתיד, בהנהגת בני גנץ",
+      "ideology": "מרכז, ביטחוניות, ממלכתיות",
+      "leader": "בני גנץ"
+    },
+    {
+      "symbol": "ב",
+      "name": "ימינה",
+      "color": "#ea580c",
+      "votes": 273836,
+      "proportion": "6.21%",
+      "description": "מפלגת ימין דתית-לאומית, בנט כיהן כראש ממשלה 2021-2022",
+      "ideology": "ימין דתי-לאומי",
+      "leader": "נפתלי בנט"
+    },
+    {
+      "symbol": "אמת",
+      "name": "העבודה",
+      "color": "#dc2626",
+      "votes": 268767,
+      "proportion": "6.09%",
+      "description": "מפלגת השמאל הציוני ההיסטורית, הקימה את המדינה והובילה אותה עד 1977",
+      "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה, ציונות",
+      "leader": "מרב מיכאלי"
+    },
+    {
+      "symbol": "ג",
+      "name": "יהדות התורה",
+      "color": "#4b5563",
+      "votes": 248391,
+      "proportion": "5.63%",
+      "description": "יהדות התורה בהנהגת משה גפני",
+      "ideology": "חרדית אשכנזית, שמרנות דתית",
+      "leader": "משה גפני"
+    },
+    {
+      "symbol": "ל",
+      "name": "ישראל ביתנו",
+      "color": "#db2777",
+      "votes": 248370,
+      "proportion": "5.63%",
+      "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר",
+      "ideology": "ימין חילוני, לאומנות, חילוניות",
+      "leader": "אביגדור ליברמן"
+    },
+    {
+      "symbol": "ט",
+      "name": "הציונות הדתית",
+      "color": "#92400e",
+      "votes": 225641,
+      "proportion": "5.12%",
+      "description": "ברית של הציונות הדתית, עוצמה יהודית ונעם",
+      "ideology": "ימין קיצוני, ציונות דתית, התנחלויות",
+      "leader": "בצלאל סמוטריץ׳"
+    },
+    {
+      "symbol": "ודעם",
+      "name": "הרשימה המשותפת",
+      "color": "#059669",
+      "votes": 212583,
+      "proportion": "4.82%",
+      "description": "ברית מפלגות ערביות - חד״ש, תע״ל, בל״ד ורע״ם (עד 2021)",
+      "ideology": "שמאל ערבי, סוציאליזם, זכויות מיעוטים",
+      "leader": "איימן עודה"
+    },
+    {
+      "symbol": "ת",
+      "name": "עלה ירוק",
+      "color": "#658932",
+      "votes": 209161,
+      "proportion": "4.74%",
+      "description": "מפלגה ליברלית התומכת בלגליזציה של הקנאביס",
+      "ideology": "ליברלית",
+      "leader": "דקל עוזר"
+    },
+    {
+      "symbol": "מרצ",
+      "name": "מרצ",
+      "color": "#16a34a",
+      "votes": 202218,
+      "proportion": "4.59%",
+      "description": "מפלגת מרצ בהנהגת ניצן הורוביץ",
+      "ideology": "שמאל, סוציאל-דמוקרטיה, ליברליזם חברתי",
+      "leader": "ניצן הורוביץ"
+    },
+    {
+      "symbol": "עם",
+      "name": "רע״ם",
+      "color": "#84cc16",
+      "votes": 167064,
+      "proportion": "3.79%",
+      "description": "הרשימה הערבית המאוחדת, המפלגה הערבית הראשונה להצטרף לקואליציה",
+      "ideology": "ערבי-אסלאמי, פרגמטיזם, שמרנות חברתית",
+      "leader": "מנסור עבאס"
+    },
+    {
+      "symbol": "יז",
+      "name": "הכלכלית החדשה",
+      "color": "#fcaf12",
+      "votes": 34883,
+      "proportion": "0.79%",
+      "description": "הכלכלית החדשה בראשות פרופסור ירון זליכה",
+      "ideology": "כלכלי",
+      "leader": "ירון זליכה"
+    },
+    {
+      "symbol": "ר",
+      "name": "רפא",
+      "color": "#2d8a4e",
+      "votes": 17346,
+      "proportion": "0.39%",
+      "description": "רפא – רק בריאות בראשות דוקטור אריה אבני",
+      "ideology": "ערבי",
+      "leader": "אריה אבני"
+    },
+    {
+      "symbol": "ףז",
+      "name": "הפיראטים",
+      "color": "#6b7280",
+      "votes": 1309,
+      "proportion": "0.03%",
+      "description": "הפיראטים",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "כך",
+      "name": "אני ואתה",
+      "color": "#6b7280",
+      "votes": 1291,
+      "proportion": "0.03%",
+      "description": "אני ואתה – מפלגת העם הישראלית",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "רנ",
+      "name": "התקווה לשינוי",
+      "color": "#6b7280",
+      "votes": 1189,
+      "proportion": "0.03%",
+      "description": "התקווה לשינוי",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "י",
+      "name": "המפץ החברתי",
+      "color": "#70b9b8",
+      "votes": 811,
+      "proportion": "0.02%",
+      "description": "המפץ החברתי - גימלאים",
+      "ideology": "חילוניות",
+      "leader": ""
+    },
+    {
+      "symbol": "קץ",
+      "name": "משפט צדק",
+      "color": "#8fb73d",
+      "votes": 729,
+      "proportion": "0.02%",
+      "description": "משפט צדק, לרפורמה במערכת המשפט",
+      "ideology": "חירות",
+      "leader": "צביקה גרנות"
+    },
+    {
+      "symbol": "זץ",
+      "name": "צומת",
+      "color": "#262558",
+      "votes": 663,
+      "proportion": "0.02%",
+      "description": "צומת – עצמאים, חקלאים, כפרים",
+      "ideology": "ימין לאומי",
+      "leader": "משה גרין"
+    },
+    {
+      "symbol": "רף",
+      "name": "עם שלם",
+      "color": "#6b7280",
+      "votes": 592,
+      "proportion": "0.01%",
+      "description": "מפלגת עם שלם – בראשות הרב חיים אמסלם",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "קך",
+      "name": "סדר חדש",
+      "color": "#215191",
+      "votes": 514,
+      "proportion": "0.01%",
+      "description": "מפלגה לקידום רמת חיי האזרחים הוותיקים",
+      "ideology": "גיל שלישי",
+      "leader": "אופק אביטל"
+    },
+    {
+      "symbol": "נ",
+      "name": "הימין החדש",
+      "color": "#1e40af",
+      "votes": 486,
+      "proportion": "0.01%",
+      "description": "מפלגת ימין בראשות נפתלי בנט ואיילת שקד, לא עברה את אחוז החסימה בבחירות לכנסת ה-21",
+      "ideology": "ימין, ליברלי-לאומי",
+      "leader": "נפתלי בנט ואיילת שקד"
+    },
+    {
+      "symbol": "ק",
+      "name": "נועם קולמן",
+      "color": "#6cb334",
+      "votes": 463,
+      "proportion": "0.01%",
+      "description": "נועם קולמן, לירון עופרי וסולי וולף - הבלתי אפשרי, אפשרי",
+      "ideology": "סביבה",
+      "leader": "נועם קולמן"
+    },
+    {
+      "symbol": "כ",
+      "name": "הלב היהודי",
+      "color": "#eab308",
+      "votes": 443,
+      "proportion": "0.01%",
+      "description": "הלב היהודי בראשות אלי יוסף",
+      "ideology": "מרכז, כלכלה חברתית",
+      "leader": "אלי יוסף"
+    },
+    {
+      "symbol": "צי",
+      "name": "עצמנו",
+      "color": "#6b7280",
+      "votes": 441,
+      "proportion": "0.01%",
+      "description": "עצמנו עצמאים וליברלים",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "יק",
+      "name": "הגוש התנ\"כי",
+      "color": "#1163bf",
+      "votes": 429,
+      "proportion": "0.01%",
+      "description": "מפלגה נוצרית-יהודית לייצוג הולם של נוצרים בישראל",
+      "ideology": "נוצרי-יהודי",
+      "leader": "דניס ליפקין"
+    },
+    {
+      "symbol": "ני",
+      "name": "עולם חדש",
+      "color": "#2764a7",
+      "votes": 429,
+      "proportion": "0.01%",
+      "description": "עולם חדש בראשות יורם אדרי",
+      "ideology": "נכים",
+      "leader": "איל כהן"
+    },
+    {
+      "symbol": "ינ",
+      "name": "ברית השותפות",
+      "color": "#8948fa",
+      "votes": 408,
+      "proportion": "0.01%",
+      "description": "ברית השותפות לאיחוד לאומי בהנהגת רב חובל ב. שליאן",
+      "ideology": "נוצרי",
+      "leader": "בשארה שליאן"
+    },
+    {
+      "symbol": "ז",
+      "name": "הישראלים",
+      "color": "#ffde15",
+      "votes": 395,
+      "proportion": "0.01%",
+      "description": "הישראלים",
+      "ideology": "חברתי",
+      "leader": ""
+    },
+    {
+      "symbol": "קי",
+      "name": "מפלגת שמע",
+      "color": "#0002fd",
+      "votes": 395,
+      "proportion": "0.01%",
+      "description": "מפלגת שמע בראשות נפתלי גולדמן",
+      "ideology": "שלום",
+      "leader": "אלי יוסף"
+    },
+    {
+      "symbol": "ץ",
+      "name": "דעם",
+      "color": "#6b7280",
+      "votes": 385,
+      "proportion": "0.01%",
+      "description": "דעם - כלכלה ירוקה מדינה אחת",
+      "ideology": "חברתי",
+      "leader": ""
+    },
+    {
+      "symbol": "יר",
+      "name": "מנהיגות חברתית",
+      "color": "#6b7280",
+      "votes": 256,
+      "proportion": "0.01%",
+      "description": "מנהיגות חברתית",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "צכ",
+      "name": "מען",
+      "color": "#6b7280",
+      "votes": 253,
+      "proportion": "0.01%",
+      "description": "מען (יחד) לעידן חדש",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "צף",
+      "name": "חץ",
+      "color": "#6b7280",
+      "votes": 226,
+      "proportion": "0.01%",
+      "description": "חץ",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "נר",
+      "name": "אנחנו",
+      "color": "#056fab",
+      "votes": 220,
+      "proportion": "0.00%",
+      "description": "מפלגה המבקשת לשנות את שיטת הבחירות בישראל",
+      "ideology": "רפורמה פוליטית",
+      "leader": "מוש חוג'ה"
+    },
+    {
+      "symbol": "יף",
+      "name": "כבוד האדם",
+      "color": "#6b7280",
+      "votes": 196,
+      "proportion": "0.00%",
+      "description": "כבוד האדם",
+      "ideology": "",
+      "leader": ""
+    }
+  ],
+  "irregularities": [
+    {
+      "id": "אעבלין_2.2",
+      "settlement": "אעבלין",
+      "settlement_code": 529,
+      "ballot": "2.2",
+      "eligible": 326,
+      "voted": 136,
+      "valid": 136,
+      "invalid": 0,
+      "votes": {
+        "אמת": 2,
+        "ודעם": 83,
+        "ז": 1,
+        "יז": 3,
+        "יק": 10,
+        "כן": 1,
+        "מחל": 14,
+        "מרצ": 8,
+        "עם": 11,
+        "פה": 2,
+        "רף": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "607.09"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "יק",
+              "party_name": "הגוש התנ\"כי",
+              "votes": 10,
+              "proportion": "7.35%",
+              "national_avg": "0.010%",
+              "ratio": "74x"
+            }
+          ]
+        }
+      ],
+      "score": 311.5442918383245,
+      "status": "verified"
+    },
+    {
+      "id": "נווה ימין_1.0",
+      "settlement": "נווה ימין",
+      "settlement_code": 686,
+      "ballot": "1.0",
+      "eligible": 490,
+      "voted": 361,
+      "valid": 361,
+      "invalid": 0,
+      "votes": {
+        "אמת": 24,
+        "ב": 15,
+        "ג": 3,
+        "זץ": 21,
+        "ט": 16,
+        "יז": 2,
+        "כן": 22,
+        "ל": 3,
+        "מחל": 165,
+        "מרצ": 3,
+        "עם": 1,
+        "פה": 41,
+        "ר": 1,
+        "שס": 25,
+        "ת": 19
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "604.95"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "זץ",
+              "party_name": "צומת",
+              "votes": 21,
+              "proportion": "5.82%",
+              "national_avg": "0.015%",
+              "ratio": "58x"
+            }
+          ]
+        }
+      ],
+      "score": 310.4762989029984,
+      "status": "verified"
+    },
+    {
+      "id": "נווה ימין_2.0",
+      "settlement": "נווה ימין",
+      "settlement_code": 686,
+      "ballot": "2.0",
+      "eligible": 465,
+      "voted": 321,
+      "valid": 320,
+      "invalid": 1,
+      "votes": {
+        "אמת": 18,
+        "ב": 13,
+        "זץ": 18,
+        "ט": 13,
+        "יז": 3,
+        "כ": 2,
+        "כן": 42,
+        "ל": 8,
+        "מחל": 116,
+        "מרצ": 9,
+        "פה": 43,
+        "צי": 1,
+        "ר": 1,
+        "שס": 11,
+        "ת": 22
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "604.15"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "זץ",
+              "party_name": "צומת",
+              "votes": 18,
+              "proportion": "5.62%",
+              "national_avg": "0.015%",
+              "ratio": "56x"
+            }
+          ]
+        }
+      ],
+      "score": 310.0765068994966,
+      "status": "verified"
+    },
+    {
+      "id": "מבוא מודיעים_1.0",
+      "settlement": "מבוא מודיעים",
+      "settlement_code": 1141,
+      "ballot": "1.0",
+      "eligible": 177,
+      "voted": 95,
+      "valid": 95,
+      "invalid": 0,
+      "votes": {
+        "אמת": 6,
+        "ב": 18,
+        "ג": 10,
+        "ט": 20,
+        "יז": 2,
+        "כן": 1,
+        "ל": 1,
+        "מחל": 10,
+        "מרצ": 1,
+        "פה": 4,
+        "ר": 8,
+        "שס": 7,
+        "ת": 7
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "601.04"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "רפא",
+              "votes": 8,
+              "proportion": "8.42%",
+              "national_avg": "0.393%",
+              "ratio": "21x"
+            }
+          ]
+        }
+      ],
+      "score": 308.5221354856941,
+      "status": "verified"
+    },
+    {
+      "id": "ייטב_1.0",
+      "settlement": "ייטב",
+      "settlement_code": 3607,
+      "ballot": "1.0",
+      "eligible": 236,
+      "voted": 162,
+      "valid": 161,
+      "invalid": 1,
+      "votes": {
+        "אמת": 2,
+        "ב": 17,
+        "ג": 1,
+        "ט": 79,
+        "ל": 7,
+        "מחל": 31,
+        "פה": 2,
+        "ר": 18,
+        "ת": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "600.84"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "רפא",
+              "votes": 18,
+              "proportion": "11.18%",
+              "national_avg": "0.393%",
+              "ratio": "28x"
+            }
+          ]
+        }
+      ],
+      "score": 308.4177924010586,
+      "status": "verified"
+    },
+    {
+      "id": "בת עין_1.0",
+      "settlement": "בת עין",
+      "settlement_code": 3794,
+      "ballot": "1.0",
+      "eligible": 461,
+      "voted": 266,
+      "valid": 265,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "ב": 38,
+        "ג": 9,
+        "ט": 162,
+        "מחל": 17,
+        "מרצ": 1,
+        "פה": 2,
+        "קץ": 1,
+        "ר": 25,
+        "שס": 6,
+        "ת": 3
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "600.61"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "רפא",
+              "votes": 25,
+              "proportion": "9.43%",
+              "national_avg": "0.393%",
+              "ratio": "24x"
+            }
+          ]
+        }
+      ],
+      "score": 308.30445260845687,
+      "status": "verified"
+    },
+    {
+      "id": "רהט_21.3",
+      "settlement": "רהט",
+      "settlement_code": 1161,
+      "ballot": "21.3",
+      "eligible": 623,
+      "voted": 284,
+      "valid": 281,
+      "invalid": 3,
+      "votes": {
+        "אמת": 3,
+        "ב": 2,
+        "ודעם": 56,
+        "יז": 88,
+        "כך": 1,
+        "כן": 4,
+        "ל": 1,
+        "מחל": 36,
+        "מרצ": 10,
+        "ני": 1,
+        "עם": 62,
+        "פה": 2,
+        "ףז": 2,
+        "צי": 1,
+        "קי": 1,
+        "רף": 1,
+        "ת": 10
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "605.59"
+          }
+        },
+        {
+          "type": "extreme_dominance",
+          "severity": "high",
+          "description": "שליטה קיצונית של מפלגה אחת",
+          "details": {
+            "party": "יז",
+            "party_name": "הכלכלית החדשה",
+            "proportion": "31.3%",
+            "votes": 88,
+            "type": "small_party_dominance"
+          }
+        }
+      ],
+      "score": 304.3608692881865,
+      "status": "verified"
+    },
+    {
+      "id": "רהט_21.2",
+      "settlement": "רהט",
+      "settlement_code": 1161,
+      "ballot": "21.2",
+      "eligible": 623,
+      "voted": 293,
+      "valid": 286,
+      "invalid": 7,
+      "votes": {
+        "ג": 1,
+        "ודעם": 55,
+        "י": 1,
+        "יז": 93,
+        "כן": 2,
+        "מחל": 48,
+        "מרצ": 2,
+        "עם": 75,
+        "פה": 1,
+        "ר": 2,
+        "ת": 6
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "602.20"
+          }
+        },
+        {
+          "type": "extreme_dominance",
+          "severity": "high",
+          "description": "שליטה קיצונית של מפלגה אחת",
+          "details": {
+            "party": "יז",
+            "party_name": "הכלכלית החדשה",
+            "proportion": "32.5%",
+            "votes": 93,
+            "type": "small_party_dominance"
+          }
+        }
+      ],
+      "score": 302.72407331558264,
+      "status": "verified"
+    }
+  ]
+}
