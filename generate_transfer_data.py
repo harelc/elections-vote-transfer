@@ -163,13 +163,29 @@ class VoteTransferAnalyzer:
         )
 
         # Find common precincts with fallback matching
-        # Try exact match first, then fall back to base ballot (14.1 -> 14)
+        # Matching logic:
+        # - Exact match first (including .0 which normalizes to base)
+        # - For .1+ subdivisions: fall back to base ONLY if no .0 sibling exists in "to" data
+        import re
+
         def get_base_ballot_id(ballot_id):
-            # Only .1 subdivisions fall back to base, not .2, .3, etc.
             parts = ballot_id.split('__')
-            if len(parts) == 2 and parts[1].endswith('.1'):
-                return parts[0] + '__' + parts[1][:-2]
+            if len(parts) == 2 and '.' in parts[1]:
+                return parts[0] + '__' + parts[1].split('.')[0]
             return ballot_id
+
+        def has_subdivision(ballot_id):
+            parts = ballot_id.split('__')
+            return len(parts) == 2 and re.search(r'\.[1-9]\d*$', parts[1])
+
+        # Track which base IDs have a .0 variant in "to" data
+        to_bases_with_zero = set()
+        for to_id in votes_to.index:
+            parts = to_id.split('__')
+            if len(parts) == 2 and parts[1].endswith('.0'):
+                # This is a .0 ballot, record its base
+                base = parts[0] + '__' + parts[1][:-2]
+                to_bases_with_zero.add(base)
 
         # Build mapping: for each "to" ballot, find matching "from" ballot
         from_ids = set(votes_from.index)
@@ -179,10 +195,10 @@ class VoteTransferAnalyzer:
             if to_id in from_ids:
                 # Exact match
                 matched_pairs.append((to_id, to_id))
-            else:
-                # Try base ballot fallback
+            elif has_subdivision(to_id):
+                # .1+ subdivision: only fall back if no .0 sibling
                 base_id = get_base_ballot_id(to_id)
-                if base_id != to_id and base_id in from_ids:
+                if base_id not in to_bases_with_zero and base_id in from_ids:
                     matched_pairs.append((base_id, to_id))
 
         logger.info(f"Found {len(matched_pairs)} matched precincts (with fallback)")
