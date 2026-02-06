@@ -165,9 +165,10 @@ class VoteTransferAnalyzer:
         # Find common precincts with fallback matching
         # Try exact match first, then fall back to base ballot (14.1 -> 14)
         def get_base_ballot_id(ballot_id):
+            # Only .1 subdivisions fall back to base, not .2, .3, etc.
             parts = ballot_id.split('__')
-            if len(parts) == 2 and '.' in parts[1]:
-                return parts[0] + '__' + parts[1].split('.')[0]
+            if len(parts) == 2 and parts[1].endswith('.1'):
+                return parts[0] + '__' + parts[1][:-2]
             return ballot_id
 
         # Build mapping: for each "to" ballot, find matching "from" ballot

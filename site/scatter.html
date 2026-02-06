@@ -744,16 +744,18 @@
 
             async init() {
                 // Set up event listeners
-                document.getElementById('election-x').addEventListener('change', (e) => {
+                document.getElementById('election-x').addEventListener('change', async (e) => {
                     this.currentElectionX = e.target.value;
                     this.settlements = []; // Reset settlements list
-                    this.loadElectionParties('x', e.target.value);
+                    await this.loadElectionParties('x', e.target.value, false);
+                    this.updateChart();
                 });
 
-                document.getElementById('election-y').addEventListener('change', (e) => {
+                document.getElementById('election-y').addEventListener('change', async (e) => {
                     this.currentElectionY = e.target.value;
                     this.settlements = []; // Reset settlements list
-                    this.loadElectionParties('y', e.target.value);
+                    await this.loadElectionParties('y', e.target.value, false);
+                    this.updateChart();
                 });
 
                 document.getElementById('party-x').addEventListener('change', (e) => {
@@ -809,9 +811,10 @@
                     }
                 });
 
-                // Load initial data
-                await this.loadElectionParties('x', '25');
-                await this.loadElectionParties('y', '25');
+                // Load initial data (don't update chart until both are loaded)
+                await this.loadElectionParties('x', '25', false);
+                await this.loadElectionParties('y', '25', false);
+                this.updateChart();
             }
 
             buildSettlementsList() {
@@ -823,16 +826,28 @@
 
                 if (!dataX || !dataY) return;
 
-                // Build lookup for Y stations
-                const lookupY = new Set();
-                dataY.stations.forEach(s => {
-                    lookupY.add(this.normalizeKey(s));
+                // Build lookup for X stations (exact keys)
+                const lookupX = {};
+                dataX.stations.forEach(s => {
+                    const key = this.normalizeKey(s);
+                    lookupX[key] = s;
                 });
 
                 // Count matching stations per settlement
-                dataX.stations.forEach(s => {
+                // Try exact match first, then fallback to base ballot (14.1 -> 14)
+                dataY.stations.forEach(s => {
                     const key = this.normalizeKey(s);
-                    if (lookupY.has(key)) {
+                    let matched = lookupX[key];
+
+                    // If no exact match, try base ballot fallback
+                    if (!matched) {
+                        const baseKey = this.getBaseKey(key);
+                        if (baseKey !== key) {
+                            matched = lookupX[baseKey];
+                        }
+                    }
+
+                    if (matched) {
                         const name = s.n || s.settlement_name;
                         settlements[name] = (settlements[name] || 0) + 1;
                     }
@@ -926,7 +941,7 @@
                 return data;
             }
 
-            async loadElectionParties(axis, electionId) {
+            async loadElectionParties(axis, electionId, autoUpdateChart = true) {
                 const data = await this.loadElectionData(electionId);
                 const select = document.getElementById(`party-${axis}`);
                 const partyNames = data.parties.map(p => p.name);
@@ -934,31 +949,36 @@
                 // Get current selection before rebuilding options
                 const currentSelection = axis === 'x' ? this.currentPartyX : this.currentPartyY;
 
+                // Rebuild options
                 select.innerHTML = data.parties.map(p =>
                     `<option value="${p.name}">${p.name}</option>`
                 ).join('');
 
                 // Try to keep the same party selected if it exists in the new election
+                let newSelection;
                 if (currentSelection && partyNames.includes(currentSelection)) {
-                    select.value = currentSelection;
-                    if (axis === 'x') {
-                        this.currentPartyX = currentSelection;
-                    } else {
-                        this.currentPartyY = currentSelection;
-                    }
+                    newSelection = currentSelection;
                 } else {
                     // Fall back to first party (or second for Y if same election)
                     if (axis === 'x') {
-                        this.currentPartyX = data.parties[0].name;
-                        select.value = this.currentPartyX;
+                        newSelection = data.parties[0].name;
                     } else {
                         const defaultIndex = (this.currentElectionX === this.currentElectionY && data.parties.length > 1) ? 1 : 0;
-                        this.currentPartyY = data.parties[defaultIndex].name;
-                        select.value = this.currentPartyY;
+                        newSelection = data.parties[defaultIndex].name;
                     }
                 }
 
-                this.updateChart();
+                // Update both the select element and the state variable
+                select.value = newSelection;
+                if (axis === 'x') {
+                    this.currentPartyX = newSelection;
+                } else {
+                    this.currentPartyY = newSelection;
+                }
+
+                if (autoUpdateChart) {
+                    this.updateChart();
+                }
             }
 
             normalizeKey(station, forceBase = false) {
@@ -977,9 +997,10 @@
 
             getBaseKey(key) {
                 // Convert "settlement|14.1" to "settlement|14"
+                // Only .1 subdivisions fall back to base, not .2, .3, etc.
                 const parts = key.split('|');
-                if (parts.length === 2 && parts[1].includes('.')) {
-                    return parts[0] + '|' + parts[1].split('.')[0];
+                if (parts.length === 2 && parts[1].endsWith('.1')) {
+                    return parts[0] + '|' + parts[1].slice(0, -2);
                 }
                 return key;
             }
