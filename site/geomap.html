@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מפה גיאוגרפית - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 1.5rem 1rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .view-btn {
+            padding: 0.4rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .view-btn:hover {
+            background: #252535;
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Navigation */
+        .election-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            padding: 0.4rem 0.8rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            gap: 0;
+            position: relative;
+        }
+
+        /* Control panel */
+        .control-panel {
+            background: var(--bg-secondary);
+            padding: 1rem;
+            border-left: 1px solid var(--border-color);
+            overflow-y: auto;
+            max-height: calc(100vh - 180px);
+        }
+
+        .panel-section {
+            margin-bottom: 1rem;
+        }
+
+        .panel-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .panel-divider {
+            height: 1px;
+            background: var(--border-color);
+            margin: 0.75rem 0;
+        }
+
+        /* Search */
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-primary);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+
+        .search-results.visible {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        /* Color mode options */
+        .color-option {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            margin-bottom: 0.25rem;
+        }
+
+        .color-option:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .color-option.active {
+            background: var(--bg-tertiary);
+            box-shadow: inset 3px 0 0 var(--accent-primary);
+        }
+
+        .color-swatch {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .color-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .color-option.active .color-label {
+            color: var(--text-primary);
+        }
+
+        /* Party list */
+        .party-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .party-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.35rem 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .party-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .party-item.active {
+            background: var(--bg-tertiary);
+            box-shadow: inset 3px 0 0 var(--accent-primary);
+        }
+
+        .party-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .party-name {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .party-item.active .party-name {
+            color: var(--text-primary);
+        }
+
+        /* Map container */
+        .map-container {
+            position: relative;
+            flex: 1;
+        }
+
+        #map {
+            width: 100%;
+            height: calc(100vh - 180px);
+            background: var(--bg-primary);
+        }
+
+        /* Override Leaflet styles for dark theme */
+        .leaflet-container {
+            background: var(--bg-primary);
+            font-family: 'Heebo', sans-serif;
+        }
+
+        /* Darken the map tiles */
+        .leaflet-tile-pane {
+            filter: brightness(0.7) saturate(0.8);
+        }
+
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .leaflet-popup-tip {
+            background: var(--bg-secondary);
+        }
+
+        .leaflet-popup-content {
+            margin: 12px 14px;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .leaflet-control-zoom a {
+            background: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .leaflet-control-zoom a:hover {
+            background: var(--bg-tertiary) !important;
+        }
+
+        .leaflet-control-attribution {
+            background: rgba(10, 10, 15, 0.8) !important;
+            color: var(--text-muted) !important;
+        }
+
+        .leaflet-control-attribution a {
+            color: var(--accent-primary) !important;
+        }
+
+        /* Custom cluster styles */
+        .custom-cluster {
+            background: transparent !important;
+        }
+
+        .cluster-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-family: 'Heebo', sans-serif;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            cursor: pointer;
+            transition: transform 0.15s ease;
+        }
+
+        .cluster-inner:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .cluster-count {
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .cluster-info {
+            font-size: 10px;
+            font-weight: 500;
+            opacity: 0.9;
+            line-height: 1;
+            margin-top: 2px;
+        }
+
+        /* Cluster tooltip */
+        .cluster-tooltip {
+            position: absolute;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            max-width: 250px;
+            z-index: 10000;
+            pointer-events: none;
+            box-shadow: var(--shadow-lg);
+            direction: rtl;
+        }
+
+        .cluster-tooltip-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+        .cluster-tooltip-stats {
+            display: grid;
+            grid-template-columns: auto auto;
+            gap: 2px 12px;
+            margin-bottom: 8px;
+        }
+
+        .cluster-tooltip-label {
+            color: var(--text-muted);
+        }
+
+        .cluster-tooltip-value {
+            color: var(--text-primary);
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .cluster-tooltip-parties {
+            border-top: 1px solid var(--border-color);
+            padding-top: 6px;
+        }
+
+        .cluster-tooltip-party {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2px;
+        }
+
+        .cluster-tooltip-party-name {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            color: var(--text-secondary);
+        }
+
+        .cluster-tooltip-party-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+        }
+
+        .cluster-tooltip-party-pct {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Fallback for old cluster styles */
+        .marker-cluster-small,
+        .marker-cluster-medium,
+        .marker-cluster-large {
+            background-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .marker-cluster-small div,
+        .marker-cluster-medium div,
+        .marker-cluster-large div {
+            background-color: rgba(59, 130, 246, 0.8);
+            color: white;
+            font-family: 'Heebo', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Custom popup styles */
+        .station-popup {
+            min-width: 200px;
+        }
+
+        .station-popup-title {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .station-popup-ballot {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .station-popup-location {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-style: italic;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .station-popup-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .station-popup-stat-label {
+            color: var(--text-muted);
+        }
+
+        .station-popup-stat-value {
+            color: var(--text-primary);
+            font-weight: 500;
+            text-align: left;
+        }
+
+        .station-popup-parties {
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.5rem;
+        }
+
+        .station-popup-party {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .station-popup-party-name {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            color: var(--text-secondary);
+        }
+
+        .station-popup-party-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .station-popup-party-pct {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        /* Color scale legend */
+        .color-scale-legend {
+            position: absolute;
+            bottom: 30px;
+            right: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            z-index: 1000;
+        }
+
+        .color-scale-title {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .color-scale-bar {
+            width: 120px;
+            height: 10px;
+            border-radius: 4px;
+            margin-bottom: 0.25rem;
+        }
+
+        .color-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            direction: ltr;
+        }
+
+        /* Stats badge */
+        .stats-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            z-index: 1000;
+            font-size: 0.8rem;
+        }
+
+        .stats-badge-value {
+            font-weight: 600;
+            color: var(--accent-primary);
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 15, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .loading-overlay.hidden {
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Footer */
+        .main-footer {
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .credits {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .credits a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .credits a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .control-panel {
+                position: fixed;
+                bottom: 60px;
+                left: 0;
+                right: 0;
+                max-height: 40vh;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                transform: translateY(100%);
+                transition: transform 0.3s ease;
+                z-index: 1500;
+            }
+
+            .control-panel.open {
+                transform: translateY(0);
+            }
+
+            #map {
+                height: calc(100vh - 160px);
+            }
+
+            .toggle-panel-btn {
+                display: block;
+                position: fixed;
+                bottom: 70px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--accent-primary);
+                color: white;
+                border: none;
+                border-radius: 20px;
+                padding: 0.5rem 1rem;
+                font-family: inherit;
+                font-size: 0.85rem;
+                cursor: pointer;
+                z-index: 1600;
+            }
+        }
+
+        @media (min-width: 769px) {
+            .toggle-panel-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
+            <p class="subtitle">מפה גיאוגרפית של קלפיות הצבעה</p>
+            <nav class="view-switcher">
+                <a href="index.html" class="view-btn">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn">התפלגות קלפיות</a>
+                <span class="view-btn active">מפה גיאוגרפית</span>
+                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
+            </nav>
+        </header>
+
+        <nav class="election-nav">
+            <button class="nav-btn" data-election="21">כנסת 21</button>
+            <button class="nav-btn" data-election="22">כנסת 22</button>
+            <button class="nav-btn" data-election="23">כנסת 23</button>
+            <button class="nav-btn" data-election="24">כנסת 24</button>
+            <button class="nav-btn active" data-election="25">כנסת 25</button>
+        </nav>
+
+        <main class="main-content">
+            <aside class="control-panel" id="control-panel">
+                <div class="panel-section">
+                    <div class="panel-title">חיפוש יישוב</div>
+                    <div style="position: relative;">
+                        <input type="text" class="search-input" id="settlement-search" placeholder="הקלד שם יישוב..." autocomplete="off">
+                        <div class="search-results" id="search-results"></div>
+                    </div>
+                </div>
+
+                <div class="panel-divider"></div>
+
+                <div class="panel-section">
+                    <div class="panel-title">צביעה לפי</div>
+                    <div class="color-option active" data-mode="turnout">
+                        <span class="color-swatch" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
+                        <span class="color-label">שיעור הצבעה</span>
+                    </div>
+                    <div class="color-option" data-mode="socioeconomic">
+                        <span class="color-swatch" style="background: linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142);"></span>
+                        <span class="color-label">אשכול חברתי-כלכלי</span>
+                    </div>
+                    <div class="color-option" data-mode="winner">
+                        <span class="color-swatch" style="background: linear-gradient(135deg, #2563eb, #dc2626, #16a34a);"></span>
+                        <span class="color-label">מפלגה מנצחת</span>
+                    </div>
+                </div>
+
+                <div class="panel-divider"></div>
+
+                <div class="panel-section">
+                    <div class="panel-title">תמיכה במפלגה</div>
+                    <div class="party-list" id="party-list"></div>
+                </div>
+            </aside>
+
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="cluster-tooltip" id="cluster-tooltip" style="display: none;"></div>
+                <div class="loading-overlay" id="loading">
+                    <div class="loading-spinner"></div>
+                </div>
+                <div class="stats-badge" id="stats-badge">
+                    <span class="stats-badge-value" id="station-count">0</span> / <span id="total-count">0</span> קלפיות
+                </div>
+                <div class="color-scale-legend" id="color-legend">
+                    <div class="color-scale-title" id="legend-title">שיעור הצבעה</div>
+                    <div class="color-scale-bar" id="legend-bar" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></div>
+                    <div class="color-scale-labels">
+                        <span id="legend-min">40%</span>
+                        <span id="legend-max">90%</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <button class="toggle-panel-btn" id="toggle-panel">הגדרות תצוגה</button>
+
+        <footer class="main-footer">
+            <p class="credits">
+                © הראל קין |
+                <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+                <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a> |
+                מפות: <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>
+            </p>
+        </footer>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+
+    <script>
+        class GeoMapVisualization {
+            constructor() {
+                this.map = null;
+                this.markers = null;
+                this.data = null;
+                this.tsneData = null;
+                this.coordinates = null;
+                this.socioeconomicData = null;
+                this.parties = [];
+                this.colorMode = 'turnout';
+                this.selectedParty = null;
+                this.currentElection = '25';
+                this.settlements = [];
+
+                this.init();
+            }
+
+            async init() {
+                // Initialize map
+                this.initMap();
+
+                // Set up event listeners
+                this.setupEventListeners();
+
+                // Load data
+                await this.loadSocioeconomicData();
+                await this.loadCoordinates();
+                await this.loadElection('25');
+            }
+
+            initMap() {
+                // Israel center coordinates
+                const israelCenter = [31.5, 34.9];
+
+                this.map = L.map('map', {
+                    center: israelCenter,
+                    zoom: 8,
+                    minZoom: 7,
+                    maxZoom: 18
+                });
+
+                // CartoDB Positron - neutral gray, between dark and light
+                L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                    subdomains: 'abcd',
+                    maxZoom: 20
+                }).addTo(this.map);
+
+                // Initialize marker cluster group
+                this.markers = L.markerClusterGroup({
+                    chunkedLoading: true,
+                    maxClusterRadius: 50,
+                    spiderfyOnMaxZoom: true,
+                    showCoverageOnHover: false,
+                    zoomToBoundsOnClick: true,
+                    iconCreateFunction: (cluster) => this.createClusterIcon(cluster)
+                });
+
+                this.map.addLayer(this.markers);
+
+                // Cluster hover events
+                this.markers.on('clustermouseover', (e) => this.showClusterTooltip(e));
+                this.markers.on('clustermouseout', () => this.hideClusterTooltip());
+            }
+
+            showClusterTooltip(e) {
+                const cluster = e.layer;
+                const childMarkers = cluster.getAllChildMarkers();
+                const count = childMarkers.length;
+
+                // Aggregate stats
+                let totalVoters = 0;
+                let totalEligible = 0;
+                const partyVotes = {};
+                const settlements = new Set();
+                const clusterCounts = {};
+
+                childMarkers.forEach(marker => {
+                    const station = marker.options.stationData;
+                    if (!station) return;
+
+                    const voters = station.v || station.total_voters || 0;
+                    const eligible = station.e || station.eligible_voters || 0;
+                    totalVoters += voters;
+                    totalEligible += eligible;
+
+                    const name = station.n || station.settlement_name;
+                    settlements.add(name);
+
+                    const seCluster = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+                    if (seCluster) {
+                        clusterCounts[seCluster] = (clusterCounts[seCluster] || 0) + 1;
+                    }
+
+                    const proportions = station.p || station.proportions || {};
+                    Object.entries(proportions).forEach(([party, pct]) => {
+                        partyVotes[party] = (partyVotes[party] || 0) + (voters * pct / 100);
+                    });
+                });
+
+                const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
+
+                // Top 3 parties
+                const topParties = Object.entries(partyVotes)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([name, votes]) => ({
+                        name,
+                        pct: totalVoters > 0 ? Math.round(votes / totalVoters * 100) : 0,
+                        color: this.parties.find(p => p.name === name)?.color || '#64748b'
+                    }));
+
+                // Title
+                const settlementList = [...settlements];
+                let title = '';
+                if (settlementList.length === 1) {
+                    title = settlementList[0];
+                } else if (settlementList.length <= 3) {
+                    title = settlementList.join(', ');
+                } else {
+                    title = `${settlementList.slice(0, 2).join(', ')} ועוד ${settlementList.length - 2}`;
+                }
+
+                // Most common cluster
+                const avgCluster = Object.entries(clusterCounts).length > 0 ?
+                    Object.entries(clusterCounts).sort((a, b) => b[1] - a[1])[0][0] : null;
+
+                const partyRows = topParties.map(p => `
+                    <div class="cluster-tooltip-party">
+                        <span class="cluster-tooltip-party-name">
+                            <span class="cluster-tooltip-party-dot" style="background: ${p.color}"></span>
+                            ${p.name}
+                        </span>
+                        <span class="cluster-tooltip-party-pct">${p.pct}%</span>
+                    </div>
+                `).join('');
+
+                const tooltip = document.getElementById('cluster-tooltip');
+                tooltip.innerHTML = `
+                    <div class="cluster-tooltip-title">${title}</div>
+                    <div class="cluster-tooltip-stats">
+                        <span class="cluster-tooltip-label">קלפיות:</span>
+                        <span class="cluster-tooltip-value">${count.toLocaleString()}</span>
+                        <span class="cluster-tooltip-label">מצביעים:</span>
+                        <span class="cluster-tooltip-value">${totalVoters.toLocaleString()}</span>
+                        <span class="cluster-tooltip-label">שיעור הצבעה:</span>
+                        <span class="cluster-tooltip-value">${avgTurnout}%</span>
+                        ${avgCluster ? `<span class="cluster-tooltip-label">אשכול:</span><span class="cluster-tooltip-value">${avgCluster}</span>` : ''}
+                    </div>
+                    <div class="cluster-tooltip-parties">
+                        ${partyRows}
+                    </div>
+                `;
+
+                // Position tooltip near cluster
+                const pos = this.map.latLngToContainerPoint(cluster.getLatLng());
+                tooltip.style.left = (pos.x + 20) + 'px';
+                tooltip.style.top = (pos.y - 20) + 'px';
+                tooltip.style.display = 'block';
+            }
+
+            hideClusterTooltip() {
+                document.getElementById('cluster-tooltip').style.display = 'none';
+            }
+
+            setupEventListeners() {
+                // Election navigation
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.loadElection(btn.dataset.election);
+                    });
+                });
+
+                // Color mode options
+                document.querySelectorAll('.color-option').forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+                        opt.classList.add('active');
+                        this.selectedParty = null;
+                        document.querySelectorAll('.party-item').forEach(p => p.classList.remove('active'));
+                        this.setColorMode(opt.dataset.mode);
+                    });
+                });
+
+                // Settlement search
+                const searchInput = document.getElementById('settlement-search');
+                const searchResults = document.getElementById('search-results');
+
+                searchInput.addEventListener('input', (e) => {
+                    this.handleSearch(e.target.value);
+                });
+
+                searchInput.addEventListener('focus', () => {
+                    if (searchInput.value.length > 0) {
+                        this.handleSearch(searchInput.value);
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.panel-section')) {
+                        searchResults.classList.remove('visible');
+                    }
+                });
+
+                // Mobile panel toggle
+                const toggleBtn = document.getElementById('toggle-panel');
+                const panel = document.getElementById('control-panel');
+
+                toggleBtn.addEventListener('click', () => {
+                    panel.classList.toggle('open');
+                });
+            }
+
+            async loadSocioeconomicData() {
+                try {
+                    const response = await fetch('data/socioeconomic_clusters.json');
+                    const data = await response.json();
+                    this.socioeconomicData = {};
+                    data.forEach(item => {
+                        this.socioeconomicData[item.name] = item.cluster;
+                        this.socioeconomicData[this.normalizeName(item.name)] = item.cluster;
+                    });
+                } catch (e) {
+                    console.warn('Could not load socioeconomic data:', e);
+                }
+            }
+
+            async loadCoordinates() {
+                try {
+                    // Add cache-busting to get fresh data
+                    const cacheBuster = new Date().getTime();
+                    const response = await fetch(`data/station_coordinates.json?t=${cacheBuster}`);
+                    this.coordinates = await response.json();
+                    console.log('Loaded coordinates:', Object.keys(this.coordinates.stations || {}).length, 'stations');
+                } catch (e) {
+                    console.warn('Could not load coordinates:', e);
+                    this.coordinates = { stations: {} };
+                }
+            }
+
+            async loadElection(electionId) {
+                this.currentElection = electionId;
+                document.getElementById('loading').classList.remove('hidden');
+
+                try {
+                    const response = await fetch(`data/tsne_${electionId}.json`);
+                    this.tsneData = await response.json();
+                    this.parties = this.tsneData.parties || [];
+
+                    this.buildSettlementsList();
+                    this.updatePartyList();
+                    this.renderMarkers();
+                } catch (error) {
+                    console.error('Failed to load election data:', error);
+                }
+
+                document.getElementById('loading').classList.add('hidden');
+            }
+
+            normalizeName(name) {
+                if (!name) return name;
+                let normalized = name.replace(/[-–\s]+/g, '');
+                normalized = normalized.replace(/יי/g, 'י');
+                return normalized;
+            }
+
+            buildSettlementsList() {
+                const counts = {};
+                this.tsneData.stations.forEach(s => {
+                    const name = s.n || s.settlement_name;
+                    counts[name] = (counts[name] || 0) + 1;
+                });
+
+                this.settlements = Object.entries(counts)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a, b) => b.count - a.count);
+            }
+
+            updatePartyList() {
+                const container = document.getElementById('party-list');
+                container.innerHTML = '';
+
+                this.parties.forEach(party => {
+                    const item = document.createElement('div');
+                    item.className = 'party-item';
+                    item.dataset.party = party.name;
+                    item.innerHTML = `
+                        <span class="party-color" style="background: ${party.color}"></span>
+                        <span class="party-name">${party.name}</span>
+                    `;
+                    item.addEventListener('click', () => this.selectParty(party));
+                    container.appendChild(item);
+                });
+            }
+
+            selectParty(party) {
+                this.selectedParty = party;
+                this.colorMode = 'party';
+
+                // Update UI
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+                document.querySelectorAll('.party-item').forEach(p => {
+                    p.classList.toggle('active', p.dataset.party === party.name);
+                });
+
+                this.updateLegend();
+                this.renderMarkers();
+            }
+
+            setColorMode(mode) {
+                this.colorMode = mode;
+                this.selectedParty = null;
+                this.updateLegend();
+                this.renderMarkers();
+            }
+
+            updateLegend() {
+                const legendTitle = document.getElementById('legend-title');
+                const legendBar = document.getElementById('legend-bar');
+                const legendMin = document.getElementById('legend-min');
+                const legendMax = document.getElementById('legend-max');
+
+                if (this.colorMode === 'turnout') {
+                    legendTitle.textContent = 'שיעור הצבעה';
+                    legendBar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
+                    legendMin.textContent = '40%';
+                    legendMax.textContent = '90%';
+                } else if (this.colorMode === 'socioeconomic') {
+                    legendTitle.textContent = 'אשכול חברתי-כלכלי';
+                    legendBar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
+                    legendMin.textContent = '1';
+                    legendMax.textContent = '10';
+                } else if (this.colorMode === 'winner') {
+                    legendTitle.textContent = 'מפלגה מנצחת';
+                    legendBar.style.background = 'linear-gradient(to right, #2563eb, #dc2626, #16a34a, #8b5cf6)';
+                    legendMin.textContent = '';
+                    legendMax.textContent = '';
+                } else if (this.colorMode === 'party' && this.selectedParty) {
+                    const partyName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
+                    legendTitle.textContent = `תמיכה ב${partyName}`;
+                    legendBar.style.background = `linear-gradient(to left, ${this.selectedParty.color}, ${this.lightenColor(this.selectedParty.color, 0.8)})`;
+                    legendMin.textContent = '0%';
+                    legendMax.textContent = '50%';
+                }
+            }
+
+            lightenColor(color, factor) {
+                const hex = color.replace('#', '');
+                const r = parseInt(hex.substr(0, 2), 16);
+                const g = parseInt(hex.substr(2, 2), 16);
+                const b = parseInt(hex.substr(4, 2), 16);
+                const newR = Math.round(r + (255 - r) * factor);
+                const newG = Math.round(g + (255 - g) * factor);
+                const newB = Math.round(b + (255 - b) * factor);
+                return `rgb(${newR}, ${newG}, ${newB})`;
+            }
+
+            getStationColor(station) {
+                if (this.colorMode === 'turnout') {
+                    const turnout = station.t || station.turnout || 0;
+                    // Red -> Yellow -> Green
+                    if (turnout < 65) {
+                        const t = (turnout - 40) / 25;
+                        return this.interpolateColor('#ef4444', '#fbbf24', Math.max(0, Math.min(1, t)));
+                    } else {
+                        const t = (turnout - 65) / 25;
+                        return this.interpolateColor('#fbbf24', '#10b981', Math.max(0, Math.min(1, t)));
+                    }
+                }
+
+                if (this.colorMode === 'socioeconomic') {
+                    const name = station.n || station.settlement_name;
+                    const cluster = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+                    if (!cluster) return '#374151';
+
+                    const colors = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
+                    return colors[Math.min(Math.max(cluster, 1), 10) - 1];
+                }
+
+                if (this.colorMode === 'winner') {
+                    const proportions = station.p || station.proportions || {};
+                    const winner = Object.entries(proportions).sort((a, b) => b[1] - a[1])[0];
+                    if (winner) {
+                        const party = this.parties.find(p => p.name === winner[0]);
+                        return party ? party.color : '#374151';
+                    }
+                    return '#374151';
+                }
+
+                if (this.colorMode === 'party' && this.selectedParty) {
+                    const proportions = station.p || station.proportions || {};
+                    const pct = proportions[this.selectedParty.name] || 0;
+                    const t = Math.min(pct / 50, 1);
+                    return this.interpolateColor(this.lightenColor(this.selectedParty.color, 0.85), this.selectedParty.color, t);
+                }
+
+                return '#3b82f6';
+            }
+
+            interpolateColor(color1, color2, t) {
+                const c1 = this.parseColor(color1);
+                const c2 = this.parseColor(color2);
+                const r = Math.round(c1.r + (c2.r - c1.r) * t);
+                const g = Math.round(c1.g + (c2.g - c1.g) * t);
+                const b = Math.round(c1.b + (c2.b - c1.b) * t);
+                return `rgb(${r}, ${g}, ${b})`;
+            }
+
+            parseColor(color) {
+                if (color.startsWith('#')) {
+                    const hex = color.replace('#', '');
+                    return {
+                        r: parseInt(hex.substr(0, 2), 16),
+                        g: parseInt(hex.substr(2, 2), 16),
+                        b: parseInt(hex.substr(4, 2), 16)
+                    };
+                }
+                const match = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+                if (match) {
+                    return { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) };
+                }
+                return { r: 128, g: 128, b: 128 };
+            }
+
+            createClusterIcon(cluster) {
+                const childMarkers = cluster.getAllChildMarkers();
+                const count = childMarkers.length;
+
+                // Aggregate stats from child markers
+                let totalVoters = 0;
+                let totalEligible = 0;
+                const partyVotes = {};
+                const settlements = new Set();
+                const clusterCounts = {};
+
+                childMarkers.forEach(marker => {
+                    const station = marker.options.stationData;
+                    if (!station) return;
+
+                    const voters = station.v || station.total_voters || 0;
+                    const eligible = station.e || station.eligible_voters || 0;
+                    totalVoters += voters;
+                    totalEligible += eligible;
+
+                    const name = station.n || station.settlement_name;
+                    settlements.add(name);
+
+                    // Count socioeconomic clusters
+                    const seCluster = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+                    if (seCluster) {
+                        clusterCounts[seCluster] = (clusterCounts[seCluster] || 0) + 1;
+                    }
+
+                    // Aggregate party votes
+                    const proportions = station.p || station.proportions || {};
+                    Object.entries(proportions).forEach(([party, pct]) => {
+                        partyVotes[party] = (partyVotes[party] || 0) + (voters * pct / 100);
+                    });
+                });
+
+                // Calculate average turnout
+                const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
+
+                // Find winning party
+                const sortedParties = Object.entries(partyVotes).sort((a, b) => b[1] - a[1]);
+                const winningParty = sortedParties[0];
+                const winnerName = winningParty ? winningParty[0] : '';
+
+                // Find most common socioeconomic cluster
+                const avgCluster = Object.entries(clusterCounts).length > 0 ?
+                    Object.entries(clusterCounts).sort((a, b) => b[1] - a[1])[0][0] : null;
+
+                // Get color based on current mode - use same logic as individual markers
+                let bgColor = 'rgba(59, 130, 246, 0.8)';
+                let infoText = `${avgTurnout}%`;
+
+                if (this.colorMode === 'turnout') {
+                    // Use interpolation just like individual markers
+                    if (avgTurnout < 65) {
+                        const t = (avgTurnout - 40) / 25;
+                        bgColor = this.interpolateColor('#ef4444', '#fbbf24', Math.max(0, Math.min(1, t)));
+                    } else {
+                        const t = (avgTurnout - 65) / 25;
+                        bgColor = this.interpolateColor('#fbbf24', '#10b981', Math.max(0, Math.min(1, t)));
+                    }
+                } else if (this.colorMode === 'socioeconomic' && avgCluster) {
+                    const colors = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
+                    bgColor = colors[Math.min(Math.max(parseInt(avgCluster), 1), 10) - 1];
+                    infoText = `אשכול ${avgCluster}`;
+                } else if (this.colorMode === 'winner' && winnerName) {
+                    const party = this.parties.find(p => p.name === winnerName);
+                    bgColor = party ? party.color : '#6b7280';
+                    const winnerPct = totalVoters > 0 ? Math.round(partyVotes[winnerName] / totalVoters * 100) : 0;
+                    infoText = `${winnerPct}%`;
+                } else if (this.colorMode === 'party' && this.selectedParty) {
+                    // Calculate average party percentage and use gradient
+                    const partyPct = totalVoters > 0 && partyVotes[this.selectedParty.name] ?
+                        Math.round(partyVotes[this.selectedParty.name] / totalVoters * 100) : 0;
+                    const t = Math.min(partyPct / 50, 1);
+                    bgColor = this.interpolateColor(
+                        this.lightenColor(this.selectedParty.color, 0.85),
+                        this.selectedParty.color,
+                        t
+                    );
+                    infoText = `${partyPct}%`;
+                }
+
+                // Size based on count
+                let size = 44;
+                if (count > 100) size = 56;
+                else if (count > 30) size = 50;
+
+                return L.divIcon({
+                    html: `
+                        <div class="cluster-inner" style="background: ${bgColor}">
+                            <div class="cluster-count">${count}</div>
+                            <div class="cluster-info">${infoText}</div>
+                        </div>
+                    `,
+                    className: 'custom-cluster',
+                    iconSize: L.point(size, size)
+                });
+            }
+
+            renderMarkers() {
+                this.markers.clearLayers();
+                const stations = this.tsneData.stations;
+                let markerCount = 0;
+                const totalCount = stations.length;
+
+                stations.forEach(station => {
+                    const settlement = station.n || station.settlement_name;
+                    const ballot = station.b || station.ballot_number;
+                    const key = `${settlement}|${ballot}`;
+
+                    // Get coordinates
+                    const coordData = this.coordinates?.stations?.[key];
+                    if (!coordData || !coordData.lat || !coordData.lng) {
+                        return; // Skip stations without coordinates
+                    }
+
+                    const color = this.getStationColor(station);
+                    const voters = station.v || station.total_voters || 0;
+
+                    // Size based on voter count
+                    const radius = Math.max(5, Math.min(15, Math.sqrt(voters / 50) * 3));
+
+                    const marker = L.circleMarker([coordData.lat, coordData.lng], {
+                        radius: radius,
+                        fillColor: color,
+                        color: '#000',
+                        weight: 1,
+                        opacity: 0.8,
+                        fillOpacity: 0.7,
+                        stationData: station  // Store for cluster aggregation
+                    });
+
+                    // Popup content
+                    const popupContent = this.createPopupContent(station, coordData);
+                    marker.bindPopup(popupContent, {
+                        maxWidth: 300,
+                        className: 'station-popup-container'
+                    });
+
+                    this.markers.addLayer(marker);
+                    markerCount++;
+                });
+
+                document.getElementById('station-count').textContent = markerCount.toLocaleString();
+                document.getElementById('total-count').textContent = totalCount.toLocaleString();
+            }
+
+            createPopupContent(station, coordData) {
+                const settlement = station.n || station.settlement_name;
+                const ballot = station.b || station.ballot_number;
+                const location = station.l || coordData.location || '';
+                const voters = station.v || station.total_voters || 0;
+                const eligible = station.e || station.eligible_voters || 0;
+                const turnout = station.t || station.turnout || 0;
+                const proportions = station.p || station.proportions || {};
+
+                // Get top 5 parties
+                const topParties = Object.entries(proportions)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 5);
+
+                const partyRows = topParties.map(([name, pct]) => {
+                    const party = this.parties.find(p => p.name === name);
+                    const color = party ? party.color : '#64748b';
+                    return `
+                        <div class="station-popup-party">
+                            <span class="station-popup-party-name">
+                                <span class="station-popup-party-color" style="background: ${color}"></span>
+                                ${name}
+                            </span>
+                            <span class="station-popup-party-pct">${pct}%</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Get socioeconomic cluster
+                const cluster = this.socioeconomicData?.[settlement] || this.socioeconomicData?.[this.normalizeName(settlement)];
+                const clusterText = cluster ? ` (אשכול ${cluster})` : '';
+
+                return `
+                    <div class="station-popup">
+                        <div class="station-popup-title">${settlement}${clusterText}</div>
+                        <div class="station-popup-ballot">קלפי ${ballot}</div>
+                        ${location ? `<div class="station-popup-location">${location}</div>` : ''}
+                        <div class="station-popup-stats">
+                            <span class="station-popup-stat-label">רשומים:</span>
+                            <span class="station-popup-stat-value">${eligible.toLocaleString()}</span>
+                            <span class="station-popup-stat-label">הצביעו:</span>
+                            <span class="station-popup-stat-value">${voters.toLocaleString()}</span>
+                            <span class="station-popup-stat-label">שיעור:</span>
+                            <span class="station-popup-stat-value">${turnout}%</span>
+                        </div>
+                        <div class="station-popup-parties">
+                            ${partyRows}
+                        </div>
+                    </div>
+                `;
+            }
+
+            handleSearch(query) {
+                const searchResults = document.getElementById('search-results');
+
+                if (query.length < 1) {
+                    searchResults.classList.remove('visible');
+                    return;
+                }
+
+                const matches = this.settlements
+                    .filter(s => s.name.includes(query))
+                    .slice(0, 15);
+
+                if (matches.length === 0) {
+                    searchResults.classList.remove('visible');
+                    return;
+                }
+
+                searchResults.innerHTML = matches.map(s => `
+                    <div class="search-result-item" data-settlement="${s.name}">
+                        ${s.name}
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">${s.count} קלפיות</span>
+                    </div>
+                `).join('');
+
+                searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.zoomToSettlement(item.dataset.settlement);
+                        searchResults.classList.remove('visible');
+                        document.getElementById('settlement-search').value = '';
+                    });
+                });
+
+                searchResults.classList.add('visible');
+            }
+
+            zoomToSettlement(settlementName) {
+                // Find all stations for this settlement and get bounds
+                const bounds = [];
+
+                this.tsneData.stations.forEach(station => {
+                    const name = station.n || station.settlement_name;
+                    if (name !== settlementName) return;
+
+                    const ballot = station.b || station.ballot_number;
+                    const key = `${name}|${ballot}`;
+                    const coordData = this.coordinates?.stations?.[key];
+
+                    if (coordData && coordData.lat && coordData.lng) {
+                        bounds.push([coordData.lat, coordData.lng]);
+                    }
+                });
+
+                if (bounds.length > 0) {
+                    if (bounds.length === 1) {
+                        this.map.setView(bounds[0], 15);
+                    } else {
+                        this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
+                    }
+                }
+            }
+        }
+
+        // Initialize
+        new GeoMapVisualization();
+    </script>
+</body>
+</html>

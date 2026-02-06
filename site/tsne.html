@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>מפת קלפיות - קולות נודדים</title>
+    <title>התפלגות קלפיות - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -827,7 +827,8 @@
             <p class="subtitle">מיפוי T-SNE של קלפיות לפי התפלגות ההצבעה</p>
             <nav class="view-switcher">
                 <a href="index.html" class="view-btn">נדידת קולות</a>
-                <span class="view-btn active">מפת קלפיות</span>
+                <span class="view-btn active">התפלגות קלפיות</span>
+                <a href="geomap.html" class="view-btn">מפה גיאוגרפית</a>
                 <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
                 <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
                 <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
@@ -1867,7 +1868,7 @@
                 ctx.fillStyle = '#f8fafc';
                 ctx.font = 'bold 18px Heebo, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(`מפת קלפיות t-SNE - בחירות לכנסת ה-${this.currentElection}`, svgWidth / 2, 28);
+                ctx.fillText(`התפלגות קלפיות t-SNE - בחירות לכנסת ה-${this.currentElection}`, svgWidth / 2, 28);
 
                 // Explanation
                 ctx.fillStyle = '#a0a0b0';
