@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מחשבון באדר-עופר - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Animated sand dunes background */
+        .dunes-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 250px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .dune {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+        }
+
+        .dune-1 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23c9a66b' fill-opacity='0.15' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1440px 180px;
+            animation: dune-move-1 30s linear infinite;
+            opacity: 0.9;
+        }
+
+        .dune-2 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23d4a574' fill-opacity='0.12' d='M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,229.3C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1200px 150px;
+            animation: dune-move-2 25s linear infinite;
+            opacity: 0.8;
+        }
+
+        .dune-3 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23e6c9a8' fill-opacity='0.1' d='M0,256L60,245.3C120,235,240,213,360,218.7C480,224,600,256,720,261.3C840,267,960,245,1080,229.3C1200,213,1320,203,1380,197.3L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1600px 200px;
+            animation: dune-move-3 40s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes dune-move-1 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes dune-move-2 {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes dune-move-3 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 1rem;
+            position: relative;
+            padding-left: 120px;
+            padding-right: 120px;
+            flex-wrap: nowrap;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .view-btn:hover {
+            background: #252535;
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .export-btn:hover {
+            background: var(--border-color);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .header-export {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 480px 1fr;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Control panel */
+        .control-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+            max-height: calc(100vh - 200px);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .control-panel-scrollable {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            padding-bottom: 0;
+        }
+
+        .control-panel-fixed {
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .control-panel-fixed .control-section {
+            margin-bottom: 1rem;
+        }
+
+        .control-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .threshold-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .threshold-control label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .threshold-input {
+            width: 80px;
+            padding: 0.4rem 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .threshold-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .party-input-row {
+            display: grid;
+            grid-template-columns: 24px 1fr auto 100px auto;
+            gap: 0.5rem;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .party-input-row:last-child {
+            border-bottom: none;
+        }
+
+        .vote-adjust-btns {
+            display: flex;
+            gap: 2px;
+        }
+
+        .vote-adjust-btns.left {
+            justify-content: flex-end;
+        }
+
+        .vote-adjust-btns.right {
+            justify-content: flex-start;
+        }
+
+        .vote-adjust-btn {
+            padding: 0.2rem 0.35rem;
+            font-size: 0.65rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            transition: var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .vote-adjust-btn:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .vote-adjust-btn.add {
+            color: #10b981;
+        }
+
+        .vote-adjust-btn.add:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .vote-adjust-btn.sub {
+            color: #ef4444;
+        }
+
+        .vote-adjust-btn.sub:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .party-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .party-name {
+            font-size: 0.85rem;
+            color: var(--text-primary);
+        }
+
+        .party-name.below-threshold {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        .vote-input {
+            width: 100%;
+            padding: 0.35rem 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            text-align: left;
+            direction: ltr;
+        }
+
+        .vote-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .vote-input.below-threshold {
+            opacity: 0.5;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            margin-top: 0.5rem;
+            border-top: 2px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .reset-btn:hover {
+            background: var(--border-color);
+            color: var(--text-primary);
+        }
+
+        /* Surplus agreements */
+        .agreements-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .agreement-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0.6rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .agreement-parties {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            flex: 1;
+        }
+
+        .agreement-party-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .agreement-link {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+
+        .agreement-remove {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0 0.25rem;
+            line-height: 1;
+        }
+
+        .agreement-remove:hover {
+            color: #ef4444;
+        }
+
+        .add-agreement {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .agreement-select {
+            flex: 1;
+            padding: 0.35rem 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        .agreement-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .add-agreement-btn {
+            padding: 0.35rem 0.6rem;
+            background: var(--accent-primary);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .add-agreement-btn:hover {
+            background: #2563eb;
+        }
+
+        .add-agreement-btn:disabled {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        .party-input-row.has-agreement {
+            border-right: 3px solid var(--accent-secondary);
+            padding-right: 0.5rem;
+            margin-right: -0.5rem;
+        }
+
+        .agreement-indicator {
+            font-size: 0.65rem;
+            color: var(--accent-secondary);
+            margin-right: 0.25rem;
+        }
+
+        /* Visualization */
+        .visualization-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .parliament-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            min-height: 400px;
+        }
+
+        .parliament-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .parliament-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .coalition-side {
+            text-align: center;
+            min-width: 100px;
+        }
+
+        .coalition-side .coalition-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .coalition-side .coalition-seats {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .coalition-side .coalition-seats.majority {
+            color: #10b981;
+        }
+
+        .coalition-side .coalition-seats.minority {
+            color: #ef4444;
+        }
+
+        #parliament-chart {
+            width: 100%;
+            max-width: 500px;
+            height: 350px;
+            flex-shrink: 0;
+        }
+
+        .results-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+        }
+
+        .results-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .result-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+        }
+
+        .result-color {
+            width: 16px;
+            height: 40px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .result-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .result-seats {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .result-votes {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .result-marginal {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+            font-size: 0.7rem;
+        }
+
+        .marginal-gain {
+            color: #22c55e;
+        }
+
+        .marginal-lose {
+            color: #ef4444;
+        }
+
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            pointer-events: none;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            font-size: 0.85rem;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        /* Footer */
+        .main-footer {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .methodology {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .methodology strong {
+            color: var(--text-primary);
+        }
+
+        .credits {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .credits a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .credits a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .control-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated sand dunes - חולות נודדים -->
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
+            <p class="subtitle">מחשבון חלוקת מנדטים בשיטת באדר-עופר</p>
+            <nav class="view-switcher">
+                <a href="index.html" class="view-btn">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn">מפת קלפיות</a>
+                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
+                <span class="view-btn active">מחשבון באדר-עופר</span>
+                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
+                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <aside class="control-panel">
+                <div class="control-panel-scrollable">
+                    <div class="control-section">
+                        <h3 class="control-title">הגדרות</h3>
+                        <div class="threshold-control">
+                            <label>אחוז חסימה:</label>
+                            <input type="number" id="threshold" class="threshold-input" value="3.25" min="0" max="10" step="0.25">
+                            <span>%</span>
+                        </div>
+                    </div>
+
+                    <div class="control-section">
+                        <h3 class="control-title">קולות למפלגות</h3>
+                        <div id="party-inputs"></div>
+                        <div class="total-row">
+                            <span>סה״כ קולות:</span>
+                            <span id="total-votes">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-panel-fixed">
+                    <div class="control-section">
+                        <h3 class="control-title">הסכמי עודפים</h3>
+                        <div id="agreements-list" class="agreements-list"></div>
+                        <div class="add-agreement">
+                            <select id="agreement-party1" class="agreement-select">
+                                <option value="">מפלגה 1...</option>
+                            </select>
+                            <select id="agreement-party2" class="agreement-select">
+                                <option value="">מפלגה 2...</option>
+                            </select>
+                            <button class="add-agreement-btn" id="add-agreement-btn" disabled>+</button>
+                        </div>
+                    </div>
+
+                    <button class="reset-btn" id="reset-btn">אפס לתוצאות כנסת 25</button>
+                </div>
+            </aside>
+
+            <div class="visualization-container">
+                <div class="parliament-container">
+                    <h3 class="parliament-title">הרכב הכנסת (120 מושבים)</h3>
+                    <div class="parliament-wrapper">
+                        <div class="coalition-side">
+                            <div class="coalition-label">גוש ימין-חרדי</div>
+                            <div class="coalition-seats" id="right-seats">0</div>
+                        </div>
+                        <svg id="parliament-chart"></svg>
+                        <div class="coalition-side">
+                            <div class="coalition-label">גוש מרכז-שמאל-ערבי</div>
+                            <div class="coalition-seats" id="left-seats">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-container">
+                    <h3 class="results-title">חלוקת המנדטים</h3>
+                    <div id="results-grid" class="results-grid"></div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="methodology">
+                    <strong>שיטת באדר-עופר:</strong>
+                    שיטה לחלוקת מנדטים יחסית המיושמת בישראל. בכל סיבוב, מחלקים את מספר הקולות של כל מפלגה במספר המנדטים שכבר קיבלה +1.
+                    המפלגה עם התוצאה הגבוהה ביותר מקבלת את המנדט הבא. התהליך חוזר עד לחלוקת כל 120 המנדטים.
+                    <strong>הסכמי עודפים:</strong> מפלגות שעברו את אחוז החסימה יכולות לחתום על הסכם עודפים - קולותיהן מצורפות יחד לחישוב המנה, אך המנדט ניתן למפלגה עם המנה הגבוהה ביותר בתוך ההסכם.
+                </p>
+                <p class="credits">
+                    © הראל קין |
+                    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Party data from Knesset 25 - Official Wikipedia results
+        const defaultParties = [
+            { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right' },
+            { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left' },
+            { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right' },
+            { name: 'המחנה הממלכתי', votes: 432482, color: '#7c3aed', block: 'left' },
+            { name: 'ש״ס', votes: 392964, color: '#1e3a8a', block: 'right' },
+            { name: 'יהדות התורה', votes: 280194, color: '#4b5563', block: 'right' },
+            { name: 'ישראל ביתנו', votes: 213687, color: '#db2777', block: 'left' },
+            { name: 'רע״ם', votes: 194047, color: '#84cc16', block: 'arab' },
+            { name: 'חד״ש-תע״ל', votes: 178735, color: '#f43f5e', block: 'arab' },
+            { name: 'העבודה', votes: 175992, color: '#dc2626', block: 'left' },
+            { name: 'מרצ', votes: 150793, color: '#16a34a', block: 'left' },
+            { name: 'בל״ד', votes: 138617, color: '#065f46', block: 'arab' },
+            { name: 'הבית היהודי', votes: 56775, color: '#059669', block: 'right' },
+            { name: 'חופש כלכלי', votes: 15801, color: '#6366f1', block: 'left' },
+            { name: 'באומץ בשבילך', votes: 14694, color: '#8b5cf6', block: 'left' },
+            { name: 'הכלכלית החדשה', votes: 13920, color: '#ec4899', block: 'left' },
+        ];
+
+        // Default surplus agreements (by party indices)
+        // הליכוד (0) + הציונות הדתית (2)
+        // ש״ס (4) + יהדות התורה (5)
+        // יש עתיד (1) + המחנה הממלכתי (3)
+        // העבודה (9) + מרצ (10)
+        const defaultAgreements = [
+            [0, 2],  // הליכוד + הציונות הדתית
+            [4, 5],  // ש״ס + יהדות התורה
+            [1, 3],  // יש עתיד + המחנה הממלכתי
+            [9, 10], // העבודה + מרצ
+        ];
+
+        class DHondtCalculator {
+            constructor() {
+                this.parties = JSON.parse(JSON.stringify(defaultParties));
+                this.threshold = 3.25;
+                this.totalSeats = 120;
+                this.agreements = JSON.parse(JSON.stringify(defaultAgreements)); // Array of [partyIdx1, partyIdx2] pairs
+                this.tooltip = d3.select('#tooltip');
+
+                this.init();
+            }
+
+            init() {
+                this.renderPartyInputs();
+                this.renderAgreementSelects();
+                this.renderAgreementsList();
+                this.setupEventListeners();
+                this.calculate();
+            }
+
+            renderPartyInputs() {
+                const container = document.getElementById('party-inputs');
+                container.innerHTML = this.parties.map((party, idx) => {
+                    const hasAgreement = this.agreements.some(a => a.includes(idx));
+                    const agreementPartner = this.getAgreementPartner(idx);
+                    const indicatorHtml = agreementPartner !== null
+                        ? `<span class="agreement-indicator">🤝</span>`
+                        : '';
+                    return `
+                    <div class="party-input-row ${hasAgreement ? 'has-agreement' : ''}">
+                        <div class="party-color" style="background: ${party.color}"></div>
+                        <span class="party-name" id="party-name-${idx}">${indicatorHtml}${party.name}</span>
+                        <div class="vote-adjust-btns right">
+                            <button class="vote-adjust-btn add" data-idx="${idx}" data-delta="50000">+50k</button>
+                            <button class="vote-adjust-btn add" data-idx="${idx}" data-delta="10000">+10k</button>
+                            <button class="vote-adjust-btn add" data-idx="${idx}" data-delta="1000">+1k</button>
+                        </div>
+                        <input type="text" class="vote-input" id="votes-${idx}"
+                               value="${party.votes.toLocaleString()}"
+                               data-idx="${idx}">
+                        <div class="vote-adjust-btns left">
+                            <button class="vote-adjust-btn sub" data-idx="${idx}" data-delta="-1000">-1k</button>
+                            <button class="vote-adjust-btn sub" data-idx="${idx}" data-delta="-10000">-10k</button>
+                            <button class="vote-adjust-btn sub" data-idx="${idx}" data-delta="-50000">-50k</button>
+                        </div>
+                    </div>
+                `}).join('');
+            }
+
+            getAgreementPartner(partyIdx) {
+                for (const agreement of this.agreements) {
+                    if (agreement[0] === partyIdx) return agreement[1];
+                    if (agreement[1] === partyIdx) return agreement[0];
+                }
+                return null;
+            }
+
+            renderAgreementSelects() {
+                const select1 = document.getElementById('agreement-party1');
+                const select2 = document.getElementById('agreement-party2');
+
+                // Get parties already in agreements
+                const inAgreement = new Set();
+                this.agreements.forEach(a => {
+                    inAgreement.add(a[0]);
+                    inAgreement.add(a[1]);
+                });
+
+                const availableParties = this.parties
+                    .map((p, idx) => ({ name: p.name, idx }))
+                    .filter(p => !inAgreement.has(p.idx));
+
+                const optionsHtml = '<option value="">בחר מפלגה...</option>' +
+                    availableParties.map(p => `<option value="${p.idx}">${p.name}</option>`).join('');
+
+                select1.innerHTML = optionsHtml;
+                select2.innerHTML = optionsHtml;
+            }
+
+            renderAgreementsList() {
+                const container = document.getElementById('agreements-list');
+
+                if (this.agreements.length === 0) {
+                    container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-muted);">אין הסכמים פעילים</div>';
+                    return;
+                }
+
+                container.innerHTML = this.agreements.map((agreement, idx) => {
+                    const party1 = this.parties[agreement[0]];
+                    const party2 = this.parties[agreement[1]];
+                    return `
+                        <div class="agreement-item">
+                            <div class="agreement-parties">
+                                <span class="agreement-party-color" style="background: ${party1.color}"></span>
+                                <span>${party1.name}</span>
+                                <span class="agreement-link">⟷</span>
+                                <span class="agreement-party-color" style="background: ${party2.color}"></span>
+                                <span>${party2.name}</span>
+                            </div>
+                            <button class="agreement-remove" data-idx="${idx}" title="הסר הסכם">×</button>
+                        </div>
+                    `;
+                }).join('');
+
+                // Add remove listeners
+                container.querySelectorAll('.agreement-remove').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const idx = parseInt(e.target.dataset.idx);
+                        this.removeAgreement(idx);
+                    });
+                });
+            }
+
+            addAgreement(partyIdx1, partyIdx2) {
+                if (partyIdx1 === partyIdx2) return;
+                this.agreements.push([partyIdx1, partyIdx2]);
+                this.renderPartyInputs();
+                this.renderAgreementSelects();
+                this.renderAgreementsList();
+                this.setupVoteInputListeners();
+                this.calculate();
+            }
+
+            removeAgreement(agreementIdx) {
+                this.agreements.splice(agreementIdx, 1);
+                this.renderPartyInputs();
+                this.renderAgreementSelects();
+                this.renderAgreementsList();
+                this.setupVoteInputListeners();
+                this.calculate();
+            }
+
+            setupEventListeners() {
+                // Threshold change
+                document.getElementById('threshold').addEventListener('change', (e) => {
+                    this.threshold = parseFloat(e.target.value) || 3.25;
+                    this.calculate();
+                });
+
+                // Vote inputs
+                document.getElementById('party-inputs').addEventListener('input', (e) => {
+                    if (e.target.classList.contains('vote-input')) {
+                        const idx = parseInt(e.target.dataset.idx);
+                        const value = parseInt(e.target.value.replace(/,/g, '')) || 0;
+                        this.parties[idx].votes = value;
+                        this.calculate();
+                    }
+                });
+
+                // Vote adjustment buttons
+                document.getElementById('party-inputs').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('vote-adjust-btn')) {
+                        const idx = parseInt(e.target.dataset.idx);
+                        const delta = parseInt(e.target.dataset.delta);
+                        this.parties[idx].votes = Math.max(0, this.parties[idx].votes + delta);
+                        const inputEl = document.getElementById(`votes-${idx}`);
+                        if (inputEl) {
+                            inputEl.value = this.parties[idx].votes.toLocaleString();
+                        }
+                        this.calculate();
+                    }
+                });
+
+                // Format on blur
+                document.getElementById('party-inputs').addEventListener('blur', (e) => {
+                    if (e.target.classList.contains('vote-input')) {
+                        const idx = parseInt(e.target.dataset.idx);
+                        e.target.value = this.parties[idx].votes.toLocaleString();
+                    }
+                }, true);
+
+                // Agreement selects
+                const select1 = document.getElementById('agreement-party1');
+                const select2 = document.getElementById('agreement-party2');
+                const addBtn = document.getElementById('add-agreement-btn');
+
+                const updateAddBtn = () => {
+                    const v1 = select1.value;
+                    const v2 = select2.value;
+                    addBtn.disabled = !v1 || !v2 || v1 === v2;
+                };
+
+                select1.addEventListener('change', updateAddBtn);
+                select2.addEventListener('change', updateAddBtn);
+
+                addBtn.addEventListener('click', () => {
+                    const idx1 = parseInt(select1.value);
+                    const idx2 = parseInt(select2.value);
+                    if (!isNaN(idx1) && !isNaN(idx2) && idx1 !== idx2) {
+                        this.addAgreement(idx1, idx2);
+                    }
+                });
+
+                // Reset button
+                document.getElementById('reset-btn').addEventListener('click', () => {
+                    this.parties = JSON.parse(JSON.stringify(defaultParties));
+                    this.threshold = 3.25;
+                    this.agreements = JSON.parse(JSON.stringify(defaultAgreements));
+                    document.getElementById('threshold').value = '3.25';
+                    this.renderPartyInputs();
+                    this.renderAgreementSelects();
+                    this.renderAgreementsList();
+                    this.setupVoteInputListeners();
+                    this.calculate();
+                });
+
+                this.setupVoteInputListeners();
+            }
+
+            setupVoteInputListeners() {
+                // Re-attach blur listeners after re-render
+                document.querySelectorAll('.vote-input').forEach(input => {
+                    input.addEventListener('focus', (e) => {
+                        e.target.value = this.parties[parseInt(e.target.dataset.idx)].votes || '';
+                    });
+                });
+            }
+
+            calculate() {
+                const totalVotes = this.parties.reduce((sum, p) => sum + p.votes, 0);
+                const thresholdVotes = totalVotes * (this.threshold / 100);
+
+                // Update total display
+                document.getElementById('total-votes').textContent = totalVotes.toLocaleString();
+
+                // Filter parties above threshold
+                const eligibleParties = this.parties
+                    .map((p, idx) => ({ ...p, idx }))
+                    .filter(p => p.votes >= thresholdVotes);
+
+                // Update visual state for below-threshold parties
+                this.parties.forEach((party, idx) => {
+                    const nameEl = document.getElementById(`party-name-${idx}`);
+                    const inputEl = document.getElementById(`votes-${idx}`);
+                    if (nameEl && inputEl) {
+                        if (party.votes < thresholdVotes) {
+                            nameEl.classList.add('below-threshold');
+                            inputEl.classList.add('below-threshold');
+                        } else {
+                            nameEl.classList.remove('below-threshold');
+                            inputEl.classList.remove('below-threshold');
+                        }
+                    }
+                });
+
+                // Build agreement groups (only for eligible parties)
+                const eligibleIndices = new Set(eligibleParties.map(p => p.idx));
+                const agreementGroups = []; // Each group is an array of party indices
+                const partyToGroup = {}; // Maps party idx to group idx
+
+                // Only consider agreements where both parties are eligible
+                this.agreements.forEach(([idx1, idx2]) => {
+                    if (eligibleIndices.has(idx1) && eligibleIndices.has(idx2)) {
+                        // Check if either party is already in a group
+                        const group1 = partyToGroup[idx1];
+                        const group2 = partyToGroup[idx2];
+
+                        if (group1 === undefined && group2 === undefined) {
+                            // Create new group
+                            const newGroupIdx = agreementGroups.length;
+                            agreementGroups.push([idx1, idx2]);
+                            partyToGroup[idx1] = newGroupIdx;
+                            partyToGroup[idx2] = newGroupIdx;
+                        } else if (group1 !== undefined && group2 === undefined) {
+                            // Add idx2 to group1
+                            agreementGroups[group1].push(idx2);
+                            partyToGroup[idx2] = group1;
+                        } else if (group1 === undefined && group2 !== undefined) {
+                            // Add idx1 to group2
+                            agreementGroups[group2].push(idx1);
+                            partyToGroup[idx1] = group2;
+                        }
+                        // If both already in groups, they stay in their respective groups
+                    }
+                });
+
+                // D'Hondt calculation with surplus agreements
+                const seats = {};
+                eligibleParties.forEach(p => seats[p.name] = 0);
+
+                for (let i = 0; i < this.totalSeats; i++) {
+                    let maxQuotient = -1;
+                    let winner = null;
+
+                    eligibleParties.forEach(party => {
+                        const groupIdx = partyToGroup[party.idx];
+
+                        if (groupIdx !== undefined) {
+                            // Party is in an agreement group
+                            const group = agreementGroups[groupIdx];
+                            // Combined votes of the group
+                            const combinedVotes = group.reduce((sum, idx) => sum + this.parties[idx].votes, 0);
+                            // Combined seats of the group
+                            const combinedSeats = group.reduce((sum, idx) => sum + (seats[this.parties[idx].name] || 0), 0);
+                            // Group quotient
+                            const groupQuotient = combinedVotes / (combinedSeats + 1);
+
+                            // If this group has the best quotient, find which party in the group should get the seat
+                            if (groupQuotient > maxQuotient) {
+                                maxQuotient = groupQuotient;
+                                // Award to the party in the group with highest individual quotient
+                                let bestInGroup = null;
+                                let bestIndividualQuotient = -1;
+                                group.forEach(idx => {
+                                    const p = this.parties[idx];
+                                    const indQuotient = p.votes / ((seats[p.name] || 0) + 1);
+                                    if (indQuotient > bestIndividualQuotient) {
+                                        bestIndividualQuotient = indQuotient;
+                                        bestInGroup = p.name;
+                                    }
+                                });
+                                winner = bestInGroup;
+                            }
+                        } else {
+                            // Party is not in any agreement
+                            const quotient = party.votes / ((seats[party.name] || 0) + 1);
+                            if (quotient > maxQuotient) {
+                                maxQuotient = quotient;
+                                winner = party.name;
+                            }
+                        }
+                    });
+
+                    if (winner) {
+                        seats[winner]++;
+                    }
+                }
+
+                // Calculate votes needed to gain/lose seats for each party
+                const marginalVotes = this.calculateMarginalVotes(thresholdVotes);
+
+                // Build results
+                const results = this.parties.map((party, idx) => ({
+                    ...party,
+                    idx,
+                    seats: seats[party.name] || 0,
+                    eligible: party.votes >= thresholdVotes,
+                    hasAgreement: partyToGroup[idx] !== undefined,
+                    votesToGain: marginalVotes[party.name]?.toGain || null,
+                    votesToLose: marginalVotes[party.name]?.toLose || null,
+                    gainFrom: marginalVotes[party.name]?.gainFrom || null,
+                    loseTo: marginalVotes[party.name]?.loseTo || null
+                })).sort((a, b) => b.seats - a.seats);
+
+                this.renderResults(results, thresholdVotes);
+                this.renderParliament(results);
+            }
+
+            // Calculate how many votes each party needs to gain or lose a seat
+            calculateMarginalVotes(thresholdVotes) {
+                const results = {};
+
+                this.parties.forEach((party, idx) => {
+                    if (party.votes < thresholdVotes) {
+                        // Below threshold - calculate votes to pass threshold and get first seat
+                        const votesToThreshold = Math.ceil(thresholdVotes) - party.votes;
+                        results[party.name] = { toGain: votesToThreshold > 0 ? votesToThreshold : null, toLose: null, gainFrom: null, loseTo: null };
+                        return;
+                    }
+
+                    const originalVotes = party.votes;
+                    const originalSeats = this.simulateSeats(this.parties);
+                    const currentSeats = originalSeats[party.name] || 0;
+
+                    // Binary search for votes to gain a seat
+                    let toGain = null;
+                    let gainFrom = null;
+                    if (currentSeats < this.totalSeats) {
+                        let low = 1, high = 500000;
+                        while (low < high) {
+                            const mid = Math.floor((low + high) / 2);
+                            const testParties = this.parties.map((p, i) =>
+                                i === idx ? { ...p, votes: p.votes + mid } : p
+                            );
+                            const testSeats = this.simulateSeats(testParties);
+                            if ((testSeats[party.name] || 0) > currentSeats) {
+                                high = mid;
+                            } else {
+                                low = mid + 1;
+                            }
+                        }
+                        if (low <= 500000) {
+                            toGain = low;
+                            // Find which party loses a seat
+                            const testParties = this.parties.map((p, i) =>
+                                i === idx ? { ...p, votes: p.votes + low } : p
+                            );
+                            const newSeats = this.simulateSeats(testParties);
+                            for (const [pName, pSeats] of Object.entries(originalSeats)) {
+                                if (pName !== party.name && (newSeats[pName] || 0) < pSeats) {
+                                    gainFrom = pName;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Binary search for votes to lose a seat
+                    let toLose = null;
+                    let loseTo = null;
+                    if (currentSeats > 0) {
+                        let low = 1, high = originalVotes;
+                        while (low < high) {
+                            const mid = Math.floor((low + high) / 2);
+                            const newVotes = originalVotes - mid;
+                            // Check if still above threshold
+                            if (newVotes < thresholdVotes) {
+                                high = mid;
+                                continue;
+                            }
+                            const testParties = this.parties.map((p, i) =>
+                                i === idx ? { ...p, votes: newVotes } : p
+                            );
+                            const testSeats = this.simulateSeats(testParties);
+                            if ((testSeats[party.name] || 0) < currentSeats) {
+                                high = mid;
+                            } else {
+                                low = mid + 1;
+                            }
+                        }
+                        if (low <= originalVotes && low > 0) {
+                            toLose = low;
+                            // Find which party gains a seat
+                            const testParties = this.parties.map((p, i) =>
+                                i === idx ? { ...p, votes: originalVotes - low } : p
+                            );
+                            const newSeats = this.simulateSeats(testParties);
+                            for (const [pName, pSeats] of Object.entries(originalSeats)) {
+                                if (pName !== party.name && (newSeats[pName] || 0) > pSeats) {
+                                    loseTo = pName;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    results[party.name] = { toGain, toLose, gainFrom, loseTo };
+                });
+
+                return results;
+            }
+
+            // Simulate D'Hondt seat allocation for given parties array
+            simulateSeats(parties) {
+                const totalVotes = parties.reduce((sum, p) => sum + p.votes, 0);
+                const thresholdVotes = totalVotes * (this.threshold / 100);
+
+                const eligibleParties = parties
+                    .map((p, idx) => ({ ...p, idx }))
+                    .filter(p => p.votes >= thresholdVotes);
+
+                const eligibleIndices = new Set(eligibleParties.map(p => p.idx));
+                const agreementGroups = [];
+                const partyToGroup = {};
+
+                this.agreements.forEach(([idx1, idx2]) => {
+                    if (eligibleIndices.has(idx1) && eligibleIndices.has(idx2)) {
+                        const group1 = partyToGroup[idx1];
+                        const group2 = partyToGroup[idx2];
+                        if (group1 === undefined && group2 === undefined) {
+                            const newGroupIdx = agreementGroups.length;
+                            agreementGroups.push([idx1, idx2]);
+                            partyToGroup[idx1] = newGroupIdx;
+                            partyToGroup[idx2] = newGroupIdx;
+                        } else if (group1 !== undefined && group2 === undefined) {
+                            agreementGroups[group1].push(idx2);
+                            partyToGroup[idx2] = group1;
+                        } else if (group1 === undefined && group2 !== undefined) {
+                            agreementGroups[group2].push(idx1);
+                            partyToGroup[idx1] = group2;
+                        }
+                    }
+                });
+
+                const seats = {};
+                eligibleParties.forEach(p => seats[p.name] = 0);
+
+                for (let i = 0; i < this.totalSeats; i++) {
+                    let maxQuotient = -1;
+                    let winner = null;
+
+                    eligibleParties.forEach(party => {
+                        const groupIdx = partyToGroup[party.idx];
+                        if (groupIdx !== undefined) {
+                            const group = agreementGroups[groupIdx];
+                            const combinedVotes = group.reduce((sum, idx) => sum + parties[idx].votes, 0);
+                            const combinedSeats = group.reduce((sum, idx) => sum + (seats[parties[idx].name] || 0), 0);
+                            const groupQuotient = combinedVotes / (combinedSeats + 1);
+                            if (groupQuotient > maxQuotient) {
+                                maxQuotient = groupQuotient;
+                                let bestInGroup = null;
+                                let bestIndividualQuotient = -1;
+                                group.forEach(idx => {
+                                    const p = parties[idx];
+                                    const indQuotient = p.votes / ((seats[p.name] || 0) + 1);
+                                    if (indQuotient > bestIndividualQuotient) {
+                                        bestIndividualQuotient = indQuotient;
+                                        bestInGroup = p.name;
+                                    }
+                                });
+                                winner = bestInGroup;
+                            }
+                        } else {
+                            const quotient = party.votes / ((seats[party.name] || 0) + 1);
+                            if (quotient > maxQuotient) {
+                                maxQuotient = quotient;
+                                winner = party.name;
+                            }
+                        }
+                    });
+
+                    if (winner) {
+                        seats[winner]++;
+                    }
+                }
+
+                return seats;
+            }
+
+            renderResults(results, thresholdVotes) {
+                const container = document.getElementById('results-grid');
+                const eligibleResults = results.filter(r => r.seats > 0);
+
+                container.innerHTML = eligibleResults.map(r => {
+                    const agreementIcon = r.hasAgreement ? '<span class="agreement-indicator" title="בהסכם עודפים">🤝</span>' : '';
+                    const gainFromText = r.gainFrom ? ` מ${r.gainFrom}` : '';
+                    const loseToText = r.loseTo ? ` ל${r.loseTo}` : '';
+                    const gainText = r.votesToGain ? `<span class="marginal-gain">+${r.votesToGain.toLocaleString()} לתוספת מנדט${gainFromText}</span>` : '';
+                    const loseText = r.votesToLose ? `<span class="marginal-lose">-${r.votesToLose.toLocaleString()} לאיבוד מנדט${loseToText}</span>` : '';
+                    return `
+                    <div class="result-card">
+                        <div class="result-color" style="background: ${r.color}"></div>
+                        <div class="result-info">
+                            <div class="result-name">${agreementIcon}${r.name}</div>
+                            <div class="result-seats">${r.seats} מנדטים</div>
+                            <div class="result-votes">${r.votes.toLocaleString()} קולות</div>
+                            <div class="result-marginal">${gainText} ${loseText}</div>
+                        </div>
+                    </div>
+                `}).join('');
+
+                // Coalition calculation
+                const rightSeats = results.filter(r => r.block === 'right').reduce((sum, r) => sum + r.seats, 0);
+                const leftSeats = results.filter(r => r.block === 'left').reduce((sum, r) => sum + r.seats, 0);
+                const arabSeats = results.filter(r => r.block === 'arab').reduce((sum, r) => sum + r.seats, 0);
+
+                const rightEl = document.getElementById('right-seats');
+                const leftEl = document.getElementById('left-seats');
+
+                rightEl.textContent = rightSeats;
+                leftEl.textContent = leftSeats + arabSeats;
+
+                rightEl.className = 'coalition-seats ' + (rightSeats >= 61 ? 'majority' : 'minority');
+                leftEl.className = 'coalition-seats ' + ((leftSeats + arabSeats) >= 61 ? 'majority' : 'minority');
+            }
+
+            renderParliament(results) {
+                const container = document.getElementById('parliament-chart');
+                const width = container.clientWidth || 600;
+                const height = 350;
+
+                d3.select('#parliament-chart').selectAll('*').remove();
+
+                const svg = d3.select('#parliament-chart')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                // Political order from left to right
+                const politicalOrder = {
+                    'בל״ד': 1,
+                    'חד״ש-תע״ל': 2,
+                    'רע״ם': 3,
+                    'מרצ': 4,
+                    'העבודה': 5,
+                    'המחנה הממלכתי': 6,
+                    'יש עתיד': 7,
+                    'ישראל ביתנו': 8,
+                    'ש״ס': 9,
+                    'יהדות התורה': 10,
+                    'הליכוד': 11,
+                    'הציונות הדתית': 12,
+                    'הבית היהודי': 13,
+                };
+
+                // Create seat positions in a semicircle
+                const eligibleResults = results.filter(r => r.seats > 0);
+
+                // Sort parties by political order (left to right)
+                const sortedParties = [...eligibleResults].sort((a, b) => {
+                    const orderA = politicalOrder[a.name] || 50;
+                    const orderB = politicalOrder[b.name] || 50;
+                    return orderA - orderB;
+                });
+
+                // Build array of seats with party info
+                const seats = [];
+                sortedParties.forEach(party => {
+                    for (let i = 0; i < party.seats; i++) {
+                        seats.push({ party: party.name, color: party.color, block: party.block });
+                    }
+                });
+
+                // Arrange in semicircle rows
+                const rows = 5;
+                const centerX = width / 2;
+                const centerY = height - 30;
+                const minRadius = 80;
+                const maxRadius = Math.min(width / 2 - 20, height - 60);
+                const radiusStep = (maxRadius - minRadius) / (rows - 1);
+
+                // Calculate seats per row
+                const seatsPerRow = [];
+                let remaining = this.totalSeats;
+                for (let r = 0; r < rows; r++) {
+                    const radius = minRadius + r * radiusStep;
+                    const circumference = Math.PI * radius;
+                    const maxSeats = Math.floor(circumference / 14); // ~14px per seat
+                    const rowSeats = Math.min(maxSeats, remaining);
+                    seatsPerRow.push(rowSeats);
+                    remaining -= rowSeats;
+                }
+
+                // First, create all seat positions (without party assignment)
+                const allPositions = [];
+                for (let r = 0; r < rows; r++) {
+                    const radius = minRadius + r * radiusStep;
+                    const numSeats = seatsPerRow[r];
+                    const angleStep = Math.PI / (numSeats + 1);
+
+                    for (let s = 0; s < numSeats; s++) {
+                        const angle = Math.PI - angleStep * (s + 1);
+                        const x = centerX + radius * Math.cos(angle);
+                        const y = centerY - radius * Math.sin(angle);
+                        allPositions.push({ x, y, angle, row: r });
+                    }
+                }
+
+                // Sort positions by angle (column-based: left to right visually)
+                allPositions.sort((a, b) => b.angle - a.angle);
+
+                // Assign seats to positions in column order
+                const seatPositions = allPositions.slice(0, seats.length).map((pos, i) => ({
+                    ...pos,
+                    ...seats[i]
+                }));
+
+                // Draw seats
+                svg.selectAll('.seat')
+                    .data(seatPositions)
+                    .join('circle')
+                    .attr('class', 'seat')
+                    .attr('cx', d => d.x)
+                    .attr('cy', d => d.y)
+                    .attr('r', 6)
+                    .attr('fill', d => d.color)
+                    .attr('stroke', '#000')
+                    .attr('stroke-width', 0.5)
+                    .style('cursor', 'pointer')
+                    .on('mouseenter', (event, d) => {
+                        this.tooltip.html(d.party)
+                            .classed('visible', true)
+                            .style('left', (event.clientX + 10) + 'px')
+                            .style('top', (event.clientY - 20) + 'px');
+                    })
+                    .on('mouseleave', () => {
+                        this.tooltip.classed('visible', false);
+                    });
+
+                // Add center text
+                svg.append('text')
+                    .attr('x', centerX)
+                    .attr('y', centerY + 15)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', 'var(--text-muted)')
+                    .attr('font-size', '0.9rem')
+                    .text('120 מושבים');
+            }
+        }
+
+        // QR Code generator for fixed URL (minimal implementation)
+        function generateQRCodeDataURL() {
+            // Pre-computed QR code for https://kolot-nodedim.netlify.app/
+            // This is a simplified 25x25 QR code matrix
+            const qrMatrix = [
+                [1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1],
+                [1,0,0,0,0,0,1,0,0,1,0,1,1,0,0,0,1,0,1,0,0,0,0,0,1],
+                [1,0,1,1,1,0,1,0,1,1,0,0,0,1,1,0,1,0,1,0,1,1,1,0,1],
+                [1,0,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,1,1,0,1],
+                [1,0,1,1,1,0,1,0,1,0,1,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
+                [1,0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1],
+                [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+                [0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0],
+                [1,0,1,1,0,1,1,1,1,0,1,0,0,0,1,0,0,1,1,0,0,1,0,1,0],
+                [0,1,0,0,1,0,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,0,1,0,1],
+                [1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,1,0],
+                [0,0,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,0,1],
+                [0,0,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,0,0],
+                [0,1,1,0,0,1,0,1,0,1,1,0,0,1,0,0,0,0,1,1,0,0,0,1,1],
+                [1,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,0,0],
+                [0,1,0,1,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,0,0,1],
+                [1,0,0,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,0,1,0],
+                [0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,1,1],
+                [1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,1,1,0,0],
+                [1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,1,0,1],
+                [1,0,1,1,1,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,1,0,1,0],
+                [1,0,1,1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,0,0,0,0,1],
+                [1,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,1,0,1,1,0,1,1,0],
+                [1,0,0,0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0,1,1,0,0,1,1],
+                [1,1,1,1,1,1,1,0,1,0,0,1,1,0,1,0,0,1,0,0,1,1,1,0,0]
+            ];
+
+            const size = 25;
+            const cellSize = 4;
+            const canvasSize = size * cellSize;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvasSize;
+            canvas.height = canvasSize;
+            const ctx = canvas.getContext('2d');
+
+            // White background
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+            // Draw modules
+            ctx.fillStyle = '#000000';
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    if (qrMatrix[y][x]) {
+                        ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    }
+                }
+            }
+
+            return canvas.toDataURL('image/png');
+        }
+
+        function exportPNG() {
+            const parliamentSvg = document.getElementById('parliament-chart');
+            if (!parliamentSvg) return;
+
+            // Get result cards data
+            const resultCards = document.querySelectorAll('.result-card');
+            const results = [];
+            resultCards.forEach(card => {
+                const color = card.querySelector('.result-color').style.background;
+                const name = card.querySelector('.result-name').textContent.replace('🤝', '').trim();
+                const seats = card.querySelector('.result-seats').textContent;
+                const votes = card.querySelector('.result-votes').textContent;
+                const marginalEl = card.querySelector('.result-marginal');
+                const gainEl = marginalEl?.querySelector('.marginal-gain');
+                const loseEl = marginalEl?.querySelector('.marginal-lose');
+                results.push({
+                    color,
+                    name,
+                    seats,
+                    votes,
+                    gain: gainEl ? gainEl.textContent.trim() : '',
+                    lose: loseEl ? loseEl.textContent.trim() : ''
+                });
+            });
+
+            // Layout calculations
+            const scale = 2;
+            const width = 900;
+            const parliamentHeight = 420;
+            const resultsTitle = 40;
+            const cardHeight = 70;
+            const cardWidth = 280;
+            const cardsPerRow = 3;
+            const cardPadding = 10;
+            const numRows = Math.ceil(results.length / cardsPerRow);
+            const resultsHeight = resultsTitle + (numRows * (cardHeight + cardPadding)) + 20;
+            const watermarkHeight = 60;
+            const totalHeight = parliamentHeight + resultsHeight + watermarkHeight;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width * scale;
+            canvas.height = totalHeight * scale;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(scale, scale);
+
+            // Background
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, width, totalHeight);
+
+            // Parliament section background
+            ctx.fillStyle = '#12121a';
+            ctx.fillRect(10, 10, width - 20, parliamentHeight - 20);
+
+            // Clone and serialize the parliament SVG
+            const svgClone = parliamentSvg.cloneNode(true);
+            const svgWidth = parliamentSvg.clientWidth || 500;
+            const svgHeight = parliamentSvg.clientHeight || 350;
+            svgClone.setAttribute('width', svgWidth);
+            svgClone.setAttribute('height', svgHeight);
+
+            const svgData = new XMLSerializer().serializeToString(svgClone);
+            const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+            const url = URL.createObjectURL(svgBlob);
+
+            const img = new Image();
+            img.onload = () => {
+                // Draw parliament title
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 18px Heebo, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('הרכב הכנסת (120 מושבים)', width / 2, 35);
+
+                // Center the parliament chart
+                const parliamentX = (width - svgWidth) / 2;
+                ctx.drawImage(img, parliamentX, 50);
+                URL.revokeObjectURL(url);
+
+                // Draw coalition counts
+                const rightSeats = document.getElementById('right-seats').textContent;
+                const leftSeats = document.getElementById('left-seats').textContent;
+
+                ctx.font = '14px Heebo, sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'right';
+                ctx.fillText('גוש ימין-חרדי', width - 40, 180);
+                ctx.fillStyle = parseInt(rightSeats) >= 61 ? '#10b981' : '#ef4444';
+                ctx.font = 'bold 28px Heebo, sans-serif';
+                ctx.fillText(rightSeats, width - 40, 215);
+
+                ctx.font = '14px Heebo, sans-serif';
+                ctx.fillStyle = '#94a3b8';
+                ctx.textAlign = 'left';
+                ctx.fillText('גוש מרכז-שמאל-ערבי', 40, 180);
+                ctx.fillStyle = parseInt(leftSeats) >= 61 ? '#10b981' : '#ef4444';
+                ctx.font = 'bold 28px Heebo, sans-serif';
+                ctx.textAlign = 'left';
+                ctx.fillText(leftSeats, 40, 215);
+
+                // Add threshold and total votes info
+                const thresholdValue = document.getElementById('threshold').value;
+                const totalVotes = document.getElementById('total-votes').textContent;
+                ctx.fillStyle = '#64748b';
+                ctx.font = '11px Heebo, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(`אחוז חסימה: ${thresholdValue}% | סה״כ קולות: ${totalVotes}`, width / 2, parliamentHeight - 15);
+
+                // Results section
+                const resultsY = parliamentHeight;
+                ctx.fillStyle = '#12121a';
+                ctx.fillRect(10, resultsY, width - 20, resultsHeight - 10);
+
+                // Results title
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 16px Heebo, sans-serif';
+                ctx.textAlign = 'right';
+                ctx.fillText('חלוקת המנדטים', width - 25, resultsY + 28);
+
+                // Draw result cards
+                const startY = resultsY + resultsTitle + 5;
+                const startX = width - 25;
+
+                results.forEach((r, i) => {
+                    const row = Math.floor(i / cardsPerRow);
+                    const col = i % cardsPerRow;
+                    const cardX = startX - (col + 1) * (cardWidth + cardPadding) + cardPadding;
+                    const cardY = startY + row * (cardHeight + cardPadding);
+
+                    // Card background
+                    ctx.fillStyle = '#1a1a25';
+                    ctx.beginPath();
+                    ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 8);
+                    ctx.fill();
+
+                    // Color bar
+                    ctx.fillStyle = r.color;
+                    ctx.beginPath();
+                    ctx.roundRect(cardX + cardWidth - 16, cardY + 8, 8, cardHeight - 16, 4);
+                    ctx.fill();
+
+                    // Party name
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = 'bold 13px Heebo, sans-serif';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(r.name, cardX + cardWidth - 30, cardY + 20);
+
+                    // Seats
+                    ctx.fillStyle = '#3b82f6';
+                    ctx.font = 'bold 15px Heebo, sans-serif';
+                    ctx.fillText(r.seats, cardX + cardWidth - 30, cardY + 38);
+
+                    // Votes
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '11px Heebo, sans-serif';
+                    ctx.fillText(r.votes, cardX + cardWidth - 30, cardY + 53);
+
+                    // Marginal votes
+                    if (r.gain || r.lose) {
+                        ctx.font = '10px Heebo, sans-serif';
+                        let marginX = cardX + 10;
+                        ctx.textAlign = 'left';
+                        if (r.gain) {
+                            ctx.fillStyle = '#22c55e';
+                            ctx.fillText(r.gain, marginX, cardY + 20);
+                        }
+                        if (r.lose) {
+                            ctx.fillStyle = '#ef4444';
+                            ctx.fillText(r.lose, marginX, cardY + 35);
+                        }
+                    }
+                });
+
+                // Watermark section
+                const watermarkY = totalHeight - watermarkHeight;
+                ctx.fillStyle = '#1a1a25';
+                ctx.fillRect(0, watermarkY, width, watermarkHeight);
+
+                // Separator line
+                ctx.strokeStyle = '#2a2a3a';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, watermarkY);
+                ctx.lineTo(width, watermarkY);
+                ctx.stroke();
+
+                // Draw QR code
+                const qrDataURL = generateQRCodeDataURL();
+                const qrImg = new Image();
+                qrImg.onload = () => {
+                    const qrSize = 45;
+                    ctx.drawImage(qrImg, 15, watermarkY + 7, qrSize, qrSize);
+
+                    // Watermark text
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = 'bold 14px Heebo, sans-serif';
+                    ctx.textAlign = 'right';
+                    ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', width - 15, watermarkY + 25);
+
+                    ctx.fillStyle = '#64748b';
+                    ctx.font = '12px Heebo, sans-serif';
+                    ctx.fillText('https://kolot-nodedim.netlify.app/', width - 15, watermarkY + 45);
+
+                    // Download
+                    const link = document.createElement('a');
+                    link.download = 'dhondt-calculator.png';
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                };
+                qrImg.src = qrDataURL;
+            };
+            img.src = url;
+        }
+
+        // Export button listener
+        document.getElementById('export-png').addEventListener('click', exportPNG);
+
+        // Initialize
+        new DHondtCalculator();
+    </script>
+
+    <!-- Buy Me a Coffee button -->
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
+        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+    </a>
+    <style>
+        .bmc-button {
+            position: fixed;
+            bottom: 18px;
+            left: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #FFDD00;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #000;
+            font-family: 'Heebo', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+        }
+        .bmc-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .bmc-button img {
+            width: 24px;
+            height: 24px;
+        }
+        .bmc-button span {
+            display: none;
+            max-width: 200px;
+            line-height: 1.4;
+        }
+        .bmc-button:hover span {
+            display: inline-block;
+        }
+    </style>
+</body>
+</html>

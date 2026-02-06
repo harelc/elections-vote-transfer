@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קלפיות חריגות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+            --severity-high: #ef4444;
+            --severity-medium: #f59e0b;
+            --severity-low: #22c55e;
+            /* Anomaly type colors */
+            --type-shift: #ef4444;          /* Red - data entry error */
+            --type-round: #8b5cf6;          /* Purple - round numbers */
+            --type-turnout: #f97316;        /* Orange - turnout anomaly */
+            --type-outlier: #06b6d4;        /* Cyan - statistical outlier */
+            --type-dominance: #ec4899;      /* Pink - extreme dominance */
+            --type-smallparty: #eab308;     /* Yellow - small party spike */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Animated sand dunes background */
+        .dunes-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 250px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .dune {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+        }
+
+        .dune-1 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23c9a66b' fill-opacity='0.15' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1440px 180px;
+            animation: dune-move-1 30s linear infinite;
+            opacity: 0.9;
+        }
+
+        .dune-2 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23d4a574' fill-opacity='0.12' d='M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,229.3C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1200px 150px;
+            animation: dune-move-2 25s linear infinite;
+            opacity: 0.8;
+        }
+
+        .dune-3 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23e6c9a8' fill-opacity='0.1' d='M0,256L60,245.3C120,235,240,213,360,218.7C480,224,600,256,720,261.3C840,267,960,245,1080,229.3C1200,213,1320,203,1380,197.3L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1600px 200px;
+            animation: dune-move-3 40s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes dune-move-1 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes dune-move-2 {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes dune-move-3 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 1rem;
+            position: relative;
+            padding-left: 120px;
+            padding-right: 120px;
+            flex-wrap: nowrap;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .view-btn:hover {
+            background: #252535;
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .export-btn:hover {
+            background: var(--border-color);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .header-export {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Election selector */
+        .election-selector {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .election-btn {
+            padding: 0.6rem 1.2rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .election-btn:hover {
+            background: #252535;
+            color: var(--text-primary);
+        }
+
+        .election-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Irregularities list */
+        .irregularities-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .irregularity-card {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: var(--transition-fast);
+        }
+
+        .irregularity-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+        }
+
+        .card-header:hover {
+            background: #252535;
+        }
+
+        .card-location {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .card-rank {
+            width: 32px;
+            height: 32px;
+            background: var(--accent-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .card-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .severity-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .severity-badge.high {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--severity-high);
+        }
+
+        .severity-badge.medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--severity-medium);
+        }
+
+        .severity-badge.low {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--severity-low);
+        }
+
+        /* Anomaly type badges */
+        .anomaly-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .anomaly-badge.shift_error {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--type-shift);
+        }
+
+        .anomaly-badge.round_numbers {
+            background: rgba(139, 92, 246, 0.2);
+            color: var(--type-round);
+        }
+
+        .anomaly-badge.turnout_anomaly {
+            background: rgba(249, 115, 22, 0.2);
+            color: var(--type-turnout);
+        }
+
+        .anomaly-badge.statistical_outlier {
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--type-outlier);
+        }
+
+        .anomaly-badge.extreme_dominance {
+            background: rgba(236, 72, 153, 0.2);
+            color: var(--type-dominance);
+        }
+
+        .anomaly-badge.small_party_spike {
+            background: rgba(234, 179, 8, 0.2);
+            color: var(--type-smallparty);
+        }
+
+        .card-body {
+            padding: 1.5rem;
+            display: none;
+        }
+
+        .card-body.expanded {
+            display: block;
+        }
+
+        .card-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .card-stat {
+            text-align: center;
+        }
+
+        .card-stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .card-stat-label {
+            font-size: 0.75rem;
+        }
+
+        .compare-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            background: #10b981;
+            color: white !important;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: var(--transition-fast);
+        }
+
+        .compare-link:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .shift-error-detail {
+            background: rgba(239, 68, 68, 0.1);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .shift-symbols {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--type-shift);
+        }
+
+        .symbol-code {
+            background: rgba(239, 68, 68, 0.2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+        }
+
+        /* Anomalies section */
+        .anomalies-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .anomalies-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .anomaly-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-right: 4px solid var(--border-color);
+        }
+
+        .anomaly-item.high {
+            border-right-color: var(--severity-high);
+        }
+
+        .anomaly-item.medium {
+            border-right-color: var(--severity-medium);
+        }
+
+        .anomaly-item.low {
+            border-right-color: var(--severity-low);
+        }
+
+        /* Anomaly type border colors */
+        .anomaly-item.shift_error {
+            border-right-color: var(--type-shift);
+        }
+
+        .anomaly-item.round_numbers {
+            border-right-color: var(--type-round);
+        }
+
+        .anomaly-item.turnout_anomaly {
+            border-right-color: var(--type-turnout);
+        }
+
+        .anomaly-item.statistical_outlier {
+            border-right-color: var(--type-outlier);
+        }
+
+        .anomaly-item.extreme_dominance {
+            border-right-color: var(--type-dominance);
+        }
+
+        .anomaly-item.small_party_spike {
+            border-right-color: var(--type-smallparty);
+        }
+
+        .anomaly-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .anomaly-type {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .anomaly-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .anomaly-details {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: 0.75rem;
+            border-radius: 6px;
+        }
+
+        .anomaly-details code {
+            color: var(--accent-secondary);
+            font-family: monospace;
+        }
+
+        /* Votes breakdown */
+        .votes-section {
+            margin-top: 1.5rem;
+        }
+
+        .votes-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .votes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .vote-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            position: relative;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .vote-item:hover {
+            background: #252535;
+        }
+
+        /* Party tooltip */
+        .party-tooltip {
+            position: fixed;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 150ms ease;
+            max-width: 300px;
+            min-width: 200px;
+        }
+
+        .party-tooltip.visible {
+            opacity: 1;
+        }
+
+        .party-tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .party-tooltip-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .party-tooltip-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        .party-tooltip-symbol {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-right: auto;
+        }
+
+        .party-tooltip-row {
+            display: flex;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .party-tooltip-label {
+            color: var(--text-muted);
+            min-width: 50px;
+        }
+
+        .party-tooltip-value {
+            color: var(--text-primary);
+        }
+
+        .party-tooltip-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-color);
+            line-height: 1.4;
+        }
+
+        .vote-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .vote-party {
+            font-size: 0.85rem;
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .vote-count {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+        }
+
+        .vote-pct {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        .main-footer {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .methodology {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .methodology strong {
+            color: var(--text-primary);
+        }
+
+        .credits {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .credits a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .credits a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .view-switcher {
+                padding: 0;
+                flex-wrap: wrap;
+            }
+
+            .view-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+
+            .header-export {
+                position: static;
+                transform: none;
+                margin-top: 0.5rem;
+            }
+
+            .main-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.75rem;
+            }
+
+            .card-badges {
+                width: 100%;
+            }
+
+            .stats-bar {
+                gap: 1rem;
+            }
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Expand icon */
+        .expand-icon {
+            transition: transform 0.2s ease;
+            color: var(--text-muted);
+        }
+
+        .expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated sand dunes -->
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
+            <p class="subtitle">זיהוי קלפיות עם דפוסי הצבעה חריגים</p>
+            <nav class="view-switcher">
+                <a href="index.html" class="view-btn">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn">מפת קלפיות</a>
+                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
+                <span class="view-btn active">קלפיות חריגות</span>
+                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <div class="election-selector" id="election-selector">
+                <button class="election-btn" data-election="21">כנסת 21</button>
+                <button class="election-btn" data-election="22">כנסת 22</button>
+                <button class="election-btn" data-election="23">כנסת 23</button>
+                <button class="election-btn" data-election="24">כנסת 24</button>
+                <button class="election-btn active" data-election="25">כנסת 25</button>
+            </div>
+
+            <div class="stats-bar" id="stats-bar">
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-total">-</div>
+                    <div class="stat-label">קלפיות נותחו</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-irregular">-</div>
+                    <div class="stat-label">חשודות שנמצאו</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-fixed">-</div>
+                    <div class="stat-label">תוקנו באתר הרשמי</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="stat-shown">-</div>
+                    <div class="stat-label">נותרו חריגות</div>
+                </div>
+            </div>
+
+            <div class="irregularities-container" id="irregularities-container">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>טוען נתונים...</p>
+                </div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="methodology">
+                    <strong>שיטת הזיהוי:</strong>
+                    המערכת מנתחת כל קלפי ומחפשת דפוסים חריגים:
+                    <strong>טעויות הזנה</strong> - קולות שנרשמו בעמודת מפלגה לא נכונה;
+                    <strong>מספרים עגולים</strong> - ריכוז חריג של מספרים עגולים;
+                    <strong>חריגה סטטיסטית</strong> - דפוסים שלא מתאימים לאף אשכול דמוגרפי ידוע;
+                    <strong>מפלגות קטנות</strong> - תוצאות גבוהות באופן יוצא דופן למפלגות שיזניות.
+                    הנתונים מבוססים על תוצאות רשמיות מאתר ועדת הבחירות.
+                </p>
+                <p class="credits">
+                    © הראל קין |
+                    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Anomaly type translations
+        const anomalyTypes = {
+            'shift_error': 'חשד לטעות הזנה',
+            'round_numbers': 'מספרים עגולים',
+            'turnout_anomaly': 'אנומליית השתתפות',
+            'statistical_outlier': 'חריגה סטטיסטית',
+            'extreme_dominance': 'שליטה קיצונית',
+            'small_party_spike': 'חריגה במפלגה קטנה'
+        };
+
+        // Current data
+        let currentData = null;
+        let currentElection = '25';
+
+        // Party data from loaded data (full objects)
+        let partyData = {};
+
+        // Tooltip element
+        let tooltip = null;
+
+        async function loadData(electionId) {
+            const container = document.getElementById('irregularities-container');
+            container.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>טוען נתונים...</p>
+                </div>
+            `;
+
+            try {
+                const response = await fetch(`data/irregularities_${electionId}.json`);
+                currentData = await response.json();
+                currentElection = electionId;
+
+                // Build party data map (full objects)
+                partyData = {};
+                currentData.parties.forEach(p => {
+                    partyData[p.symbol] = p;
+                });
+
+                updateStats();
+                renderIrregularities();
+                setupTooltipListeners();
+            } catch (error) {
+                console.error('Error loading data:', error);
+                container.innerHTML = `<div class="loading"><p>שגיאה בטעינת הנתונים</p></div>`;
+            }
+        }
+
+        function initTooltip() {
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.className = 'party-tooltip';
+                document.body.appendChild(tooltip);
+            }
+        }
+
+        function showPartyTooltip(e, symbol) {
+            initTooltip();
+            const party = partyData[symbol];
+            if (!party) return;
+
+            const leader = party.leader || '';
+            const ideology = party.ideology || '';
+            const description = party.description || '';
+            const proportion = party.proportion || '';
+
+            tooltip.innerHTML = `
+                <div class="party-tooltip-header">
+                    <div class="party-tooltip-color" style="background: ${party.color}"></div>
+                    <span class="party-tooltip-name">${party.name}</span>
+                    <span class="party-tooltip-symbol">(${symbol})</span>
+                </div>
+                ${leader ? `<div class="party-tooltip-row"><span class="party-tooltip-label">מנהיג:</span><span class="party-tooltip-value">${leader}</span></div>` : ''}
+                ${ideology ? `<div class="party-tooltip-row"><span class="party-tooltip-label">אידאולוגיה:</span><span class="party-tooltip-value">${ideology}</span></div>` : ''}
+                <div class="party-tooltip-row"><span class="party-tooltip-label">קולות:</span><span class="party-tooltip-value">${party.votes?.toLocaleString() || '?'} (${proportion})</span></div>
+                ${description ? `<div class="party-tooltip-desc">${description}</div>` : ''}
+            `;
+
+            // Position tooltip
+            const rect = e.target.closest('.vote-item').getBoundingClientRect();
+            const tooltipRect = tooltip.getBoundingClientRect();
+
+            let left = rect.left;
+            let top = rect.bottom + 8;
+
+            // Adjust if going off screen
+            if (left + 300 > window.innerWidth) {
+                left = window.innerWidth - 310;
+            }
+            if (top + 200 > window.innerHeight) {
+                top = rect.top - 200;
+            }
+
+            tooltip.style.left = left + 'px';
+            tooltip.style.top = top + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hidePartyTooltip() {
+            if (tooltip) {
+                tooltip.classList.remove('visible');
+            }
+        }
+
+        function setupTooltipListeners() {
+            document.querySelectorAll('.vote-item').forEach(item => {
+                const symbol = item.dataset.symbol;
+                if (symbol) {
+                    item.addEventListener('mouseenter', (e) => showPartyTooltip(e, symbol));
+                    item.addEventListener('mouseleave', hidePartyTooltip);
+                }
+            });
+        }
+
+        function updateStats() {
+            const found = currentData.election.irregular_found;
+            const shown = currentData.irregularities.length;
+            const fixed = found - shown;
+
+            document.getElementById('stat-total').textContent =
+                currentData.election.analyzed_ballots.toLocaleString();
+            document.getElementById('stat-irregular').textContent =
+                found.toLocaleString();
+            document.getElementById('stat-fixed').textContent =
+                fixed.toLocaleString();
+            document.getElementById('stat-shown').textContent =
+                shown.toLocaleString();
+        }
+
+        function getPartyName(symbol) {
+            const party = currentData.parties.find(p => p.symbol === symbol);
+            return party ? party.name : symbol;
+        }
+
+        function getPartyColor(symbol) {
+            return partyData[symbol]?.color || '#6b7280';
+        }
+
+        function getOfficialUrl(item) {
+            const electionId = currentData.election.id;
+            const cityId = item.settlement_code;
+            // Clean ballot number (remove trailing .0 if present)
+            let ballotNum = String(item.ballot);
+            if (ballotNum.endsWith('.0')) {
+                ballotNum = ballotNum.slice(0, -2);
+            }
+            return `https://votes${electionId}.bechirot.gov.il/ballotresults?cityID=${cityId}&BallotNumber=${ballotNum}`;
+        }
+
+        function formatAnomalyDetails(anomaly) {
+            const details = anomaly.details;
+            if (!details) return '';
+
+            switch (anomaly.type) {
+                case 'shift_error':
+                    if (Array.isArray(details)) {
+                        return details.map(d => `
+                            <div class="shift-error-detail">
+                                <div class="shift-symbols">
+                                    אותיות סמוכות בפתק: <code class="symbol-code">${d.missing} ↔ ${d.unexpected}</code>
+                                </div>
+                                <div>
+                                    <strong>${d.missing}</strong> (${getPartyName(d.missing)}): <code>${d.missing_votes}</code> קולות
+                                    (ציפייה ארצית: <code>${d.expected_missing}</code>)
+                                </div>
+                                <div>
+                                    <strong>${d.unexpected}</strong> (${getPartyName(d.unexpected)}): <code>${d.unexpected_votes}</code> קולות
+                                    (ציפייה ארצית: <code>${d.expected_unexpected}</code>)
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                    return '';
+
+                case 'round_numbers':
+                    if (Array.isArray(details)) {
+                        const items = details.slice(0, 5).map(d =>
+                            `<strong>${getPartyName(d[0])}</strong>: <code>${d[1]}</code>`
+                        );
+                        return `מספרים עגולים: ${items.join(', ')}${details.length > 5 ? '...' : ''}`;
+                    }
+                    return '';
+
+                case 'turnout_anomaly':
+                    if (Array.isArray(details)) {
+                        return details.map(d => `<div>${d}</div>`).join('');
+                    }
+                    return '';
+
+                case 'statistical_outlier':
+                    return `מרחק מהאשכול הקרוב: <code>${details.distance_score}</code>`;
+
+                case 'extreme_dominance':
+                    return `
+                        <strong>${details.party_name || getPartyName(details.party)}</strong>
+                        קיבלה <code>${details.proportion}</code> מהקולות
+                        (<code>${details.votes}</code> קולות)
+                    `;
+
+                case 'small_party_spike':
+                    if (Array.isArray(details)) {
+                        return details.map(d => `
+                            <div>
+                                <strong>${d.party_name || getPartyName(d.party)}</strong>:
+                                <code>${d.votes}</code> קולות (<code>${d.proportion}</code>),
+                                ממוצע ארצי: <code>${d.national_avg}</code>,
+                                יחס: <code>${d.ratio}</code>
+                            </div>
+                        `).join('');
+                    }
+                    return '';
+
+                default:
+                    return JSON.stringify(details);
+            }
+        }
+
+        function renderIrregularities() {
+            const container = document.getElementById('irregularities-container');
+
+            if (!currentData.irregularities.length) {
+                container.innerHTML = '<div class="loading"><p>לא נמצאו חריגות בבחירות אלו</p></div>';
+                return;
+            }
+
+            container.innerHTML = currentData.irregularities.map((item, idx) => {
+                const highestSeverity = item.anomalies.reduce((max, a) => {
+                    const order = { high: 3, medium: 2, low: 1 };
+                    return order[a.severity] > order[max] ? a.severity : max;
+                }, 'low');
+
+                const turnoutPct = item.eligible > 0
+                    ? ((item.voted / item.eligible) * 100).toFixed(1)
+                    : 0;
+
+                // Sort votes by count
+                const sortedVotes = Object.entries(item.votes)
+                    .sort((a, b) => b[1] - a[1]);
+
+                return `
+                    <div class="irregularity-card" data-idx="${idx}">
+                        <div class="card-header" onclick="toggleCard(${idx})">
+                            <div class="card-location">
+                                <div class="card-rank">${idx + 1}</div>
+                                <div>
+                                    <div class="card-title">${item.settlement}</div>
+                                    <div class="card-subtitle">קלפי ${item.ballot}</div>
+                                </div>
+                            </div>
+                            <div class="card-badges">
+                                ${item.anomalies.map(a => `
+                                    <span class="anomaly-badge ${a.type}">${anomalyTypes[a.type] || a.type}</span>
+                                `).join('')}
+                                <span class="expand-icon">▼</span>
+                            </div>
+                        </div>
+                        <div class="card-body" id="card-body-${idx}">
+                            <div class="card-stats">
+                                <div class="card-stat">
+                                    <div class="card-stat-value">${item.eligible.toLocaleString()}</div>
+                                    <div class="card-stat-label">בעלי זכות</div>
+                                </div>
+                                <div class="card-stat">
+                                    <div class="card-stat-value">${item.voted.toLocaleString()}</div>
+                                    <div class="card-stat-label">הצביעו</div>
+                                </div>
+                                <div class="card-stat">
+                                    <div class="card-stat-value">${turnoutPct}%</div>
+                                    <div class="card-stat-label">אחוז הצבעה</div>
+                                </div>
+                                <div class="card-stat">
+                                    <div class="card-stat-value">${item.valid.toLocaleString()}</div>
+                                    <div class="card-stat-label">קולות כשרים</div>
+                                </div>
+                                <div class="card-stat">
+                                    <div class="card-stat-value">${item.invalid}</div>
+                                    <div class="card-stat-label">פסולים</div>
+                                </div>
+                            </div>
+
+                            <a href="${getOfficialUrl(item)}" target="_blank" class="compare-link">
+                                🔗 השווה לתוצאות הרשמיות
+                            </a>
+
+                            <div class="anomalies-section">
+                                <h4 class="anomalies-title">חריגות שזוהו</h4>
+                                ${item.anomalies.map(a => `
+                                    <div class="anomaly-item ${a.type}">
+                                        <div class="anomaly-header">
+                                            <span class="anomaly-type">${anomalyTypes[a.type] || a.type}</span>
+                                            <span class="anomaly-badge ${a.type}">${a.severity === 'high' ? 'גבוה' : a.severity === 'medium' ? 'בינוני' : 'נמוך'}</span>
+                                        </div>
+                                        <div class="anomaly-description">${a.description}</div>
+                                        <div class="anomaly-details">${formatAnomalyDetails(a)}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+
+                            <div class="votes-section">
+                                <h4 class="votes-title">התפלגות הקולות (${item.valid.toLocaleString()} כשרים)</h4>
+                                <div class="votes-grid">
+                                    ${sortedVotes.map(([symbol, count]) => {
+                                        const pct = ((count / item.valid) * 100).toFixed(1);
+                                        return `
+                                            <div class="vote-item" data-symbol="${symbol}">
+                                                <div class="vote-color" style="background: ${getPartyColor(symbol)}"></div>
+                                                <span class="vote-party">${getPartyName(symbol)}</span>
+                                                <span class="vote-count">${count}</span>
+                                                <span class="vote-pct">${pct}%</span>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function toggleCard(idx) {
+            const body = document.getElementById(`card-body-${idx}`);
+            const card = body.closest('.irregularity-card');
+            const isExpanded = body.classList.contains('expanded');
+
+            if (isExpanded) {
+                body.classList.remove('expanded');
+                card.classList.remove('expanded');
+            } else {
+                body.classList.add('expanded');
+                card.classList.add('expanded');
+            }
+        }
+
+        // Election selector
+        document.getElementById('election-selector').addEventListener('click', (e) => {
+            if (e.target.classList.contains('election-btn')) {
+                document.querySelectorAll('.election-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                loadData(e.target.dataset.election);
+            }
+        });
+
+        // Export PNG
+        document.getElementById('export-png').addEventListener('click', () => {
+            alert('ייצוא PNG עדיין בפיתוח');
+        });
+
+        // Initial load
+        loadData('25');
+    </script>
+
+    <!-- Buy Me a Coffee button -->
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה">
+        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
+        <span>אהבתם? עזרו לתמוך בפיתוח האתר</span>
+    </a>
+    <style>
+        .bmc-button {
+            position: fixed;
+            bottom: 18px;
+            left: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #FFDD00;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #000;
+            font-family: 'Heebo', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+        }
+        .bmc-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .bmc-button img {
+            width: 24px;
+            height: 24px;
+        }
+        .bmc-button span {
+            display: none;
+            max-width: 200px;
+            line-height: 1.4;
+        }
+        .bmc-button:hover span {
+            display: inline-block;
+        }
+    </style>
+</body>
+</html>
