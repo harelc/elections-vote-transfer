@@ -1,0 +1,1603 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>השוואת תמיכה במפלגות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Animated sand dunes background */
+        .dunes-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 250px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .dune {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 200%;
+            height: 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+        }
+
+        .dune-1 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23c9a66b' fill-opacity='0.15' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1440px 180px;
+            animation: dune-move-1 30s linear infinite;
+            opacity: 0.9;
+        }
+
+        .dune-2 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23d4a574' fill-opacity='0.12' d='M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,229.3C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1200px 150px;
+            animation: dune-move-2 25s linear infinite;
+            opacity: 0.8;
+        }
+
+        .dune-3 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23e6c9a8' fill-opacity='0.1' d='M0,256L60,245.3C120,235,240,213,360,218.7C480,224,600,256,720,261.3C840,267,960,245,1080,229.3C1200,213,1320,203,1380,197.3L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1600px 200px;
+            animation: dune-move-3 40s linear infinite;
+            opacity: 0.7;
+        }
+
+        @keyframes dune-move-1 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        @keyframes dune-move-2 {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+
+        @keyframes dune-move-3 {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 2rem 1.5rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 1rem;
+            position: relative;
+            padding-left: 120px;
+            padding-right: 120px;
+            flex-wrap: nowrap;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .view-btn:hover {
+            background: #252535;
+            color: var(--text-primary);
+        }
+
+        .view-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1rem;
+            padding: 1rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Control panel */
+        .control-panel {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            height: fit-content;
+        }
+
+        .control-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .control-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .control-select {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+        }
+
+        .control-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+        .stats-box {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-row:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+        }
+
+        .stat-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .correlation-value {
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .correlation-positive {
+            color: #10b981;
+        }
+
+        .correlation-negative {
+            color: #ef4444;
+        }
+
+        /* Scale toggle */
+        .scale-toggle {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .scale-toggle .toggle-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .toggle-buttons {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 0.4rem 0.75rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .toggle-btn:hover {
+            background: #3a3a4a;
+            color: var(--text-primary);
+        }
+
+        .toggle-btn.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .export-btn {
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 150ms ease;
+        }
+
+        .export-btn:hover {
+            background: var(--border-color);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+
+        .header-export {
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Visualization */
+        .visualization-container {
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            min-height: 600px;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .loading::before {
+            content: '';
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Scatter plot */
+        .station-dot {
+            cursor: pointer;
+            transition: opacity 0.15s ease;
+        }
+
+        .station-dot:hover {
+            opacity: 1 !important;
+        }
+
+        .axis-label-text {
+            fill: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        .axis text {
+            fill: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .axis line, .axis path {
+            stroke: var(--border-color);
+        }
+
+        .grid line {
+            stroke: var(--border-color);
+            stroke-opacity: 0.3;
+        }
+
+        .regression-line {
+            stroke: #f59e0b;
+            stroke-width: 2;
+            stroke-dasharray: 5, 5;
+            opacity: 0.7;
+            fill: none;
+        }
+
+        .diagonal-line {
+            stroke: var(--text-muted);
+            stroke-width: 1;
+            stroke-dasharray: 3, 3;
+            opacity: 0.5;
+            fill: none;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            pointer-events: none;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            max-width: 280px;
+            opacity: 0;
+            transition: opacity var(--transition-fast);
+            font-size: 0.85rem;
+        }
+
+        .tooltip.visible {
+            opacity: 1;
+        }
+
+        .tooltip-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .tooltip-subtitle {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .tooltip-location {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-style: italic;
+        }
+
+        .tooltip-values {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 0.25rem 0.75rem;
+        }
+
+        .tooltip-party {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .tooltip-party-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .tooltip-pct {
+            text-align: left;
+            font-weight: 500;
+        }
+
+        /* Footer */
+        .main-footer {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .methodology {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .methodology strong {
+            color: var(--text-primary);
+        }
+
+        .credits {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .credits a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        .credits a:hover {
+            text-decoration: underline;
+        }
+
+        /* Settlement search */
+        .search-container {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .search-results.visible {
+            display: block;
+        }
+
+        .search-result-item {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .search-result-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .search-result-item .station-count {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .selected-settlements {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .selected-settlement {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        .selected-settlement .remove-btn {
+            cursor: pointer;
+            opacity: 0.7;
+            font-size: 1rem;
+            line-height: 1;
+        }
+
+        .selected-settlement .remove-btn:hover {
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .control-panel {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+            }
+
+            .control-section {
+                margin-bottom: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated sand dunes - חולות נודדים -->
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
+            <p class="subtitle">השוואת תמיכה במפלגות לפי קלפיות</p>
+            <nav class="view-switcher">
+                <a href="index.html" class="view-btn">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn">מפת קלפיות</a>
+                <span class="view-btn active">השוואת מפלגות</span>
+                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
+                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <aside class="control-panel">
+                <div class="control-section">
+                    <h3 class="control-title">ציר X (אופקי)</h3>
+                    <select id="election-x" class="control-select">
+                        <option value="21">כנסת 21 (אפריל 2019)</option>
+                        <option value="22">כנסת 22 (ספטמבר 2019)</option>
+                        <option value="23">כנסת 23 (מרץ 2020)</option>
+                        <option value="24">כנסת 24 (מרץ 2021)</option>
+                        <option value="25" selected>כנסת 25 (נובמבר 2022)</option>
+                    </select>
+                    <select id="party-x" class="control-select">
+                        <option value="">טוען מפלגות...</option>
+                    </select>
+                </div>
+
+                <div class="control-section">
+                    <h3 class="control-title">ציר Y (אנכי)</h3>
+                    <select id="election-y" class="control-select">
+                        <option value="21">כנסת 21 (אפריל 2019)</option>
+                        <option value="22">כנסת 22 (ספטמבר 2019)</option>
+                        <option value="23">כנסת 23 (מרץ 2020)</option>
+                        <option value="24">כנסת 24 (מרץ 2021)</option>
+                        <option value="25" selected>כנסת 25 (נובמבר 2022)</option>
+                    </select>
+                    <select id="party-y" class="control-select">
+                        <option value="">טוען מפלגות...</option>
+                    </select>
+                </div>
+
+                <div class="control-section">
+                    <h3 class="control-title">הגדרות תצוגה</h3>
+                    <div class="scale-toggle">
+                        <label class="toggle-label">יחידות:</label>
+                        <div class="toggle-buttons">
+                            <button class="toggle-btn active" data-units="relative">אחוזים</button>
+                            <button class="toggle-btn" data-units="absolute">קולות</button>
+                        </div>
+                    </div>
+                    <div class="scale-toggle" style="margin-top: 0.75rem;">
+                        <label class="toggle-label">סוג סקאלה:</label>
+                        <div class="toggle-buttons">
+                            <button class="toggle-btn active" data-scale="linear">לינארי</button>
+                            <button class="toggle-btn" data-scale="symlog">לוגריתמי</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="control-section">
+                    <h3 class="control-title">סינון לפי יישוב</h3>
+                    <div class="search-container">
+                        <input type="text" id="settlement-search" class="control-select" placeholder="חפש יישוב..." style="margin-bottom: 0.5rem;">
+                        <div class="search-results" id="search-results"></div>
+                    </div>
+                    <div class="selected-settlements" id="selected-settlements"></div>
+                </div>
+
+                <div class="control-section">
+                    <h3 class="control-title">סטטיסטיקות</h3>
+                    <div class="stats-box">
+                        <div class="stat-row">
+                            <span class="stat-label">מתאם (Correlation):</span>
+                            <span class="stat-value correlation-value" id="correlation">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">קלפיות משותפות:</span>
+                            <span class="stat-value" id="station-count">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">R²:</span>
+                            <span class="stat-value" id="r-squared">-</span>
+                        </div>
+                        <div class="stat-row">
+                            <span class="stat-label">משוואת רגרסיה:</span>
+                            <span class="stat-value" id="regression-equation" style="font-family: monospace; direction: ltr;">-</span>
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+
+            <div class="visualization-container">
+                <div class="loading" id="loading">טוען נתונים...</div>
+                <svg id="scatter-chart"></svg>
+                <div class="tooltip" id="tooltip"></div>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="methodology">
+                    <strong>מתודולוגיה:</strong>
+                    כל נקודה מייצגת קלפי אחת. מיקום הנקודה נקבע לפי אחוז התמיכה במפלגה הנבחרת בציר X (אופקי) ובציר Y (אנכי).
+                    ניתן להשוות מפלגות מאותן בחירות או מבחירות שונות - במקרה של בחירות שונות, מוצגות רק קלפיות שקיימות בשתי הבחירות.
+                    קו המגמה (מקווקו) מציג את קו הרגרסיה הליניארית.
+                </p>
+                <p class="credits">
+                    כל הזכויות שמורות להראל קין |
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        class ScatterVisualization {
+            constructor() {
+                this.electionsData = {};
+                this.currentElectionX = '25';
+                this.currentElectionY = '25';
+                this.currentPartyX = null;
+                this.currentPartyY = null;
+                this.scaleType = 'linear'; // 'linear' or 'symlog'
+                this.unitsMode = 'relative'; // 'relative' (%) or 'absolute' (vote count)
+                this.selectedSettlements = []; // Array of selected settlement names for filtering
+                this.settlements = []; // List of settlements with counts
+                this.tooltip = d3.select('#tooltip');
+
+                this.init();
+            }
+
+            async init() {
+                // Set up event listeners
+                document.getElementById('election-x').addEventListener('change', (e) => {
+                    this.currentElectionX = e.target.value;
+                    this.settlements = []; // Reset settlements list
+                    this.loadElectionParties('x', e.target.value);
+                });
+
+                document.getElementById('election-y').addEventListener('change', (e) => {
+                    this.currentElectionY = e.target.value;
+                    this.settlements = []; // Reset settlements list
+                    this.loadElectionParties('y', e.target.value);
+                });
+
+                document.getElementById('party-x').addEventListener('change', (e) => {
+                    this.currentPartyX = e.target.value;
+                    this.updateChart();
+                });
+
+                document.getElementById('party-y').addEventListener('change', (e) => {
+                    this.currentPartyY = e.target.value;
+                    this.updateChart();
+                });
+
+                // Units toggle buttons
+                document.querySelectorAll('.toggle-btn[data-units]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.toggle-btn[data-units]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.unitsMode = e.target.dataset.units;
+                        this.updateChart();
+                    });
+                });
+
+                // Scale toggle buttons
+                document.querySelectorAll('.toggle-btn[data-scale]').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        document.querySelectorAll('.toggle-btn[data-scale]').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.scaleType = e.target.dataset.scale;
+                        this.updateChart();
+                    });
+                });
+
+                // Export PNG button
+                document.getElementById('export-png').addEventListener('click', () => this.exportPNG());
+
+                // Settlement search
+                const searchInput = document.getElementById('settlement-search');
+                const searchResults = document.getElementById('search-results');
+
+                searchInput.addEventListener('input', (e) => {
+                    this.handleSearchInput(e.target.value);
+                });
+
+                searchInput.addEventListener('focus', () => {
+                    if (searchInput.value.length > 0) {
+                        this.handleSearchInput(searchInput.value);
+                    }
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.search-container')) {
+                        searchResults.classList.remove('visible');
+                    }
+                });
+
+                // Load initial data
+                await this.loadElectionParties('x', '25');
+                await this.loadElectionParties('y', '25');
+            }
+
+            buildSettlementsList() {
+                // Build from the intersection of both elections' data
+                const settlements = {};
+
+                const dataX = this.electionsData[this.currentElectionX];
+                const dataY = this.electionsData[this.currentElectionY];
+
+                if (!dataX || !dataY) return;
+
+                // Build lookup for Y stations
+                const lookupY = new Set();
+                dataY.stations.forEach(s => {
+                    lookupY.add(this.normalizeKey(s));
+                });
+
+                // Count matching stations per settlement
+                dataX.stations.forEach(s => {
+                    const key = this.normalizeKey(s);
+                    if (lookupY.has(key)) {
+                        const name = s.n || s.settlement_name;
+                        settlements[name] = (settlements[name] || 0) + 1;
+                    }
+                });
+
+                this.settlements = Object.entries(settlements)
+                    .map(([name, count]) => ({ name, count }))
+                    .sort((a, b) => b.count - a.count);
+            }
+
+            handleSearchInput(query) {
+                const searchResults = document.getElementById('search-results');
+
+                if (query.length < 1) {
+                    searchResults.classList.remove('visible');
+                    return;
+                }
+
+                // Build list if not already done
+                if (this.settlements.length === 0) {
+                    this.buildSettlementsList();
+                }
+
+                const matches = this.settlements
+                    .filter(s => s.name.includes(query))
+                    .slice(0, 15);
+
+                if (matches.length === 0) {
+                    searchResults.classList.remove('visible');
+                    return;
+                }
+
+                searchResults.innerHTML = matches.map(s => `
+                    <div class="search-result-item" data-settlement="${s.name}">
+                        ${s.name}
+                        <span class="station-count">${s.count} קלפיות</span>
+                    </div>
+                `).join('');
+
+                searchResults.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.selectSettlement(item.dataset.settlement);
+                    });
+                });
+
+                searchResults.classList.add('visible');
+            }
+
+            selectSettlement(name) {
+                if (this.selectedSettlements.includes(name)) {
+                    return;
+                }
+
+                this.selectedSettlements.push(name);
+                this.updateSelectedSettlementsUI();
+                document.getElementById('settlement-search').value = '';
+                document.getElementById('search-results').classList.remove('visible');
+                this.updateChart();
+            }
+
+            removeSettlement(name) {
+                this.selectedSettlements = this.selectedSettlements.filter(s => s !== name);
+                this.updateSelectedSettlementsUI();
+                this.updateChart();
+            }
+
+            updateSelectedSettlementsUI() {
+                const container = document.getElementById('selected-settlements');
+                container.innerHTML = this.selectedSettlements.map(name => `
+                    <div class="selected-settlement">
+                        <span>${name}</span>
+                        <span class="remove-btn" data-settlement="${name}">×</span>
+                    </div>
+                `).join('');
+
+                container.querySelectorAll('.remove-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        this.removeSettlement(btn.dataset.settlement);
+                    });
+                });
+            }
+
+            async loadElectionData(electionId) {
+                if (this.electionsData[electionId]) {
+                    return this.electionsData[electionId];
+                }
+
+                const response = await fetch(`data/tsne_${electionId}.json`);
+                const data = await response.json();
+                this.electionsData[electionId] = data;
+                return data;
+            }
+
+            async loadElectionParties(axis, electionId) {
+                const data = await this.loadElectionData(electionId);
+                const select = document.getElementById(`party-${axis}`);
+                const partyNames = data.parties.map(p => p.name);
+
+                // Get current selection before rebuilding options
+                const currentSelection = axis === 'x' ? this.currentPartyX : this.currentPartyY;
+
+                select.innerHTML = data.parties.map(p =>
+                    `<option value="${p.name}">${p.name}</option>`
+                ).join('');
+
+                // Try to keep the same party selected if it exists in the new election
+                if (currentSelection && partyNames.includes(currentSelection)) {
+                    select.value = currentSelection;
+                    if (axis === 'x') {
+                        this.currentPartyX = currentSelection;
+                    } else {
+                        this.currentPartyY = currentSelection;
+                    }
+                } else {
+                    // Fall back to first party (or second for Y if same election)
+                    if (axis === 'x') {
+                        this.currentPartyX = data.parties[0].name;
+                        select.value = this.currentPartyX;
+                    } else {
+                        const defaultIndex = (this.currentElectionX === this.currentElectionY && data.parties.length > 1) ? 1 : 0;
+                        this.currentPartyY = data.parties[defaultIndex].name;
+                        select.value = this.currentPartyY;
+                    }
+                }
+
+                this.updateChart();
+            }
+
+            normalizeKey(station) {
+                const settlement = station.n || station.settlement_name || '';
+                let ballot = station.b || station.ballot_number || '';
+                // Normalize ballot number
+                if (String(ballot).endsWith('.0')) {
+                    ballot = String(ballot).slice(0, -2);
+                }
+                return `${settlement}|${ballot}`;
+            }
+
+            getPartyValue(station, partyName, unitsMode) {
+                const props = station.p || station.proportions || {};
+                const totalVoters = station.v || station.total_voters || 0;
+
+                const percentage = props[partyName] || 0;
+                if (unitsMode === 'absolute') {
+                    // Convert percentage to absolute votes
+                    return Math.round(totalVoters * percentage / 100);
+                }
+                return percentage;
+            }
+
+            async updateChart() {
+                if (!this.currentPartyX || !this.currentPartyY) return;
+
+                const dataX = await this.loadElectionData(this.currentElectionX);
+                const dataY = await this.loadElectionData(this.currentElectionY);
+
+                const partyX = dataX.parties.find(p => p.name === this.currentPartyX);
+                const partyY = dataY.parties.find(p => p.name === this.currentPartyY);
+
+                if (!partyX || !partyY) return;
+
+                // Build lookup for matching stations
+                const lookupX = {};
+                dataX.stations.forEach(s => {
+                    const key = this.normalizeKey(s);
+                    lookupX[key] = {
+                        station: s,
+                        value: this.getPartyValue(s, this.currentPartyX, this.unitsMode)
+                    };
+                });
+
+                // Find matching stations and build plot data
+                const plotData = [];
+                dataY.stations.forEach(s => {
+                    const key = this.normalizeKey(s);
+                    if (lookupX[key]) {
+                        plotData.push({
+                            key,
+                            settlement: s.n || s.settlement_name,
+                            ballot: s.b || s.ballot_number,
+                            location: s.l || '',
+                            x: lookupX[key].value,
+                            y: this.getPartyValue(s, this.currentPartyY, this.unitsMode),
+                            voters: s.v || s.total_voters || 0
+                        });
+                    }
+                });
+
+                // Filter by selected settlements if any
+                const filteredData = this.selectedSettlements.length > 0
+                    ? plotData.filter(d => this.selectedSettlements.includes(d.settlement))
+                    : plotData;
+
+                this.render(filteredData, partyX, partyY, plotData);
+            }
+
+            render(data, partyX, partyY, allData = null) {
+                const container = document.querySelector('.visualization-container');
+                const hasFilter = this.selectedSettlements.length > 0;
+                const backgroundData = hasFilter && allData ? allData : null;
+                const width = container.clientWidth;
+                const height = Math.max(container.clientHeight, 600);
+                const margin = { top: 40, right: 40, bottom: 60, left: 70 };
+                const innerWidth = width - margin.left - margin.right;
+                const innerHeight = height - margin.top - margin.bottom;
+
+                document.getElementById('loading').style.display = 'none';
+
+                // Clear and setup SVG
+                d3.select('#scatter-chart').selectAll('*').remove();
+
+                const svg = d3.select('#scatter-chart')
+                    .attr('width', width)
+                    .attr('height', height);
+
+                const g = svg.append('g')
+                    .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+                // Scales - use allData if available to keep scale consistent when filtering
+                const scaleData = backgroundData || data;
+                const maxX = Math.max(d3.max(scaleData, d => d.x) || 50, 10);
+                const maxY = Math.max(d3.max(scaleData, d => d.y) || 50, 10);
+                const maxVal = Math.max(maxX, maxY);
+
+                let xScale, yScale;
+
+                if (this.scaleType === 'symlog') {
+                    // Symlog: behaves linearly near zero, logarithmically for larger values
+                    const symlogConstant = 1;
+                    xScale = d3.scaleSymlog()
+                        .domain([0, maxVal * 1.05])
+                        .range([0, innerWidth])
+                        .constant(symlogConstant);
+
+                    yScale = d3.scaleSymlog()
+                        .domain([0, maxVal * 1.05])
+                        .range([innerHeight, 0])
+                        .constant(symlogConstant);
+                } else {
+                    // Linear scale (default)
+                    xScale = d3.scaleLinear()
+                        .domain([0, maxVal * 1.05])
+                        .range([0, innerWidth]);
+
+                    yScale = d3.scaleLinear()
+                        .domain([0, maxVal * 1.05])
+                        .range([innerHeight, 0]);
+                }
+
+                // Grid
+                g.append('g')
+                    .attr('class', 'grid')
+                    .selectAll('line')
+                    .data(xScale.ticks(10))
+                    .join('line')
+                    .attr('x1', d => xScale(d))
+                    .attr('x2', d => xScale(d))
+                    .attr('y1', 0)
+                    .attr('y2', innerHeight);
+
+                g.append('g')
+                    .attr('class', 'grid')
+                    .selectAll('line')
+                    .data(yScale.ticks(10))
+                    .join('line')
+                    .attr('x1', 0)
+                    .attr('x2', innerWidth)
+                    .attr('y1', d => yScale(d))
+                    .attr('y2', d => yScale(d));
+
+                // Diagonal line (y = x) - always show for reference
+                if (this.scaleType === 'symlog') {
+                    // Draw as path for proper symlog rendering
+                    const diagPoints = [];
+                    const numPoints = 100;
+                    for (let i = 0; i <= numPoints; i++) {
+                        const v = (maxVal * i) / numPoints;
+                        diagPoints.push([v, v]);
+                    }
+
+                    const diagGenerator = d3.line()
+                        .x(d => xScale(d[0]))
+                        .y(d => yScale(d[1]));
+
+                    g.append('path')
+                        .attr('class', 'diagonal-line')
+                        .attr('d', diagGenerator(diagPoints));
+                } else {
+                    // Simple line for linear scale
+                    g.append('line')
+                        .attr('class', 'diagonal-line')
+                        .attr('x1', xScale(0))
+                        .attr('y1', yScale(0))
+                        .attr('x2', xScale(maxVal))
+                        .attr('y2', yScale(maxVal));
+                }
+
+                // Axes
+                const formatTick = this.unitsMode === 'absolute'
+                    ? d => d >= 1000 ? (d / 1000).toFixed(0) + 'K' : d
+                    : d => d + '%';
+                const xAxis = d3.axisBottom(xScale).tickFormat(formatTick);
+                const yAxis = d3.axisLeft(yScale).tickFormat(formatTick);
+
+                g.append('g')
+                    .attr('class', 'axis')
+                    .attr('transform', `translate(0, ${innerHeight})`)
+                    .call(xAxis);
+
+                g.append('g')
+                    .attr('class', 'axis')
+                    .call(yAxis);
+
+                // Axis labels
+                svg.append('text')
+                    .attr('class', 'axis-label-text')
+                    .attr('x', margin.left + innerWidth / 2)
+                    .attr('y', height - 10)
+                    .attr('text-anchor', 'middle')
+                    .text(`${this.currentPartyX} (כנסת ${this.currentElectionX})`);
+
+                svg.append('text')
+                    .attr('class', 'axis-label-text')
+                    .attr('transform', 'rotate(-90)')
+                    .attr('x', -(margin.top + innerHeight / 2))
+                    .attr('y', 20)
+                    .attr('text-anchor', 'middle')
+                    .text(`${this.currentPartyY} (כנסת ${this.currentElectionY})`);
+
+                // Calculate regression line
+                const regression = this.calculateRegression(data);
+
+                if (regression) {
+                    if (this.scaleType === 'symlog') {
+                        // Draw as path with multiple points for proper symlog rendering
+                        const linePoints = [];
+                        const numPoints = 100;
+                        for (let i = 0; i <= numPoints; i++) {
+                            const x = (maxVal * i) / numPoints;
+                            const y = regression.intercept + regression.slope * x;
+                            if (y >= 0 && y <= maxVal * 1.05) {
+                                linePoints.push([x, y]);
+                            }
+                        }
+
+                        const lineGenerator = d3.line()
+                            .x(d => xScale(d[0]))
+                            .y(d => yScale(d[1]));
+
+                        g.append('path')
+                            .attr('class', 'regression-line')
+                            .attr('d', lineGenerator(linePoints));
+                    } else {
+                        // Simple line for linear scale
+                        const x1 = 0;
+                        const x2 = maxVal;
+                        const y1 = regression.intercept + regression.slope * x1;
+                        const y2 = regression.intercept + regression.slope * x2;
+
+                        g.append('line')
+                            .attr('class', 'regression-line')
+                            .attr('x1', xScale(x1))
+                            .attr('y1', yScale(Math.max(0, y1)))
+                            .attr('x2', xScale(x2))
+                            .attr('y2', yScale(Math.max(0, y2)));
+                    }
+                }
+
+                // Background dots (when filtering)
+                if (backgroundData) {
+                    g.selectAll('.station-dot-bg')
+                        .data(backgroundData)
+                        .join('circle')
+                        .attr('class', 'station-dot-bg')
+                        .attr('cx', d => xScale(d.x))
+                        .attr('cy', d => yScale(d.y))
+                        .attr('r', 2)
+                        .attr('fill', '#374151')
+                        .attr('opacity', 0.3);
+                }
+
+                // Dots
+                g.selectAll('.station-dot')
+                    .data(data)
+                    .join('circle')
+                    .attr('class', 'station-dot')
+                    .attr('cx', d => xScale(d.x))
+                    .attr('cy', d => yScale(d.y))
+                    .attr('r', hasFilter ? 4 : 3)
+                    .attr('fill', partyX.color)
+                    .attr('opacity', hasFilter ? 0.8 : 0.5)
+                    .on('mouseenter', (event, d) => this.showTooltip(event, d, partyX, partyY))
+                    .on('mousemove', (event) => this.moveTooltip(event))
+                    .on('mouseleave', () => this.hideTooltip());
+
+                // Update stats
+                this.updateStats(data, regression);
+            }
+
+            calculateRegression(data) {
+                if (data.length < 2) return null;
+
+                const n = data.length;
+                const sumX = d3.sum(data, d => d.x);
+                const sumY = d3.sum(data, d => d.y);
+                const sumXY = d3.sum(data, d => d.x * d.y);
+                const sumX2 = d3.sum(data, d => d.x * d.x);
+                const sumY2 = d3.sum(data, d => d.y * d.y);
+
+                const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const intercept = (sumY - slope * sumX) / n;
+
+                // Correlation coefficient
+                const correlation = (n * sumXY - sumX * sumY) /
+                    Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+
+                return { slope, intercept, correlation, rSquared: correlation * correlation };
+            }
+
+            updateStats(data, regression) {
+                document.getElementById('station-count').textContent = data.length.toLocaleString();
+
+                if (regression) {
+                    const corrEl = document.getElementById('correlation');
+                    const corr = regression.correlation.toFixed(3);
+                    corrEl.textContent = corr;
+                    corrEl.className = `stat-value correlation-value ${regression.correlation >= 0 ? 'correlation-positive' : 'correlation-negative'}`;
+
+                    document.getElementById('r-squared').textContent = regression.rSquared.toFixed(3);
+
+                    // Format regression equation: y = mx + b
+                    const slope = regression.slope.toFixed(2);
+                    const intercept = regression.intercept.toFixed(2);
+                    const sign = regression.intercept >= 0 ? '+' : '';
+                    document.getElementById('regression-equation').textContent = `y = ${slope}x ${sign}${intercept}`;
+                } else {
+                    document.getElementById('correlation').textContent = '-';
+                    document.getElementById('r-squared').textContent = '-';
+                    document.getElementById('regression-equation').textContent = '-';
+                }
+            }
+
+            showTooltip(event, d, partyX, partyY) {
+                const locationHtml = d.location ? `<div class="tooltip-location">${d.location}</div>` : '';
+                const formatValue = (val) => {
+                    if (this.unitsMode === 'absolute') {
+                        return val.toLocaleString() + ' קולות';
+                    }
+                    return val.toFixed(1) + '%';
+                };
+                const html = `
+                    <div class="tooltip-title">${d.settlement}</div>
+                    <div class="tooltip-subtitle">קלפי ${d.ballot}</div>
+                    ${locationHtml}
+                    <div class="tooltip-values">
+                        <div class="tooltip-party">
+                            <span class="tooltip-party-color" style="background: ${partyX.color}"></span>
+                            ${this.currentPartyX} (כנסת ${this.currentElectionX}):
+                        </div>
+                        <span class="tooltip-pct">${formatValue(d.x)}</span>
+                        <div class="tooltip-party">
+                            <span class="tooltip-party-color" style="background: ${partyY.color}"></span>
+                            ${this.currentPartyY} (כנסת ${this.currentElectionY}):
+                        </div>
+                        <span class="tooltip-pct">${formatValue(d.y)}</span>
+                    </div>
+                `;
+                this.tooltip.html(html).classed('visible', true);
+                this.moveTooltip(event);
+            }
+
+            moveTooltip(event) {
+                const tooltipRect = this.tooltip.node().getBoundingClientRect();
+                let x = event.clientX - tooltipRect.width - 15;
+                let y = event.clientY - tooltipRect.height / 2;
+
+                if (x < 10) x = event.clientX + 15;
+                if (y < 10) y = 10;
+                if (y + tooltipRect.height > window.innerHeight - 10) {
+                    y = window.innerHeight - tooltipRect.height - 10;
+                }
+
+                this.tooltip
+                    .style('left', x + 'px')
+                    .style('top', y + 'px');
+            }
+
+            hideTooltip() {
+                this.tooltip.classed('visible', false);
+            }
+
+            generateQRCodeDataURL() {
+                // Pre-computed QR code for https://kolot-nodedim.netlify.app/
+                const qrMatrix = [
+                    [1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1],
+                    [1,0,0,0,0,0,1,0,0,1,0,1,1,0,0,0,1,0,1,0,0,0,0,0,1],
+                    [1,0,1,1,1,0,1,0,1,1,0,0,0,1,1,0,1,0,1,0,1,1,1,0,1],
+                    [1,0,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,1,1,0,1],
+                    [1,0,1,1,1,0,1,0,1,0,1,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
+                    [1,0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1],
+                    [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+                    [0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0],
+                    [1,0,1,1,0,1,1,1,1,0,1,0,0,0,1,0,0,1,1,0,0,1,0,1,0],
+                    [0,1,0,0,1,0,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,0,1,0,1],
+                    [1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,1,0],
+                    [0,0,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,0,1],
+                    [0,0,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,0,0],
+                    [0,1,1,0,0,1,0,1,0,1,1,0,0,1,0,0,0,0,1,1,0,0,0,1,1],
+                    [1,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,0,0],
+                    [0,1,0,1,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,0,0,1],
+                    [1,0,0,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,0,1,0],
+                    [0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,1,1],
+                    [1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,1,1,0,0],
+                    [1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,1,0,1],
+                    [1,0,1,1,1,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,1,0,1,0],
+                    [1,0,1,1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,0,0,0,0,1],
+                    [1,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,1,0,1,1,0,1,1,0],
+                    [1,0,0,0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0,1,1,0,0,1,1],
+                    [1,1,1,1,1,1,1,0,1,0,0,1,1,0,1,0,0,1,0,0,1,1,1,0,0]
+                ];
+
+                const size = 25;
+                const cellSize = 4;
+                const canvasSize = size * cellSize;
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasSize;
+                canvas.height = canvasSize;
+                const ctx = canvas.getContext('2d');
+
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvasSize, canvasSize);
+
+                ctx.fillStyle = '#000000';
+                for (let y = 0; y < size; y++) {
+                    for (let x = 0; x < size; x++) {
+                        if (qrMatrix[y][x]) {
+                            ctx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                        }
+                    }
+                }
+
+                return canvas.toDataURL('image/png');
+            }
+
+            exportPNG() {
+                const svgElement = document.getElementById('scatter-chart');
+                if (!svgElement) return;
+
+                // Clone the SVG
+                const svgClone = svgElement.cloneNode(true);
+
+                // Add background
+                const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                rect.setAttribute('width', '100%');
+                rect.setAttribute('height', '100%');
+                rect.setAttribute('fill', '#12121a');
+                svgClone.insertBefore(rect, svgClone.firstChild);
+
+                // Inline styles for elements (CSS variables not applied in export)
+                svgClone.querySelectorAll('.diagonal-line').forEach(el => {
+                    el.setAttribute('stroke', '#606075');
+                    el.setAttribute('stroke-width', '1');
+                    el.setAttribute('stroke-dasharray', '3, 3');
+                    el.setAttribute('opacity', '0.5');
+                    el.setAttribute('fill', 'none');
+                });
+                svgClone.querySelectorAll('.regression-line').forEach(el => {
+                    el.setAttribute('stroke', '#f59e0b');
+                    el.setAttribute('stroke-width', '2');
+                    el.setAttribute('stroke-dasharray', '5, 5');
+                    el.setAttribute('opacity', '0.8');
+                    el.setAttribute('fill', 'none');
+                });
+                // Axis labels (party names on axes) - with font
+                svgClone.querySelectorAll('.axis-label-text').forEach(el => {
+                    el.setAttribute('fill', '#a0a0b0');
+                    el.setAttribute('font-family', 'Heebo, sans-serif');
+                    el.setAttribute('font-size', '14px');
+                });
+                // Axis tick labels (percentages) - with font
+                svgClone.querySelectorAll('.axis text').forEach(el => {
+                    el.setAttribute('fill', '#94a3b8');
+                    el.setAttribute('font-family', 'Heebo, sans-serif');
+                    el.setAttribute('font-size', '12px');
+                });
+                // Axis lines
+                svgClone.querySelectorAll('.axis line, .axis path').forEach(el => {
+                    el.setAttribute('stroke', '#2a2a3a');
+                });
+                // Grid lines
+                svgClone.querySelectorAll('.grid line').forEach(el => {
+                    el.setAttribute('stroke', '#2a2a3a');
+                    el.setAttribute('stroke-opacity', '0.3');
+                });
+
+                // Get dimensions
+                const svgWidth = parseInt(svgElement.getAttribute('width') || svgElement.clientWidth);
+                const svgHeight = parseInt(svgElement.getAttribute('height') || svgElement.clientHeight);
+
+                // Layout
+                const headerHeight = 70;
+                const infoHeight = 40;
+                const watermarkHeight = 60;
+                const scale = 2;
+                const totalHeight = svgHeight + headerHeight + infoHeight + watermarkHeight;
+
+                // Create canvas
+                const canvas = document.createElement('canvas');
+                canvas.width = svgWidth * scale;
+                canvas.height = totalHeight * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.scale(scale, scale);
+
+                // Draw background
+                ctx.fillStyle = '#0a0a0f';
+                ctx.fillRect(0, 0, svgWidth, totalHeight);
+
+                // Draw header
+                ctx.fillStyle = '#12121a';
+                ctx.fillRect(0, 0, svgWidth, headerHeight);
+
+                // Title
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 18px Heebo, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('השוואת תמיכה במפלגות', svgWidth / 2, 28);
+
+                // Subtitle with axis info
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '13px Heebo, sans-serif';
+                const subtitle = `${this.currentPartyX} (כנסת ${this.currentElectionX}) מול ${this.currentPartyY} (כנסת ${this.currentElectionY})`;
+                ctx.fillText(subtitle, svgWidth / 2, 52);
+
+                // Chart area
+                ctx.fillStyle = '#12121a';
+                ctx.fillRect(0, headerHeight, svgWidth, svgHeight);
+
+                // Serialize and draw SVG
+                const svgData = new XMLSerializer().serializeToString(svgClone);
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+
+                const img = new Image();
+                img.onload = () => {
+                    ctx.drawImage(img, 0, headerHeight);
+                    URL.revokeObjectURL(url);
+
+                    // Info section with stats
+                    const infoY = headerHeight + svgHeight;
+                    ctx.fillStyle = '#1a1a25';
+                    ctx.fillRect(0, infoY, svgWidth, infoHeight);
+
+                    // Get stats from DOM
+                    const corrEl = document.getElementById('correlation');
+                    const r2El = document.getElementById('r-squared');
+                    const stationsEl = document.getElementById('station-count');
+                    const equationEl = document.getElementById('regression-equation');
+                    const correlation = corrEl ? corrEl.textContent : '-';
+                    const rSquared = r2El ? r2El.textContent : '-';
+                    const stations = stationsEl ? stationsEl.textContent : '-';
+                    const equation = equationEl ? equationEl.textContent : '-';
+
+                    // Draw stats as separate items to avoid RTL issues
+                    ctx.font = '12px Heebo, sans-serif';
+                    ctx.fillStyle = '#94a3b8';
+
+                    // Draw each stat separately with proper spacing
+                    const statsY = infoY + 25;
+                    const items = [
+                        `קלפיות: ${stations}`,
+                        `מתאם: ${correlation}`,
+                        `R²: ${rSquared}`,
+                        equation
+                    ];
+                    const itemsText = items.join('   ·   ');
+                    ctx.textAlign = 'center';
+                    ctx.fillText(itemsText, svgWidth / 2, statsY);
+
+                    // Draw watermark section
+                    const watermarkY = totalHeight - watermarkHeight;
+                    ctx.fillStyle = '#1a1a25';
+                    ctx.fillRect(0, watermarkY, svgWidth, watermarkHeight);
+
+                    ctx.strokeStyle = '#2a2a3a';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(0, watermarkY);
+                    ctx.lineTo(svgWidth, watermarkY);
+                    ctx.stroke();
+
+                    // Draw QR code
+                    const qrDataURL = this.generateQRCodeDataURL();
+                    const qrImg = new Image();
+                    qrImg.onload = () => {
+                        const qrSize = 45;
+                        ctx.drawImage(qrImg, 15, watermarkY + 7, qrSize, qrSize);
+
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.font = 'bold 14px Heebo, sans-serif';
+                        ctx.textAlign = 'right';
+                        ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', svgWidth - 15, watermarkY + 25);
+
+                        ctx.fillStyle = '#64748b';
+                        ctx.font = '12px Heebo, sans-serif';
+                        ctx.fillText('https://kolot-nodedim.netlify.app/', svgWidth - 15, watermarkY + 45);
+
+                        // Download
+                        const link = document.createElement('a');
+                        const partyX = this.currentPartyX || 'none';
+                        const partyY = this.currentPartyY || 'none';
+                        link.download = `scatter-${this.currentElectionX}-${partyX}-vs-${this.currentElectionY}-${partyY}.png`;
+                        link.href = canvas.toDataURL('image/png');
+                        link.click();
+                    };
+                    qrImg.src = qrDataURL;
+                };
+                img.src = url;
+            }
+        }
+
+        // Initialize
+        new ScatterVisualization();
+    </script>
+
+    <!-- Buy Me a Coffee button -->
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
+        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+    </a>
+    <style>
+        .bmc-button {
+            position: fixed;
+            bottom: 18px;
+            left: 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: #FFDD00;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #000;
+            font-family: 'Heebo', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            z-index: 9999;
+        }
+        .bmc-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        .bmc-button img {
+            width: 24px;
+            height: 24px;
+        }
+        .bmc-button span {
+            display: none;
+            max-width: 200px;
+            line-height: 1.4;
+        }
+        .bmc-button:hover span {
+            display: inline-block;
+        }
+    </style>
+</body>
+</html>
