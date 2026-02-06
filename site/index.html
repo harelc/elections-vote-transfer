@@ -301,13 +301,14 @@
 
         <style>
             .methodology-link {
-                color: #667eea;
+                color: var(--accent-primary);
                 text-decoration: none;
                 font-weight: 500;
                 margin-right: 8px;
             }
             .methodology-link:hover {
                 text-decoration: underline;
+                color: var(--accent-secondary);
             }
             .modal-overlay {
                 display: none;
@@ -316,7 +317,7 @@
                 left: 0;
                 width: 100%;
                 height: 100%;
-                background: rgba(0, 0, 0, 0.7);
+                background: rgba(0, 0, 0, 0.85);
                 z-index: 10000;
                 justify-content: center;
                 align-items: center;
@@ -327,81 +328,88 @@
                 display: flex;
             }
             .modal-content {
-                background: white;
-                border-radius: 16px;
+                background: var(--bg-card);
+                border-radius: var(--radius-lg);
                 max-width: 800px;
                 max-height: 90vh;
                 overflow-y: auto;
                 padding: 32px;
                 position: relative;
-                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                box-shadow: var(--shadow-lg), 0 0 40px rgba(99, 102, 241, 0.15);
                 direction: rtl;
+                border: 1px solid var(--border-color);
             }
             .modal-close {
                 position: absolute;
                 top: 16px;
                 left: 16px;
-                background: none;
-                border: none;
-                font-size: 28px;
+                background: var(--bg-hover);
+                border: 1px solid var(--border-color);
+                font-size: 24px;
                 cursor: pointer;
-                color: #666;
+                color: var(--text-secondary);
                 width: 40px;
                 height: 40px;
                 border-radius: 50%;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                transition: var(--transition-fast);
             }
             .modal-close:hover {
-                background: #f0f0f0;
-                color: #333;
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                border-color: var(--accent-primary);
             }
             .modal-content h2 {
                 margin: 0 0 24px 0;
-                color: #1a1a2e;
+                color: var(--text-primary);
                 font-size: 1.8em;
             }
             .methodology-section {
                 margin-bottom: 28px;
             }
             .methodology-section h3 {
-                color: #4a5568;
+                color: var(--accent-primary);
                 margin: 0 0 12px 0;
                 font-size: 1.2em;
             }
             .methodology-section p {
                 line-height: 1.8;
-                color: #333;
+                color: var(--text-secondary);
                 margin: 0 0 12px 0;
             }
             .methodology-section ul {
                 line-height: 1.8;
-                color: #333;
+                color: var(--text-secondary);
                 padding-right: 24px;
             }
             .methodology-section li {
                 margin-bottom: 8px;
             }
             .formula {
-                background: #f8f9fa;
+                background: var(--bg-tertiary);
                 padding: 16px 24px;
-                border-radius: 8px;
+                border-radius: var(--radius-md);
                 font-family: 'Courier New', monospace;
                 font-size: 1.1em;
                 text-align: center;
                 margin: 16px 0;
-                border: 1px solid #e9ecef;
+                border: 1px solid var(--border-color);
                 direction: ltr;
+                color: var(--text-primary);
             }
             .limitations-list li {
                 margin-bottom: 16px;
             }
             .limitations-list strong {
-                color: #e53e3e;
+                color: var(--warning);
             }
             .methodology-section a {
-                color: #667eea;
+                color: var(--accent-primary);
+            }
+            .methodology-section a:hover {
+                color: var(--accent-secondary);
             }
             @media (max-width: 600px) {
                 .modal-content {
