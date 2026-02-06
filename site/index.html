@@ -168,8 +168,7 @@
                     כל קלפי מהווה תצפית רועשת (noisy observation) של דפוס מעבר הקולות הארצי.
                     המצביעים בכל קלפי נוהגים באופן דומה לאוכלוסייה הכללית, אך גודל המדגם הקטן (מאות בוחרים) יוצר רעש סטטיסטי.
                     על ידי רגרסיה על אלפי קלפיות ברחבי הארץ, ניתן לשחזר את מטריצת המעבר הארצית האמיתית.
-                    הניתוח מבוסס על אופטימיזציה קמורה (Convex Optimization) עם אילוצים סטוכסטיים -
-                    המודל מחשב הסתברויות מעבר תחת האילוץ שסכום ההסתברויות מכל מפלגה שווה ל-1.
+                    <a href="#" class="methodology-link" id="open-methodology">קראו עוד על המתודולוגיה...</a>
                 </p>
                 <p class="credits">
                     © הראל קין |
@@ -178,6 +177,261 @@
                 </p>
             </div>
         </footer>
+
+        <!-- Methodology Modal -->
+        <div class="modal-overlay" id="methodology-modal">
+            <div class="modal-content">
+                <button class="modal-close" id="close-methodology">&times;</button>
+                <h2>על המתודולוגיה</h2>
+
+                <section class="methodology-section">
+                    <h3>🎯 הרעיון הבסיסי</h3>
+                    <p>
+                        דמיינו שאתם רוצים לדעת לאן עברו הקולות של מפלגה X בבחירות הקודמות.
+                        ברור שחלק מהמצביעים נשארו נאמנים, אחרים עברו למפלגה Y, ואחרים למפלגה Z.
+                        אבל איך אפשר לדעת את הפילוח הזה בלי לשאול כל אזרח איך הצביע?
+                    </p>
+                    <p>
+                        הפתרון: <strong>להסתכל על קלפיות בודדות</strong>.
+                        בכל קלפי יש כמה מאות מצביעים, ויש לנו את תוצאות ההצבעה שלהם בשתי בחירות עוקבות.
+                        אם בקלפי מסוימת הייתה תמיכה גבוהה במפלגה X בבחירות הקודמות, ובבחירות הנוכחיות יש תמיכה גבוהה במפלגה Y -
+                        זה רמז שמצביעי X עברו ל-Y.
+                    </p>
+                    <p>
+                        כמובן, קלפי בודדת היא מדגם קטן ורועש. אבל כשמנתחים <strong>אלפי קלפיות</strong> יחד,
+                        הרעש מתקזז והתמונה האמיתית מתגלה.
+                    </p>
+                </section>
+
+                <section class="methodology-section">
+                    <h3>📊 המודל המתמטי</h3>
+                    <p>
+                        אנחנו מחפשים <strong>מטריצת מעבר</strong> M, כך שכל תא M[i,j] מייצג את
+                        ההסתברות שמצביע שהצביע למפלגה i בבחירות הקודמות יצביע למפלגה j בבחירות הנוכחיות.
+                    </p>
+                    <p>
+                        המודל מניח שהתפלגות ההצבעה בכל קלפי מקיימת את המשוואה:
+                    </p>
+                    <div class="formula">
+                        V<sub>לפני</sub> × M ≈ V<sub>אחרי</sub>
+                    </div>
+                    <p>
+                        כאשר V<sub>לפני</sub> הוא וקטור אחוזי ההצבעה בבחירות הקודמות,
+                        ו-V<sub>אחרי</sub> הוא וקטור אחוזי ההצבעה בבחירות הנוכחיות.
+                    </p>
+                </section>
+
+                <section class="methodology-section">
+                    <h3>⚙️ האופטימיזציה</h3>
+                    <p>
+                        המטריצה M מחושבת באמצעות <strong>אופטימיזציה קמורה</strong> (Convex Optimization),
+                        שמוצאת את M שממזערת את סכום ריבועי השגיאות:
+                    </p>
+                    <div class="formula">
+                        minimize Σ<sub>קלפי</sub> ||V<sub>לפני</sub> × M - V<sub>אחרי</sub>||²
+                    </div>
+                    <p>תחת האילוצים הבאים:</p>
+                    <ul>
+                        <li><strong>אי-שליליות:</strong> M[i,j] ≥ 0 (לא ייתכן מעבר שלילי)</li>
+                        <li><strong>סטוכסטיות:</strong> סכום כל שורה שווה ל-1 (כל המצביעים הולכים למקום כלשהו)</li>
+                    </ul>
+                    <p>
+                        הפתרון מתקבל באמצעות הספרייה CVXPY עם הפותר SCS.
+                    </p>
+                </section>
+
+                <section class="methodology-section">
+                    <h3>📈 מדד איכות: R²</h3>
+                    <p>
+                        מדד R² (R-squared) מציין כמה טוב המודל מסביר את השונות בנתונים.
+                        ערך 1.0 מציין התאמה מושלמת, וערך 0 מציין שהמודל לא מסביר כלום.
+                    </p>
+                    <p>
+                        בפועל, אנחנו מקבלים ערכי R² בטווח 0.7-0.9, שמעידים על התאמה טובה אך לא מושלמת -
+                        מה שהגיוני, כי המודל הוא פישוט של המציאות.
+                    </p>
+                </section>
+
+                <section class="methodology-section">
+                    <h3>⚠️ מגבלות ואזהרות</h3>
+                    <ul class="limitations-list">
+                        <li>
+                            <strong>הנחת אחידות:</strong>
+                            המודל מניח שדפוס המעבר זהה בכל הארץ. במציאות, מצביעי ליכוד בתל אביב
+                            עשויים להתנהג אחרת ממצביעי ליכוד בירושלים.
+                        </li>
+                        <li>
+                            <strong>מצביעים חדשים ונפטרים:</strong>
+                            המודל מתעלם מכניסת מצביעים חדשים (בני 18+) וממצביעים שנפטרו.
+                            אלה מיוצגים באופן מאולץ כ"מעבר" ממפלגה כלשהי.
+                        </li>
+                        <li>
+                            <strong>שינויים בהרכב הקלפי:</strong>
+                            תושבים עוברים דירה, קלפיות מתפצלות או מתמזגות.
+                            אנחנו משווים רק קלפיות עם אותו מזהה, מה שמפספס חלק מהתמונה.
+                        </li>
+                        <li>
+                            <strong>מפלגות שהתפצלו או התמזגו:</strong>
+                            כשמפלגה מתפצלת (למשל, כחול לבן ב-2021), המודל "ממציא" מעברים
+                            שלא באמת קרו ברמת המצביע הבודד.
+                        </li>
+                        <li>
+                            <strong>קורלציה ≠ סיבתיות:</strong>
+                            המודל מוצא קשרים סטטיסטיים, לא מוכיח שמצביעים באמת עברו.
+                            יכולים להיות גורמים נסתרים שמסבירים את הקורלציות.
+                        </li>
+                        <li>
+                            <strong>אי-ודאות:</strong>
+                            התוצאות הן אומדנים סטטיסטיים עם שולי שגיאה.
+                            מעברים קטנים (פחות מ-5%) עשויים להיות רעש סטטיסטי ולא מגמה אמיתית.
+                        </li>
+                    </ul>
+                </section>
+
+                <section class="methodology-section">
+                    <h3>📚 קריאה נוספת</h3>
+                    <p>
+                        הרעיון לניתוח מעבר קולות ברמת הקלפי פותח על ידי
+                        <a href="https://www.themarker.com/techblogs/ormigoldstein/BLOG-1.6567019" target="_blank">איתמר מושקין</a>.
+                        הקוד המלא זמין ב<a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">GitHub</a>.
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <style>
+            .methodology-link {
+                color: #667eea;
+                text-decoration: none;
+                font-weight: 500;
+                margin-right: 8px;
+            }
+            .methodology-link:hover {
+                text-decoration: underline;
+            }
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+            .modal-overlay.visible {
+                display: flex;
+            }
+            .modal-content {
+                background: white;
+                border-radius: 16px;
+                max-width: 800px;
+                max-height: 90vh;
+                overflow-y: auto;
+                padding: 32px;
+                position: relative;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                direction: rtl;
+            }
+            .modal-close {
+                position: absolute;
+                top: 16px;
+                left: 16px;
+                background: none;
+                border: none;
+                font-size: 28px;
+                cursor: pointer;
+                color: #666;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            .modal-close:hover {
+                background: #f0f0f0;
+                color: #333;
+            }
+            .modal-content h2 {
+                margin: 0 0 24px 0;
+                color: #1a1a2e;
+                font-size: 1.8em;
+            }
+            .methodology-section {
+                margin-bottom: 28px;
+            }
+            .methodology-section h3 {
+                color: #4a5568;
+                margin: 0 0 12px 0;
+                font-size: 1.2em;
+            }
+            .methodology-section p {
+                line-height: 1.8;
+                color: #333;
+                margin: 0 0 12px 0;
+            }
+            .methodology-section ul {
+                line-height: 1.8;
+                color: #333;
+                padding-right: 24px;
+            }
+            .methodology-section li {
+                margin-bottom: 8px;
+            }
+            .formula {
+                background: #f8f9fa;
+                padding: 16px 24px;
+                border-radius: 8px;
+                font-family: 'Courier New', monospace;
+                font-size: 1.1em;
+                text-align: center;
+                margin: 16px 0;
+                border: 1px solid #e9ecef;
+                direction: ltr;
+            }
+            .limitations-list li {
+                margin-bottom: 16px;
+            }
+            .limitations-list strong {
+                color: #e53e3e;
+            }
+            .methodology-section a {
+                color: #667eea;
+            }
+            @media (max-width: 600px) {
+                .modal-content {
+                    padding: 20px;
+                    margin: 10px;
+                }
+                .modal-content h2 {
+                    font-size: 1.4em;
+                    padding-left: 40px;
+                }
+            }
+        </style>
+
+        <script>
+            document.getElementById('open-methodology').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('methodology-modal').classList.add('visible');
+                document.body.style.overflow = 'hidden';
+            });
+            document.getElementById('close-methodology').addEventListener('click', () => {
+                document.getElementById('methodology-modal').classList.remove('visible');
+                document.body.style.overflow = '';
+            });
+            document.getElementById('methodology-modal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    document.getElementById('methodology-modal').classList.remove('visible');
+                    document.body.style.overflow = '';
+                }
+            });
+        </script>
     </div>
 
     <script src="sankey.js"></script>
