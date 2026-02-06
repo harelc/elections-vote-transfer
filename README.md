@@ -2,7 +2,7 @@
 
 Interactive visualizations for analyzing voting patterns and vote transfers between Israeli Knesset elections (2019-2022).
 
-**[View Live Demo](https://kolot-nodedim.netlify.app/)**
+**[קולות נודדים - Visit the Website](https://kolot-nodedim.netlify.app/)**
 
 ## Overview
 
