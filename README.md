@@ -171,7 +171,9 @@ cp data/transfer_*.json site/data/
 
 ## License
 
-MIT License - see LICENSE file for details.
+This project is licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) (Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International).
+
+You are free to share and adapt this work for non-commercial purposes, with attribution.
 
 ## Contributing
 
