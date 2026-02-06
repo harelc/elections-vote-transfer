@@ -60,11 +60,16 @@ class VoteTransferAnalyzer:
 
         # Create unique ballot ID
         ballot_field = config.get('ballot_field', 'קלפי')
-        df['ballot_id'] = df['סמל ישוב'].astype(str) + '__' + df[ballot_field].astype(str)
-        df = df.set_index('ballot_id')
+        def normalize_ballot(b):
+            b = str(b)
+            if b.endswith('.0'):
+                b = b[:-2]
+            return b
+        df['ballot_id'] = df['סמל ישוב'].astype(str) + '__' + df[ballot_field].apply(normalize_ballot)
 
         # Filter out city 9999 (aggregated/invalid data)
         df = df[df['סמל ישוב'] != 9999]
+        df = df.set_index('ballot_id')
         logger.info(f"{len(df)} precincts after filtering")
 
         return df, config
@@ -157,12 +162,39 @@ class VoteTransferAnalyzer:
             df_to, parties_to['symbols'], parties_to['names']
         )
 
-        # Find common precincts
-        common_idx = votes_from.index.intersection(votes_to.index)
-        logger.info(f"Found {len(common_idx)} common precincts")
+        # Find common precincts with fallback matching
+        # Try exact match first, then fall back to base ballot (14.1 -> 14)
+        def get_base_ballot_id(ballot_id):
+            parts = ballot_id.split('__')
+            if len(parts) == 2 and '.' in parts[1]:
+                return parts[0] + '__' + parts[1].split('.')[0]
+            return ballot_id
 
-        X = votes_from.loc[common_idx].values.astype(float)
-        Y = votes_to.loc[common_idx].values.astype(float)
+        # Build mapping: for each "to" ballot, find matching "from" ballot
+        from_ids = set(votes_from.index)
+        matched_pairs = []  # (from_id, to_id)
+
+        for to_id in votes_to.index:
+            if to_id in from_ids:
+                # Exact match
+                matched_pairs.append((to_id, to_id))
+            else:
+                # Try base ballot fallback
+                base_id = get_base_ballot_id(to_id)
+                if base_id != to_id and base_id in from_ids:
+                    matched_pairs.append((base_id, to_id))
+
+        logger.info(f"Found {len(matched_pairs)} matched precincts (with fallback)")
+
+        if not matched_pairs:
+            raise ValueError("No matching precincts found")
+
+        from_matched_ids = [p[0] for p in matched_pairs]
+        to_matched_ids = [p[1] for p in matched_pairs]
+        common_idx = None  # Not used anymore
+
+        X = votes_from.loc[from_matched_ids].values.astype(float)
+        Y = votes_to.loc[to_matched_ids].values.astype(float)
 
         # Compute transfer matrix
         logger.info(f"Computing transfer matrix using {self.method} method...")
@@ -259,7 +291,7 @@ class VoteTransferAnalyzer:
             'nodes_to': nodes_to,
             'transfers': transfers,
             'stats': {
-                'common_precincts': len(common_idx),
+                'common_precincts': len(matched_pairs),
                 'r_squared': round(r_squared, 4),
                 'total_votes_from': int(total_votes_from.sum()),
                 'total_votes_to': int(total_votes_to.sum()),

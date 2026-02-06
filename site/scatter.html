@@ -961,14 +961,27 @@
                 this.updateChart();
             }
 
-            normalizeKey(station) {
+            normalizeKey(station, forceBase = false) {
                 const settlement = station.n || station.settlement_name || '';
-                let ballot = station.b || station.ballot_number || '';
-                // Normalize ballot number
-                if (String(ballot).endsWith('.0')) {
-                    ballot = String(ballot).slice(0, -2);
+                let ballot = String(station.b || station.ballot_number || '');
+                // Remove trailing .0
+                if (ballot.endsWith('.0')) {
+                    ballot = ballot.slice(0, -2);
+                }
+                // If forceBase, get base ballot number (14.1 -> 14)
+                if (forceBase && ballot.includes('.')) {
+                    ballot = ballot.split('.')[0];
                 }
                 return `${settlement}|${ballot}`;
+            }
+
+            getBaseKey(key) {
+                // Convert "settlement|14.1" to "settlement|14"
+                const parts = key.split('|');
+                if (parts.length === 2 && parts[1].includes('.')) {
+                    return parts[0] + '|' + parts[1].split('.')[0];
+                }
+                return key;
             }
 
             getPartyValue(station, partyName, unitsMode) {
@@ -994,7 +1007,7 @@
 
                 if (!partyX || !partyY) return;
 
-                // Build lookup for matching stations
+                // Build lookup for matching stations (exact keys)
                 const lookupX = {};
                 dataX.stations.forEach(s => {
                     const key = this.normalizeKey(s);
@@ -1005,16 +1018,27 @@
                 });
 
                 // Find matching stations and build plot data
+                // Try exact match first, then fallback to base ballot (14.1 -> 14)
                 const plotData = [];
                 dataY.stations.forEach(s => {
                     const key = this.normalizeKey(s);
-                    if (lookupX[key]) {
+                    let matchedX = lookupX[key];
+
+                    // If no exact match, try base ballot fallback
+                    if (!matchedX) {
+                        const baseKey = this.getBaseKey(key);
+                        if (baseKey !== key) {
+                            matchedX = lookupX[baseKey];
+                        }
+                    }
+
+                    if (matchedX) {
                         plotData.push({
                             key,
                             settlement: s.n || s.settlement_name,
                             ballot: s.b || s.ballot_number,
                             location: s.l || '',
-                            x: lookupX[key].value,
+                            x: matchedX.value,
                             y: this.getPartyValue(s, this.currentPartyY, this.unitsMode),
                             voters: s.v || s.total_voters || 0
                         });
