@@ -165,8 +165,7 @@ class VoteTransferAnalyzer:
         # Find common precincts with fallback matching
         # Matching logic:
         # - Exact match first (including .0 which normalizes to base)
-        # - For .1+ subdivisions: fall back to base ONLY if no .0 sibling exists in "to" data
-        import re
+        # - Only .1 can fall back to base, and only if no .0 sibling exists in "to" data
 
         def get_base_ballot_id(ballot_id):
             parts = ballot_id.split('__')
@@ -174,9 +173,9 @@ class VoteTransferAnalyzer:
                 return parts[0] + '__' + parts[1].split('.')[0]
             return ballot_id
 
-        def has_subdivision(ballot_id):
+        def is_dot_one(ballot_id):
             parts = ballot_id.split('__')
-            return len(parts) == 2 and re.search(r'\.[1-9]\d*$', parts[1])
+            return len(parts) == 2 and parts[1].endswith('.1')
 
         # Track which base IDs have a .0 variant in "to" data
         to_bases_with_zero = set()
@@ -195,8 +194,8 @@ class VoteTransferAnalyzer:
             if to_id in from_ids:
                 # Exact match
                 matched_pairs.append((to_id, to_id))
-            elif has_subdivision(to_id):
-                # .1+ subdivision: only fall back if no .0 sibling
+            elif is_dot_one(to_id):
+                # Only .1 can fall back (not .2, .3, etc.)
                 base_id = get_base_ballot_id(to_id)
                 if base_id not in to_bases_with_zero and base_id in from_ids:
                     matched_pairs.append((base_id, to_id))

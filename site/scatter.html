@@ -844,7 +844,7 @@
                 });
 
                 // Count matching stations per settlement
-                // Matching: exact first, then .1+ falls back to base only if no .0 sibling
+                // Matching: exact first, then only .1 falls back to base (if no .0 sibling)
                 dataY.stations.forEach(s => {
                     const key = this.normalizeKey(s);
                     let matched = lookupX[key];
@@ -852,7 +852,8 @@
                     // If no exact match, try base ballot fallback
                     if (!matched) {
                         const ballot = String(s.b || s.ballot_number || '');
-                        if (/\.[1-9]\d*$/.test(ballot)) {
+                        // Only .1 subdivisions can fall back (not .2, .3, etc.)
+                        if (ballot.endsWith('.1')) {
                             const baseKey = this.getBaseKey(key);
                             if (!yBaseKeys.has(baseKey)) {
                                 matched = lookupX[baseKey];
@@ -1076,7 +1077,7 @@
                 // Find matching stations and build plot data
                 // Matching logic:
                 // - Exact match first (including 177.0 normalized to 177)
-                // - For .1+ subdivisions: fall back to base ONLY if no .0 sibling exists in Y
+                // - Only .1 can fall back to base, and only if no .0 sibling exists in Y
                 const plotData = [];
                 dataY.stations.forEach(s => {
                     const key = this.normalizeKey(s);
@@ -1085,8 +1086,8 @@
                     // If no exact match, try base ballot fallback
                     if (!matchedX) {
                         const ballot = String(s.b || s.ballot_number || '');
-                        // Only try fallback for .1+ subdivisions (not .0 which already normalized to base)
-                        if (/\.[1-9]\d*$/.test(ballot)) {
+                        // Only .1 subdivisions can fall back (not .2, .3, etc.)
+                        if (ballot.endsWith('.1')) {
                             const baseKey = this.getBaseKey(key);
                             // Only fall back to base if no .0 sibling exists
                             if (!yBaseKeys.has(baseKey)) {
