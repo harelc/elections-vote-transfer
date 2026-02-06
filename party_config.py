@@ -537,9 +537,9 @@ ELECTIONS = {
         'valid_votes': 4268929,
         'turnout_percent': 68.46,
         'major_parties': {
-            'symbols': ['מחל', 'פה', 'שס', 'ג', 'ום', 'אמת', 'ל', 'טב', 'מרצ', 'כ', 'דעם', 'ז'],
+            'symbols': ['מחל', 'פה', 'שס', 'ג', 'ום', 'אמת', 'ל', 'טב', 'מרצ', 'כ', 'דעם', 'ז', 'נ'],
             'names': ['הליכוד', 'כחול לבן', 'ש״ס', 'יהדות התורה', 'חד״ש-תע״ל',
-                     'העבודה', 'ישראל ביתנו', 'איחוד מפלגות הימין', 'מרצ', 'כולנו', 'רע״ם-בל״ד', 'זהות'],
+                     'העבודה', 'ישראל ביתנו', 'הבית היהודי', 'מרצ', 'כולנו', 'רע״ם-בל״ד', 'זהות', 'הימין החדש'],
             'seats': [35, 35, 8, 8, 6, 6, 5, 5, 4, 4, 4]
         }
     },
@@ -638,16 +638,16 @@ PARTY_OVERRIDES = {
         'founded': 2019,
         'description': 'ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ'
     },
-    # Union of Right-Wing Parties led by Rafi Peretz
+    # HaBayit HaYehudi (Jewish Home) led by Rafi Peretz - ran as Union of Right-Wing Parties
     ('21', 'טב'): {
-        'name': 'איחוד מפלגות הימין',
-        'name_en': 'Union of Right-Wing Parties',
+        'name': 'הבית היהודי',
+        'name_en': 'The Jewish Home',
         'leader': 'רפי פרץ',
         'leader_en': 'Rafi Peretz',
         'leader_image': 'images/leaders/peretz_rafi.jpg',
         'ideology': 'ימין דתי-לאומי, התנחלויות',
-        'founded': 2019,
-        'description': 'ברית הבית היהודי, האיחוד הלאומי ועוצמה יהודית'
+        'founded': 2008,
+        'description': 'איחוד מפלגות הימין - ברית הבית היהודי, האיחוד הלאומי ועוצמה יהודית'
     },
     # Labor led by Avi Gabbay
     ('21', 'אמת'): {
