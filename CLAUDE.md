@@ -5,9 +5,10 @@ Interactive visualizations for analyzing Israeli Knesset election data, showing 
 ## Project Structure
 
 ```
-├── data/                    # Raw and processed data files
-│   ├── ballot*.csv          # Raw election data per election (21-25)
+├── ballot*.csv              # Raw election data per election (21-25), in project root
+├── data/                    # Processed data files
 │   ├── transfer_*.json      # Vote transfer matrices between elections
+│   ├── ballot_locations_*.json # Ballot venue names (scraped)
 │   └── socioeconomic_clusters.json
 ├── site/                    # Static website (served directly)
 │   ├── index.html           # Main page with Sankey diagram
