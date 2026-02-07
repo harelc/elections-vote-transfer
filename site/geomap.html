@@ -764,6 +764,16 @@
                 <div class="panel-divider"></div>
 
                 <div class="panel-section">
+                    <div class="panel-title">חיפוש קלפי</div>
+                    <div style="position: relative;">
+                        <input type="text" class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                        <div class="search-results" id="station-search-results"></div>
+                    </div>
+                </div>
+
+                <div class="panel-divider"></div>
+
+                <div class="panel-section">
                     <div class="panel-title">צביעה לפי</div>
                     <div class="color-option active" data-mode="turnout">
                         <span class="color-swatch" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
@@ -985,6 +995,62 @@
                 tooltip.style.display = 'block';
             }
 
+            showMarkerTooltip(e, station, coordData) {
+                const settlement = station.n || station.settlement_name;
+                const ballot = station.b || station.ballot_number;
+                const location = station.l || coordData.location || '';
+                const voters = station.v || station.total_voters || 0;
+                const eligible = station.e || station.eligible_voters || 0;
+                const turnout = eligible > 0 ? Math.round(voters / eligible * 100) : 0;
+                const proportions = station.p || station.proportions || {};
+
+                const seCluster = this.socioeconomicData?.[settlement] || this.socioeconomicData?.[this.normalizeName(settlement)];
+
+                // Top 3 parties
+                const topParties = Object.entries(proportions)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(([name, pct]) => ({
+                        name,
+                        pct: Math.round(pct),
+                        color: this.parties.find(p => p.name === name)?.color || '#64748b'
+                    }));
+
+                const partyRows = topParties.map(p => `
+                    <div class="cluster-tooltip-party">
+                        <span class="cluster-tooltip-party-name">
+                            <span class="cluster-tooltip-party-dot" style="background: ${p.color}"></span>
+                            ${p.name}
+                        </span>
+                        <span class="cluster-tooltip-party-pct">${p.pct}%</span>
+                    </div>
+                `).join('');
+
+                const title = location ? `${settlement} / ${location}` : settlement;
+
+                const tooltip = document.getElementById('cluster-tooltip');
+                tooltip.innerHTML = `
+                    <div class="cluster-tooltip-title">${title}</div>
+                    <div class="cluster-tooltip-stats">
+                        <span class="cluster-tooltip-label">קלפי:</span>
+                        <span class="cluster-tooltip-value">${ballot}</span>
+                        <span class="cluster-tooltip-label">מצביעים:</span>
+                        <span class="cluster-tooltip-value">${voters.toLocaleString()}</span>
+                        <span class="cluster-tooltip-label">שיעור הצבעה:</span>
+                        <span class="cluster-tooltip-value">${turnout}%</span>
+                        ${seCluster ? `<span class="cluster-tooltip-label">אשכול:</span><span class="cluster-tooltip-value">${seCluster}</span>` : ''}
+                    </div>
+                    <div class="cluster-tooltip-parties">
+                        ${partyRows}
+                    </div>
+                `;
+
+                const pos = this.map.latLngToContainerPoint(e.latlng);
+                tooltip.style.left = (pos.x + 20) + 'px';
+                tooltip.style.top = (pos.y - 20) + 'px';
+                tooltip.style.display = 'block';
+            }
+
             hideClusterTooltip() {
                 document.getElementById('cluster-tooltip').style.display = 'none';
             }
@@ -1027,6 +1093,18 @@
                 document.addEventListener('click', (e) => {
                     if (!e.target.closest('.panel-section')) {
                         searchResults.classList.remove('visible');
+                        document.getElementById('station-search-results').classList.remove('visible');
+                    }
+                });
+
+                // Station search
+                const stationSearchInput = document.getElementById('station-search');
+                stationSearchInput.addEventListener('input', (e) => {
+                    this.handleStationSearch(e.target.value);
+                });
+                stationSearchInput.addEventListener('focus', () => {
+                    if (stationSearchInput.value.length > 0) {
+                        this.handleStationSearch(stationSearchInput.value);
                     }
                 });
 
@@ -1390,6 +1468,10 @@
                         className: 'station-popup-container'
                     });
 
+                    // Hover tooltip for single markers
+                    marker.on('mouseover', (e) => this.showMarkerTooltip(e, station, coordData));
+                    marker.on('mouseout', () => this.hideClusterTooltip());
+
                     this.markers.addLayer(marker);
                     markerCount++;
                 });
@@ -1508,6 +1590,58 @@
                     } else {
                         this.map.fitBounds(bounds, { padding: [50, 50], maxZoom: 15 });
                     }
+                }
+            }
+
+            handleStationSearch(query) {
+                const resultsDiv = document.getElementById('station-search-results');
+
+                if (query.length < 1) {
+                    resultsDiv.classList.remove('visible');
+                    return;
+                }
+
+                const matches = [];
+                this.tsneData.stations.forEach(station => {
+                    const name = station.n || station.settlement_name;
+                    const ballot = station.b || station.ballot_number;
+                    const key = `${name}|${ballot}`;
+                    const coordData = this.coordinates?.stations?.[key];
+                    const location = station.l || coordData?.location || '';
+
+                    const searchStr = `${name} ${ballot} ${location}`;
+                    if (searchStr.includes(query)) {
+                        matches.push({ name, ballot, location, key });
+                    }
+                });
+
+                if (matches.length === 0) {
+                    resultsDiv.classList.remove('visible');
+                    return;
+                }
+
+                resultsDiv.innerHTML = matches.slice(0, 15).map(m => `
+                    <div class="search-result-item" data-key="${m.key}">
+                        ${m.name} / ${m.ballot}
+                        <span style="color: var(--text-muted); font-size: 0.7rem; display: block;">${m.location}</span>
+                    </div>
+                `).join('');
+
+                resultsDiv.querySelectorAll('.search-result-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        this.zoomToStation(item.dataset.key);
+                        resultsDiv.classList.remove('visible');
+                        document.getElementById('station-search').value = '';
+                    });
+                });
+
+                resultsDiv.classList.add('visible');
+            }
+
+            zoomToStation(key) {
+                const coordData = this.coordinates?.stations?.[key];
+                if (coordData && coordData.lat && coordData.lng) {
+                    this.map.setView([coordData.lat, coordData.lng], 17);
                 }
             }
         }
