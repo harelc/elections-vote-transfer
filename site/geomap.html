@@ -1045,10 +1045,10 @@
 
                 const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
 
-                // Top 3 parties
+                // Top 7 parties
                 const topParties = Object.entries(partyVotes)
                     .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3)
+                    .slice(0, 7)
                     .map(([name, votes]) => ({
                         name,
                         pct: totalVoters > 0 ? Math.round(votes / totalVoters * 100) : 0,
@@ -1115,10 +1115,10 @@
 
                 const seCluster = this.socioeconomicData?.[settlement] || this.socioeconomicData?.[this.normalizeName(settlement)];
 
-                // Top 3 parties
+                // Top 7 parties
                 const topParties = Object.entries(proportions)
                     .sort((a, b) => b[1] - a[1])
-                    .slice(0, 3)
+                    .slice(0, 7)
                     .map(([name, pct]) => ({
                         name,
                         pct: Math.round(pct),
