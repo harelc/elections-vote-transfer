@@ -7,9 +7,7 @@ Interactive visualizations for analyzing Israeli Knesset election data, showing 
 ```
 ├── ballot*.csv              # Raw election data per election (21-25), in project root
 ├── data/                    # Processed data files
-│   ├── transfer_*.json      # Vote transfer matrices between elections
-│   ├── ballot_locations_*.json # Ballot venue names (scraped)
-│   └── socioeconomic_clusters.json
+│   └── ballot_locations_*.json # Ballot venue names (scraped)
 ├── site/                    # Static website (served directly)
 │   ├── index.html           # Main page with Sankey diagram
 │   ├── sankey.js            # Sankey visualization logic
@@ -17,8 +15,9 @@ Interactive visualizations for analyzing Israeli Knesset election data, showing 
 │   ├── scatter.html         # Party support scatter plot (X vs Y axis)
 │   ├── dhondt.html          # D'Hondt seat allocation calculator
 │   ├── irregular.html       # Irregular ballot analysis
-│   └── data/                # JSON data for frontend (copy of processed data)
+│   └── data/                # JSON data for frontend (source of truth)
 ├── generate_transfer_data.py # Generates vote transfer matrices
+├── requirements.txt         # Python dependencies
 └── venv/                    # Python virtual environment
 ```
 
@@ -125,7 +124,6 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 
 1. **Browser cache**: After regenerating data, hard refresh (Cmd+Shift+R) or use incognito
 2. **Python environment**: Always use `source venv/bin/activate` for generate scripts
-3. **Site files ignored by git**: Use `git add -f site/...` to stage site files
 
 ## Election IDs
 

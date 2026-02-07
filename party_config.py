@@ -567,7 +567,7 @@ ELECTIONS = {
         'name': 'הכנסת ה-23',
         'name_en': '23rd Knesset',
         'date': '2020-03-02',
-        'file': 'ballot23final.csv',
+        'file': 'ballot23.csv',
         'encoding': 'iso8859_8',
         'ballot_field': 'קלפי',
         # Official voter statistics
@@ -586,7 +586,7 @@ ELECTIONS = {
         'name': 'הכנסת ה-24',
         'name_en': '24th Knesset',
         'date': '2021-03-23',
-        'file': 'ballot24final.csv',
+        'file': 'ballot24.csv',
         'encoding': 'iso8859_8',
         'ballot_field': 'קלפי',
         # Official voter statistics
