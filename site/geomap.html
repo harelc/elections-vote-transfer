@@ -883,17 +883,17 @@
 
                 <div class="panel-section">
                     <div class="panel-title">צביעה לפי</div>
-                    <div class="color-option active" data-mode="turnout">
+                    <div class="color-option active" data-mode="winner">
+                        <span class="color-swatch" style="background: linear-gradient(135deg, #2563eb, #dc2626, #16a34a);"></span>
+                        <span class="color-label">מפלגה מנצחת</span>
+                    </div>
+                    <div class="color-option" data-mode="turnout">
                         <span class="color-swatch" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
                         <span class="color-label">שיעור הצבעה</span>
                     </div>
                     <div class="color-option" data-mode="socioeconomic">
                         <span class="color-swatch" style="background: linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142);"></span>
                         <span class="color-label">אשכול חברתי-כלכלי</span>
-                    </div>
-                    <div class="color-option" data-mode="winner">
-                        <span class="color-swatch" style="background: linear-gradient(135deg, #2563eb, #dc2626, #16a34a);"></span>
-                        <span class="color-label">מפלגה מנצחת</span>
                     </div>
                 </div>
 
@@ -916,11 +916,11 @@
                     <span class="stats-badge-value" id="station-count">0</span> / <span id="total-count">0</span> קלפיות
                 </div>
                 <div class="color-scale-legend" id="color-legend">
-                    <div class="color-scale-title" id="legend-title">שיעור הצבעה</div>
-                    <div class="color-scale-bar" id="legend-bar" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></div>
+                    <div class="color-scale-title" id="legend-title">מפלגה מנצחת</div>
+                    <div class="color-scale-bar" id="legend-bar" style="display: none;"></div>
                     <div class="color-scale-labels">
-                        <span id="legend-min">40%</span>
-                        <span id="legend-max">90%</span>
+                        <span id="legend-min"></span>
+                        <span id="legend-max"></span>
                     </div>
                 </div>
             </div>
@@ -952,7 +952,7 @@
                 this.coordinates = null;
                 this.socioeconomicData = null;
                 this.parties = [];
-                this.colorMode = 'turnout';
+                this.colorMode = 'winner';
                 this.selectedParty = null;
                 this.currentElection = '25';
                 this.settlements = [];
@@ -1383,22 +1383,25 @@
 
                 if (this.colorMode === 'turnout') {
                     legendTitle.textContent = 'שיעור הצבעה';
+                    legendBar.style.display = '';
                     legendBar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
                     legendMin.textContent = '40%';
                     legendMax.textContent = '90%';
                 } else if (this.colorMode === 'socioeconomic') {
                     legendTitle.textContent = 'אשכול חברתי-כלכלי';
+                    legendBar.style.display = '';
                     legendBar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
                     legendMin.textContent = '1';
                     legendMax.textContent = '10';
                 } else if (this.colorMode === 'winner') {
                     legendTitle.textContent = 'מפלגה מנצחת';
-                    legendBar.style.background = 'linear-gradient(to right, #2563eb, #dc2626, #16a34a, #8b5cf6)';
+                    legendBar.style.display = 'none';
                     legendMin.textContent = '';
                     legendMax.textContent = '';
                 } else if (this.colorMode === 'party' && this.selectedParty) {
                     const partyName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
                     legendTitle.textContent = `תמיכה ב${partyName}`;
+                    legendBar.style.display = '';
                     legendBar.style.background = `linear-gradient(to left, ${this.selectedParty.color}, ${this.lightenColor(this.selectedParty.color, 0.8)})`;
                     legendMin.textContent = '0%';
                     legendMax.textContent = '50%';
