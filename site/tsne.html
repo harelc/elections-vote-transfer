@@ -670,6 +670,41 @@
             line-height: 1.4;
         }
 
+        .tooltip-leader {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .tooltip-leader-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .tooltip-leader-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tooltip-leader-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .tooltip-leader-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .tooltip-logo {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
+        }
+
         /* Color scale legend */
         .color-scale {
             position: absolute;
@@ -1425,14 +1460,17 @@
                 const info = party.info || {};
                 const html = `
                     <div class="tooltip-header">
-                        <div class="tooltip-color" style="background-color: ${party.color}"></div>
+                        ${info.logo ? `<img class="tooltip-logo" src="${info.logo}" alt="" onerror="this.style.display='none'">` : `<div class="tooltip-color" style="background-color: ${party.color}"></div>`}
                         <span class="tooltip-title">${party.name}</span>
                         <span class="tooltip-symbol">(${party.symbol})</span>
                     </div>
                     <div class="tooltip-body">
-                        ${info.leader ? `<div class="tooltip-stat">
-                            <span class="tooltip-stat-label">מנהיג:</span>
-                            <span class="tooltip-stat-value">${info.leader}</span>
+                        ${info.leader ? `<div class="tooltip-leader">
+                            ${info.leader_image ? `<img class="tooltip-leader-img" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">` : ''}
+                            <div class="tooltip-leader-info">
+                                <span class="tooltip-leader-label">מנהיג:</span>
+                                <span class="tooltip-leader-name">${info.leader}</span>
+                            </div>
                         </div>` : ''}
                         ${info.ideology ? `<div class="tooltip-stat">
                             <span class="tooltip-stat-label">אידיאולוגיה:</span>

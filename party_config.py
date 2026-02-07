@@ -50,7 +50,7 @@ PARTIES = {
         'leader': 'יאיר לפיד',
         'leader_en': 'Yair Lapid',
         'leader_image': 'images/leaders/lapid.jpg',
-        'logo': '',
+        'logo': 'images/logos/yesh_atid.png',
         'ideology': 'מרכז, ליברליזם, חילוניות',
         'founded': 2012,
         'description': 'מפלגת מרכז ליברלית, התמקדה בנושאי מעמד הביניים והפרדת דת ומדינה'
@@ -64,7 +64,7 @@ PARTIES = {
         'leader': 'אריה דרעי',
         'leader_en': 'Aryeh Deri',
         'leader_image': 'images/leaders/deri.jpg',
-        'logo': '',
+        'logo': 'images/logos/shas.png',
         'ideology': 'חרדית ספרדית, שמרנות חברתית, מסורתיות',
         'founded': 1984,
         'description': 'מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי'
@@ -78,7 +78,7 @@ PARTIES = {
         'leader': 'יצחק גולדקנופף',
         'leader_en': 'Yitzhak Goldknopf',
         'leader_image': 'images/leaders/goldknopf.jpg',
-        'logo': '',
+        'logo': 'images/logos/utj.png',
         'ideology': 'חרדית אשכנזית, שמרנות דתית',
         'founded': 1992,
         'description': 'ברית של אגודת ישראל ודגל התורה, מייצגת את הציבור החרדי האשכנזי'
@@ -92,7 +92,7 @@ PARTIES = {
         'leader': 'אביגדור ליברמן',
         'leader_en': 'Avigdor Lieberman',
         'leader_image': 'images/leaders/lieberman.jpg',
-        'logo': '',
+        'logo': 'images/logos/yisrael_beiteinu.png',
         'ideology': 'ימין חילוני, לאומנות, חילוניות',
         'founded': 1999,
         'description': 'מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר'
@@ -106,7 +106,7 @@ PARTIES = {
         'leader': 'מרב מיכאלי',
         'leader_en': 'Merav Michaeli',
         'leader_image': 'images/leaders/michaeli.jpg',
-        'logo': '',
+        'logo': 'images/logos/labor.png',
         'ideology': 'שמאל-מרכז, סוציאל-דמוקרטיה, ציונות',
         'founded': 1968,
         'description': 'מפלגת השמאל הציוני ההיסטורית, הקימה את המדינה והובילה אותה עד 1977'
@@ -148,7 +148,7 @@ PARTIES = {
         'leader': 'מנסור עבאס',
         'leader_en': 'Mansour Abbas',
         'leader_image': 'images/leaders/abbas.jpg',
-        'logo': '',
+        'logo': 'images/logos/raam.png',
         'ideology': 'ערבי-אסלאמי, שמרנות חברתית',
         'founded': 2019,
         'description': 'רשימה משותפת של רע״ם ובל״ד בבחירות 2019'
@@ -162,7 +162,7 @@ PARTIES = {
         'leader': 'איימן עודה',
         'leader_en': 'Ayman Odeh',
         'leader_image': 'images/leaders/odeh.jpg',
-        'logo': '',
+        'logo': 'images/logos/hadash_taal.png',
         'ideology': 'שמאל, קומוניזם, שוויון יהודי-ערבי',
         'founded': 1977,
         'description': 'החזית הדמוקרטית לשלום ושוויון, מפלגה יהודית-ערבית משותפת'
@@ -176,7 +176,7 @@ PARTIES = {
         'leader': 'מנסור עבאס',
         'leader_en': 'Mansour Abbas',
         'leader_image': 'images/leaders/abbas.jpg',
-        'logo': '',
+        'logo': 'images/logos/raam.png',
         'ideology': 'ערבי-אסלאמי, פרגמטיזם, שמרנות חברתית',
         'founded': 1996,
         'description': 'הרשימה הערבית המאוחדת, המפלגה הערבית הראשונה להצטרף לקואליציה'
@@ -189,7 +189,7 @@ PARTIES = {
         'color': PARTY_COLORS['balad'],
         'leader': 'סמי אבו שחאדה',
         'leader_en': 'Sami Abu Shehadeh',
-        'leader_image': '',
+        'leader_image': 'images/leaders/abu_shehadeh.jpg',
         'logo': 'images/logos/balad.png',
         'ideology': 'לאומנות ערבית, שמאל',
         'founded': 1995,
@@ -232,7 +232,7 @@ PARTIES = {
         'leader': 'בצלאל סמוטריץ׳',
         'leader_en': 'Bezalel Smotrich',
         'leader_image': 'images/leaders/smotrich.jpg',
-        'logo': '',
+        'logo': 'images/logos/religious_zionism.png',
         'ideology': 'ימין קיצוני, ציונות דתית, התנחלויות',
         'founded': 2021,
         'description': 'ברית של הציונות הדתית, עוצמה יהודית ונעם'
@@ -246,7 +246,7 @@ PARTIES = {
         'leader': 'בני גנץ',
         'leader_en': 'Benny Gantz',
         'leader_image': 'images/leaders/gantz.jpg',
-        'logo': '',
+        'logo': 'images/logos/national_unity.png',
         'ideology': 'מרכז-ימין, ביטחוניות, ממלכתיות',
         'founded': 2022,
         'description': 'מפלגת מרכז-ימין בהנהגת בני גנץ, התמזגה עם כחול לבן'
@@ -478,6 +478,7 @@ PARTIES = {
         'name_en': 'New Right',
         'color': '#1e40af',
         'leader': 'נפתלי בנט ואיילת שקד',
+        'logo': 'images/logos/new_right.png',
         'ideology': 'ימין, ליברלי-לאומי',
         'description': 'מפלגת ימין בראשות נפתלי בנט ואיילת שקד, לא עברה את אחוז החסימה בבחירות לכנסת ה-21'
     },
@@ -634,6 +635,7 @@ PARTY_OVERRIDES = {
         'leader': 'בני גנץ',
         'leader_en': 'Benny Gantz',
         'leader_image': 'images/leaders/gantz.jpg',
+        'logo': 'images/logos/blue_white.png',
         'ideology': 'מרכז, ביטחוניות, ממלכתיות',
         'founded': 2019,
         'description': 'ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ'
@@ -680,6 +682,7 @@ PARTY_OVERRIDES = {
         'leader': 'בני גנץ',
         'leader_en': 'Benny Gantz',
         'leader_image': 'images/leaders/gantz.jpg',
+        'logo': 'images/logos/blue_white.png',
         'ideology': 'מרכז, ביטחוניות, ממלכתיות',
         'founded': 2019,
         'description': 'ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ'
@@ -733,6 +736,7 @@ PARTY_OVERRIDES = {
         'leader': 'בני גנץ',
         'leader_en': 'Benny Gantz',
         'leader_image': 'images/leaders/gantz.jpg',
+        'logo': 'images/logos/blue_white.png',
         'ideology': 'מרכז, ביטחוניות, ממלכתיות',
         'founded': 2019,
         'description': 'ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ'
@@ -775,6 +779,7 @@ PARTY_OVERRIDES = {
         'leader': 'בני גנץ',
         'leader_en': 'Benny Gantz',
         'leader_image': 'images/leaders/gantz.jpg',
+        'logo': 'images/logos/blue_white.png',
         'ideology': 'מרכז, ביטחוניות, ממלכתיות',
         'founded': 2019,
         'description': 'כחול לבן לאחר הפיצול מיש עתיד, בהנהגת בני גנץ'
@@ -794,6 +799,20 @@ PARTY_OVERRIDES = {
         'description': 'יהדות התורה בהנהגת משה גפני'
     },
 
+    # New Hope led by Gideon Saar
+    ('24', 'ת'): {
+        'name': 'תקווה חדשה',
+        'name_en': 'New Hope',
+        'color': PARTY_COLORS['new_hope'],
+        'leader': 'גדעון סער',
+        'leader_en': "Gideon Sa'ar",
+        'leader_image': 'images/leaders/saar.jpg',
+        'logo': 'images/logos/new_hope.png',
+        'ideology': 'ימין ליברלי, שלטון חוק',
+        'founded': 2020,
+        'description': 'מפלגת ימין ליברלית שהוקמה על ידי סער לאחר פרישתו מהליכוד'
+    },
+
     # ===== ELECTION 25 (November 2022) =====
     # National Unity (Gantz + Saar merger) - default config is correct
     # Meretz led by Zahava Galon (returned to lead party)
@@ -811,6 +830,8 @@ PARTY_OVERRIDES = {
         'name': 'הימין החדש',
         'name_en': 'New Right',
         'leader': 'נפתלי בנט ואיילת שקד',
+        'leader_image': 'images/leaders/bennett.jpg',
+        'logo': 'images/logos/new_right.png',
         'description': 'הימין החדש בראשות שקד ובנט, לא עברה את אחוז החסימה'
     },
     ('22', 'נ'): {
@@ -843,6 +864,8 @@ PARTY_OVERRIDES = {
         'name': 'עוצמה יהודית',
         'name_en': 'Jewish Power',
         'leader': 'איתמר בן גביר',
+        'leader_image': 'images/leaders/ben_gvir.jpg',
+        'logo': 'images/logos/otzma_yehudit.png',
         'ideology': 'ימין קיצוני, לאומנות',
         'description': 'עוצמה יהודית בראשות איתמר בן גביר'
     },
@@ -878,6 +901,8 @@ PARTY_OVERRIDES = {
         'name': 'זהות',
         'name_en': 'Zehut',
         'leader': 'משה פייגלין',
+        'leader_image': 'images/leaders/feiglin.jpg',
+        'logo': 'images/logos/zehut.png',
         'description': 'זהות - תנועה ישראלית יהודית בהנהגת משה פייגלין'
     },
     ('22', 'ז'): {
@@ -904,6 +929,8 @@ PARTY_OVERRIDES = {
         'name': 'זהות',
         'name_en': 'Zehut',
         'leader': 'משה פייגלין',
+        'leader_image': 'images/leaders/feiglin.jpg',
+        'logo': 'images/logos/zehut.png',
         'description': 'זהות - תנועה ישראלית יהודית בהנהגת משה פייגלין'
     },
 
@@ -938,6 +965,8 @@ PARTY_OVERRIDES = {
         'name': 'עוצמה יהודית',
         'name_en': 'Jewish Power',
         'leader': 'איתמר בן גביר',
+        'leader_image': 'images/leaders/ben_gvir.jpg',
+        'logo': 'images/logos/otzma_yehudit.png',
         'ideology': 'ימין קיצוני, לאומנות',
         'description': 'עוצמה יהודית בראשות איתמר בן גביר'
     },

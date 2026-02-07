@@ -273,8 +273,6 @@
 
         /* Party list */
         .party-list {
-            max-height: 300px;
-            overflow-y: auto;
         }
 
         .party-item {
@@ -310,6 +308,116 @@
 
         .party-item.active .party-name {
             color: var(--text-primary);
+        }
+
+        /* Party tooltip */
+        .party-tooltip {
+            position: fixed;
+            pointer-events: none;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.75rem;
+            box-shadow: var(--shadow-lg);
+            z-index: 2000;
+            max-width: 300px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+        }
+
+        .party-tooltip.visible {
+            opacity: 1;
+        }
+
+        .party-tooltip-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .party-tooltip-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .party-tooltip-title {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+
+        .party-tooltip-symbol {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .party-tooltip-body {
+            font-size: 0.85rem;
+        }
+
+        .party-tooltip-stat {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .party-tooltip-stat-label {
+            color: var(--text-muted);
+        }
+
+        .party-tooltip-stat-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .party-tooltip-description {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .party-tooltip-leader {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .party-tooltip-leader-img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .party-tooltip-leader-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .party-tooltip-leader-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .party-tooltip-leader-name {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .party-tooltip-logo {
+            width: 24px;
+            height: 24px;
+            object-fit: contain;
         }
 
         /* Map container */
@@ -800,6 +908,7 @@
             <div class="map-container">
                 <div id="map"></div>
                 <div class="cluster-tooltip" id="cluster-tooltip" style="display: none;"></div>
+                <div class="party-tooltip" id="party-tooltip"></div>
                 <div class="loading-overlay" id="loading">
                     <div class="loading-spinner"></div>
                 </div>
@@ -1195,6 +1304,9 @@
                         <span class="party-name">${party.name}</span>
                     `;
                     item.addEventListener('click', () => this.selectParty(party));
+                    item.addEventListener('mouseenter', (e) => this.showPartyTooltip(e, party));
+                    item.addEventListener('mousemove', (e) => this.movePartyTooltip(e));
+                    item.addEventListener('mouseleave', () => this.hidePartyTooltip());
                     container.appendChild(item);
                 });
             }
@@ -1211,6 +1323,49 @@
 
                 this.updateLegend();
                 this.renderMarkers();
+            }
+
+            showPartyTooltip(event, party) {
+                const info = party.info || {};
+                const tooltip = document.getElementById('party-tooltip');
+                tooltip.innerHTML = `
+                    <div class="party-tooltip-header">
+                        ${info.logo ? `<img class="party-tooltip-logo" src="${info.logo}" alt="" onerror="this.style.display='none'">` : `<div class="party-tooltip-color" style="background-color: ${party.color}"></div>`}
+                        <span class="party-tooltip-title">${party.name}</span>
+                        <span class="party-tooltip-symbol">(${party.symbol})</span>
+                    </div>
+                    <div class="party-tooltip-body">
+                        ${info.leader ? `<div class="party-tooltip-leader">
+                            ${info.leader_image ? `<img class="party-tooltip-leader-img" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">` : ''}
+                            <div class="party-tooltip-leader-info">
+                                <span class="party-tooltip-leader-label">מנהיג:</span>
+                                <span class="party-tooltip-leader-name">${info.leader}</span>
+                            </div>
+                        </div>` : ''}
+                        ${info.ideology ? `<div class="party-tooltip-stat">
+                            <span class="party-tooltip-stat-label">אידיאולוגיה:</span>
+                            <span class="party-tooltip-stat-value">${info.ideology}</span>
+                        </div>` : ''}
+                        ${info.description ? `<div class="party-tooltip-description">${info.description}</div>` : ''}
+                    </div>
+                `;
+                tooltip.classList.add('visible');
+                this.movePartyTooltip(event);
+            }
+
+            movePartyTooltip(event) {
+                const tooltip = document.getElementById('party-tooltip');
+                const x = event.clientX + 15;
+                const y = event.clientY - 10;
+                const rect = tooltip.getBoundingClientRect();
+                const adjustedX = x + rect.width > window.innerWidth ? event.clientX - rect.width - 15 : x;
+                const adjustedY = y + rect.height > window.innerHeight ? window.innerHeight - rect.height - 10 : y;
+                tooltip.style.left = adjustedX + 'px';
+                tooltip.style.top = adjustedY + 'px';
+            }
+
+            hidePartyTooltip() {
+                document.getElementById('party-tooltip').classList.remove('visible');
             }
 
             setColorMode(mode) {

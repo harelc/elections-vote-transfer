@@ -170,6 +170,8 @@ def generate_tsne_json(election_id, compact=True):
             'color': info['color'],
             'info': {
                 'leader': info.get('leader', ''),
+                'leader_image': info.get('leader_image', ''),
+                'logo': info.get('logo', ''),
                 'ideology': info.get('ideology', ''),
                 'description': info.get('description', ''),
             }

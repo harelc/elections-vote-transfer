@@ -52,7 +52,7 @@
         "leader": "בני גנץ",
         "leader_en": "Benny Gantz",
         "leader_image": "images/leaders/gantz.jpg",
-        "logo": "",
+        "logo": "images/logos/blue_white.png",
         "ideology": "מרכז, ביטחוניות, ממלכתיות",
         "founded": 2019,
         "description": "ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ"
@@ -71,7 +71,7 @@
         "leader": "אריה דרעי",
         "leader_en": "Aryeh Deri",
         "leader_image": "images/leaders/deri.jpg",
-        "logo": "",
+        "logo": "images/logos/shas.png",
         "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
         "founded": 1984,
         "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי"
@@ -90,7 +90,7 @@
         "leader": "יעקב ליצמן",
         "leader_en": "Yaakov Litzman",
         "leader_image": "images/leaders/litzman.jpg",
-        "logo": "",
+        "logo": "images/logos/utj.png",
         "ideology": "חרדית אשכנזית, שמרנות דתית",
         "founded": 1992,
         "description": "יהדות התורה בהנהגת יעקב ליצמן"
@@ -109,7 +109,7 @@
         "leader": "איימן עודה",
         "leader_en": "Ayman Odeh",
         "leader_image": "images/leaders/odeh.jpg",
-        "logo": "",
+        "logo": "images/logos/hadash_taal.png",
         "ideology": "שמאל, קומוניזם, שוויון יהודי-ערבי",
         "founded": 1977,
         "description": "החזית הדמוקרטית לשלום ושוויון, מפלגה יהודית-ערבית משותפת"
@@ -128,7 +128,7 @@
         "leader": "אבי גבאי",
         "leader_en": "Avi Gabbay",
         "leader_image": "images/leaders/gabbay.jpg",
-        "logo": "",
+        "logo": "images/logos/labor.png",
         "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה, ציונות",
         "founded": 1968,
         "description": "מפלגת העבודה בהנהגת אבי גבאי"
@@ -147,7 +147,7 @@
         "leader": "אביגדור ליברמן",
         "leader_en": "Avigdor Lieberman",
         "leader_image": "images/leaders/lieberman.jpg",
-        "logo": "",
+        "logo": "images/logos/yisrael_beiteinu.png",
         "ideology": "ימין חילוני, לאומנות, חילוניות",
         "founded": 1999,
         "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר"
@@ -223,7 +223,7 @@
         "leader": "מנסור עבאס",
         "leader_en": "Mansour Abbas",
         "leader_image": "images/leaders/abbas.jpg",
-        "logo": "",
+        "logo": "images/logos/raam.png",
         "ideology": "ערבי-אסלאמי, שמרנות חברתית",
         "founded": 2019,
         "description": "רשימה משותפת של רע״ם ובל״ד בבחירות 2019"
@@ -241,7 +241,9 @@
         "color": "#ffde15",
         "leader": "משה פייגלין",
         "ideology": "חברתי",
-        "description": "זהות - תנועה ישראלית יהודית בהנהגת משה פייגלין"
+        "description": "זהות - תנועה ישראלית יהודית בהנהגת משה פייגלין",
+        "leader_image": "images/leaders/feiglin.jpg",
+        "logo": "images/logos/zehut.png"
       }
     },
     {
@@ -255,8 +257,10 @@
         "name_en": "New Right",
         "color": "#1e40af",
         "leader": "נפתלי בנט ואיילת שקד",
+        "logo": "images/logos/new_right.png",
         "ideology": "ימין, ליברלי-לאומי",
-        "description": "הימין החדש בראשות שקד ובנט, לא עברה את אחוז החסימה"
+        "description": "הימין החדש בראשות שקד ובנט, לא עברה את אחוז החסימה",
+        "leader_image": "images/leaders/bennett.jpg"
       }
     }
   ],
@@ -274,7 +278,7 @@
         "leader": "בני גנץ",
         "leader_en": "Benny Gantz",
         "leader_image": "images/leaders/gantz.jpg",
-        "logo": "",
+        "logo": "images/logos/blue_white.png",
         "ideology": "מרכז, ביטחוניות, ממלכתיות",
         "founded": 2019,
         "description": "ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ"
@@ -331,7 +335,7 @@
         "leader": "אריה דרעי",
         "leader_en": "Aryeh Deri",
         "leader_image": "images/leaders/deri.jpg",
-        "logo": "",
+        "logo": "images/logos/shas.png",
         "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
         "founded": 1984,
         "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי"
@@ -350,7 +354,7 @@
         "leader": "אביגדור ליברמן",
         "leader_en": "Avigdor Lieberman",
         "leader_image": "images/leaders/lieberman.jpg",
-        "logo": "",
+        "logo": "images/logos/yisrael_beiteinu.png",
         "ideology": "ימין חילוני, לאומנות, חילוניות",
         "founded": 1999,
         "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר"
@@ -369,7 +373,7 @@
         "leader": "משה גפני",
         "leader_en": "Moshe Gafni",
         "leader_image": "images/leaders/gafni.jpg",
-        "logo": "",
+        "logo": "images/logos/utj.png",
         "ideology": "חרדית אשכנזית, שמרנות דתית",
         "founded": 1992,
         "description": "יהדות התורה בהנהגת משה גפני"
@@ -407,7 +411,7 @@
         "leader": "עמיר פרץ",
         "leader_en": "Amir Peretz",
         "leader_image": "images/leaders/peretz_amir.jpg",
-        "logo": "",
+        "logo": "images/logos/labor.png",
         "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה, ציונות",
         "founded": 1968,
         "description": "ברית העבודה וגשר בהנהגת עמיר פרץ"
@@ -688,6 +692,6 @@
     "r_squared": 0.9303,
     "total_votes_from": 4199883,
     "total_votes_to": 4037361,
-    "generated_at": "2026-02-07 00:13:48"
+    "generated_at": "2026-02-07 08:40:27"
   }
 }
