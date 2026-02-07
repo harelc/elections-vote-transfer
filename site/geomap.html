@@ -1020,6 +1020,8 @@
                 const settlements = new Set();
                 const clusterCounts = {};
 
+                const locations = new Set();
+
                 childMarkers.forEach(marker => {
                     const station = marker.options.stationData;
                     if (!station) return;
@@ -1031,6 +1033,9 @@
 
                     const name = station.n || station.settlement_name;
                     settlements.add(name);
+
+                    const loc = station.l || '';
+                    if (loc) locations.add(loc);
 
                     const seCluster = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
                     if (seCluster) {
@@ -1080,9 +1085,13 @@
                     </div>
                 `).join('');
 
+                // Show venue name if all stations share the same location
+                const commonVenue = locations.size === 1 ? [...locations][0] : '';
+
                 const tooltip = document.getElementById('cluster-tooltip');
                 tooltip.innerHTML = `
                     <div class="cluster-tooltip-title">${title}</div>
+                    ${commonVenue ? `<div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 6px; font-style: italic;">${commonVenue}</div>` : ''}
                     <div class="cluster-tooltip-stats">
                         <span class="cluster-tooltip-label">קלפיות:</span>
                         <span class="cluster-tooltip-value">${count.toLocaleString()}</span>
@@ -1616,7 +1625,7 @@
                         weight: 1,
                         opacity: 0.8,
                         fillOpacity: 0.7,
-                        stationData: station  // Store for cluster aggregation
+                        stationData: { ...station, l: coordData.location || '' }  // Store for cluster aggregation
                     });
 
                     // Popup content
