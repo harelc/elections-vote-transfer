@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>בחירות אזוריות - קולות נודדים</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
+    <style>
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .leaflet-tile-pane { filter: brightness(0.7) saturate(0.8); }
+        .leaflet-popup-pane, .leaflet-marker-pane, .leaflet-overlay-pane { filter: none; }
+
+        /* Region labels on map */
+        .region-label {
+            font-family: 'Heebo', sans-serif;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-primary, #f0f0f5);
+            text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.6);
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .region-label .region-label-seats {
+            display: block;
+            font-size: 9px;
+            font-weight: 400;
+            color: var(--text-secondary, #a0a0b0);
+            text-align: center;
+        }
+
+        /* Control pills - fixed at top over map */
+        .controls-overlay {
+            position: fixed;
+            top: 48px;
+            left: 8px;
+            right: 8px;
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .control-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(18, 18, 26, 0.9);
+            border-radius: 8px;
+            padding: 4px 8px;
+            border: 1px solid var(--border);
+        }
+
+        .control-row label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .m-pill-group {
+            display: flex;
+            gap: 2px;
+            flex-wrap: nowrap;
+        }
+
+        .m-pill-btn {
+            padding: 3px 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 0.7rem;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .m-pill-btn.active {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .m-threshold-select {
+            padding: 3px 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            color: var(--text-primary, #f0f0f5);
+            font-family: inherit;
+            font-size: 0.7rem;
+        }
+
+        /* Results bottom sheet */
+        .results-sheet {
+            position: fixed;
+            bottom: calc(56px + var(--safe-bottom));
+            left: 0;
+            right: 0;
+            z-index: 300;
+            background: var(--bg-secondary);
+            border-radius: 16px 16px 0 0;
+            border-top: 1px solid var(--border);
+            max-height: 55vh;
+            transform: translateY(calc(100% - 56px));
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-sheet.expanded {
+            transform: translateY(0);
+        }
+
+        .sheet-handle-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .sheet-handle-bar .handle {
+            width: 36px;
+            height: 4px;
+            background: var(--border-light, #35354a);
+            border-radius: 2px;
+        }
+
+        .sheet-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 12px 8px;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .bloc-pills {
+            display: flex;
+            gap: 8px;
+        }
+
+        .bloc-pill {
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .bloc-pill.majority {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .bloc-pill.minority {
+            color: var(--text-muted);
+        }
+
+        .sheet-scroll {
+            overflow-y: auto;
+            flex: 1;
+            padding: 0 12px 12px;
+        }
+
+        /* Hemicycle in sheet */
+        .m-parliament { text-align: center; margin-bottom: 8px; }
+        .m-parliament svg { width: 100%; max-width: 320px; }
+
+        .m-parliament-legend {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            font-size: 0.7rem;
+            color: var(--text-secondary, #a0a0b0);
+            margin-top: 4px;
+        }
+        .m-legend-item { display: flex; align-items: center; gap: 4px; }
+        .m-legend-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--accent, #3b82f6);
+        }
+        .m-legend-dot.ring {
+            background: transparent;
+            border: 2px solid var(--accent, #3b82f6);
+        }
+
+        /* Mini comparison table */
+        .m-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        .m-table th {
+            text-align: start;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 4px 6px;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.65rem;
+        }
+
+        .m-table td {
+            padding: 3px 6px;
+            border-bottom: 1px solid rgba(42, 42, 58, 0.3);
+        }
+
+        .m-party-cell {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .m-party-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .m-seats-cell { text-align: center; font-variant-numeric: tabular-nums; }
+        .m-diff-positive { color: #22c55e; font-weight: 600; }
+        .m-diff-negative { color: #ef4444; font-weight: 600; }
+        .m-diff-zero { color: var(--text-muted); }
+
+        /* Parliament legend */
+        .m-parliament-legend {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            padding: 4px 0 2px;
+            direction: ltr;
+        }
+        .m-legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            margin: 0 8px;
+        }
+        .m-legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #94a3b8;
+            border: 1px solid #000;
+            display: inline-block;
+        }
+        .m-legend-dot.ring {
+            background: transparent;
+            border: 2px solid #94a3b8;
+        }
+
+        /* Region detail overlay */
+        .region-detail-overlay {
+            position: fixed;
+            bottom: calc(56px + var(--safe-bottom));
+            left: 0;
+            right: 0;
+            z-index: 350;
+            background: var(--bg-secondary);
+            border-radius: 16px 16px 0 0;
+            border-top: 1px solid var(--border);
+            max-height: 45vh;
+            overflow-y: auto;
+            padding: 12px 16px calc(12px + var(--safe-bottom, 0px));
+            display: none;
+        }
+
+        .region-detail-overlay.visible { display: block; }
+
+        .region-detail-close {
+            float: left;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+
+        [dir="rtl"] .region-detail-close { float: left; }
+
+        .region-detail-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .region-detail-meta {
+            font-size: 0.75rem;
+            color: var(--text-secondary, #a0a0b0);
+            margin-bottom: 8px;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 500;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid var(--border);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="tab_regional">אזורי</span></span>
+    </div>
+
+    <!-- Main Map -->
+    <div class="main-area">
+        <div id="map"></div>
+        <div class="loading-overlay" id="loading">
+            <div style="text-align:center;">
+                <div class="spinner" style="margin:0 auto 12px;"></div>
+                <div style="color:var(--text-secondary);font-size:0.85rem;" data-i18n="loading_please_wait">טוען נתונים, נא להמתין...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls overlay -->
+    <div class="controls-overlay">
+        <div class="control-row">
+            <label data-i18n="regions_label">מחוזות בחירה:</label>
+            <div class="m-pill-group" id="region-pills">
+                <button class="m-pill-btn" data-value="6">6</button>
+                <button class="m-pill-btn active" data-value="12">12</button>
+                <button class="m-pill-btn" data-value="18">18</button>
+                <button class="m-pill-btn" data-value="24">24</button>
+                <button class="m-pill-btn" data-value="30">30</button>
+                <button class="m-pill-btn" data-value="40">40</button>
+                <button class="m-pill-btn" data-value="60">60</button>
+                <button class="m-pill-btn" data-value="90">90</button>
+                <button class="m-pill-btn" data-value="120">120</button>
+            </div>
+            <label data-i18n="threshold_label">חסימה:</label>
+            <select class="m-threshold-select" id="threshold-select">
+                <option value="0">0%</option>
+                <option value="3.25" selected>3.25%</option>
+                <option value="5">5%</option>
+            </select>
+        </div>
+        <div class="control-row">
+            <label data-i18n="national_seats_label">ארצי:</label>
+            <div class="m-pill-group" id="national-pills">
+                <button class="m-pill-btn active" data-value="0">0</button>
+                <button class="m-pill-btn" data-value="30">30</button>
+                <button class="m-pill-btn" data-value="60">60</button>
+                <button class="m-pill-btn" data-value="90">90</button>
+                <button class="m-pill-btn" data-value="120">120</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results bottom sheet -->
+    <div class="results-sheet" id="results-sheet">
+        <div class="sheet-handle-bar" id="sheet-toggle">
+            <span class="handle"></span>
+        </div>
+        <div class="sheet-summary" id="sheet-summary">
+            <div class="bloc-pills">
+                <span class="bloc-pill" id="m-right-seats">0</span>
+                <span>—</span>
+                <span class="bloc-pill" id="m-left-seats">0</span>
+            </div>
+        </div>
+        <div class="sheet-scroll">
+            <div class="m-parliament" id="m-parliament"></div>
+            <table class="m-table" id="m-comparison-table">
+                <thead>
+                    <tr>
+                        <th data-i18n="party">מפלגה</th>
+                        <th class="m-seats-cell" data-i18n="actual_seats">בפועל</th>
+                        <th class="m-seats-cell" data-i18n="simulated_seats">סימולציה</th>
+                        <th class="m-seats-cell" data-i18n="regional">אזורי</th>
+                        <th class="m-seats-cell" data-i18n="national">ארצי</th>
+                        <th class="m-seats-cell" data-i18n="difference">הפרש</th>
+                    </tr>
+                </thead>
+                <tbody id="m-comparison-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Region detail overlay -->
+    <div class="region-detail-overlay" id="region-detail">
+        <button class="region-detail-close" id="close-region-detail">&times;</button>
+        <div id="region-detail-inner"></div>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <nav class="tab-bar">
+        <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
+        <a href="regional.html" class="active"><span class="tab-icon">🗺️</span><span data-i18n="tab_regional">אזורי</span></a>
+    </nav>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Party config (same as desktop) ──
+        const partyConfig = [
+            { name: 'הליכוד', color: '#2563eb', block: 'right', name_en: 'Likud' },
+            { name: 'יש עתיד', color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
+            { name: 'הציונות הדתית', color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+            { name: 'המחנה הממלכתי', color: '#7c3aed', block: 'left', name_en: 'National Unity' },
+            { name: 'ש״ס', color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+            { name: 'יהדות התורה', color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+            { name: 'ישראל ביתנו', color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+            { name: 'רע״ם', color: '#84cc16', block: 'arab', name_en: "Ra'am" },
+            { name: 'חד״ש-תע״ל', color: '#f43f5e', block: 'arab', name_en: 'Hadash-Taal' },
+            { name: 'העבודה', color: '#dc2626', block: 'left', name_en: 'Labor' },
+            { name: 'מרצ', color: '#16a34a', block: 'left', name_en: 'Meretz' },
+            { name: 'בל״ד', color: '#065f46', block: 'arab', name_en: 'Balad' },
+        ];
+
+        // ── Geographic zone naming (biblical/historical) ──
+        const geoZones = [
+            { lat: 33.25, lng: 35.58, r: 0.10, he: 'דן', en: 'Dan' },
+            { lat: 33.10, lng: 35.52, r: 0.14, he: 'נפתלי', en: 'Naphtali' },
+            { lat: 33.10, lng: 35.75, r: 0.15, he: 'חורן', en: 'Hauran' },
+            { lat: 32.95, lng: 35.80, r: 0.15, he: 'בשן', en: 'Bashan' },
+            { lat: 32.97, lng: 35.45, r: 0.15, he: 'הגליל', en: 'Galilee' },
+            { lat: 33.00, lng: 35.20, r: 0.12, he: 'מרום', en: 'Merom' },
+            { lat: 32.92, lng: 35.08, r: 0.10, he: 'אשר', en: 'Asher' },
+            { lat: 32.75, lng: 35.35, r: 0.14, he: 'יששכר', en: 'Issachar' },
+            { lat: 32.82, lng: 35.53, r: 0.12, he: 'ארבל', en: 'Arbel' },
+            { lat: 32.82, lng: 34.99, r: 0.10, he: 'הכרמל', en: 'Carmel' },
+            { lat: 32.83, lng: 35.12, r: 0.08, he: 'זבולון', en: 'Zebulun' },
+            { lat: 32.61, lng: 35.32, r: 0.12, he: 'יזרעאל', en: 'Jezreel' },
+            { lat: 32.65, lng: 35.10, r: 0.10, he: 'מגידו', en: 'Megiddo' },
+            { lat: 32.50, lng: 35.50, r: 0.12, he: 'גלבוע', en: 'Gilboa' },
+            { lat: 32.48, lng: 35.10, r: 0.10, he: 'עירון', en: 'Iron' },
+            { lat: 32.44, lng: 34.92, r: 0.10, he: 'מנשה', en: 'Manasseh' },
+            { lat: 32.33, lng: 34.86, r: 0.10, he: 'השרון', en: 'Sharon' },
+            { lat: 32.20, lng: 34.85, r: 0.10, he: 'אפק', en: 'Aphek' },
+            { lat: 32.09, lng: 34.88, r: 0.08, he: 'ירקון', en: 'Yarkon' },
+            { lat: 32.33, lng: 35.25, r: 0.15, he: 'שומרון', en: 'Samaria' },
+            { lat: 32.15, lng: 35.20, r: 0.12, he: 'אפרים', en: 'Ephraim' },
+            { lat: 32.09, lng: 34.78, r: 0.06, he: 'יפו', en: 'Jaffa' },
+            { lat: 32.07, lng: 34.77, r: 0.04, he: 'תל אביב', en: 'Tel Aviv' },
+            { lat: 32.02, lng: 34.76, r: 0.05, he: 'פלשת', en: 'Philistia' },
+            { lat: 32.09, lng: 34.83, r: 0.04, he: 'אונו', en: 'Ono' },
+            { lat: 32.09, lng: 34.81, r: 0.05, he: 'גוש דן', en: 'Gush Dan' },
+            { lat: 31.97, lng: 34.78, r: 0.06, he: 'ראובן', en: 'Reuben' },
+            { lat: 31.93, lng: 34.87, r: 0.08, he: 'איילון', en: 'Ayalon' },
+            { lat: 31.95, lng: 34.89, r: 0.05, he: 'לוד', en: 'Lydda' },
+            { lat: 31.92, lng: 35.10, r: 0.10, he: 'בנימין', en: 'Benjamin' },
+            { lat: 31.85, lng: 35.05, r: 0.10, he: 'מודיעין', en: "Modi'in" },
+            { lat: 31.78, lng: 35.22, r: 0.10, he: 'ירושלים', en: 'Jerusalem' },
+            { lat: 31.78, lng: 35.10, r: 0.08, he: 'ציון', en: 'Zion' },
+            { lat: 31.65, lng: 35.12, r: 0.10, he: 'יהודה', en: 'Judea' },
+            { lat: 31.55, lng: 35.30, r: 0.12, he: 'חברון', en: 'Hebron' },
+            { lat: 31.80, lng: 34.65, r: 0.10, he: 'השפלה', en: 'Shephelah' },
+            { lat: 31.73, lng: 34.80, r: 0.08, he: 'שמשון', en: 'Samson' },
+            { lat: 31.66, lng: 34.57, r: 0.10, he: 'אשקלון', en: 'Ashkelon' },
+            { lat: 31.50, lng: 34.55, r: 0.12, he: 'גרר', en: 'Gerar' },
+            { lat: 31.50, lng: 35.35, r: 0.15, he: 'ים המלח', en: 'Dead Sea' },
+            { lat: 31.40, lng: 34.60, r: 0.10, he: 'לכיש', en: 'Lachish' },
+            { lat: 31.25, lng: 34.80, r: 0.10, he: 'באר שבע', en: "Be'er Sheva" },
+            { lat: 31.25, lng: 34.56, r: 0.12, he: 'שקמה', en: 'Shikma' },
+            { lat: 31.06, lng: 35.03, r: 0.12, he: 'ערד', en: 'Arad' },
+            { lat: 30.85, lng: 34.80, r: 0.20, he: 'צין', en: 'Zin' },
+            { lat: 30.60, lng: 34.80, r: 0.15, he: 'רמון', en: 'Ramon' },
+            { lat: 30.30, lng: 35.10, r: 0.25, he: 'הערבה', en: 'Arava' },
+            { lat: 30.60, lng: 35.20, r: 0.20, he: 'פארן', en: 'Paran' },
+            { lat: 29.55, lng: 34.95, r: 0.25, he: 'אילות', en: 'Eilot' },
+        ];
+
+        const israelBorder = [
+            [35.4961,31.6403],[35.4607,31.3717],[35.4066,31.2815],[35.3993,31.2529],
+            [35.411,31.2102],[35.4493,31.1574],[35.4562,31.1283],[35.4503,31.0895],
+            [35.426,31.0448],[35.4165,30.9509],[35.3941,30.9266],[35.3712,30.9268],
+            [35.3543,30.9083],[35.3315,30.8609],[35.3299,30.8415],[35.3411,30.8155],
+            [35.3369,30.7987],[35.3222,30.7969],[35.3138,30.7696],[35.2958,30.762],
+            [35.2863,30.7229],[35.2937,30.7123],[35.2818,30.7104],[35.2627,30.6725],
+            [35.2639,30.6602],[35.2222,30.6191],[35.204,30.582],[35.1932,30.4989],
+            [35.162,30.4413],[35.1657,30.4007],[35.192,30.3461],[35.1547,30.3067],
+            [35.146,30.282],[35.1514,30.2025],[35.1446,30.1626],[35.155,30.155],
+            [35.151,30.1436],[35.1622,30.1225],[35.1458,30.0628],[35.1307,30.0616],
+            [35.1009,30.0123],[35.1162,29.9952],[35.0989,29.9915],[35.089,29.9634],
+            [35.0753,29.9503],[35.0836,29.9471],[35.0773,29.9249],[35.0845,29.8855],
+            [35.0586,29.8407],[35.0439,29.7881],[35.03,29.7719],[35.0133,29.7109],
+            [35.0211,29.6725],[35.0146,29.6391],[34.9786,29.5768],[34.9781,29.5442],
+            [34.9665,29.5191],[34.9212,29.4534],[34.8785,29.5434],[34.8664,29.5972],
+            [34.8771,29.6133],[34.8786,29.6436],[34.8566,29.6879],[34.8486,29.7588],
+            [34.6115,30.371],[34.5435,30.4129],[34.5418,30.4419],[34.5577,30.4946],
+            [34.5186,30.5325],[34.5188,30.5919],[34.497,30.6792],[34.4034,30.8591],
+            [34.2675,31.2201],[34.3665,31.2905],[34.3733,31.3062],[34.3651,31.3644],
+            [34.3803,31.3896],[34.4779,31.4762],[34.5127,31.5007],[34.5468,31.513],
+            [34.5654,31.5332],[34.5667,31.5415],[34.4878,31.5969],[34.54,31.67],
+            [34.58,31.75],[34.62,31.8],[34.63,31.83],[34.68,31.89],
+            [34.75,32.01],[34.79,32.18],[34.85,32.3],[34.89,32.46],
+            [34.9,32.58],[34.96,32.72],[34.98,32.8],[35.01,32.85],
+            [35.05,32.88],[35.07,32.92],[35.1,33.05],[35.1,33.0952],
+            [35.1555,33.0864],[35.1777,33.0942],[35.1935,33.0854],[35.2075,33.0876],
+            [35.2122,33.0999],[35.2384,33.0921],[35.2933,33.108],[35.3006,33.1005],
+            [35.3171,33.1049],[35.322,33.0863],[35.3484,33.0598],[35.3782,33.055],
+            [35.3822,33.0615],[35.4314,33.0654],[35.4464,33.0908],[35.5035,33.0895],
+            [35.5028,33.1143],[35.5198,33.1163],[35.5331,33.1298],[35.5271,33.1416],
+            [35.542,33.1921],[35.5372,33.2306],[35.5642,33.2732],[35.5658,33.2887],
+            [35.5845,33.2819],[35.5836,33.2663],[35.5985,33.2541],[35.6242,33.2424],
+            [35.6215,33.2786],[35.6588,33.274],[35.707,33.3053],[35.718,33.3277],
+            [35.7413,33.3256],[35.7733,33.3356],[35.8132,33.317],[35.7774,33.2767],
+            [35.8151,33.245],[35.8172,33.2031],[35.8377,33.1931],[35.8444,33.1676],
+            [35.818,33.1274],[35.817,33.113],[35.8505,33.1024],[35.8713,32.9814],
+            [35.895,32.9449],[35.8615,32.9078],[35.8444,32.8702],[35.8377,32.8282],
+            [35.8003,32.7823],[35.7826,32.7743],[35.7326,32.723],[35.7258,32.7269],
+            [35.7161,32.7153],[35.6752,32.7053],[35.6745,32.6848],[35.617,32.6803],
+            [35.5982,32.6677],[35.6057,32.6514],[35.5935,32.653],[35.5863,32.6416],
+            [35.5613,32.6459],[35.5681,32.6424],[35.5615,32.6247],[35.5728,32.6137],
+            [35.5672,32.5966],[35.5781,32.597],[35.5769,32.5685],[35.5704,32.5654],
+            [35.577,32.5526],[35.5694,32.552],[35.5694,32.5389],[35.5614,32.5449],
+            [35.5599,32.5313],[35.567,32.5252],[35.5525,32.5147],[35.5599,32.5073],
+            [35.5624,32.5146],[35.5583,32.5021],[35.5751,32.4972],[35.5802,32.4874],
+            [35.5654,32.481],[35.5624,32.4635],[35.5738,32.4587],[35.5658,32.4358],
+            [35.5555,32.4309],[35.5622,32.4239],[35.5518,32.4224],[35.5591,32.4185],
+            [35.5606,32.4012],[35.5463,32.4006],[35.5634,32.3839],[35.5612,32.3636],
+            [35.5529,32.3662],[35.5596,32.3483],[35.5531,32.3219],[35.5638,32.3097],
+            [35.5551,32.2983],[35.5678,32.2837],[35.5575,32.2732],[35.5627,32.2509],
+            [35.5711,32.2511],[35.5609,32.2415],[35.5641,32.2288],[35.5727,32.2294],
+            [35.5665,32.2194],[35.5739,32.2113],[35.5628,32.2045],[35.5703,32.1917],
+            [35.5585,32.1886],[35.5601,32.1736],[35.5535,32.1769],[35.5521,32.1709],
+            [35.5574,32.1676],[35.5477,32.1665],[35.5607,32.1509],[35.5438,32.1424],
+            [35.5512,32.1283],[35.5325,32.107],[35.5461,32.0823],[35.5336,32.0767],
+            [35.53,32.0509],[35.5193,32.0479],[35.5189,32.0354],[35.5292,32.0186],
+            [35.5223,32.0139],[35.5254,32.0028],[35.5388,31.9959],[35.5329,31.9864],
+            [35.5483,31.9689],[35.5414,31.9581],[35.5458,31.9357],[35.5265,31.9227],
+            [35.5243,31.9077],[35.5348,31.8945],[35.533,31.8818],[35.5499,31.8727],
+            [35.5365,31.8564],[35.549,31.844],[35.5487,31.8237],[35.5389,31.8162],
+            [35.5612,31.7585],[35.5277,31.7215],
+        ];
+
+        const partyColorMap = {};
+        const partyBlockMap = {};
+        partyConfig.forEach(p => { partyColorMap[p.name] = p.color; partyBlockMap[p.name] = p.block; });
+
+        const politicalOrder = {
+            'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
+            'העבודה': 5, 'המחנה הממלכתי': 6, 'יש עתיד': 7,
+            'ישראל ביתנו': 8, 'ש״ס': 9, 'יהדות התורה': 10,
+            'הליכוד': 11, 'הציונות הדתית': 12, 'הבית היהודי': 13,
+        };
+
+        const actualSeats = {
+            'הליכוד': 32, 'יש עתיד': 24, 'הציונות הדתית': 14,
+            'המחנה הממלכתי': 12, 'ש״ס': 11, 'יהדות התורה': 7,
+            'ישראל ביתנו': 6, 'רע״ם': 5, 'חד״ש-תע״ל': 5,
+            'העבודה': 4, 'מרצ': 0, 'בל״ד': 0,
+        };
+
+        // ── State ──
+        let stations = [], geoStations = [], noCoordStations = [];
+        let regions = [], regionLabels = [];
+        let map = null;
+        let numRegions = 12, nationalSeats = 0, threshold = 3.25;
+        let regionResults = [];
+
+        // ── Data loading ──
+        async function loadData() {
+            const [tsneRes, coordsRes] = await Promise.all([
+                fetch('../data/tsne_25.json').then(r => r.json()),
+                fetch('../data/station_coordinates.json').then(r => r.json()),
+            ]);
+            const coordMap = coordsRes.stations || coordsRes;
+            stations = tsneRes.stations.map(s => {
+                const key = s.n + '|' + s.b;
+                const coord = coordMap[key];
+                return {
+                    settlement: s.n, ballot: s.b, voters: s.v, eligible: s.e,
+                    parties: s.p, lat: coord ? coord.lat : null, lng: coord ? coord.lng : null,
+                };
+            });
+            geoStations = stations.filter(s => s.lat != null && s.lng != null);
+            noCoordStations = stations.filter(s => s.lat == null || s.lng == null);
+        }
+
+        // ── Partitioning ──
+        function partitionRegions(stationList, n) {
+            if (n <= 1) return [stationList];
+            let regs = [stationList.slice()];
+            while (regs.length < n) {
+                let maxIdx = 0, maxE = 0;
+                for (let i = 0; i < regs.length; i++) {
+                    const e = regs[i].reduce((s, st) => s + st.eligible, 0);
+                    if (e > maxE) { maxE = e; maxIdx = i; }
+                }
+                const region = regs[maxIdx];
+                if (region.length < 2) break;
+                let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+                for (const s of region) {
+                    if (s.lat < minLat) minLat = s.lat;
+                    if (s.lat > maxLat) maxLat = s.lat;
+                    if (s.lng < minLng) minLng = s.lng;
+                    if (s.lng > maxLng) maxLng = s.lng;
+                }
+                const axis = (maxLat - minLat) * 111 > (maxLng - minLng) * 85 ? 'lat' : 'lng';
+                region.sort((a, b) => a[axis] - b[axis]);
+                const totalE = region.reduce((s, st) => s + st.eligible, 0);
+                let cum = 0, splitIdx = 0;
+                for (let i = 0; i < region.length; i++) {
+                    cum += region[i].eligible;
+                    if (cum >= totalE / 2) { splitIdx = i + 1; break; }
+                }
+                if (splitIdx === 0) splitIdx = 1;
+                if (splitIdx >= region.length) splitIdx = region.length - 1;
+                regs.splice(maxIdx, 1, region.slice(0, splitIdx), region.slice(splitIdx));
+            }
+            return regs;
+        }
+
+        function allocateSeatsToRegions(regs, totalSeats) {
+            const eligibles = regs.map(r => r.reduce((s, st) => s + st.eligible, 0));
+            const seats = new Array(regs.length).fill(1);
+            let distributed = regs.length;
+            while (distributed < totalSeats) {
+                let bestIdx = 0, bestScore = -1;
+                for (let i = 0; i < regs.length; i++) {
+                    const score = eligibles[i] / (seats[i] + 1);
+                    if (score > bestScore) { bestScore = score; bestIdx = i; }
+                }
+                seats[bestIdx]++;
+                distributed++;
+            }
+            return seats;
+        }
+
+        function dhondtForRegion(stationList, seatCount, thPct) {
+            if (seatCount <= 0) return {};
+            const pv = {};
+            for (const s of stationList) {
+                for (const [party, pct] of Object.entries(s.parties)) {
+                    if (!pv[party]) pv[party] = 0;
+                    pv[party] += s.voters * pct / 100;
+                }
+            }
+            const total = Object.values(pv).reduce((a, b) => a + b, 0);
+            const thVotes = total * (thPct / 100);
+            const elig = {};
+            for (const [p, v] of Object.entries(pv)) { if (v >= thVotes) elig[p] = v; }
+            const seats = {};
+            for (const p of Object.keys(elig)) seats[p] = 0;
+            for (let i = 0; i < seatCount; i++) {
+                let maxQ = -1, winner = null;
+                for (const [p, v] of Object.entries(elig)) {
+                    const q = v / (seats[p] + 1);
+                    if (q > maxQ) { maxQ = q; winner = p; }
+                }
+                if (winner) seats[winner]++;
+            }
+            return seats;
+        }
+
+        function findNearestZone(lat, lng) {
+            let bestDist = Infinity, bestZone = geoZones[0];
+            for (const z of geoZones) {
+                const d = Math.sqrt((lat - z.lat) ** 2 + ((lng - z.lng) * 0.77) ** 2);
+                const weighted = d / z.r;
+                if (d < z.r * 2.5 && weighted < bestDist) { bestDist = weighted; bestZone = z; }
+            }
+            if (bestDist === Infinity) {
+                for (const z of geoZones) {
+                    const d = Math.sqrt((lat - z.lat) ** 2 + ((lng - z.lng) * 0.77) ** 2);
+                    if (d < bestDist) { bestDist = d; bestZone = z; }
+                }
+            }
+            return bestZone;
+        }
+
+        function getRegionCentroid(stationList) {
+            let sLat = 0, sLng = 0, tE = 0;
+            for (const s of stationList) { sLat += s.lat * s.eligible; sLng += s.lng * s.eligible; tE += s.eligible; }
+            return { lat: sLat / tE, lng: sLng / tE };
+        }
+
+        function nameAllRegions(regResults) {
+            const raw = regResults.map(r => {
+                const c = getRegionCentroid(r.stations);
+                return { zone: findNearestZone(c.lat, c.lng), centroid: c };
+            });
+            const groups = {};
+            raw.forEach((r, i) => { if (!groups[r.zone.he]) groups[r.zone.he] = []; groups[r.zone.he].push(i); });
+            const names = raw.map(r => ({ he: r.zone.he, en: r.zone.en }));
+            for (const [, indices] of Object.entries(groups)) {
+                if (indices.length === 1) continue;
+                indices.sort((a, b) => raw[b].centroid.lat - raw[a].centroid.lat);
+                indices.forEach((idx, num) => {
+                    names[idx] = { he: raw[idx].zone.he + ' ' + (num + 1), en: raw[idx].zone.en + ' ' + (num + 1) };
+                });
+            }
+            return names;
+        }
+
+        let regionNames = [];
+
+        // ── Simulation ──
+        function runSimulation() {
+            const regSeatCount = 120 - nationalSeats;
+            const totalSeats = {};
+            const nationalSeatsByParty = {};
+
+            if (regSeatCount === 0) {
+                regions = [geoStations];
+                const natResult = dhondtForRegion(stations, 120, threshold);
+                for (const [p, s] of Object.entries(natResult)) { totalSeats[p] = s; nationalSeatsByParty[p] = s; }
+                regionResults = [{ stations: geoStations, seatCount: 120, seats: { ...natResult }, eligible: geoStations.reduce((s, st) => s + st.eligible, 0) }];
+            } else {
+                regions = partitionRegions(geoStations, numRegions);
+                const regSeats = allocateSeatsToRegions(regions, regSeatCount);
+                regionResults = regions.map((region, i) => {
+                    const seats = dhondtForRegion(region, regSeats[i], threshold);
+                    for (const [p, s] of Object.entries(seats)) { if (!totalSeats[p]) totalSeats[p] = 0; totalSeats[p] += s; }
+                    return { stations: region, seatCount: regSeats[i], seats, eligible: region.reduce((s, st) => s + st.eligible, 0) };
+                });
+                if (nationalSeats > 0) {
+                    const natResult = dhondtForRegion(stations, nationalSeats, threshold);
+                    for (const [p, s] of Object.entries(natResult)) { if (!totalSeats[p]) totalSeats[p] = 0; totalSeats[p] += s; nationalSeatsByParty[p] = s; }
+                }
+            }
+
+            regionNames = nameAllRegions(regionResults);
+
+            const results = partyConfig.map(p => ({
+                name: p.name, name_en: p.name_en, color: p.color, block: p.block,
+                seats: totalSeats[p.name] || 0, actual: actualSeats[p.name] || 0,
+                regionalSeats: (totalSeats[p.name] || 0) - (nationalSeatsByParty[p.name] || 0),
+                nationalSeatsCount: nationalSeatsByParty[p.name] || 0,
+            })).sort((a, b) => b.seats - a.seats);
+
+            renderMap(regionResults);
+            renderMobileResults(results);
+        }
+
+        let cellLayer = null, boundaryLayer = null, maskLayer = null;
+
+        // ── Map ──
+        function initMap() {
+            map = L.map('map', {
+                center: [31.4, 35.0], zoom: 7.5, minZoom: 7, maxZoom: 18, zoomControl: false,
+                maxBounds: [[28.5, 33.5], [34.0, 36.5]], maxBoundsViscosity: 1.0,
+            });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20
+            }).addTo(map);
+            L.control.zoom({ position: 'bottomright' }).addTo(map);
+        }
+
+        // Sutherland-Hodgman clipping
+        function clipBelow(poly, maxLat) {
+            const out = [];
+            for (let i = 0; i < poly.length; i++) {
+                const cur = poly[i], nxt = poly[(i + 1) % poly.length];
+                const cIn = cur[1] <= maxLat, nIn = nxt[1] <= maxLat;
+                if (cIn && nIn) out.push(nxt);
+                else if (cIn && !nIn) { const t = (maxLat - cur[1]) / (nxt[1] - cur[1]); out.push([cur[0] + t * (nxt[0] - cur[0]), maxLat]); }
+                else if (!cIn && nIn) { const t = (maxLat - cur[1]) / (nxt[1] - cur[1]); out.push([cur[0] + t * (nxt[0] - cur[0]), maxLat]); out.push(nxt); }
+            }
+            return out;
+        }
+        function clipAbove(poly, minLat) {
+            const out = [];
+            for (let i = 0; i < poly.length; i++) {
+                const cur = poly[i], nxt = poly[(i + 1) % poly.length];
+                const cIn = cur[1] >= minLat, nIn = nxt[1] >= minLat;
+                if (cIn && nIn) out.push(nxt);
+                else if (cIn && !nIn) { const t = (minLat - cur[1]) / (nxt[1] - cur[1]); out.push([cur[0] + t * (nxt[0] - cur[0]), minLat]); }
+                else if (!cIn && nIn) { const t = (minLat - cur[1]) / (nxt[1] - cur[1]); out.push([cur[0] + t * (nxt[0] - cur[0]), minLat]); out.push(nxt); }
+            }
+            return out;
+        }
+
+        function findSharedVertices(polyA, polyB) {
+            const shared = [];
+            for (let a = 0; a < polyA.length - 1; a++) {
+                for (let b = 0; b < polyB.length - 1; b++) {
+                    if (polyA[a][0] === polyB[b][0] && polyA[a][1] === polyB[b][1]) { shared.push(polyA[a]); break; }
+                }
+                if (shared.length >= 2) break;
+            }
+            return shared;
+        }
+
+        function getDisplayName(idx) {
+            const n = regionNames[idx];
+            if (!n) return '?';
+            return i18n.getLang() === 'en' ? n.en : n.he;
+        }
+
+        function renderMap(regResults) {
+            if (cellLayer) { map.removeLayer(cellLayer); cellLayer = null; }
+            if (boundaryLayer) { map.removeLayer(boundaryLayer); boundaryLayer = null; }
+            if (maskLayer) { maskLayer.remove(); maskLayer = null; }
+            regionLabels.forEach(l => map.removeLayer(l));
+            regionLabels = [];
+
+            const stationToRegion = new Map();
+            regResults.forEach((region, rIdx) => {
+                region.stations.forEach(s => stationToRegion.set(s.settlement + '|' + s.ballot, rIdx));
+            });
+            const regionForStation = geoStations.map(s => stationToRegion.get(s.settlement + '|' + s.ballot) ?? -1);
+
+            const points = geoStations.map(s => [s.lng, s.lat]);
+            const delaunay = d3.Delaunay.from(points);
+            const voronoi = delaunay.voronoi([33.8, 29.0, 36.2, 33.6]);
+
+            const bandSize = 0.009;
+            const regionStripes = regResults.map(r => {
+                const sorted = Object.entries(r.seats).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]);
+                const colors = [];
+                sorted.forEach(([party, count]) => { const c = partyColorMap[party] || '#888'; for (let i = 0; i < count; i++) colors.push(c); });
+                return colors;
+            });
+
+            const features = [];
+            for (let i = 0; i < geoStations.length; i++) {
+                const cell = voronoi.cellPolygon(i);
+                if (!cell) continue;
+                const rIdx = regionForStation[i];
+                if (rIdx < 0) continue;
+                const colors = regionStripes[rIdx];
+                const n = colors.length;
+                if (n <= 1) {
+                    features.push({ type: 'Feature', properties: { region: rIdx, color: colors[0] || '#888' }, geometry: { type: 'Polygon', coordinates: [cell] } });
+                    continue;
+                }
+                let cMinLat = Infinity, cMaxLat = -Infinity;
+                for (const pt of cell) { if (pt[1] < cMinLat) cMinLat = pt[1]; if (pt[1] > cMaxLat) cMaxLat = pt[1]; }
+                const startBand = Math.floor(cMinLat / bandSize), endBand = Math.floor(cMaxLat / bandSize);
+                const open = cell.slice(0, -1);
+                for (let b = startBand; b <= endBand; b++) {
+                    const clipped = clipAbove(clipBelow(open, (b + 1) * bandSize), b * bandSize);
+                    if (clipped.length < 3) continue;
+                    features.push({ type: 'Feature', properties: { region: rIdx, color: colors[((b % n) + n) % n] }, geometry: { type: 'Polygon', coordinates: [clipped.concat([clipped[0]])] } });
+                }
+            }
+
+            const canvasRenderer = L.canvas({ padding: 0.5 });
+            cellLayer = L.geoJSON({ type: 'FeatureCollection', features }, {
+                renderer: canvasRenderer,
+                style: f => ({ fillColor: f.properties.color, fillOpacity: 0.22, stroke: false }),
+                onEachFeature: (f, layer) => { layer.on('click', () => showRegionDetail(f.properties.region)); },
+            }).addTo(map);
+
+            // Boundaries
+            const boundaryLines = [];
+            for (let i = 0; i < geoStations.length; i++) {
+                const rI = regionForStation[i]; if (rI < 0) continue;
+                for (const j of delaunay.neighbors(i)) {
+                    if (j <= i) continue;
+                    const rJ = regionForStation[j]; if (rJ < 0 || rI === rJ) continue;
+                    const cellI = voronoi.cellPolygon(i), cellJ = voronoi.cellPolygon(j);
+                    if (!cellI || !cellJ) continue;
+                    const shared = findSharedVertices(cellI, cellJ);
+                    if (shared.length >= 2) boundaryLines.push([[shared[0][1], shared[0][0]], [shared[1][1], shared[1][0]]]);
+                }
+            }
+            if (boundaryLines.length > 0) {
+                boundaryLayer = L.polyline(boundaryLines, { color: '#e2e8f0', weight: 3, opacity: 0.6, renderer: canvasRenderer, interactive: false }).addTo(map);
+            }
+
+            // Mask outside Israel
+            const outerRing = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+            const innerRing = israelBorder.concat([israelBorder[0]]);
+            const maskMain = L.geoJSON({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [outerRing, innerRing] } }, {
+                style: { fillColor: '#0f172a', fillOpacity: 1.0, stroke: true, color: '#334155', weight: 1.5, opacity: 0.8 }, interactive: false,
+            }).addTo(map);
+            maskLayer = { remove() { map.removeLayer(maskMain); } };
+
+            // Labels
+            regResults.forEach((region, idx) => {
+                const c = getRegionCentroid(region.stations);
+                const displayName = getDisplayName(idx);
+                const label = L.marker([c.lat, c.lng], {
+                    icon: L.divIcon({
+                        className: 'region-label',
+                        html: `${displayName}<span class="region-label-seats">${region.seatCount} ${i18n.t('seats_mandatim')}</span>`,
+                        iconSize: [90, 28], iconAnchor: [45, 14],
+                    }),
+                    interactive: false,
+                }).addTo(map);
+                regionLabels.push(label);
+            });
+        }
+
+        // ── Mobile results ──
+        function renderMobileResults(results) {
+            // Bloc totals
+            let right = 0, left = 0, arab = 0;
+            results.forEach(r => {
+                if (r.block === 'right') right += r.seats;
+                else if (r.block === 'left') left += r.seats;
+                else if (r.block === 'arab') arab += r.seats;
+            });
+            const rightEl = document.getElementById('m-right-seats');
+            const leftEl = document.getElementById('m-left-seats');
+            rightEl.textContent = right;
+            leftEl.textContent = left + arab;
+            rightEl.className = 'bloc-pill ' + (right >= 61 ? 'majority' : 'minority');
+            leftEl.className = 'bloc-pill ' + ((left + arab) >= 61 ? 'majority' : 'minority');
+
+            // Parliament
+            renderMParliament(results);
+
+            // Table
+            const tbody = document.getElementById('m-comparison-body');
+            tbody.innerHTML = '';
+            results.forEach(r => {
+                if (r.seats === 0 && r.actual === 0) return;
+                const diff = r.seats - r.actual;
+                const reg = r.regionalSeats != null ? r.regionalSeats : r.seats;
+                const nat = r.nationalSeatsCount || 0;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><div class="m-party-cell"><span class="m-party-dot" style="background:${r.color}"></span>${i18n.partyName(r.name)}</div></td>
+                    <td class="m-seats-cell">${r.actual}</td>
+                    <td class="m-seats-cell">${r.seats}</td>
+                    <td class="m-seats-cell">${reg || '-'}</td>
+                    <td class="m-seats-cell">${nat || '-'}</td>
+                    <td class="m-seats-cell ${diff > 0 ? 'm-diff-positive' : diff < 0 ? 'm-diff-negative' : 'm-diff-zero'}">${diff > 0 ? '+' + diff : diff}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderMParliament(results) {
+            const container = document.getElementById('m-parliament');
+            container.innerHTML = '<svg id="m-parliament-svg"></svg><div id="m-parliament-legend" class="m-parliament-legend"></div>';
+            const width = Math.min(container.clientWidth || 300, 320);
+            const height = 160;
+
+            const svg = d3.select('#m-parliament-svg').attr('width', width).attr('height', height);
+            const sortedParties = results.filter(r => r.seats > 0)
+                .sort((a, b) => (politicalOrder[a.name] || 50) - (politicalOrder[b.name] || 50));
+
+            const nNational = nationalSeats;
+            const nRegional = 120 - nNational;
+
+            const allSeats = [];
+            sortedParties.forEach(p => {
+                const reg = (p.regionalSeats != null) ? p.regionalSeats : p.seats;
+                for (let i = 0; i < reg; i++)
+                    allSeats.push({ party: p.name, color: p.color, type: 'regional' });
+                for (let i = 0; i < (p.nationalSeatsCount || 0); i++)
+                    allSeats.push({ party: p.name, color: p.color, type: 'national' });
+            });
+
+            const centerX = width / 2, centerY = height - 12;
+            const rows = 6;
+            const minR = 28, maxR = Math.min(width / 2 - 8, height - 20);
+
+            function layoutArc(seatCount) {
+                if (seatCount === 0) return [];
+                const radii = [];
+                for (let r = 0; r < rows; r++) radii.push(minR + r * (maxR - minR) / (rows - 1));
+                const circumferences = radii.map(r => Math.PI * r);
+                const totalCirc = circumferences.reduce((a, b) => a + b, 0);
+                const rowSeats = circumferences.map(c => Math.round(seatCount * c / totalCirc));
+                let diff = seatCount - rowSeats.reduce((a, b) => a + b, 0);
+                for (let i = rowSeats.length - 1; diff !== 0 && i >= 0; i--) {
+                    rowSeats[i] += diff > 0 ? 1 : -1;
+                    diff -= diff > 0 ? 1 : -1;
+                }
+                const positions = [];
+                for (let r = 0; r < rows; r++) {
+                    const numS = rowSeats[r];
+                    if (numS <= 0) continue;
+                    const angleStep = Math.PI / (numS + 1);
+                    for (let s = 0; s < numS; s++) {
+                        const angle = Math.PI - angleStep * (s + 1);
+                        positions.push({ x: centerX + radii[r] * Math.cos(angle), y: centerY - radii[r] * Math.sin(angle), angle });
+                    }
+                }
+                positions.sort((a, b) => b.angle - a.angle);
+                return positions;
+            }
+
+            const positions = layoutArc(allSeats.length);
+            const allPositions = positions.map((p, i) => ({ ...p, ...allSeats[i] }));
+
+            const seatGroups = svg.selectAll('.seat-g')
+                .data(allPositions)
+                .join('g')
+                .attr('class', 'seat-g');
+
+            // Regional = filled circle
+            seatGroups.filter(d => d.type === 'regional')
+                .append('circle')
+                .attr('cx', d => d.x).attr('cy', d => d.y)
+                .attr('r', 4).attr('fill', d => d.color)
+                .attr('stroke', '#000').attr('stroke-width', 0.3);
+
+            // National = hollow ring
+            seatGroups.filter(d => d.type === 'national')
+                .append('circle')
+                .attr('cx', d => d.x).attr('cy', d => d.y)
+                .attr('r', 3.5).attr('fill', 'none')
+                .attr('stroke', d => d.color).attr('stroke-width', 1.5);
+
+            // Legend
+            const legendEl = document.getElementById('m-parliament-legend');
+            if (nNational > 0 && nRegional > 0) {
+                legendEl.innerHTML = `<span class="m-legend-item"><span class="m-legend-dot"></span> ${i18n.t('regional')} (${nRegional})</span><span class="m-legend-item"><span class="m-legend-dot ring"></span> ${i18n.t('national')} (${nNational})</span>`;
+            } else if (nNational === 0) {
+                legendEl.innerHTML = `<span class="m-legend-item"><span class="m-legend-dot"></span> ${i18n.t('regional')} (${nRegional})</span>`;
+            } else {
+                legendEl.innerHTML = `<span class="m-legend-item"><span class="m-legend-dot ring"></span> ${i18n.t('national')} (${nNational})</span>`;
+            }
+        }
+
+        // ── Region detail ──
+        function showRegionDetail(idx) {
+            const region = regionResults[idx];
+            if (!region) return;
+            const displayName = getDisplayName(idx);
+            const sorted = Object.entries(region.seats).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]);
+
+            const inner = document.getElementById('region-detail-inner');
+            inner.innerHTML = `
+                <div class="region-detail-title">${displayName}</div>
+                <div class="region-detail-meta">
+                    ${i18n.fmtNum(region.eligible)} ${i18n.t('eligible_voters')} · ${region.stations.length} ${i18n.t('stations')} · ${region.seatCount} ${i18n.t('seats_mandatim')}
+                </div>
+                <table class="m-table">
+                    <thead><tr><th>${i18n.t('party')}</th><th class="m-seats-cell">${i18n.t('seats_mandatim')}</th></tr></thead>
+                    <tbody>${sorted.map(([p, s]) => `<tr><td><div class="m-party-cell"><span class="m-party-dot" style="background:${partyColorMap[p] || '#888'}"></span>${i18n.partyName(p)}</div></td><td class="m-seats-cell">${s}</td></tr>`).join('')}</tbody>
+                </table>
+            `;
+
+            const overlay = document.getElementById('region-detail');
+            overlay.classList.add('visible');
+        }
+
+        // ── Controls ──
+        function updateRegionPillStates() {
+            const regionalSeats = 120 - nationalSeats;
+            const pills = [...document.querySelectorAll('#region-pills .m-pill-btn')];
+            pills.forEach(btn => {
+                const val = parseInt(btn.dataset.value);
+                btn.disabled = val > regionalSeats;
+                btn.style.opacity = btn.disabled ? '0.3' : '1';
+            });
+            const activePill = pills.find(b => parseInt(b.dataset.value) === numRegions);
+            if (!activePill || activePill.disabled) {
+                const valid = pills.filter(b => !b.disabled);
+                if (valid.length > 0) numRegions = parseInt(valid[valid.length - 1].dataset.value);
+            }
+            pills.forEach(b => b.classList.toggle('active', parseInt(b.dataset.value) === numRegions));
+        }
+
+        function setupControls() {
+            document.querySelectorAll('#region-pills .m-pill-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (btn.disabled) return;
+                    document.querySelectorAll('#region-pills .m-pill-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    numRegions = parseInt(btn.dataset.value);
+                    runSimulation();
+                });
+            });
+
+            document.querySelectorAll('#national-pills .m-pill-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#national-pills .m-pill-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    nationalSeats = parseInt(btn.dataset.value);
+                    updateRegionPillStates();
+                    runSimulation();
+                });
+            });
+
+            document.getElementById('threshold-select').addEventListener('change', e => {
+                threshold = parseFloat(e.target.value);
+                runSimulation();
+            });
+
+            // Bottom sheet toggle
+            const sheet = document.getElementById('results-sheet');
+            document.getElementById('sheet-toggle').addEventListener('click', () => {
+                sheet.classList.toggle('expanded');
+            });
+
+            // Close region detail
+            document.getElementById('close-region-detail').addEventListener('click', () => {
+                document.getElementById('region-detail').classList.remove('visible');
+            });
+        }
+
+        // ── Language change ──
+        window.addEventListener('langchange', () => {
+            if (regionResults.length > 0) {
+                runSimulation();
+            }
+        });
+
+        // ── Init ──
+        async function init() {
+            initMap();
+            setupControls();
+            try {
+                await loadData();
+                document.getElementById('loading').style.display = 'none';
+                runSimulation();
+            } catch (err) {
+                console.error('Failed to load data:', err);
+                document.getElementById('loading').innerHTML = '<div style="color:var(--text-secondary)">' + i18n.t('error_loading') + '</div>';
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

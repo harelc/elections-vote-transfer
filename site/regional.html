@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/regional.html'+(lp?'?lang='+lp:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>בחירות אזוריות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 1.5rem 1.5rem 1rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 1rem;
+            position: relative;
+            padding-left: 120px;
+            padding-right: 120px;
+            flex-wrap: nowrap;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .view-btn:hover { background: #252535; color: var(--text-primary); }
+        .view-btn.active { background: var(--accent-primary); color: var(--text-primary); border-color: var(--accent-primary); }
+
+        /* Controls bar */
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .control-group label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+        }
+
+        .pill-group {
+            display: flex;
+            gap: 2px;
+        }
+
+        .pill-btn {
+            padding: 0.35rem 0.75rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .pill-btn:hover:not(:disabled) { background: #252535; color: var(--text-primary); }
+        .pill-btn.active { background: var(--accent-primary); color: white; border-color: var(--accent-primary); }
+        .pill-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .threshold-select {
+            padding: 0.35rem 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.8rem;
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* Left panel */
+        .results-panel {
+            width: 50vw;
+            flex-shrink: 0;
+            background: var(--bg-secondary);
+            border-inline-end: 1px solid var(--border-color);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-section {
+            padding: 1.2rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .panel-section:last-child { border-bottom: none; }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Parliament hemicycle */
+        .parliament-wrapper {
+            display: flex;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .parliament-wrapper svg { flex: 1; }
+
+        .parliament-legend {
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            padding: 4px 0 2px;
+            direction: ltr;
+        }
+        .parliament-legend .legend-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin: 0 10px;
+        }
+        .parliament-legend .legend-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #94a3b8;
+            border: 1px solid #000;
+            display: inline-block;
+        }
+        .parliament-legend .legend-dot.ring {
+            background: transparent;
+            border: 3px solid #94a3b8;
+        }
+
+        .coalition-side {
+            text-align: center;
+            min-width: 50px;
+        }
+
+        .coalition-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+        }
+
+        .coalition-seats {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .coalition-seats.majority { color: #22c55e; }
+        .coalition-seats.minority { color: var(--text-muted); }
+
+        /* Comparison table */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 1rem;
+        }
+
+        .comparison-table th {
+            text-align: start;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 0.25rem 0.4rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+
+        .comparison-table td {
+            padding: 0.2rem 0.4rem;
+            border-bottom: 1px solid rgba(42, 42, 58, 0.5);
+        }
+
+        .comparison-table tr:hover { background: rgba(255, 255, 255, 0.03); }
+
+        .party-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .party-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .diff-positive { color: #22c55e; font-weight: 600; }
+        .diff-negative { color: #ef4444; font-weight: 600; }
+        .diff-zero { color: var(--text-muted); }
+
+        .seats-cell { text-align: center; font-variant-numeric: tabular-nums; }
+
+        /* Region details */
+        .region-detail-placeholder {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 2rem 1rem;
+        }
+
+        .region-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 0.75rem;
+        }
+
+        .region-detail-name {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .region-detail-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .region-detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .region-detail-table th {
+            text-align: start;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding: 0.3rem 0.4rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.7rem;
+        }
+
+        .region-detail-table td {
+            padding: 0.25rem 0.4rem;
+            border-bottom: 1px solid rgba(42, 42, 58, 0.3);
+        }
+
+        /* Mini hemicycle for region detail */
+        .mini-parliament { margin-top: 0.75rem; }
+
+        /* Map */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map { width: 100%; height: 100%; }
+
+        .leaflet-tile-pane { filter: brightness(0.7) saturate(0.8); }
+        .leaflet-popup-pane, .leaflet-marker-pane, .leaflet-overlay-pane { filter: none; }
+
+        /* Region labels on map */
+        .region-label {
+            font-family: 'Heebo', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: #f1f5f9;
+            white-space: nowrap;
+            pointer-events: none;
+            text-align: center;
+            line-height: 1.3;
+            direction: ltr;
+        }
+
+        .region-label .region-label-name {
+            display: inline-block;
+            color: #1e293b;
+            background: rgba(241, 245, 249, 0.85);
+            padding: 1px 7px;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .region-label .region-label-eligible {
+            display: block;
+            font-size: 9px;
+            color: #475569;
+            background: rgba(241, 245, 249, 0.75);
+            padding: 0 7px;
+            border-radius: 0 0 4px 4px;
+        }
+
+        .region-label .region-label-dots {
+            display: block;
+            text-align: center;
+            padding: 2px 0 0;
+            line-height: 1;
+        }
+
+        .region-label .seat-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin: 1px 1px;
+            border: 0.5px solid rgba(0,0,0,0.3);
+            vertical-align: middle;
+        }
+
+        /* Info note */
+        .info-note {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        /* Loading */
+        .loading-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(10, 10, 15, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: fixed;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+            max-width: 300px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tooltip.visible { display: block; }
+
+        /* Footer */
+        .main-footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .main-footer .credits {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .main-footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <p class="subtitle" data-i18n="regional_subtitle">סימולציית בחירות אזוריות לכנסת ישראל</p>
+            <nav class="view-switcher">
+                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
+                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
+                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
+                <span class="view-btn active" data-i18n="nav_regional">בחירות אזוריות</span>
+            </nav>
+        </header>
+
+        <div class="controls-bar">
+            <div class="control-group">
+                <label data-i18n="regions_label">מחוזות בחירה:</label>
+                <div class="pill-group" id="region-pills">
+                    <button class="pill-btn" data-value="6">6</button>
+                    <button class="pill-btn active" data-value="12">12</button>
+                    <button class="pill-btn" data-value="18">18</button>
+                    <button class="pill-btn" data-value="24">24</button>
+                    <button class="pill-btn" data-value="30">30</button>
+                    <button class="pill-btn" data-value="40">40</button>
+                    <button class="pill-btn" data-value="60">60</button>
+                    <button class="pill-btn" data-value="90">90</button>
+                    <button class="pill-btn" data-value="120">120</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label data-i18n="national_seats_label">מנדטים ארציים:</label>
+                <div class="pill-group" id="national-pills">
+                    <button class="pill-btn active" data-value="0">0</button>
+                    <button class="pill-btn" data-value="30">30</button>
+                    <button class="pill-btn" data-value="60">60</button>
+                    <button class="pill-btn" data-value="90">90</button>
+                    <button class="pill-btn" data-value="120">120</button>
+                </div>
+            </div>
+            <div class="control-group">
+                <label data-i18n="threshold_label">אחוז חסימה:</label>
+                <select class="threshold-select" id="threshold-select">
+                    <option value="0">0%</option>
+                    <option value="3.25" selected>3.25%</option>
+                    <option value="5">5%</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <aside class="results-panel">
+                <!-- Parliament hemicycle -->
+                <div class="panel-section">
+                    <div class="section-title" data-i18n="knesset_composition">הרכב הכנסת (120 מושבים)</div>
+                    <div class="parliament-wrapper">
+                        <div class="coalition-side">
+                            <div class="coalition-label" data-i18n="right_bloc">גוש ימין-חרדי</div>
+                            <div class="coalition-seats" id="right-seats">0</div>
+                        </div>
+                        <svg id="parliament-chart"></svg>
+                        <div id="parliament-legend" class="parliament-legend" style="display:none"></div>
+                        <div class="coalition-side">
+                            <div class="coalition-label" data-i18n="left_bloc">גוש מרכז-שמאל-ערבי</div>
+                            <div class="coalition-seats" id="left-seats">0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Comparison table -->
+                <div class="panel-section">
+                    <div class="section-title" data-i18n="simulation_results">תוצאות הסימולציה</div>
+                    <table class="comparison-table" id="comparison-table">
+                        <thead>
+                            <tr>
+                                <th data-i18n="party">מפלגה</th>
+                                <th class="seats-cell" data-i18n="actual_seats">מנדטים בפועל</th>
+                                <th class="seats-cell" data-i18n="simulated_seats">סימולציה</th>
+                                <th class="seats-cell" data-i18n="regional">אזורי</th>
+                                <th class="seats-cell" data-i18n="national">ארצי</th>
+                                <th class="seats-cell" data-i18n="difference">הפרש</th>
+                            </tr>
+                        </thead>
+                        <tbody id="comparison-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Region details -->
+                <div class="panel-section" id="region-detail-section">
+                    <div class="section-title" data-i18n="region_details">פרטי אזור</div>
+                    <div class="region-detail-placeholder" data-i18n="click_region">לחצו על אזור במפה לפרטים</div>
+                    <div id="region-detail-content" style="display:none;"></div>
+                </div>
+            </aside>
+
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="loading-overlay" id="loading-overlay">
+                    <span data-i18n="loading_please_wait">טוען נתונים, נא להמתין...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-note" id="info-note" style="display:none;"></div>
+
+        <footer class="main-footer">
+            <p class="credits">
+                <span data-i18n="credits_line">© הראל קין</span> |
+                <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+                <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
+            </p>
+        </footer>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        // ── Party config (from dhondt.html Knesset 25) ──
+        const partyConfig = [
+            { name: 'הליכוד', color: '#2563eb', block: 'right', name_en: 'Likud' },
+            { name: 'יש עתיד', color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
+            { name: 'הציונות הדתית', color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+            { name: 'המחנה הממלכתי', color: '#7c3aed', block: 'left', name_en: 'National Unity' },
+            { name: 'ש״ס', color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+            { name: 'יהדות התורה', color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+            { name: 'ישראל ביתנו', color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+            { name: 'רע״ם', color: '#84cc16', block: 'arab', name_en: "Ra'am" },
+            { name: 'חד״ש-תע״ל', color: '#f43f5e', block: 'arab', name_en: 'Hadash-Taal' },
+            { name: 'העבודה', color: '#dc2626', block: 'left', name_en: 'Labor' },
+            { name: 'מרצ', color: '#16a34a', block: 'left', name_en: 'Meretz' },
+            { name: 'בל״ד', color: '#065f46', block: 'arab', name_en: 'Balad' },
+        ];
+
+        const partyColorMap = {};
+        const partyBlockMap = {};
+        partyConfig.forEach(p => {
+            partyColorMap[p.name] = p.color;
+            partyBlockMap[p.name] = p.block;
+        });
+
+        // Political order for hemicycle (left to right)
+        const politicalOrder = {
+            'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
+            'העבודה': 5, 'המחנה הממלכתי': 6, 'יש עתיד': 7,
+            'ישראל ביתנו': 8, 'ש״ס': 9, 'יהדות התורה': 10,
+            'הליכוד': 11, 'הציונות הדתית': 12, 'הבית היהודי': 13,
+        };
+
+        // Actual Knesset 25 seats
+        const actualSeats = {
+            'הליכוד': 32, 'יש עתיד': 24, 'הציונות הדתית': 14,
+            'המחנה הממלכתי': 12, 'ש״ס': 11, 'יהדות התורה': 7,
+            'ישראל ביתנו': 6, 'רע״ם': 5, 'חד״ש-תע״ל': 5,
+            'העבודה': 4, 'מרצ': 0, 'בל״ד': 0,
+        };
+
+        // ── Geographic zone database for creative region naming ──
+        // Each zone: center point + radius of influence + Hebrew/English names
+        const geoZones = [
+            // ── Far North: Biblical tribes & ancient regions ──
+            { lat: 33.25, lng: 35.58, r: 0.10, he: 'דן', en: 'Dan' },
+            { lat: 33.10, lng: 35.52, r: 0.14, he: 'נפתלי', en: 'Naphtali' },
+            { lat: 33.10, lng: 35.75, r: 0.15, he: 'חורן', en: 'Hauran' },
+            { lat: 32.95, lng: 35.80, r: 0.15, he: 'בשן', en: 'Bashan' },
+            // ── Galilee ──
+            { lat: 32.97, lng: 35.45, r: 0.15, he: 'הגליל', en: 'Galilee' },
+            { lat: 33.00, lng: 35.20, r: 0.12, he: 'מרום', en: 'Merom' },
+            { lat: 32.92, lng: 35.08, r: 0.10, he: 'אשר', en: 'Asher' },
+            { lat: 32.75, lng: 35.35, r: 0.14, he: 'יששכר', en: 'Issachar' },
+            { lat: 32.82, lng: 35.53, r: 0.12, he: 'ארבל', en: 'Arbel' },
+            // ── Valleys & Carmel ──
+            { lat: 32.82, lng: 34.99, r: 0.10, he: 'הכרמל', en: 'Carmel' },
+            { lat: 32.83, lng: 35.12, r: 0.08, he: 'זבולון', en: 'Zebulun' },
+            { lat: 32.61, lng: 35.32, r: 0.12, he: 'יזרעאל', en: 'Jezreel' },
+            { lat: 32.65, lng: 35.10, r: 0.10, he: 'מגידו', en: 'Megiddo' },
+            { lat: 32.50, lng: 35.50, r: 0.12, he: 'גלבוע', en: 'Gilboa' },
+            // ── Iron & Manasseh ──
+            { lat: 32.48, lng: 35.10, r: 0.10, he: 'עירון', en: 'Iron' },
+            { lat: 32.44, lng: 34.92, r: 0.10, he: 'מנשה', en: 'Manasseh' },
+            // ── Sharon ──
+            { lat: 32.33, lng: 34.86, r: 0.10, he: 'השרון', en: 'Sharon' },
+            { lat: 32.20, lng: 34.85, r: 0.10, he: 'אפק', en: 'Aphek' },
+            { lat: 32.09, lng: 34.88, r: 0.08, he: 'ירקון', en: 'Yarkon' },
+            // ── Samaria ──
+            { lat: 32.33, lng: 35.25, r: 0.15, he: 'שומרון', en: 'Samaria' },
+            { lat: 32.15, lng: 35.20, r: 0.12, he: 'אפרים', en: 'Ephraim' },
+            // ── Gush Dan ──
+            { lat: 32.09, lng: 34.78, r: 0.06, he: 'יפו', en: 'Jaffa' },
+            { lat: 32.07, lng: 34.77, r: 0.04, he: 'תל אביב', en: 'Tel Aviv' },
+            { lat: 32.02, lng: 34.76, r: 0.05, he: 'פלשת', en: 'Philistia' },
+            { lat: 32.09, lng: 34.83, r: 0.04, he: 'אונו', en: 'Ono' },
+            { lat: 32.09, lng: 34.81, r: 0.05, he: 'גוש דן', en: 'Gush Dan' },
+            { lat: 31.97, lng: 34.78, r: 0.06, he: 'ראובן', en: 'Reuben' },
+            // ── Benjamin & Central ──
+            { lat: 31.93, lng: 34.87, r: 0.08, he: 'איילון', en: 'Ayalon' },
+            { lat: 31.95, lng: 34.89, r: 0.05, he: 'לוד', en: 'Lydda' },
+            { lat: 31.92, lng: 35.10, r: 0.10, he: 'בנימין', en: 'Benjamin' },
+            { lat: 31.85, lng: 35.05, r: 0.10, he: 'מודיעין', en: "Modi'in" },
+            // ── Jerusalem & Judea ──
+            { lat: 31.78, lng: 35.22, r: 0.10, he: 'ירושלים', en: 'Jerusalem' },
+            { lat: 31.78, lng: 35.10, r: 0.08, he: 'ציון', en: 'Zion' },
+            { lat: 31.65, lng: 35.12, r: 0.10, he: 'יהודה', en: 'Judea' },
+            { lat: 31.55, lng: 35.30, r: 0.12, he: 'חברון', en: 'Hebron' },
+            // ── Shephelah & Southern Coast ──
+            { lat: 31.80, lng: 34.65, r: 0.10, he: 'השפלה', en: 'Shephelah' },
+            { lat: 31.73, lng: 34.80, r: 0.08, he: 'שמשון', en: 'Samson' },
+            { lat: 31.66, lng: 34.57, r: 0.10, he: 'אשקלון', en: 'Ashkelon' },
+            { lat: 31.50, lng: 34.55, r: 0.12, he: 'גרר', en: 'Gerar' },
+            // ── Dead Sea ──
+            { lat: 31.50, lng: 35.35, r: 0.15, he: 'ים המלח', en: 'Dead Sea' },
+            // ── Northern Negev ──
+            { lat: 31.40, lng: 34.60, r: 0.10, he: 'לכיש', en: 'Lachish' },
+            { lat: 31.25, lng: 34.80, r: 0.10, he: 'באר שבע', en: "Be'er Sheva" },
+            { lat: 31.25, lng: 34.56, r: 0.12, he: 'שקמה', en: 'Shikma' },
+            { lat: 31.06, lng: 35.03, r: 0.12, he: 'ערד', en: 'Arad' },
+            // ── Central & Southern Negev ──
+            { lat: 30.85, lng: 34.80, r: 0.20, he: 'צין', en: 'Zin' },
+            { lat: 30.60, lng: 34.80, r: 0.15, he: 'רמון', en: 'Ramon' },
+            { lat: 30.30, lng: 35.10, r: 0.25, he: 'הערבה', en: 'Arava' },
+            { lat: 30.60, lng: 35.20, r: 0.20, he: 'פארן', en: 'Paran' },
+            { lat: 29.55, lng: 34.95, r: 0.25, he: 'אילות', en: 'Eilot' },
+        ];
+
+        // Directional qualifiers
+        const dirHe = { n: 'צפון', s: 'דרום', e: 'מזרח', w: 'מערב' };
+        const dirEn = { n: 'North', s: 'South', e: 'East', w: 'West' };
+
+        function getRegionCentroid(stationList) {
+            let sLat = 0, sLng = 0, tE = 0;
+            for (const s of stationList) {
+                sLat += s.lat * s.eligible;
+                sLng += s.lng * s.eligible;
+                tE += s.eligible;
+            }
+            return { lat: sLat / tE, lng: sLng / tE };
+        }
+
+        function getLargestSettlement(stationList) {
+            const counts = {};
+            for (const s of stationList) {
+                counts[s.settlement] = (counts[s.settlement] || 0) + s.eligible;
+            }
+            let best = '', bestC = 0;
+            for (const [n, c] of Object.entries(counts)) {
+                if (c > bestC) { bestC = c; best = n; }
+            }
+            return best;
+        }
+
+        function findNearestZone(lat, lng) {
+            let bestDist = Infinity, bestZone = geoZones[0];
+            for (const z of geoZones) {
+                const d = Math.sqrt((lat - z.lat) ** 2 + ((lng - z.lng) * 0.77) ** 2); // lon correction for Israel latitude
+                const weighted = d / z.r; // smaller r = more specific = preferred when close
+                if (d < z.r * 2.5 && weighted < bestDist) {
+                    bestDist = weighted;
+                    bestZone = z;
+                }
+            }
+            // Fallback: absolute nearest
+            if (bestDist === Infinity) {
+                for (const z of geoZones) {
+                    const d = Math.sqrt((lat - z.lat) ** 2 + ((lng - z.lng) * 0.77) ** 2);
+                    if (d < bestDist) { bestDist = d; bestZone = z; }
+                }
+            }
+            return bestZone;
+        }
+
+        function nameAllRegions(regionResults) {
+            // Step 1: assign raw zone to each region
+            const raw = regionResults.map(region => {
+                const c = getRegionCentroid(region.stations);
+                const zone = findNearestZone(c.lat, c.lng);
+                const settlement = getLargestSettlement(region.stations);
+                return { zone, settlement, centroid: c };
+            });
+
+            // Step 2: count duplicates
+            const counts = {};
+            raw.forEach(r => { counts[r.zone.he] = (counts[r.zone.he] || 0) + 1; });
+
+            // Step 3: disambiguate with numbered suffixes (Sharon 1, Sharon 2, ...)
+            const names = raw.map(r => ({ he: r.zone.he, en: r.zone.en }));
+
+            // Group indices by zone name, sorted north→south for consistent numbering
+            const groups = {};
+            raw.forEach((r, i) => {
+                if (!groups[r.zone.he]) groups[r.zone.he] = [];
+                groups[r.zone.he].push(i);
+            });
+
+            for (const [zoneName, indices] of Object.entries(groups)) {
+                if (indices.length === 1) continue;
+                // Sort by latitude (north first) for consistent numbering
+                indices.sort((a, b) => raw[b].centroid.lat - raw[a].centroid.lat);
+                indices.forEach((idx, num) => {
+                    names[idx] = {
+                        he: raw[idx].zone.he + ' ' + (num + 1),
+                        en: raw[idx].zone.en + ' ' + (num + 1),
+                    };
+                });
+            }
+
+            return names;
+        }
+
+        // ── State ──
+        let stations = [];          // all stations from tsne_25
+        let geoStations = [];       // stations with coordinates
+        let noCoordStations = [];   // stations without coordinates
+        let regions = [];           // current partitioning
+        let regionNames = [];       // creative geographic names
+        let map = null;
+        let regionLayers = [];      // Leaflet layers
+        let regionLabels = [];      // Leaflet label markers
+        let cellLayer = null;       // Voronoi cells GeoJSON layer
+        let boundaryLayer = null;   // Region boundary lines
+        let maskLayer = null;       // Mask outside Israel borders
+
+        // Israel + West Bank border polygon [lng, lat] - 242 points from OSM (CW, no territorial waters)
+        const israelBorder = [
+            [35.4961, 31.6403], [35.4607, 31.3717], [35.4066, 31.2815], [35.3993, 31.2529],
+            [35.411, 31.2102], [35.4493, 31.1574], [35.4562, 31.1283], [35.4503, 31.0895],
+            [35.426, 31.0448], [35.4165, 30.9509], [35.3941, 30.9266], [35.3712, 30.9268],
+            [35.3543, 30.9083], [35.3315, 30.8609], [35.3299, 30.8415], [35.3411, 30.8155],
+            [35.3369, 30.7987], [35.3222, 30.7969], [35.3138, 30.7696], [35.2958, 30.762],
+            [35.2863, 30.7229], [35.2937, 30.7123], [35.2818, 30.7104], [35.2627, 30.6725],
+            [35.2639, 30.6602], [35.2222, 30.6191], [35.204, 30.582], [35.1932, 30.4989],
+            [35.162, 30.4413], [35.1657, 30.4007], [35.192, 30.3461], [35.1547, 30.3067],
+            [35.146, 30.282], [35.1514, 30.2025], [35.1446, 30.1626], [35.155, 30.155],
+            [35.151, 30.1436], [35.1622, 30.1225], [35.1458, 30.0628], [35.1307, 30.0616],
+            [35.1009, 30.0123], [35.1162, 29.9952], [35.0989, 29.9915], [35.089, 29.9634],
+            [35.0753, 29.9503], [35.0836, 29.9471], [35.0773, 29.9249], [35.0845, 29.8855],
+            [35.0586, 29.8407], [35.0439, 29.7881], [35.03, 29.7719], [35.0133, 29.7109],
+            [35.0211, 29.6725], [35.0146, 29.6391], [34.9786, 29.5768], [34.9781, 29.5442],
+            [34.9665, 29.5191], [34.9212, 29.4534], [34.8785, 29.5434], [34.8664, 29.5972],
+            [34.8771, 29.6133], [34.8786, 29.6436], [34.8566, 29.6879], [34.8486, 29.7588],
+            [34.6115, 30.371], [34.5435, 30.4129], [34.5418, 30.4419], [34.5577, 30.4946],
+            [34.5186, 30.5325], [34.5188, 30.5919], [34.497, 30.6792], [34.4034, 30.8591],
+            [34.2675, 31.2201], [34.3665, 31.2905], [34.3733, 31.3062], [34.3651, 31.3644],
+            [34.3803, 31.3896], [34.4779, 31.4762], [34.5127, 31.5007], [34.5468, 31.513],
+            [34.5654, 31.5332], [34.5667, 31.5415], [34.4878, 31.5969], [34.54, 31.67],
+            [34.58, 31.75], [34.62, 31.8], [34.63, 31.83], [34.68, 31.89],
+            [34.75, 32.01], [34.79, 32.18], [34.85, 32.3], [34.89, 32.46],
+            [34.9, 32.58], [34.96, 32.72], [34.98, 32.8], [35.01, 32.85],
+            [35.05, 32.88], [35.07, 32.92], [35.1, 33.05], [35.1, 33.0952],
+            [35.1555, 33.0864], [35.1777, 33.0942], [35.1935, 33.0854], [35.2075, 33.0876],
+            [35.2122, 33.0999], [35.2384, 33.0921], [35.2933, 33.108], [35.3006, 33.1005],
+            [35.3171, 33.1049], [35.322, 33.0863], [35.3484, 33.0598], [35.3782, 33.055],
+            [35.3822, 33.0615], [35.4314, 33.0654], [35.4464, 33.0908], [35.5035, 33.0895],
+            [35.5028, 33.1143], [35.5198, 33.1163], [35.5331, 33.1298], [35.5271, 33.1416],
+            [35.542, 33.1921], [35.5372, 33.2306], [35.5642, 33.2732], [35.5658, 33.2887],
+            [35.5845, 33.2819], [35.5836, 33.2663], [35.5985, 33.2541], [35.6242, 33.2424],
+            [35.6215, 33.2786], [35.6588, 33.274], [35.707, 33.3053], [35.718, 33.3277],
+            [35.7413, 33.3256], [35.7733, 33.3356], [35.8132, 33.317], [35.7774, 33.2767],
+            [35.8151, 33.245], [35.8172, 33.2031], [35.8377, 33.1931], [35.8444, 33.1676],
+            [35.818, 33.1274], [35.817, 33.113], [35.8505, 33.1024], [35.8713, 32.9814],
+            [35.895, 32.9449], [35.8615, 32.9078], [35.8444, 32.8702], [35.8377, 32.8282],
+            [35.8003, 32.7823], [35.7826, 32.7743], [35.7326, 32.723], [35.7258, 32.7269],
+            [35.7161, 32.7153], [35.6752, 32.7053], [35.6745, 32.6848], [35.617, 32.6803],
+            [35.5982, 32.6677], [35.6057, 32.6514], [35.5935, 32.653], [35.5863, 32.6416],
+            [35.5613, 32.6459], [35.5681, 32.6424], [35.5615, 32.6247], [35.5728, 32.6137],
+            [35.5672, 32.5966], [35.5781, 32.597], [35.5769, 32.5685], [35.5704, 32.5654],
+            [35.577, 32.5526], [35.5694, 32.552], [35.5694, 32.5389], [35.5614, 32.5449],
+            [35.5599, 32.5313], [35.567, 32.5252], [35.5525, 32.5147], [35.5599, 32.5073],
+            [35.5624, 32.5146], [35.5583, 32.5021], [35.5751, 32.4972], [35.5802, 32.4874],
+            [35.5654, 32.481], [35.5624, 32.4635], [35.5738, 32.4587], [35.5658, 32.4358],
+            [35.5555, 32.4309], [35.5622, 32.4239], [35.5518, 32.4224], [35.5591, 32.4185],
+            [35.5606, 32.4012], [35.5463, 32.4006], [35.5634, 32.3839], [35.5612, 32.3636],
+            [35.5529, 32.3662], [35.5596, 32.3483], [35.5531, 32.3219], [35.5638, 32.3097],
+            [35.5551, 32.2983], [35.5678, 32.2837], [35.5575, 32.2732], [35.5627, 32.2509],
+            [35.5711, 32.2511], [35.5609, 32.2415], [35.5641, 32.2288], [35.5727, 32.2294],
+            [35.5665, 32.2194], [35.5739, 32.2113], [35.5628, 32.2045], [35.5703, 32.1917],
+            [35.5585, 32.1886], [35.5601, 32.1736], [35.5535, 32.1769], [35.5521, 32.1709],
+            [35.5574, 32.1676], [35.5477, 32.1665], [35.5607, 32.1509], [35.5438, 32.1424],
+            [35.5512, 32.1283], [35.5325, 32.107], [35.5461, 32.0823], [35.5336, 32.0767],
+            [35.53, 32.0509], [35.5193, 32.0479], [35.5189, 32.0354], [35.5292, 32.0186],
+            [35.5223, 32.0139], [35.5254, 32.0028], [35.5388, 31.9959], [35.5329, 31.9864],
+            [35.5483, 31.9689], [35.5414, 31.9581], [35.5458, 31.9357], [35.5265, 31.9227],
+            [35.5243, 31.9077], [35.5348, 31.8945], [35.533, 31.8818], [35.5499, 31.8727],
+            [35.5365, 31.8564], [35.549, 31.844], [35.5487, 31.8237], [35.5389, 31.8162],
+            [35.5612, 31.7585], [35.5277, 31.7215],
+        ];
+        let selectedRegionIdx = -1;
+        const tooltip = document.getElementById('tooltip');
+
+        // Controls
+        let numRegions = 12;
+        let nationalSeats = 0;
+        let threshold = 3.25;
+
+        // ── Data loading ──
+        async function loadData() {
+            const [tsneRes, coordsRes] = await Promise.all([
+                fetch('data/tsne_25.json').then(r => r.json()),
+                fetch('data/station_coordinates.json').then(r => r.json()),
+            ]);
+
+            const coordMap = coordsRes.stations || coordsRes;
+
+            stations = tsneRes.stations.map(s => {
+                const key = s.n + '|' + s.b;
+                const coord = coordMap[key];
+                return {
+                    settlement: s.n,
+                    ballot: s.b,
+                    voters: s.v,
+                    eligible: s.e,
+                    parties: s.p,     // { partyName: percentage }
+                    lat: coord ? coord.lat : null,
+                    lng: coord ? coord.lng : null,
+                };
+            });
+
+            geoStations = stations.filter(s => s.lat != null && s.lng != null);
+            noCoordStations = stations.filter(s => s.lat == null || s.lng == null);
+
+            // Show info note
+            if (noCoordStations.length > 0) {
+                const note = document.getElementById('info-note');
+                note.textContent = i18n.t('no_coords_note', { n: noCoordStations.length });
+                note.style.display = 'block';
+            }
+        }
+
+        // ── Geographic Partitioning (priority-queue binary split) ──
+        function partitionRegions(stationList, n) {
+            if (n <= 1) return [stationList];
+
+            // Start with all stations in one region
+            let regs = [stationList.slice()];
+
+            while (regs.length < n) {
+                // Find largest region by eligible voters
+                let maxIdx = 0;
+                let maxEligible = 0;
+                for (let i = 0; i < regs.length; i++) {
+                    const e = regs[i].reduce((sum, s) => sum + s.eligible, 0);
+                    if (e > maxEligible) {
+                        maxEligible = e;
+                        maxIdx = i;
+                    }
+                }
+
+                const region = regs[maxIdx];
+                if (region.length < 2) break;
+
+                // Determine axis: lat if bbox taller, else lng
+                let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+                for (const s of region) {
+                    if (s.lat < minLat) minLat = s.lat;
+                    if (s.lat > maxLat) maxLat = s.lat;
+                    if (s.lng < minLng) minLng = s.lng;
+                    if (s.lng > maxLng) maxLng = s.lng;
+                }
+
+                // Approximate: 1 degree lat ~111km, 1 degree lng ~85km at Israel's latitude
+                const latSpan = (maxLat - minLat) * 111;
+                const lngSpan = (maxLng - minLng) * 85;
+                const axis = latSpan > lngSpan ? 'lat' : 'lng';
+
+                // Sort along axis
+                region.sort((a, b) => a[axis] - b[axis]);
+
+                // Find split point that divides eligible voters ~50/50
+                const totalEligible = region.reduce((sum, s) => sum + s.eligible, 0);
+                const halfTarget = totalEligible / 2;
+                let cumulative = 0;
+                let splitIdx = 0;
+                for (let i = 0; i < region.length; i++) {
+                    cumulative += region[i].eligible;
+                    if (cumulative >= halfTarget) {
+                        splitIdx = i + 1;
+                        break;
+                    }
+                }
+
+                // Ensure at least 1 station in each half
+                if (splitIdx === 0) splitIdx = 1;
+                if (splitIdx >= region.length) splitIdx = region.length - 1;
+
+                const half1 = region.slice(0, splitIdx);
+                const half2 = region.slice(splitIdx);
+
+                regs.splice(maxIdx, 1, half1, half2);
+            }
+
+            return regs;
+        }
+
+        // ── Seat Allocation (D'Hondt divisor method for consistent eligible/seats ratio) ──
+        function allocateSeatsToRegions(regs, totalSeats) {
+            const eligibles = regs.map(r => r.reduce((s, st) => s + st.eligible, 0));
+            const seats = new Array(regs.length).fill(0);
+
+            // Each region must get at least 1 seat
+            for (let i = 0; i < regs.length; i++) seats[i] = 1;
+            let distributed = regs.length;
+
+            // Allocate remaining seats: give next seat to region with highest eligible/(seats+1)
+            while (distributed < totalSeats) {
+                let bestIdx = 0, bestScore = -1;
+                for (let i = 0; i < regs.length; i++) {
+                    const score = eligibles[i] / (seats[i] + 1);
+                    if (score > bestScore) { bestScore = score; bestIdx = i; }
+                }
+                seats[bestIdx]++;
+                distributed++;
+            }
+
+            return seats;
+        }
+
+        // ── D'Hondt per region ──
+        function dhondtForRegion(stationList, seatCount, thresholdPct) {
+            if (seatCount <= 0) return {};
+
+            // Aggregate votes per party
+            const partyVotes = {};
+            for (const s of stationList) {
+                for (const [party, pct] of Object.entries(s.parties)) {
+                    if (!partyVotes[party]) partyVotes[party] = 0;
+                    partyVotes[party] += s.voters * pct / 100;
+                }
+            }
+
+            // Apply threshold
+            const totalVotes = Object.values(partyVotes).reduce((a, b) => a + b, 0);
+            const thresholdVotes = totalVotes * (thresholdPct / 100);
+
+            const eligible = {};
+            for (const [party, votes] of Object.entries(partyVotes)) {
+                if (votes >= thresholdVotes) {
+                    eligible[party] = votes;
+                }
+            }
+
+            // D'Hondt
+            const seats = {};
+            for (const party of Object.keys(eligible)) seats[party] = 0;
+
+            for (let i = 0; i < seatCount; i++) {
+                let maxQ = -1;
+                let winner = null;
+                for (const [party, votes] of Object.entries(eligible)) {
+                    const q = votes / (seats[party] + 1);
+                    if (q > maxQ) {
+                        maxQ = q;
+                        winner = party;
+                    }
+                }
+                if (winner) seats[winner]++;
+            }
+
+            return seats;
+        }
+
+        // ── Run simulation ──
+        function runSimulation() {
+            const regionalSeatCount = 120 - nationalSeats;
+
+            const totalSeats = {};
+            const nationalSeatsByParty = {};
+            let regionResults;
+
+            if (regionalSeatCount === 0) {
+                // Pure national: one region covering all stations, 0 regional seats
+                regions = [geoStations];
+                const nationalSeatResult = dhondtForRegion(stations, 120, threshold);
+                for (const [party, s] of Object.entries(nationalSeatResult)) {
+                    totalSeats[party] = s;
+                    nationalSeatsByParty[party] = s;
+                }
+                regionResults = [{
+                    stations: geoStations,
+                    seatCount: 120,
+                    seats: { ...nationalSeatResult },
+                    eligible: geoStations.reduce((s, st) => s + st.eligible, 0),
+                }];
+            } else {
+                // Partition
+                regions = partitionRegions(geoStations, numRegions);
+
+                // Allocate seats to regions
+                const regionSeatCounts = allocateSeatsToRegions(regions, regionalSeatCount);
+
+                // D'Hondt per region
+                regionResults = regions.map((region, i) => {
+                    const seats = dhondtForRegion(region, regionSeatCounts[i], threshold);
+                    for (const [party, s] of Object.entries(seats)) {
+                        if (!totalSeats[party]) totalSeats[party] = 0;
+                        totalSeats[party] += s;
+                    }
+                    return {
+                        stations: region,
+                        seatCount: regionSeatCounts[i],
+                        seats,
+                        eligible: region.reduce((s, st) => s + st.eligible, 0),
+                    };
+                });
+
+                // National component (if mixed mode)
+                if (nationalSeats > 0) {
+                    const nationalSeatResult = dhondtForRegion(stations, nationalSeats, threshold);
+                    for (const [party, s] of Object.entries(nationalSeatResult)) {
+                        if (!totalSeats[party]) totalSeats[party] = 0;
+                        totalSeats[party] += s;
+                        nationalSeatsByParty[party] = s;
+                    }
+                }
+            }
+
+            // Verify total seats = 120
+            const totalAllocated = Object.values(totalSeats).reduce((a, b) => a + b, 0);
+            console.assert(totalAllocated === 120, `Total seats should be 120, got ${totalAllocated}`);
+
+            // Build results
+            const results = partyConfig.map(p => ({
+                name: p.name,
+                name_en: p.name_en,
+                color: p.color,
+                block: p.block,
+                seats: totalSeats[p.name] || 0,
+                regionalSeats: (totalSeats[p.name] || 0) - (nationalSeatsByParty[p.name] || 0),
+                nationalSeatsCount: nationalSeatsByParty[p.name] || 0,
+                actual: actualSeats[p.name] || 0,
+            })).sort((a, b) => b.seats - a.seats);
+
+            // Name regions
+            regionNames = nameAllRegions(regionResults);
+
+            // Render
+            renderParliament(results, nationalSeats);
+            renderComparisonTable(results);
+            renderMap(regionResults);
+            renderBlocTotals(results);
+
+            // Store for region click
+            window._regionResults = regionResults;
+        }
+
+        // ── Parliament hemicycle ──
+        function renderParliament(results, nNational) {
+            const container = document.getElementById('parliament-chart');
+            const width = container.clientWidth || 400;
+            const height = 480;
+
+            d3.select('#parliament-chart').selectAll('*').remove();
+            const svg = d3.select('#parliament-chart')
+                .attr('width', width)
+                .attr('height', height);
+
+            const centerX = width / 2;
+            const centerY = height - 15;
+
+            const sortedParties = [...results].filter(r => r.seats > 0).sort((a, b) =>
+                (politicalOrder[a.name] || 50) - (politicalOrder[b.name] || 50)
+            );
+
+            nNational = nNational || 0;
+            const nRegional = 120 - nNational;
+
+            // Layout helper: distribute N seats into arc rows
+            function layoutArc(seatCount, minR, maxR) {
+                if (seatCount === 0) return [];
+                const rows = 6;
+                const range = maxR - minR;
+
+                // Distribute seats across 6 rows proportionally to circumference
+                const radii = [];
+                for (let r = 0; r < rows; r++) {
+                    radii.push(minR + r * range / (rows - 1));
+                }
+                const circumferences = radii.map(r => Math.PI * r);
+                const totalCirc = circumferences.reduce((a, b) => a + b, 0);
+                const rowSeats = circumferences.map(c => Math.round(seatCount * c / totalCirc));
+                // Fix rounding
+                let diff = seatCount - rowSeats.reduce((a, b) => a + b, 0);
+                for (let i = rowSeats.length - 1; diff !== 0 && i >= 0; i--) {
+                    const fix = diff > 0 ? 1 : -1;
+                    rowSeats[i] += fix;
+                    diff -= fix;
+                }
+
+                const positions = [];
+                for (let r = 0; r < rows; r++) {
+                    const numS = rowSeats[r];
+                    if (numS <= 0) continue;
+                    const angleStep = Math.PI / (numS + 1);
+                    for (let s = 0; s < numS; s++) {
+                        const angle = Math.PI - angleStep * (s + 1);
+                        positions.push({
+                            x: centerX + radii[r] * Math.cos(angle),
+                            y: centerY - radii[r] * Math.sin(angle),
+                            angle,
+                        });
+                    }
+                }
+                positions.sort((a, b) => b.angle - a.angle);
+                return positions;
+            }
+
+            // Unified hemicycle: merge all seats, sorted by political order,
+            // regional = solid fill, national = donut (ring)
+            const allSeats = [];
+            sortedParties.forEach(p => {
+                const reg = (p.regionalSeats != null) ? p.regionalSeats : p.seats;
+                for (let i = 0; i < reg; i++)
+                    allSeats.push({ party: p.name, color: p.color, type: 'regional' });
+                for (let i = 0; i < (p.nationalSeatsCount || 0); i++)
+                    allSeats.push({ party: p.name, color: p.color, type: 'national' });
+            });
+
+            const maxR = Math.min(width / 2 - 10, height - 35);
+            const positions = layoutArc(allSeats.length, 55, maxR);
+            const allPositions = positions.map((p, i) => ({ ...p, ...allSeats[i] }));
+
+            // Draw seats — use two circles for national (donut effect)
+            const seatGroups = svg.selectAll('.seat-g')
+                .data(allPositions)
+                .join('g')
+                .attr('class', 'seat-g')
+                .style('cursor', 'pointer')
+                .on('mouseenter', (event, d) => {
+                    const typeLabel = nNational > 0
+                        ? (d.type === 'national' ? ` (${i18n.t('national')})` : ` (${i18n.t('regional')})`)
+                        : '';
+                    tooltip.innerHTML = i18n.partyName(d.party) + typeLabel;
+                    tooltip.classList.add('visible');
+                    tooltip.style.left = (event.clientX + 10) + 'px';
+                    tooltip.style.top = (event.clientY - 20) + 'px';
+                })
+                .on('mouseleave', () => tooltip.classList.remove('visible'));
+
+            // Regional = filled circle, National = hollow ring
+            seatGroups.filter(d => d.type === 'regional')
+                .append('circle')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', 10)
+                .attr('fill', d => d.color)
+                .attr('stroke', '#000')
+                .attr('stroke-width', 0.5);
+
+            seatGroups.filter(d => d.type === 'national')
+                .append('circle')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', 8.5)
+                .attr('fill', 'none')
+                .attr('stroke', d => d.color)
+                .attr('stroke-width', 3);
+
+            const legendEl = document.getElementById('parliament-legend');
+            legendEl.style.display = '';
+            if (nNational > 0 && nRegional > 0) {
+                legendEl.innerHTML = `
+                    <span class="legend-item"><span class="legend-dot"></span> ${i18n.t('regional')} (${nRegional})</span>
+                    <span class="legend-item"><span class="legend-dot ring"></span> ${i18n.t('national')} (${nNational})</span>
+                `;
+            } else if (nNational === 0) {
+                legendEl.innerHTML = `<span class="legend-item"><span class="legend-dot"></span> ${i18n.t('regional')} (${nRegional})</span>`;
+            } else {
+                legendEl.innerHTML = `<span class="legend-item"><span class="legend-dot ring"></span> ${i18n.t('national')} (${nNational})</span>`;
+            }
+        }
+
+        // ── Bloc totals ──
+        function renderBlocTotals(results) {
+            let rightSeats = 0, leftSeats = 0, arabSeats = 0;
+            results.forEach(r => {
+                if (r.block === 'right') rightSeats += r.seats;
+                else if (r.block === 'left') leftSeats += r.seats;
+                else if (r.block === 'arab') arabSeats += r.seats;
+            });
+
+            const rightEl = document.getElementById('right-seats');
+            const leftEl = document.getElementById('left-seats');
+            rightEl.textContent = rightSeats;
+            leftEl.textContent = leftSeats + arabSeats;
+            rightEl.className = 'coalition-seats ' + (rightSeats >= 61 ? 'majority' : 'minority');
+            leftEl.className = 'coalition-seats ' + ((leftSeats + arabSeats) >= 61 ? 'majority' : 'minority');
+        }
+
+        // ── Comparison table ──
+        function renderComparisonTable(results) {
+            const tbody = document.getElementById('comparison-body');
+            tbody.innerHTML = '';
+
+            results.forEach(r => {
+                if (r.seats === 0 && r.actual === 0) return;
+                const diff = r.seats - r.actual;
+                const reg = r.regionalSeats != null ? r.regionalSeats : r.seats;
+                const nat = r.nationalSeatsCount || 0;
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><div class="party-cell"><span class="party-dot" style="background:${r.color}"></span>${i18n.partyName(r.name)}</div></td>
+                    <td class="seats-cell">${r.actual}</td>
+                    <td class="seats-cell"><strong>${r.seats}</strong></td>
+                    <td class="seats-cell">${reg || '-'}</td>
+                    <td class="seats-cell">${nat || '-'}</td>
+                    <td class="seats-cell ${diff > 0 ? 'diff-positive' : diff < 0 ? 'diff-negative' : 'diff-zero'}">${diff > 0 ? '+' + diff : diff}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ── Map rendering ──
+        function initMap() {
+            map = L.map('map', {
+                center: [31.4, 35.0],
+                zoom: 8.5,
+                minZoom: 7,
+                maxZoom: 18,
+                maxBounds: [[28.5, 33.5], [34.0, 36.5]],
+                maxBoundsViscosity: 1.0,
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 20,
+            }).addTo(map);
+        }
+
+        function renderMap(regionResults) {
+            // Clear existing layers
+            if (cellLayer) { map.removeLayer(cellLayer); cellLayer = null; }
+
+
+            if (boundaryLayer) { map.removeLayer(boundaryLayer); boundaryLayer = null; }
+            if (maskLayer) { maskLayer.remove(); maskLayer = null; }
+            regionLabels.forEach(l => map.removeLayer(l));
+            regionLabels = [];
+
+            // Build station→region index map
+            const stationToRegion = new Map();
+            regionResults.forEach((region, rIdx) => {
+                region.stations.forEach(s => {
+                    stationToRegion.set(s.settlement + '|' + s.ballot, rIdx);
+                });
+            });
+
+            // Map geoStations indices to region indices
+            const regionForStation = geoStations.map(s =>
+                stationToRegion.get(s.settlement + '|' + s.ballot) ?? -1
+            );
+
+            // Build Voronoi tessellation using d3.Delaunay
+            const points = geoStations.map(s => [s.lng, s.lat]);
+            const delaunay = d3.Delaunay.from(points);
+            const voronoi = delaunay.voronoi([33.8, 29.0, 36.2, 33.6]);
+
+            // Clip polygon to horizontal strip using Sutherland-Hodgman
+            function clipBelow(poly, maxLat) {
+                const out = [];
+                for (let i = 0; i < poly.length; i++) {
+                    const cur = poly[i], nxt = poly[(i + 1) % poly.length];
+                    const cIn = cur[1] <= maxLat, nIn = nxt[1] <= maxLat;
+                    if (cIn && nIn) { out.push(nxt); }
+                    else if (cIn && !nIn) {
+                        const t = (maxLat - cur[1]) / (nxt[1] - cur[1]);
+                        out.push([cur[0] + t * (nxt[0] - cur[0]), maxLat]);
+                    } else if (!cIn && nIn) {
+                        const t = (maxLat - cur[1]) / (nxt[1] - cur[1]);
+                        out.push([cur[0] + t * (nxt[0] - cur[0]), maxLat]);
+                        out.push(nxt);
+                    }
+                }
+                return out;
+            }
+            function clipAbove(poly, minLat) {
+                const out = [];
+                for (let i = 0; i < poly.length; i++) {
+                    const cur = poly[i], nxt = poly[(i + 1) % poly.length];
+                    const cIn = cur[1] >= minLat, nIn = nxt[1] >= minLat;
+                    if (cIn && nIn) { out.push(nxt); }
+                    else if (cIn && !nIn) {
+                        const t = (minLat - cur[1]) / (nxt[1] - cur[1]);
+                        out.push([cur[0] + t * (nxt[0] - cur[0]), minLat]);
+                    } else if (!cIn && nIn) {
+                        const t = (minLat - cur[1]) / (nxt[1] - cur[1]);
+                        out.push([cur[0] + t * (nxt[0] - cur[0]), minLat]);
+                        out.push(nxt);
+                    }
+                }
+                return out;
+            }
+
+            // Build per-region repeating color sequence
+            const bandSize = 0.009; // ~1km per band
+            const regionStripes = regionResults.map(r => {
+                const sorted = Object.entries(r.seats)
+                    .filter(([_, s]) => s > 0)
+                    .sort((a, b) => b[1] - a[1]);
+                const colors = [];
+                sorted.forEach(([party, count]) => {
+                    const c = partyColorMap[party] || '#888';
+                    for (let i = 0; i < count; i++) colors.push(c);
+                });
+                return colors;
+            });
+
+            // Clip each Voronoi cell into horizontal bands
+            const features = [];
+            for (let i = 0; i < geoStations.length; i++) {
+                const cell = voronoi.cellPolygon(i);
+                if (!cell) continue;
+                const rIdx = regionForStation[i];
+                if (rIdx < 0) continue;
+                const colors = regionStripes[rIdx];
+                const n = colors.length;
+                if (n <= 1) {
+                    features.push({
+                        type: 'Feature',
+                        properties: { region: rIdx, color: colors[0] || '#888' },
+                        geometry: { type: 'Polygon', coordinates: [cell] },
+                    });
+                    continue;
+                }
+                // Find cell lat range
+                let cMinLat = Infinity, cMaxLat = -Infinity;
+                for (const pt of cell) {
+                    if (pt[1] < cMinLat) cMinLat = pt[1];
+                    if (pt[1] > cMaxLat) cMaxLat = pt[1];
+                }
+                const startBand = Math.floor(cMinLat / bandSize);
+                const endBand = Math.floor(cMaxLat / bandSize);
+                // Open ring for clipping (remove closing duplicate)
+                const open = cell.slice(0, -1);
+                for (let b = startBand; b <= endBand; b++) {
+                    const lo = b * bandSize;
+                    const hi = (b + 1) * bandSize;
+                    const clipped = clipAbove(clipBelow(open, hi), lo);
+                    if (clipped.length < 3) continue;
+                    // Close ring
+                    const ring = clipped.concat([clipped[0]]);
+                    const colorIdx = ((b % n) + n) % n;
+                    features.push({
+                        type: 'Feature',
+                        properties: { region: rIdx, color: colors[colorIdx] },
+                        geometry: { type: 'Polygon', coordinates: [ring] },
+                    });
+                }
+            }
+
+            const canvasRenderer = L.canvas({ padding: 0.5 });
+
+            cellLayer = L.geoJSON({ type: 'FeatureCollection', features }, {
+                renderer: canvasRenderer,
+                style: feature => ({
+                    fillColor: feature.properties.color,
+                    fillOpacity: 0.22,
+                    stroke: false,
+                }),
+                onEachFeature: (feature, layer) => {
+                    const rIdx = feature.properties.region;
+                    layer.on('click', () => onRegionClick(rIdx));
+                    layer.on('mouseover', e => showRegionTooltip(e, rIdx, regionResults));
+                    layer.on('mouseout', () => tooltip.classList.remove('visible'));
+                },
+            }).addTo(map);
+
+            // Draw region boundaries: Voronoi edges between different regions
+            const boundaryLines = [];
+            for (let i = 0; i < geoStations.length; i++) {
+                const rI = regionForStation[i];
+                if (rI < 0) continue;
+                for (const j of delaunay.neighbors(i)) {
+                    if (j <= i) continue;
+                    const rJ = regionForStation[j];
+                    if (rJ < 0 || rI === rJ) continue;
+                    const cellI = voronoi.cellPolygon(i);
+                    const cellJ = voronoi.cellPolygon(j);
+                    if (!cellI || !cellJ) continue;
+                    const shared = findSharedVertices(cellI, cellJ);
+                    if (shared.length >= 2) {
+                        boundaryLines.push([[shared[0][1], shared[0][0]], [shared[1][1], shared[1][0]]]);
+                    }
+                }
+            }
+
+            if (boundaryLines.length > 0) {
+                boundaryLayer = L.polyline(boundaryLines, {
+                    color: '#e2e8f0', weight: 4, opacity: 0.7,
+                    renderer: canvasRenderer, interactive: false,
+                }).addTo(map);
+            }
+
+            // Fully opaque mask outside Israel
+            const outerRing = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+            const innerRing = israelBorder.concat([israelBorder[0]]);
+            const maskMain = L.geoJSON({
+                type: 'Feature',
+                properties: {},
+                geometry: { type: 'Polygon', coordinates: [outerRing, innerRing] },
+            }, {
+                style: {
+                    fillColor: '#0f172a',
+                    fillOpacity: 1.0,
+                    stroke: true,
+                    color: '#334155',
+                    weight: 1.5,
+                    opacity: 0.8,
+                },
+                interactive: false,
+            }).addTo(map);
+
+            maskLayer = { remove() { map.removeLayer(maskMain); } };
+
+            // Labels at region centroids: name + seat dots
+            regionResults.forEach((region, idx) => {
+                const c = getRegionCentroid(region.stations);
+                const displayName = getDisplayName(idx);
+                // Build seat dots sorted by seats descending
+                const sortedSeats = Object.entries(region.seats)
+                    .filter(([_, s]) => s > 0)
+                    .sort((a, b) => b[1] - a[1]);
+                const totalDots = sortedSeats.reduce((s, [_, n]) => s + n, 0);
+                let dotsHtml;
+                if (totalDots <= 20) {
+                    dotsHtml = sortedSeats.map(([party, count]) => {
+                        const color = partyColorMap[party] || '#888';
+                        return `<span class="seat-dot" style="background:${color}" title="${i18n.partyName(party)}"></span>`.repeat(count);
+                    }).join('');
+                } else {
+                    // Too many dots — show mini bar of colored spans
+                    dotsHtml = sortedSeats.map(([party, count]) => {
+                        const color = partyColorMap[party] || '#888';
+                        const w = Math.max(4, Math.round(count / totalDots * 80));
+                        return `<span style="display:inline-block;width:${w}px;height:8px;background:${color};border-radius:2px;margin:0 1px" title="${i18n.partyName(party)}: ${count}"></span>`;
+                    }).join('');
+                }
+                const dotWidth = Math.min(totalDots * 11, 160);
+                const labelWidth = Math.max(dotWidth, displayName.length * 8 + 14);
+                const label = L.marker([c.lat, c.lng], {
+                    icon: L.divIcon({
+                        className: 'region-label',
+                        html: `<span class="region-label-name">${displayName}</span><span class="region-label-eligible">${i18n.fmtNum(region.eligible)}</span><span class="region-label-dots">${dotsHtml}</span>`,
+                        iconSize: [labelWidth, 50],
+                        iconAnchor: [labelWidth / 2, 25],
+                    }),
+                    interactive: false,
+                }).addTo(map);
+                regionLabels.push(label);
+            });
+        }
+
+        function findSharedVertices(polyA, polyB) {
+            const shared = [];
+            for (let a = 0; a < polyA.length - 1; a++) {
+                for (let b = 0; b < polyB.length - 1; b++) {
+                    if (polyA[a][0] === polyB[b][0] && polyA[a][1] === polyB[b][1]) {
+                        shared.push(polyA[a]);
+                        break;
+                    }
+                }
+                if (shared.length >= 2) break;
+            }
+            return shared;
+        }
+
+        function getWinnerInfo(seats) {
+            let maxSeats = 0;
+            const winners = [];
+            for (const [party, s] of Object.entries(seats)) {
+                if (s > maxSeats) { maxSeats = s; winners.length = 0; winners.push(party); }
+                else if (s === maxSeats && s > 0) { winners.push(party); }
+            }
+            const colors = winners.map(w => partyColorMap[w] || '#888');
+            return { winners, colors, isDraw: winners.length > 1 };
+        }
+
+        function getWinnerColor(seats) {
+            return getWinnerInfo(seats).colors[0] || '#888';
+        }
+
+        function getDisplayName(idx) {
+            const name = regionNames[idx];
+            if (!name) return '?';
+            return i18n.getLang() === 'en' ? name.en : name.he;
+        }
+
+        function showRegionTooltip(e, idx, regionResults) {
+            const region = regionResults[idx];
+            const name = getDisplayName(idx);
+            const sortedSeats = Object.entries(region.seats)
+                .filter(([_, s]) => s > 0)
+                .sort((a, b) => b[1] - a[1]);
+            const seatLines = sortedSeats.map(([party, seats]) => {
+                const color = partyColorMap[party] || '#888';
+                return `<span style="color:${color}">&#9632;</span> ${i18n.partyName(party)}: ${seats}`;
+            }).join('<br>');
+
+            tooltip.innerHTML = `
+                <strong>${name}</strong><br>
+                ${i18n.fmtNum(region.eligible)} ${i18n.t('eligible_voters')} · ${region.seatCount} ${i18n.t('seats_mandatim')}<br>
+                <div style="margin-top:4px">${seatLines}</div>
+            `;
+            tooltip.classList.add('visible');
+
+            const point = e.containerPoint || (map.latLngToContainerPoint(e.latlng));
+            const mapRect = document.getElementById('map').getBoundingClientRect();
+            tooltip.style.left = (mapRect.left + point.x + 15) + 'px';
+            tooltip.style.top = (mapRect.top + point.y - 10) + 'px';
+        }
+
+        // ── Region click → details ──
+        function onRegionClick(idx) {
+            selectedRegionIdx = idx;
+
+            const regionResults = window._regionResults;
+            if (!regionResults || !regionResults[idx]) return;
+
+            const region = regionResults[idx];
+            const name = getDisplayName(idx);
+            const content = document.getElementById('region-detail-content');
+            const placeholder = content.previousElementSibling;
+            placeholder.style.display = 'none';
+            content.style.display = 'block';
+
+            // Sort seats
+            const sortedSeats = Object.entries(region.seats)
+                .filter(([_, s]) => s > 0)
+                .sort((a, b) => b[1] - a[1]);
+
+            let tableRows = sortedSeats.map(([party, seats]) => {
+                const color = partyColorMap[party] || '#888';
+                return `<tr>
+                    <td><div class="party-cell"><span class="party-dot" style="background:${color}"></span>${i18n.partyName(party)}</div></td>
+                    <td class="seats-cell">${seats}</td>
+                </tr>`;
+            }).join('');
+
+            content.innerHTML = `
+                <div class="region-detail-header">
+                    <span class="region-detail-name">${name}</span>
+                </div>
+                <div class="region-detail-stats">
+                    <span>${i18n.t('eligible_in_region')} ${i18n.fmtNum(region.eligible)}</span>
+                    <span>${i18n.t('stations_in_region')} ${i18n.fmtNum(region.stations.length)}</span>
+                </div>
+                <div class="section-title">${i18n.t('region_seats', { n: region.seatCount })}</div>
+                <table class="region-detail-table">
+                    <thead><tr>
+                        <th data-i18n="party">${i18n.t('party')}</th>
+                        <th class="seats-cell" data-i18n="seats_mandatim">${i18n.t('seats_mandatim')}</th>
+                    </tr></thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+                <div class="mini-parliament">
+                    <svg id="mini-parliament-chart"></svg>
+                </div>
+            `;
+
+            // Render mini hemicycle
+            renderMiniParliament(region.seats, region.seatCount);
+        }
+
+        function renderMiniParliament(seats, seatCount) {
+            const container = document.getElementById('mini-parliament-chart');
+            if (!container) return;
+            const width = container.clientWidth || 300;
+            const height = 120;
+
+            d3.select('#mini-parliament-chart').selectAll('*').remove();
+            const svg = d3.select('#mini-parliament-chart')
+                .attr('width', width)
+                .attr('height', height);
+
+            const sortedParties = Object.entries(seats)
+                .filter(([_, s]) => s > 0)
+                .sort((a, b) => (politicalOrder[a[0]] || 50) - (politicalOrder[b[0]] || 50));
+
+            const allSeats = [];
+            sortedParties.forEach(([party, s]) => {
+                for (let i = 0; i < s; i++) {
+                    allSeats.push({ party, color: partyColorMap[party] || '#888' });
+                }
+            });
+
+            if (allSeats.length === 0) return;
+
+            const rows = Math.min(3, Math.ceil(allSeats.length / 4));
+            const centerX = width / 2;
+            const centerY = height - 10;
+            const minR = 25;
+            const maxR = Math.min(width / 2 - 10, height - 20);
+            const rStep = rows > 1 ? (maxR - minR) / (rows - 1) : 0;
+
+            const seatsPerRow = [];
+            let rem = seatCount;
+            for (let r = 0; r < rows; r++) {
+                const radius = minR + r * rStep;
+                const maxS = Math.floor(Math.PI * radius / 9);
+                const rowS = Math.min(maxS, rem);
+                seatsPerRow.push(rowS);
+                rem -= rowS;
+            }
+
+            const positions = [];
+            for (let r = 0; r < rows; r++) {
+                const radius = minR + r * rStep;
+                const numS = seatsPerRow[r];
+                const aStep = Math.PI / (numS + 1);
+                for (let s = 0; s < numS; s++) {
+                    const angle = Math.PI - aStep * (s + 1);
+                    positions.push({
+                        x: centerX + radius * Math.cos(angle),
+                        y: centerY - radius * Math.sin(angle),
+                        angle,
+                    });
+                }
+            }
+
+            positions.sort((a, b) => b.angle - a.angle);
+
+            const seatPos = positions.slice(0, allSeats.length).map((pos, i) => ({
+                ...pos, ...allSeats[i],
+            }));
+
+            svg.selectAll('.seat')
+                .data(seatPos)
+                .join('circle')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', 3.5)
+                .attr('fill', d => d.color)
+                .attr('stroke', '#000')
+                .attr('stroke-width', 0.3);
+        }
+
+        // ── Controls ──
+        function updateRegionPillStates() {
+            const regionalSeats = 120 - nationalSeats;
+            const pills = [...document.querySelectorAll('#region-pills .pill-btn')];
+            pills.forEach(btn => {
+                const val = parseInt(btn.dataset.value);
+                btn.disabled = val > regionalSeats;
+            });
+            // If current numRegions is now invalid, pick the largest valid
+            const activePill = pills.find(b => parseInt(b.dataset.value) === numRegions);
+            if (!activePill || activePill.disabled) {
+                const valid = pills.filter(b => !b.disabled);
+                if (valid.length > 0) {
+                    numRegions = parseInt(valid[valid.length - 1].dataset.value);
+                }
+            }
+            // Always update visual active state to match numRegions
+            pills.forEach(b => b.classList.toggle('active', parseInt(b.dataset.value) === numRegions));
+        }
+
+        function setupControls() {
+            // Region pills
+            document.querySelectorAll('#region-pills .pill-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#region-pills .pill-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    numRegions = parseInt(btn.dataset.value);
+                    runSimulation();
+                });
+            });
+
+            // National seats pills
+            document.querySelectorAll('#national-pills .pill-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#national-pills .pill-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    nationalSeats = parseInt(btn.dataset.value);
+                    updateRegionPillStates();
+                    runSimulation();
+                });
+            });
+
+            // Threshold select
+            document.getElementById('threshold-select').addEventListener('change', (e) => {
+                threshold = parseFloat(e.target.value);
+                runSimulation();
+            });
+        }
+
+        // ── Language change ──
+        window.addEventListener('langchange', () => {
+            if (window._regionResults) {
+                const results = partyConfig.map(p => ({
+                    name: p.name,
+                    name_en: p.name_en,
+                    color: p.color,
+                    block: p.block,
+                    seats: 0,
+                    actual: actualSeats[p.name] || 0,
+                }));
+
+                // Recompute totals from region results
+                const totalSeats = {};
+                window._regionResults.forEach(r => {
+                    for (const [party, s] of Object.entries(r.seats)) {
+                        if (!totalSeats[party]) totalSeats[party] = 0;
+                        totalSeats[party] += s;
+                    }
+                });
+
+                // Add national component if active
+                const nationalSeatsByParty = {};
+                if (nationalSeats > 0) {
+                    const nationalResult = dhondtForRegion(stations, nationalSeats, threshold);
+                    for (const [party, s] of Object.entries(nationalResult)) {
+                        if (!totalSeats[party]) totalSeats[party] = 0;
+                        totalSeats[party] += s;
+                        nationalSeatsByParty[party] = s;
+                    }
+                }
+
+                results.forEach(r => {
+                    r.seats = totalSeats[r.name] || 0;
+                    r.nationalSeatsCount = nationalSeatsByParty[r.name] || 0;
+                    r.regionalSeats = r.seats - r.nationalSeatsCount;
+                });
+                results.sort((a, b) => b.seats - a.seats);
+
+                renderParliament(results, nationalSeats);
+                renderComparisonTable(results);
+                renderBlocTotals(results);
+                renderMap(window._regionResults);
+
+                // Re-render region detail if one is selected
+                if (selectedRegionIdx >= 0) {
+                    onRegionClick(selectedRegionIdx);
+                }
+            }
+
+            // Update info note
+            if (noCoordStations.length > 0) {
+                document.getElementById('info-note').textContent = i18n.t('no_coords_note', { n: noCoordStations.length });
+            }
+        });
+
+        // ── Init ──
+        async function init() {
+            initMap();
+            setupControls();
+
+            try {
+                await loadData();
+                document.getElementById('loading-overlay').style.display = 'none';
+                runSimulation();
+            } catch (err) {
+                console.error('Failed to load data:', err);
+                document.getElementById('loading-overlay').textContent = i18n.t('error_loading');
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    })();
+    </script>
+</body>
+</html>

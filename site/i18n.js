@@ -227,6 +227,28 @@
         party_hofesh:          { he: 'חופש כלכלי', en: 'Economic Freedom' },
         party_beometz:         { he: 'באומץ בשבילך', en: 'Courageously For You' },
         party_hakalkalit:      { he: 'הכלכלית החדשה', en: 'The New Economy' },
+
+        /* ── Regional elections page ── */
+        nav_regional:          { he: 'בחירות אזוריות', en: 'Regional Elections' },
+        tab_regional:          { he: 'אזורי', en: 'Regional' },
+        regional_title:        { he: 'הבחירות האזוריות', en: 'Regional Elections' },
+        regional_subtitle:     { he: 'סימולציית בחירות אזוריות לכנסת ישראל', en: 'Simulating regional elections for the Israeli Knesset' },
+        regions_label:         { he: 'מחוזות בחירה:', en: 'Electoral districts:' },
+        national_seats_label:  { he: 'מנדטים ארציים:', en: 'National seats:' },
+        regional:              { he: 'אזורי', en: 'Regional' },
+        national:              { he: 'ארצי', en: 'National' },
+        threshold_label:       { he: 'אחוז חסימה:', en: 'Threshold:' },
+        simulation_results:    { he: 'תוצאות הסימולציה', en: 'Simulation Results' },
+        actual_seats:          { he: 'מנדטים בפועל', en: 'Actual seats' },
+        simulated_seats:       { he: 'מנדטים בסימולציה', en: 'Simulated seats' },
+        difference:            { he: 'הפרש', en: 'Difference' },
+        region_details:        { he: 'פרטי אזור', en: 'Region Details' },
+        region_seats:          { he: '{n} מנדטים', en: '{n} seats' },
+        eligible_in_region:    { he: 'בעלי זכות בחירה:', en: 'Eligible voters:' },
+        stations_in_region:    { he: 'קלפיות:', en: 'Stations:' },
+        click_region:          { he: 'לחצו על אזור במפה לפרטים', en: 'Click a region on the map for details' },
+        no_coords_note:        { he: '{n} קלפיות ללא קואורדינטות (לא נכללו באזורים)', en: '{n} stations without coordinates (excluded from regions)' },
+        regional_seats_label:  { he: 'מנדטים אזוריים:', en: 'Regional seats:' },
     };
 
     /* ── Party Hebrew→English name map (for data-driven parties) ── */
