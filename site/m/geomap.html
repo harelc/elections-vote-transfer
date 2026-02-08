@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>מפה - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Dark map tiles */
+        .leaflet-tile-pane { filter: brightness(0.7) saturate(0.8); }
+        .leaflet-popup-pane, .leaflet-marker-pane, .leaflet-overlay-pane { filter: none; }
+
+        /* Cluster icons */
+        .custom-cluster {
+            background: none !important;
+            border: none !important;
+        }
+        .custom-cluster .cluster-inner {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            border: 2px solid rgba(255,255,255,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+        }
+        .cluster-count { font-size: 0.8rem; line-height: 1; }
+        .cluster-info { font-size: 0.6rem; opacity: 0.8; line-height: 1; }
+
+        /* Color mode FABs */
+        .color-fabs {
+            position: fixed;
+            top: 52px;
+            left: 8px;
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .color-fab {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            transition: all 0.15s;
+        }
+
+        .color-fab.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+        .color-fab:active { transform: scale(0.9); }
+
+        /* Search FAB */
+        .search-fab {
+            top: 52px;
+            right: 8px;
+        }
+
+        /* Search panel */
+        .search-panel {
+            position: fixed;
+            top: 44px;
+            right: 0;
+            width: 280px;
+            max-height: calc(100% - 100px);
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            border-radius: 0 0 0 var(--radius);
+            padding: 12px;
+            z-index: 450;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+        }
+
+        .search-panel.visible { transform: translateX(0); }
+
+        .search-panel .search-section { margin-bottom: 12px; }
+        .search-panel .section-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .selected-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        /* Station popup override for dark theme */
+        .leaflet-popup-content-wrapper {
+            background: var(--bg-card) !important;
+            color: var(--text-primary) !important;
+            border-radius: var(--radius) !important;
+            border: 1px solid var(--border) !important;
+            box-shadow: var(--shadow) !important;
+        }
+        .leaflet-popup-tip { background: var(--bg-card) !important; }
+        .leaflet-popup-close-button { color: var(--text-muted) !important; font-size: 18px !important; }
+
+        .popup-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
+        .popup-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
+        .popup-parties { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+
+        /* Color scale legend */
+        .color-scale {
+            position: fixed;
+            bottom: calc(62px + var(--safe-bottom));
+            left: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 10px;
+            z-index: 400;
+            font-size: 0.7rem;
+            min-width: 120px;
+        }
+        .color-scale-title { color: var(--text-muted); margin-bottom: 4px; }
+        .color-scale-bar {
+            height: 8px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+        }
+        .color-scale-labels {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+        }
+
+        /* Party list in sheet */
+        .party-list-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+        .party-list-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+        }
+        .party-list-item:active { background: var(--bg-hover); }
+        .party-list-item.active { border-color: var(--accent); background: var(--bg-hover); }
+        .party-list-item .dot {
+            width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
+        }
+        .party-list-item .name { font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="title">🗳️ מפה</span>
+        <div class="election-pills" id="election-pills"></div>
+    </div>
+
+    <!-- Main Map -->
+    <div class="main-area">
+        <div id="map"></div>
+        <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Color mode FABs (left side) -->
+    <div class="color-fabs" id="color-fabs"></div>
+
+    <!-- Search FAB (right side) -->
+    <div class="fab search-fab" id="search-toggle">🔍</div>
+
+    <!-- Search Panel (slides from right) -->
+    <div class="search-panel" id="search-panel">
+        <div class="search-section">
+            <div class="section-title">חיפוש יישוב</div>
+            <div style="position: relative;">
+                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." autocomplete="off">
+                <div class="search-results" id="settlement-results"></div>
+            </div>
+            <div class="selected-tags" id="settlement-tags"></div>
+        </div>
+        <div class="search-section">
+            <div class="section-title">חיפוש קלפי</div>
+            <div style="position: relative;">
+                <input class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                <div class="search-results" id="station-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Scale Legend -->
+    <div class="color-scale" id="color-scale" style="display:none;">
+        <div class="color-scale-title" id="scale-title"></div>
+        <div class="color-scale-bar" id="scale-bar"></div>
+        <div class="color-scale-labels">
+            <span id="scale-min"></span>
+            <span id="scale-max"></span>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet (for cluster/marker details & party selection) -->
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div id="sheet-content"></div>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <nav class="tab-bar">
+        <a href="geomap.html" class="active"><span class="tab-icon">🗺️</span>מפה</a>
+        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
+        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+    </nav>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script>
+    class MobileGeoMap {
+        constructor() {
+            this.currentElection = '25';
+            this.colorMode = 'winner';
+            this.selectedParty = null;
+            this.tsneData = null;
+            this.coordinates = null;
+            this.socioeconomicData = null;
+            this.parties = [];
+            this.settlements = [];
+            this.selectedSettlements = [];
+
+            this.initElectionPills();
+            this.initMap();
+            this.initEvents();
+            this.loadData();
+        }
+
+        initElectionPills() {
+            const pills = document.getElementById('election-pills');
+            ['21','22','23','24','25'].forEach(id => {
+                const btn = document.createElement('button');
+                btn.className = 'election-pill' + (id === this.currentElection ? ' active' : '');
+                btn.textContent = id;
+                btn.onclick = () => this.switchElection(id);
+                pills.appendChild(btn);
+            });
+        }
+
+        initMap() {
+            this.map = L.map('map', {
+                center: [31.5, 34.9],
+                zoom: 8,
+                minZoom: 7,
+                maxZoom: 18,
+                zoomControl: false
+            });
+
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OSM &copy; CARTO',
+                subdomains: 'abcd',
+                maxZoom: 20
+            }).addTo(this.map);
+
+            L.control.zoom({ position: 'bottomright' }).addTo(this.map);
+
+            this.markers = L.markerClusterGroup({
+                chunkedLoading: true,
+                maxClusterRadius: 50,
+                showCoverageOnHover: false,
+                zoomToBoundsOnClick: true,
+                iconCreateFunction: c => this.createClusterIcon(c)
+            });
+            this.map.addLayer(this.markers);
+
+            // Tap on cluster → bottom sheet
+            this.markers.on('clusterclick', e => {
+                if (this.map.getZoom() >= this.map.getMaxZoom() - 1) {
+                    this.showClusterSheet(e.layer);
+                }
+            });
+        }
+
+        initEvents() {
+            // Search toggle
+            document.getElementById('search-toggle').onclick = () => {
+                document.getElementById('search-panel').classList.toggle('visible');
+            };
+
+            // Close search when tapping map
+            this.map.on('click', () => {
+                document.getElementById('search-panel').classList.remove('visible');
+            });
+
+            // Settlement search
+            const setSearch = document.getElementById('settlement-search');
+            setSearch.oninput = () => this.handleSettlementSearch(setSearch.value);
+
+            // Station search
+            const staSearch = document.getElementById('station-search');
+            staSearch.oninput = () => this.handleStationSearch(staSearch.value);
+
+            // Sheet backdrop
+            document.getElementById('sheet-backdrop').onclick = () => this.hideSheet();
+        }
+
+        async loadData() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const [tsneRes, coordRes, seRes] = await Promise.all([
+                    fetch(`../data/tsne_${this.currentElection}.json`),
+                    fetch(`../data/station_coordinates.json`),
+                    fetch(`../data/socioeconomic_clusters.json`)
+                ]);
+                this.tsneData = await tsneRes.json();
+                this.coordinates = await coordRes.json();
+                const seArr = await seRes.json();
+
+                this.socioeconomicData = {};
+                seArr.forEach(item => {
+                    this.socioeconomicData[item.name] = item.cluster;
+                    this.socioeconomicData[this.normalizeName(item.name)] = item.cluster;
+                });
+
+                this.parties = this.tsneData.parties || [];
+                this.buildSettlements();
+                this.buildColorFabs();
+                this.renderMarkers();
+            } catch (err) {
+                console.error('Load error:', err);
+            }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async switchElection(id) {
+            this.currentElection = id;
+            document.querySelectorAll('.election-pill').forEach(p =>
+                p.classList.toggle('active', p.textContent === id));
+            this.selectedSettlements = [];
+            document.getElementById('settlement-tags').innerHTML = '';
+
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const res = await fetch(`../data/tsne_${id}.json`);
+                this.tsneData = await res.json();
+                this.parties = this.tsneData.parties || [];
+                this.buildSettlements();
+                this.buildColorFabs();
+                this.renderMarkers();
+            } catch (err) { console.error(err); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        buildSettlements() {
+            const counts = {};
+            this.tsneData.stations.forEach(s => {
+                const n = s.n || '';
+                counts[n] = (counts[n] || 0) + 1;
+            });
+            this.settlements = Object.entries(counts)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count);
+        }
+
+        buildColorFabs() {
+            const container = document.getElementById('color-fabs');
+            const modes = [
+                { id: 'winner', bg: 'linear-gradient(135deg, #2563eb, #dc2626, #16a34a)', label: 'מנצחת' },
+                { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', label: 'הצבעה' },
+                { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', label: 'אשכול' },
+                { id: 'party', bg: '#6366f1', label: 'מפלגה' }
+            ];
+
+            container.innerHTML = modes.map(m => `
+                <div class="color-fab ${m.id === this.colorMode ? 'active' : ''}"
+                     data-mode="${m.id}"
+                     style="background: ${m.bg};"
+                     title="${m.label}"></div>
+            `).join('');
+
+            container.querySelectorAll('.color-fab').forEach(fab => {
+                fab.onclick = () => {
+                    const mode = fab.dataset.mode;
+                    if (mode === 'party') {
+                        this.showPartyPicker();
+                    } else {
+                        this.setColorMode(mode);
+                    }
+                };
+            });
+        }
+
+        setColorMode(mode, party = null) {
+            this.colorMode = mode;
+            this.selectedParty = party;
+
+            document.querySelectorAll('.color-fab').forEach(f =>
+                f.classList.toggle('active', f.dataset.mode === mode));
+
+            this.updateColorScale();
+            this.renderMarkers();
+        }
+
+        updateColorScale() {
+            const el = document.getElementById('color-scale');
+            const bar = document.getElementById('scale-bar');
+            const title = document.getElementById('scale-title');
+            const min = document.getElementById('scale-min');
+            const max = document.getElementById('scale-max');
+
+            if (this.colorMode === 'turnout') {
+                el.style.display = 'block';
+                title.textContent = 'שיעור הצבעה';
+                bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
+                min.textContent = '40%';
+                max.textContent = '90%';
+            } else if (this.colorMode === 'socioeconomic') {
+                el.style.display = 'block';
+                title.textContent = 'אשכול חברתי-כלכלי';
+                bar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
+                min.textContent = '1';
+                max.textContent = '10';
+            } else if (this.colorMode === 'party' && this.selectedParty) {
+                el.style.display = 'block';
+                title.textContent = this.selectedParty.name;
+                const c = this.selectedParty.color;
+                bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
+                min.textContent = '0%';
+                max.textContent = '50%';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        renderMarkers() {
+            this.markers.clearLayers();
+            const stations = this.tsneData.stations;
+            let filtered = stations;
+
+            if (this.selectedSettlements.length > 0) {
+                filtered = stations.filter(s =>
+                    this.selectedSettlements.includes(s.n));
+            }
+
+            filtered.forEach(station => {
+                const key = `${station.n}|${station.b}`;
+                const coord = this.coordinates?.stations?.[key];
+                if (!coord || !coord.lat || !coord.lng) return;
+
+                const color = this.getColor(station);
+                const voters = station.v || 0;
+                const radius = Math.max(4, Math.min(12, Math.sqrt(voters / 50) * 2.5));
+
+                const marker = L.circleMarker([coord.lat, coord.lng], {
+                    radius,
+                    fillColor: color,
+                    color: '#000',
+                    weight: 1,
+                    opacity: 0.8,
+                    fillOpacity: 0.7,
+                    stationData: { ...station, l: coord.location || '' }
+                });
+
+                marker.on('click', () => this.showStationSheet(station, coord));
+                this.markers.addLayer(marker);
+            });
+
+            if (this.selectedSettlements.length > 0) {
+                const bounds = this.markers.getBounds();
+                if (bounds.isValid()) this.map.fitBounds(bounds, { padding: [30, 30] });
+            }
+        }
+
+        createClusterIcon(cluster) {
+            const children = cluster.getAllChildMarkers();
+            const count = children.length;
+            let totalVoters = 0, totalEligible = 0;
+            const partyVotes = {};
+            const clusterCounts = {};
+
+            children.forEach(m => {
+                const s = m.options.stationData;
+                if (!s) return;
+                totalVoters += s.v || 0;
+                totalEligible += s.e || 0;
+                const name = s.n || '';
+                const se = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+                if (se) clusterCounts[se] = (clusterCounts[se] || 0) + 1;
+                const p = s.p || {};
+                Object.entries(p).forEach(([party, pct]) => {
+                    partyVotes[party] = (partyVotes[party] || 0) + ((s.v || 0) * pct / 100);
+                });
+            });
+
+            const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
+            const sorted = Object.entries(partyVotes).sort((a, b) => b[1] - a[1]);
+            const winner = sorted[0];
+
+            let size = count > 100 ? 52 : count > 30 ? 46 : 40;
+            let bgColor = 'rgba(59,130,246,0.8)';
+            let info = '';
+
+            if (this.colorMode === 'winner' && winner) {
+                const party = this.parties.find(p => p.name === winner[0]);
+                bgColor = party ? this.hexToRgba(party.color, 0.8) : bgColor;
+                info = `${Math.round(winner[1] / totalVoters * 100)}%`;
+            } else if (this.colorMode === 'turnout') {
+                bgColor = this.getTurnoutColor(avgTurnout).replace('rgb', 'rgba').replace(')', ',0.8)');
+                info = `${avgTurnout}%`;
+            } else if (this.colorMode === 'socioeconomic') {
+                const entries = Object.entries(clusterCounts);
+                if (entries.length) {
+                    const dominant = entries.sort((a, b) => b[1] - a[1])[0];
+                    const colors = ['#9e0142','#d53e4f','#f46d43','#fdae61','#fee08b','#e6f598','#abdda4','#66c2a5','#3288bd','#5e4fa2'];
+                    bgColor = this.hexToRgba(colors[dominant[0] - 1], 0.8);
+                    info = dominant[0];
+                }
+            } else if (this.colorMode === 'party' && this.selectedParty) {
+                const pv = partyVotes[this.selectedParty.name] || 0;
+                const pct = totalVoters > 0 ? Math.round(pv / totalVoters * 100) : 0;
+                const t = Math.min(pct / 50, 1);
+                bgColor = this.hexToRgba(this.interpolateHex(
+                    this.lightenColor(this.selectedParty.color, 0.85),
+                    this.selectedParty.color, t), 0.8);
+                info = `${pct}%`;
+            }
+
+            return L.divIcon({
+                html: `<div class="cluster-inner" style="background:${bgColor}">
+                    <div class="cluster-count">${count}</div>
+                    <div class="cluster-info">${info}</div>
+                </div>`,
+                className: 'custom-cluster',
+                iconSize: L.point(size, size)
+            });
+        }
+
+        getColor(station) {
+            if (this.colorMode === 'turnout') {
+                return this.getTurnoutColor(station.t || 0);
+            }
+            if (this.colorMode === 'socioeconomic') {
+                const name = station.n || '';
+                const c = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+                if (!c) return '#374151';
+                const colors = ['#9e0142','#d53e4f','#f46d43','#fdae61','#fee08b','#e6f598','#abdda4','#66c2a5','#3288bd','#5e4fa2'];
+                return colors[Math.min(Math.max(c, 1), 10) - 1];
+            }
+            if (this.colorMode === 'winner') {
+                const p = station.p || {};
+                const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
+                if (w) {
+                    const party = this.parties.find(pp => pp.name === w[0]);
+                    return party ? party.color : '#374151';
+                }
+                return '#374151';
+            }
+            if (this.colorMode === 'party' && this.selectedParty) {
+                const pct = (station.p || {})[this.selectedParty.name] || 0;
+                const t = Math.min(pct / 50, 1);
+                return this.interpolateHex(
+                    this.lightenColor(this.selectedParty.color, 0.85),
+                    this.selectedParty.color, t);
+            }
+            return '#3b82f6';
+        }
+
+        // ---- Bottom Sheets ----
+
+        showStationSheet(station, coord) {
+            const name = station.n || '';
+            const ballot = station.b || '';
+            const location = station.l || coord.location || '';
+            const voters = station.v || 0;
+            const eligible = station.e || 0;
+            const turnout = station.t || 0;
+            const se = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+
+            const topParties = Object.entries(station.p || {})
+                .sort((a, b) => b[1] - a[1]).slice(0, 7);
+
+            const partyHtml = topParties.map(([pname, pct]) => {
+                const party = this.parties.find(p => p.name === pname);
+                const color = party?.color || '#64748b';
+                return `<div class="party-row">
+                    <span class="party-dot" style="background:${color}"></span>
+                    <span class="party-name">${pname}</span>
+                    <span class="party-pct">${Math.round(pct)}%</span>
+                    <div class="party-bar"><div class="party-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${name}</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
+                    קלפי ${ballot}${location ? ' · ' + location : ''}${se ? ' · אשכול ' + se : ''}
+                </div>
+                <div class="stat-grid">
+                    <span class="label">רשומים</span><span class="value">${eligible.toLocaleString()}</span>
+                    <span class="label">הצביעו</span><span class="value">${voters.toLocaleString()}</span>
+                    <span class="label">שיעור</span><span class="value">${turnout}%</span>
+                </div>
+                ${partyHtml}
+            `;
+            this.showSheet();
+        }
+
+        showClusterSheet(cluster) {
+            const children = cluster.getAllChildMarkers();
+            const count = children.length;
+            let totalVoters = 0, totalEligible = 0;
+            const partyVotes = {};
+            const settlements = new Set();
+            const locations = new Set();
+
+            children.forEach(m => {
+                const s = m.options.stationData;
+                if (!s) return;
+                totalVoters += s.v || 0;
+                totalEligible += s.e || 0;
+                if (s.n) settlements.add(s.n);
+                if (s.l) locations.add(s.l);
+                Object.entries(s.p || {}).forEach(([p, pct]) => {
+                    partyVotes[p] = (partyVotes[p] || 0) + ((s.v || 0) * pct / 100);
+                });
+            });
+
+            const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
+            const setList = [...settlements];
+            const title = setList.length === 1 ? setList[0]
+                : setList.length <= 3 ? setList.join(', ')
+                : `${setList.slice(0, 2).join(', ')} ועוד ${setList.length - 2}`;
+            const venue = locations.size === 1 ? [...locations][0] : '';
+
+            const topParties = Object.entries(partyVotes)
+                .sort((a, b) => b[1] - a[1]).slice(0, 7)
+                .map(([name, votes]) => ({
+                    name,
+                    pct: totalVoters > 0 ? Math.round(votes / totalVoters * 100) : 0,
+                    color: this.parties.find(p => p.name === name)?.color || '#64748b'
+                }));
+
+            const partyHtml = topParties.map(p => `
+                <div class="party-row">
+                    <span class="party-dot" style="background:${p.color}"></span>
+                    <span class="party-name">${p.name}</span>
+                    <span class="party-pct">${p.pct}%</span>
+                    <div class="party-bar"><div class="party-bar-fill" style="width:${p.pct}%;background:${p.color}"></div></div>
+                </div>
+            `).join('');
+
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${title}</div>
+                ${venue ? `<div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;margin-bottom:6px;">${venue}</div>` : ''}
+                <div class="stat-grid">
+                    <span class="label">קלפיות</span><span class="value">${count}</span>
+                    <span class="label">מצביעים</span><span class="value">${totalVoters.toLocaleString()}</span>
+                    <span class="label">שיעור</span><span class="value">${avgTurnout}%</span>
+                </div>
+                ${partyHtml}
+            `;
+            this.showSheet();
+        }
+
+        showPartyPicker() {
+            const html = `
+                <div style="font-weight:600;font-size:1rem;margin-bottom:10px;">צביעה לפי מפלגה</div>
+                <div class="party-list-grid">
+                    ${this.parties.map(p => `
+                        <div class="party-list-item ${this.selectedParty?.name === p.name ? 'active' : ''}" data-party="${p.name}">
+                            <span class="dot" style="background:${p.color}"></span>
+                            <span class="name">${p.name}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            document.getElementById('sheet-content').innerHTML = html;
+            this.showSheet();
+
+            document.querySelectorAll('.party-list-item').forEach(item => {
+                item.onclick = () => {
+                    const party = this.parties.find(p => p.name === item.dataset.party);
+                    if (party) {
+                        this.hideSheet();
+                        this.setColorMode('party', party);
+                    }
+                };
+            });
+        }
+
+        showSheet() {
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        }
+
+        hideSheet() {
+            document.getElementById('sheet-backdrop').classList.remove('visible');
+            document.getElementById('bottom-sheet').classList.remove('visible');
+        }
+
+        // ---- Search ----
+
+        handleSettlementSearch(query) {
+            const results = document.getElementById('settlement-results');
+            if (query.length < 1) { results.classList.remove('visible'); return; }
+
+            const matches = this.settlements
+                .filter(s => s.name.includes(query))
+                .slice(0, 10);
+
+            if (!matches.length) { results.classList.remove('visible'); return; }
+
+            results.innerHTML = matches.map(s => `
+                <div class="search-result-item" data-name="${s.name}">
+                    ${s.name} <span class="detail">${s.count} קלפיות</span>
+                </div>
+            `).join('');
+            results.classList.add('visible');
+
+            results.querySelectorAll('.search-result-item').forEach(item => {
+                item.onclick = () => {
+                    const name = item.dataset.name;
+                    if (!this.selectedSettlements.includes(name)) {
+                        this.selectedSettlements.push(name);
+                        this.renderSettlementTags();
+                        this.renderMarkers();
+                    }
+                    document.getElementById('settlement-search').value = '';
+                    results.classList.remove('visible');
+                };
+            });
+        }
+
+        handleStationSearch(query) {
+            const results = document.getElementById('station-results');
+            if (query.length < 2) { results.classList.remove('visible'); return; }
+
+            const q = query.toLowerCase();
+            const matches = this.tsneData.stations
+                .filter(s => {
+                    const n = (s.n || '').toLowerCase();
+                    const b = String(s.b || '');
+                    const l = (s.l || '').toLowerCase();
+                    return n.includes(q) || b.includes(query) || l.includes(q);
+                }).slice(0, 15);
+
+            if (!matches.length) { results.classList.remove('visible'); return; }
+
+            results.innerHTML = matches.map((s, i) => `
+                <div class="search-result-item" data-idx="${i}">
+                    <strong>${s.n}</strong> - קלפי ${s.b}
+                    ${s.l ? `<br><span class="detail">${s.l}</span>` : ''}
+                </div>
+            `).join('');
+            results.classList.add('visible');
+
+            this._stationMatches = matches;
+            results.querySelectorAll('.search-result-item').forEach(item => {
+                item.onclick = () => {
+                    const s = this._stationMatches[parseInt(item.dataset.idx)];
+                    const key = `${s.n}|${s.b}`;
+                    const coord = this.coordinates?.stations?.[key];
+                    if (coord) {
+                        this.map.setView([coord.lat, coord.lng], 17);
+                        this.showStationSheet(s, coord);
+                    }
+                    document.getElementById('station-search').value = '';
+                    results.classList.remove('visible');
+                    document.getElementById('search-panel').classList.remove('visible');
+                };
+            });
+        }
+
+        renderSettlementTags() {
+            const container = document.getElementById('settlement-tags');
+            container.innerHTML = this.selectedSettlements.map(name => `
+                <span class="chip">${name}<span class="remove" data-name="${name}">&times;</span></span>
+            `).join('');
+
+            container.querySelectorAll('.remove').forEach(btn => {
+                btn.onclick = e => {
+                    e.stopPropagation();
+                    this.selectedSettlements = this.selectedSettlements.filter(s => s !== btn.dataset.name);
+                    this.renderSettlementTags();
+                    this.renderMarkers();
+                };
+            });
+        }
+
+        // ---- Color Utilities ----
+
+        getTurnoutColor(turnout) {
+            if (turnout < 65) {
+                const t = Math.max(0, Math.min(1, (turnout - 40) / 25));
+                return this.interpolateHex('#ef4444', '#fbbf24', t);
+            } else {
+                const t = Math.max(0, Math.min(1, (turnout - 65) / 25));
+                return this.interpolateHex('#fbbf24', '#10b981', t);
+            }
+        }
+
+        interpolateHex(c1, c2, t) {
+            const p1 = this.parseHex(c1), p2 = this.parseHex(c2);
+            const r = Math.round(p1.r + (p2.r - p1.r) * t);
+            const g = Math.round(p1.g + (p2.g - p1.g) * t);
+            const b = Math.round(p1.b + (p2.b - p1.b) * t);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        parseHex(color) {
+            if (color.startsWith('rgb')) {
+                const m = color.match(/(\d+)/g);
+                return { r: +m[0], g: +m[1], b: +m[2] };
+            }
+            const hex = color.replace('#', '');
+            return {
+                r: parseInt(hex.substr(0, 2), 16),
+                g: parseInt(hex.substr(2, 2), 16),
+                b: parseInt(hex.substr(4, 2), 16)
+            };
+        }
+
+        lightenColor(color, factor) {
+            const { r, g, b } = this.parseHex(color);
+            return `rgb(${Math.round(r + (255 - r) * factor)},${Math.round(g + (255 - g) * factor)},${Math.round(b + (255 - b) * factor)})`;
+        }
+
+        hexToRgba(color, alpha) {
+            const { r, g, b } = this.parseHex(color);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+
+        normalizeName(name) {
+            if (!name) return name;
+            return name.replace(/[-–\s]+/g, '').replace(/יי/g, 'י');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => new MobileGeoMap());
+    </script>
+</body>
+</html>

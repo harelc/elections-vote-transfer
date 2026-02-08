@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>פיזור קלפיות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        #tsne-chart {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        .station-dot { transition: opacity 0.2s; }
+
+        /* Color FABs */
+        .color-fabs {
+            position: fixed;
+            top: 52px;
+            left: 8px;
+            z-index: 400;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .color-fab {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+            transition: all 0.15s;
+        }
+
+        .color-fab.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+        .color-fab:active { transform: scale(0.9); }
+
+        /* Search FAB */
+        .search-fab { top: 52px; right: 8px; }
+
+        /* Search panel */
+        .search-panel {
+            position: fixed;
+            top: 44px;
+            right: 0;
+            width: 280px;
+            max-height: calc(100% - 120px);
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            border-radius: 0 0 0 var(--radius);
+            padding: 12px;
+            z-index: 450;
+            overflow-y: auto;
+            transform: translateX(100%);
+            transition: transform 0.25s ease;
+        }
+
+        .search-panel.visible { transform: translateX(0); }
+        .search-panel .section-title {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .search-panel .search-section { margin-bottom: 12px; }
+
+        .selected-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+
+        /* Color scale legend */
+        .color-scale {
+            position: fixed;
+            bottom: calc(62px + var(--safe-bottom));
+            left: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px 10px;
+            z-index: 400;
+            font-size: 0.7rem;
+            min-width: 120px;
+        }
+        .color-scale-title { color: var(--text-muted); margin-bottom: 4px; }
+        .color-scale-bar { height: 8px; border-radius: 4px; margin-bottom: 2px; }
+        .color-scale-labels { display: flex; justify-content: space-between; color: var(--text-muted); font-size: 0.65rem; }
+
+        /* Zoom hint */
+        .zoom-hint {
+            position: fixed;
+            bottom: calc(62px + var(--safe-bottom));
+            right: 8px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 4px 8px;
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            z-index: 400;
+            opacity: 0.8;
+        }
+
+        /* Party picker grid */
+        .party-list-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px;
+        }
+        .party-list-item {
+            display: flex; align-items: center; gap: 6px;
+            padding: 8px; border-radius: 8px; cursor: pointer;
+            border: 1px solid transparent; transition: all 0.15s;
+        }
+        .party-list-item:active { background: var(--bg-hover); }
+        .party-list-item.active { border-color: var(--accent); background: var(--bg-hover); }
+        .party-list-item .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+        .party-list-item .name { font-size: 0.8rem; }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="title">🗳️ פיזור</span>
+        <div class="election-pills" id="election-pills"></div>
+    </div>
+
+    <!-- Main Area -->
+    <div class="main-area">
+        <svg id="tsne-chart"></svg>
+        <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Color FABs -->
+    <div class="color-fabs" id="color-fabs"></div>
+
+    <!-- Search FAB -->
+    <div class="fab search-fab" id="search-toggle">🔍</div>
+
+    <!-- Search Panel -->
+    <div class="search-panel" id="search-panel">
+        <div class="search-section">
+            <div class="section-title">סינון לפי יישוב</div>
+            <div style="position: relative;">
+                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." autocomplete="off">
+                <div class="search-results" id="settlement-results"></div>
+            </div>
+            <div class="selected-tags" id="settlement-tags"></div>
+        </div>
+        <div class="search-section">
+            <div class="section-title">חיפוש קלפי</div>
+            <div style="position: relative;">
+                <input class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                <div class="search-results" id="station-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Color Scale -->
+    <div class="color-scale" id="color-scale" style="display:none;">
+        <div class="color-scale-title" id="scale-title"></div>
+        <div class="color-scale-bar" id="scale-bar"></div>
+        <div class="color-scale-labels">
+            <span id="scale-min"></span><span id="scale-max"></span>
+        </div>
+    </div>
+
+    <div class="zoom-hint">צבוט לזום · גרור להזזה</div>
+
+    <!-- Bottom Sheet -->
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div id="sheet-content"></div>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <nav class="tab-bar">
+        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
+        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
+        <a href="tsne.html" class="active"><span class="tab-icon">🔵</span>פיזור</a>
+        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+    </nav>
+
+    <script>
+    class MobileTSNE {
+        constructor() {
+            this.currentElection = '25';
+            this.colorMode = 'turnout';
+            this.selectedParty = null;
+            this.data = null;
+            this.socioeconomicData = null;
+            this.settlements = [];
+            this.selectedSettlements = [];
+            this.partyScaleMax = 50;
+            this.svgGroup = null;
+
+            this.initPills();
+            this.initEvents();
+            this.loadData();
+        }
+
+        initPills() {
+            const pills = document.getElementById('election-pills');
+            ['21','22','23','24','25'].forEach(id => {
+                const btn = document.createElement('button');
+                btn.className = 'election-pill' + (id === this.currentElection ? ' active' : '');
+                btn.textContent = id;
+                btn.onclick = () => this.switchElection(id);
+                pills.appendChild(btn);
+            });
+        }
+
+        initEvents() {
+            document.getElementById('search-toggle').onclick = () =>
+                document.getElementById('search-panel').classList.toggle('visible');
+
+            document.getElementById('sheet-backdrop').onclick = () => this.hideSheet();
+
+            document.getElementById('settlement-search').oninput = e =>
+                this.handleSettlementSearch(e.target.value);
+
+            document.getElementById('station-search').oninput = e =>
+                this.handleStationSearch(e.target.value);
+
+            let timer;
+            window.addEventListener('resize', () => {
+                clearTimeout(timer);
+                timer = setTimeout(() => { if (this.data) this.render(); }, 250);
+            });
+        }
+
+        async loadData() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const [tsneRes, seRes] = await Promise.all([
+                    fetch(`../data/tsne_${this.currentElection}.json`),
+                    fetch('../data/socioeconomic_clusters.json')
+                ]);
+                this.data = await tsneRes.json();
+                const seArr = await seRes.json();
+                this.socioeconomicData = {};
+                seArr.forEach(item => {
+                    this.socioeconomicData[item.name] = item.cluster;
+                    this.socioeconomicData[this.normalizeName(item.name)] = item.cluster;
+                });
+
+                this.buildSettlements();
+                this.buildColorFabs();
+                this.render();
+            } catch (err) { console.error(err); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        async switchElection(id) {
+            this.currentElection = id;
+            document.querySelectorAll('.election-pill').forEach(p =>
+                p.classList.toggle('active', p.textContent === id));
+            this.selectedSettlements = [];
+            document.getElementById('settlement-tags').innerHTML = '';
+
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const res = await fetch(`../data/tsne_${id}.json`);
+                this.data = await res.json();
+                this.buildSettlements();
+                this.buildColorFabs();
+                this.render();
+            } catch (err) { console.error(err); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        buildSettlements() {
+            const counts = {};
+            this.data.stations.forEach(s => {
+                counts[s.n] = (counts[s.n] || 0) + 1;
+            });
+            this.settlements = Object.entries(counts)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count);
+        }
+
+        buildColorFabs() {
+            const container = document.getElementById('color-fabs');
+            const modes = [
+                { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', label: 'הצבעה' },
+                { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', label: 'אשכול' },
+                { id: 'party', bg: '#6366f1', label: 'מפלגה' }
+            ];
+            container.innerHTML = modes.map(m => `
+                <div class="color-fab ${m.id === this.colorMode ? 'active' : ''}"
+                     data-mode="${m.id}"
+                     style="background: ${m.bg};"
+                     title="${m.label}"></div>
+            `).join('');
+
+            container.querySelectorAll('.color-fab').forEach(fab => {
+                fab.onclick = () => {
+                    const mode = fab.dataset.mode;
+                    if (mode === 'party') this.showPartyPicker();
+                    else this.setColorMode(mode);
+                };
+            });
+        }
+
+        setColorMode(mode, party = null) {
+            this.colorMode = mode;
+            this.selectedParty = party;
+            if (party) {
+                const vals = this.data.stations
+                    .map(s => (s.p || {})[party.name] || 0)
+                    .filter(v => v > 0).sort((a, b) => a - b);
+                this.partyScaleMax = vals.length > 0
+                    ? Math.ceil(vals[Math.floor(vals.length * 0.98)]) : 50;
+            }
+            document.querySelectorAll('.color-fab').forEach(f =>
+                f.classList.toggle('active', f.dataset.mode === mode));
+            this.updateColorScale();
+            this.updateColors();
+        }
+
+        updateColorScale() {
+            const el = document.getElementById('color-scale');
+            const bar = document.getElementById('scale-bar');
+            const title = document.getElementById('scale-title');
+            const min = document.getElementById('scale-min');
+            const max = document.getElementById('scale-max');
+
+            if (this.colorMode === 'turnout') {
+                el.style.display = 'block';
+                title.textContent = 'שיעור הצבעה';
+                bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
+                min.textContent = '40%'; max.textContent = '90%';
+            } else if (this.colorMode === 'socioeconomic') {
+                el.style.display = 'block';
+                title.textContent = 'אשכול חברתי-כלכלי';
+                bar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
+                min.textContent = '1'; max.textContent = '10';
+            } else if (this.colorMode === 'party' && this.selectedParty) {
+                el.style.display = 'block';
+                title.textContent = this.selectedParty.name;
+                const c = this.selectedParty.color;
+                bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
+                min.textContent = '0%'; max.textContent = this.partyScaleMax + '%';
+            } else {
+                el.style.display = 'none';
+            }
+        }
+
+        render() {
+            const container = document.querySelector('.main-area');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const margin = 15;
+
+            d3.select('#tsne-chart').selectAll('*').remove();
+
+            const svg = d3.select('#tsne-chart')
+                .attr('width', width)
+                .attr('height', height);
+
+            // Zoom
+            const zoom = d3.zoom()
+                .scaleExtent([0.5, 20])
+                .on('zoom', event => {
+                    this.svgGroup.attr('transform', event.transform);
+                });
+            svg.call(zoom);
+
+            this.svgGroup = svg.append('g');
+
+            const stations = this.data.stations;
+            const xExt = d3.extent(stations, d => d.x);
+            const yExt = d3.extent(stations, d => d.y);
+
+            this.xScale = d3.scaleLinear()
+                .domain([xExt[0] - 5, xExt[1] + 5])
+                .range([margin, width - margin]);
+            this.yScale = d3.scaleLinear()
+                .domain([yExt[0] - 5, yExt[1] + 5])
+                .range([height - margin, margin]);
+
+            const voterExt = d3.extent(stations, d => d.v || 0);
+            this.radiusScale = d3.scaleSqrt().domain(voterExt).range([1.5, 5]);
+
+            const hasFilter = this.selectedSettlements.length > 0;
+            const filtered = hasFilter
+                ? stations.filter(s => this.selectedSettlements.includes(s.n))
+                : stations;
+
+            // Background layer when filtering
+            if (hasFilter) {
+                this.svgGroup.selectAll('.bg-dot')
+                    .data(stations)
+                    .join('circle')
+                    .attr('class', 'bg-dot')
+                    .attr('cx', d => this.xScale(d.x))
+                    .attr('cy', d => this.yScale(d.y))
+                    .attr('r', 1.5)
+                    .attr('fill', '#374151')
+                    .attr('opacity', 0.25);
+            }
+
+            // Main dots
+            this.svgGroup.selectAll('.station-dot')
+                .data(filtered)
+                .join('circle')
+                .attr('class', 'station-dot')
+                .attr('cx', d => this.xScale(d.x))
+                .attr('cy', d => this.yScale(d.y))
+                .attr('r', d => this.radiusScale(d.v || 0) * (hasFilter ? 1.5 : 1))
+                .attr('fill', d => this.getColor(d) || '#374151')
+                .attr('opacity', d => {
+                    const c = this.getColor(d);
+                    return c === null ? 0.15 : (hasFilter ? 0.9 : 0.65);
+                })
+                .on('click', (event, d) => {
+                    event.stopPropagation();
+                    this.showStationSheet(d);
+                });
+
+            svg.on('click', () => {
+                document.getElementById('search-panel').classList.remove('visible');
+            });
+
+            this.updateColorScale();
+        }
+
+        updateColors() {
+            if (!this.svgGroup) return;
+            this.svgGroup.selectAll('.station-dot')
+                .attr('fill', d => this.getColor(d) || '#374151')
+                .attr('opacity', d => {
+                    const c = this.getColor(d);
+                    return c === null ? 0.15 : (this.selectedSettlements.length > 0 ? 0.9 : 0.65);
+                });
+        }
+
+        getColor(station) {
+            if (this.colorMode === 'turnout') {
+                const t = station.t || 0;
+                if (t < 65) {
+                    const f = Math.max(0, Math.min(1, (t - 40) / 25));
+                    return this.interpolateHex('#ef4444', '#fbbf24', f);
+                } else {
+                    const f = Math.max(0, Math.min(1, (t - 65) / 25));
+                    return this.interpolateHex('#fbbf24', '#10b981', f);
+                }
+            }
+            if (this.colorMode === 'socioeconomic') {
+                const c = this.socioeconomicData?.[station.n] || this.socioeconomicData?.[this.normalizeName(station.n)];
+                if (!c) return null;
+                const colors = ['#9e0142','#d53e4f','#f46d43','#fdae61','#fee08b','#e6f598','#abdda4','#66c2a5','#3288bd','#5e4fa2'];
+                return colors[Math.min(Math.max(c, 1), 10) - 1];
+            }
+            if (this.colorMode === 'party' && this.selectedParty) {
+                const pct = (station.p || {})[this.selectedParty.name] || 0;
+                const t = Math.min(pct / this.partyScaleMax, 1);
+                return this.interpolateHex(
+                    this.lightenColor(this.selectedParty.color, 0.85),
+                    this.selectedParty.color, t);
+            }
+            return '#64748b';
+        }
+
+        // ---- Sheets ----
+
+        showStationSheet(station) {
+            const topParties = Object.entries(station.p || {})
+                .sort((a, b) => b[1] - a[1]).slice(0, 7);
+
+            const se = this.socioeconomicData?.[station.n] || this.socioeconomicData?.[this.normalizeName(station.n)];
+
+            const partyHtml = topParties.map(([name, pct]) => {
+                const party = this.data.parties.find(p => p.name === name);
+                const color = party?.color || '#64748b';
+                return `<div class="party-row">
+                    <span class="party-dot" style="background:${color}"></span>
+                    <span class="party-name">${name}</span>
+                    <span class="party-pct">${Math.round(pct)}%</span>
+                    <div class="party-bar"><div class="party-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${station.n}</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
+                    קלפי ${station.b}${station.l ? ' · ' + station.l : ''}${se ? ' · אשכול ' + se : ''}
+                </div>
+                <div class="stat-grid">
+                    <span class="label">רשומים</span><span class="value">${(station.e || 0).toLocaleString()}</span>
+                    <span class="label">הצביעו</span><span class="value">${(station.v || 0).toLocaleString()}</span>
+                    <span class="label">שיעור</span><span class="value">${station.t || 0}%</span>
+                </div>
+                ${partyHtml}
+            `;
+            this.showSheet();
+        }
+
+        showPartyPicker() {
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="font-weight:600;font-size:1rem;margin-bottom:10px;">צביעה לפי מפלגה</div>
+                <div class="party-list-grid">
+                    ${this.data.parties.map(p => `
+                        <div class="party-list-item ${this.selectedParty?.name === p.name ? 'active' : ''}" data-party="${p.name}">
+                            <span class="dot" style="background:${p.color}"></span>
+                            <span class="name">${p.name}</span>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+            this.showSheet();
+            document.querySelectorAll('.party-list-item').forEach(item => {
+                item.onclick = () => {
+                    const party = this.data.parties.find(p => p.name === item.dataset.party);
+                    if (party) { this.hideSheet(); this.setColorMode('party', party); }
+                };
+            });
+        }
+
+        showSheet() {
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        }
+        hideSheet() {
+            document.getElementById('sheet-backdrop').classList.remove('visible');
+            document.getElementById('bottom-sheet').classList.remove('visible');
+        }
+
+        // ---- Search ----
+
+        handleSettlementSearch(query) {
+            const results = document.getElementById('settlement-results');
+            if (query.length < 1) { results.classList.remove('visible'); return; }
+            const matches = this.settlements.filter(s => s.name.includes(query)).slice(0, 10);
+            if (!matches.length) { results.classList.remove('visible'); return; }
+            results.innerHTML = matches.map(s => `
+                <div class="search-result-item" data-name="${s.name}">
+                    ${s.name} <span class="detail">${s.count} קלפיות</span>
+                </div>
+            `).join('');
+            results.classList.add('visible');
+            results.querySelectorAll('.search-result-item').forEach(item => {
+                item.onclick = () => {
+                    const name = item.dataset.name;
+                    if (!this.selectedSettlements.includes(name)) {
+                        this.selectedSettlements.push(name);
+                        this.renderSettlementTags();
+                        this.render();
+                    }
+                    document.getElementById('settlement-search').value = '';
+                    results.classList.remove('visible');
+                };
+            });
+        }
+
+        handleStationSearch(query) {
+            const results = document.getElementById('station-results');
+            if (query.length < 2) { results.classList.remove('visible'); return; }
+            const q = query.toLowerCase();
+            const matches = this.data.stations.filter(s => {
+                return (s.n || '').toLowerCase().includes(q) ||
+                       String(s.b || '').includes(query) ||
+                       (s.l || '').toLowerCase().includes(q);
+            }).slice(0, 15);
+            if (!matches.length) { results.classList.remove('visible'); return; }
+            results.innerHTML = matches.map((s, i) => `
+                <div class="search-result-item" data-idx="${i}">
+                    <strong>${s.n}</strong> - קלפי ${s.b}
+                    ${s.l ? `<br><span class="detail">${s.l}</span>` : ''}
+                </div>
+            `).join('');
+            results.classList.add('visible');
+            this._stationMatches = matches;
+            results.querySelectorAll('.search-result-item').forEach(item => {
+                item.onclick = () => {
+                    const s = this._stationMatches[parseInt(item.dataset.idx)];
+                    this.showStationSheet(s);
+                    // Zoom to station
+                    const svg = d3.select('#tsne-chart');
+                    const x = this.xScale(s.x), y = this.yScale(s.y);
+                    const w = svg.node().clientWidth, h = svg.node().clientHeight;
+                    const scale = 4;
+                    svg.transition().duration(500).call(
+                        d3.zoom().transform,
+                        d3.zoomIdentity.translate(w/2 - x*scale, h/2 - y*scale).scale(scale)
+                    );
+                    document.getElementById('station-search').value = '';
+                    results.classList.remove('visible');
+                    document.getElementById('search-panel').classList.remove('visible');
+                };
+            });
+        }
+
+        renderSettlementTags() {
+            const container = document.getElementById('settlement-tags');
+            container.innerHTML = this.selectedSettlements.map(name => `
+                <span class="chip">${name}<span class="remove" data-name="${name}">&times;</span></span>
+            `).join('');
+            container.querySelectorAll('.remove').forEach(btn => {
+                btn.onclick = e => {
+                    e.stopPropagation();
+                    this.selectedSettlements = this.selectedSettlements.filter(s => s !== btn.dataset.name);
+                    this.renderSettlementTags();
+                    this.render();
+                };
+            });
+        }
+
+        // ---- Utils ----
+
+        interpolateHex(c1, c2, t) {
+            const p1 = this.parseHex(c1), p2 = this.parseHex(c2);
+            return `rgb(${Math.round(p1.r+(p2.r-p1.r)*t)},${Math.round(p1.g+(p2.g-p1.g)*t)},${Math.round(p1.b+(p2.b-p1.b)*t)})`;
+        }
+        parseHex(color) {
+            if (color.startsWith('rgb')) { const m = color.match(/(\d+)/g); return {r:+m[0],g:+m[1],b:+m[2]}; }
+            const h = color.replace('#','');
+            return { r:parseInt(h.substr(0,2),16), g:parseInt(h.substr(2,2),16), b:parseInt(h.substr(4,2),16) };
+        }
+        lightenColor(color, f) {
+            const {r,g,b} = this.parseHex(color);
+            return `rgb(${Math.round(r+(255-r)*f)},${Math.round(g+(255-g)*f)},${Math.round(b+(255-b)*f)})`;
+        }
+        normalizeName(name) {
+            return name ? name.replace(/[-–\s]+/g,'').replace(/יי/g,'י') : name;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => new MobileTSNE());
+    </script>
+</body>
+</html>

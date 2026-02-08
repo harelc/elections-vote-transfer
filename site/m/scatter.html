@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>השוואת מפלגות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        #scatter-chart {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        /* Axis controls strip */
+        .controls-strip {
+            display: flex;
+            gap: 6px;
+            padding: 6px 10px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            font-size: 0.75rem;
+        }
+
+        .axis-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        .axis-label {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.7rem;
+        }
+
+        .axis-select {
+            padding: 4px 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.75rem;
+            max-width: 100px;
+        }
+
+        .controls-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+            flex-shrink: 0;
+        }
+
+        .grid line { stroke: var(--border); stroke-opacity: 0.4; }
+        .axis text { fill: var(--text-muted); font-size: 9px; font-family: 'Heebo', sans-serif; }
+        .axis line, .axis path { stroke: var(--border); }
+        .diagonal-line { stroke: var(--border-light); stroke-dasharray: 4,4; stroke-opacity: 0.5; }
+        .axis-title { fill: var(--text-secondary); font-size: 10px; font-family: 'Heebo', sans-serif; }
+
+        .search-fab { top: auto; bottom: calc(62px + var(--safe-bottom)); right: 8px; }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="title">🗳️ השוואה</span>
+    </div>
+
+    <!-- Controls Strip -->
+    <div class="controls-strip" id="controls-strip">
+        <div class="axis-group">
+            <span class="axis-label">X:</span>
+            <select class="axis-select" id="election-x"></select>
+            <select class="axis-select" id="party-x"></select>
+        </div>
+        <div class="controls-divider"></div>
+        <div class="axis-group">
+            <span class="axis-label">Y:</span>
+            <select class="axis-select" id="election-y"></select>
+            <select class="axis-select" id="party-y"></select>
+        </div>
+    </div>
+
+    <!-- Main Area -->
+    <div class="main-area" id="main-area">
+        <svg id="scatter-chart"></svg>
+        <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Search FAB -->
+    <div class="fab search-fab" id="search-toggle">🔍</div>
+
+    <!-- Search Panel (reused from geomap pattern) -->
+    <div class="search-panel" id="search-panel" style="top:auto;bottom:calc(56px + var(--safe-bottom));right:0;border-radius:var(--radius) 0 0 0;border-top:1px solid var(--border);max-height:50vh;">
+        <div class="search-section">
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">סינון לפי יישוב</div>
+            <div style="position:relative;">
+                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." autocomplete="off">
+                <div class="search-results" id="settlement-results"></div>
+            </div>
+            <div class="selected-tags" id="settlement-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Sheet -->
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div id="sheet-content"></div>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <nav class="tab-bar">
+        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
+        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
+        <a href="scatter.html" class="active"><span class="tab-icon">📈</span>השוואה</a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+    </nav>
+
+    <script>
+    class MobileScatter {
+        constructor() {
+            this.electionsData = {};
+            this.currentElectionX = '25';
+            this.currentElectionY = '25';
+            this.currentPartyX = null;
+            this.currentPartyY = null;
+            this.selectedSettlements = [];
+            this.allSettlements = [];
+            this.plotData = [];
+
+            this.initControls();
+            this.initEvents();
+            this.init();
+        }
+
+        initControls() {
+            const elections = [
+                { id: '21', name: 'כנסת 21' },
+                { id: '22', name: 'כנסת 22' },
+                { id: '23', name: 'כנסת 23' },
+                { id: '24', name: 'כנסת 24' },
+                { id: '25', name: 'כנסת 25' }
+            ];
+
+            ['x', 'y'].forEach(axis => {
+                const select = document.getElementById(`election-${axis}`);
+                select.innerHTML = elections.map(e =>
+                    `<option value="${e.id}" ${e.id === '25' ? 'selected' : ''}>${e.name}</option>`
+                ).join('');
+            });
+        }
+
+        initEvents() {
+            document.getElementById('election-x').onchange = e => {
+                this.currentElectionX = e.target.value;
+                this.loadParties('x', this.currentElectionX);
+            };
+            document.getElementById('election-y').onchange = e => {
+                this.currentElectionY = e.target.value;
+                this.loadParties('y', this.currentElectionY);
+            };
+            document.getElementById('party-x').onchange = e => {
+                this.currentPartyX = e.target.value;
+                this.updateChart();
+            };
+            document.getElementById('party-y').onchange = e => {
+                this.currentPartyY = e.target.value;
+                this.updateChart();
+            };
+
+            document.getElementById('search-toggle').onclick = () =>
+                document.getElementById('search-panel').classList.toggle('visible');
+
+            document.getElementById('sheet-backdrop').onclick = () => this.hideSheet();
+
+            document.getElementById('settlement-search').oninput = e =>
+                this.handleSearch(e.target.value);
+
+            let timer;
+            window.addEventListener('resize', () => {
+                clearTimeout(timer);
+                timer = setTimeout(() => this.updateChart(), 250);
+            });
+        }
+
+        async init() {
+            document.getElementById('loading').style.display = 'flex';
+            await this.loadParties('x', '25', false);
+            await this.loadParties('y', '25', false);
+            // Default: first party for X, second for Y
+            const data = this.electionsData['25'];
+            if (data.parties.length > 1) {
+                this.currentPartyY = data.parties[1].name;
+                document.getElementById('party-y').value = this.currentPartyY;
+            }
+            this.buildSettlements();
+
+            // Adjust main area
+            const strip = document.getElementById('controls-strip');
+            document.getElementById('main-area').style.top = (44 + strip.offsetHeight) + 'px';
+
+            await this.updateChart();
+        }
+
+        async loadElection(id) {
+            if (this.electionsData[id]) return this.electionsData[id];
+            const res = await fetch(`../data/tsne_${id}.json`);
+            const data = await res.json();
+            this.electionsData[id] = data;
+            return data;
+        }
+
+        async loadParties(axis, electionId, autoUpdate = true) {
+            const data = await this.loadElection(electionId);
+            const select = document.getElementById(`party-${axis}`);
+            const current = axis === 'x' ? this.currentPartyX : this.currentPartyY;
+            const names = data.parties.map(p => p.name);
+
+            select.innerHTML = data.parties.map(p =>
+                `<option value="${p.name}">${p.name}</option>`
+            ).join('');
+
+            let sel = current && names.includes(current) ? current : data.parties[0]?.name;
+            select.value = sel;
+            if (axis === 'x') this.currentPartyX = sel;
+            else this.currentPartyY = sel;
+
+            if (autoUpdate) this.updateChart();
+        }
+
+        buildSettlements() {
+            const counts = {};
+            Object.values(this.electionsData).forEach(data => {
+                data.stations.forEach(s => {
+                    counts[s.n] = (counts[s.n] || 0) + 1;
+                });
+            });
+            this.allSettlements = Object.entries(counts)
+                .map(([name, count]) => ({ name, count }))
+                .sort((a, b) => b.count - a.count);
+        }
+
+        normalizeKey(s) {
+            let ballot = String(s.b || '');
+            if (ballot.endsWith('.0')) ballot = ballot.slice(0, -2);
+            return `${s.n}|${ballot}`;
+        }
+
+        getBaseKey(key) {
+            const parts = key.split('|');
+            if (parts.length === 2 && parts[1].includes('.'))
+                return parts[0] + '|' + parts[1].split('.')[0];
+            return key;
+        }
+
+        async updateChart() {
+            if (!this.currentPartyX || !this.currentPartyY) return;
+
+            const dataX = await this.loadElection(this.currentElectionX);
+            const dataY = await this.loadElection(this.currentElectionY);
+            const partyX = dataX.parties.find(p => p.name === this.currentPartyX);
+            const partyY = dataY.parties.find(p => p.name === this.currentPartyY);
+            if (!partyX || !partyY) return;
+
+            // Build X lookup
+            const lookupX = {};
+            dataX.stations.forEach(s => {
+                lookupX[this.normalizeKey(s)] = (s.p || {})[this.currentPartyX] || 0;
+            });
+
+            // Build Y base keys
+            const yBaseKeys = new Set();
+            dataY.stations.forEach(s => {
+                if (String(s.b || '').endsWith('.0')) yBaseKeys.add(this.normalizeKey(s));
+            });
+
+            // Match
+            this.plotData = [];
+            dataY.stations.forEach(s => {
+                const key = this.normalizeKey(s);
+                let xVal = lookupX[key];
+                if (xVal === undefined) {
+                    if (String(s.b || '').endsWith('.1')) {
+                        const base = this.getBaseKey(key);
+                        if (!yBaseKeys.has(base)) xVal = lookupX[base];
+                    }
+                }
+                if (xVal !== undefined) {
+                    this.plotData.push({
+                        settlement: s.n,
+                        ballot: s.b,
+                        location: s.l || '',
+                        x: xVal,
+                        y: (s.p || {})[this.currentPartyY] || 0,
+                        voters: s.v || 0
+                    });
+                }
+            });
+
+            const filtered = this.selectedSettlements.length > 0
+                ? this.plotData.filter(d => this.selectedSettlements.includes(d.settlement))
+                : this.plotData;
+
+            this.render(filtered, partyX, partyY);
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        render(data, partyX, partyY) {
+            const container = document.getElementById('main-area');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            const margin = { top: 20, right: 15, bottom: 40, left: 45 };
+            const iw = width - margin.left - margin.right;
+            const ih = height - margin.top - margin.bottom;
+
+            d3.select('#scatter-chart').selectAll('*').remove();
+
+            const svg = d3.select('#scatter-chart')
+                .attr('width', width)
+                .attr('height', height);
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            const scaleData = this.selectedSettlements.length > 0 ? this.plotData : data;
+            const maxVal = Math.max(
+                d3.max(scaleData, d => d.x) || 50,
+                d3.max(scaleData, d => d.y) || 50,
+                10
+            ) * 1.05;
+
+            const xScale = d3.scaleLinear().domain([0, maxVal]).range([0, iw]);
+            const yScale = d3.scaleLinear().domain([0, maxVal]).range([ih, 0]);
+
+            // Grid
+            g.append('g').attr('class', 'grid')
+                .selectAll('line')
+                .data(xScale.ticks(5))
+                .join('line')
+                .attr('x1', d => xScale(d)).attr('x2', d => xScale(d))
+                .attr('y1', 0).attr('y2', ih);
+
+            g.append('g').attr('class', 'grid')
+                .selectAll('line')
+                .data(yScale.ticks(5))
+                .join('line')
+                .attr('x1', 0).attr('x2', iw)
+                .attr('y1', d => yScale(d)).attr('y2', d => yScale(d));
+
+            // Diagonal
+            g.append('line').attr('class', 'diagonal-line')
+                .attr('x1', 0).attr('y1', ih)
+                .attr('x2', iw).attr('y2', 0);
+
+            // Axes
+            g.append('g').attr('class', 'axis')
+                .attr('transform', `translate(0,${ih})`)
+                .call(d3.axisBottom(xScale).ticks(5).tickFormat(d => d + '%'));
+
+            g.append('g').attr('class', 'axis')
+                .call(d3.axisLeft(yScale).ticks(5).tickFormat(d => d + '%'));
+
+            // Axis titles
+            g.append('text').attr('class', 'axis-title')
+                .attr('x', iw / 2).attr('y', ih + 30)
+                .attr('text-anchor', 'middle')
+                .text(`${this.currentPartyX} (כנסת ${this.currentElectionX})`);
+
+            g.append('text').attr('class', 'axis-title')
+                .attr('transform', 'rotate(-90)')
+                .attr('x', -ih / 2).attr('y', -35)
+                .attr('text-anchor', 'middle')
+                .text(`${this.currentPartyY} (כנסת ${this.currentElectionY})`);
+
+            // Background dots when filtering
+            if (this.selectedSettlements.length > 0) {
+                g.selectAll('.bg-dot')
+                    .data(this.plotData)
+                    .join('circle')
+                    .attr('cx', d => xScale(d.x))
+                    .attr('cy', d => yScale(d.y))
+                    .attr('r', 1.5)
+                    .attr('fill', '#374151')
+                    .attr('opacity', 0.25);
+            }
+
+            // Dots
+            const colorX = partyX.color || '#6366f1';
+            const colorY = partyY.color || '#ef4444';
+
+            g.selectAll('.dot')
+                .data(data)
+                .join('circle')
+                .attr('class', 'dot')
+                .attr('cx', d => xScale(d.x))
+                .attr('cy', d => yScale(d.y))
+                .attr('r', d => Math.max(2, Math.min(5, Math.sqrt(d.voters / 100))))
+                .attr('fill', d => {
+                    const t = d.x + d.y > 0 ? d.x / (d.x + d.y) : 0.5;
+                    return d3.interpolateRgb(colorY, colorX)(t);
+                })
+                .attr('opacity', this.selectedSettlements.length > 0 ? 0.85 : 0.5)
+                .on('click', (event, d) => {
+                    event.stopPropagation();
+                    this.showDotSheet(d);
+                });
+
+            svg.on('click', () => {
+                document.getElementById('search-panel').classList.remove('visible');
+            });
+        }
+
+        showDotSheet(d) {
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="font-weight:600;font-size:1rem;">${d.settlement}</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
+                    קלפי ${d.ballot}${d.location ? ' · ' + d.location : ''}
+                </div>
+                <div class="stat-grid">
+                    <span class="label">${this.currentPartyX}</span>
+                    <span class="value">${d.x.toFixed(1)}%</span>
+                    <span class="label">${this.currentPartyY}</span>
+                    <span class="value">${d.y.toFixed(1)}%</span>
+                    <span class="label">מצביעים</span>
+                    <span class="value">${d.voters.toLocaleString()}</span>
+                </div>
+            `;
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        }
+
+        hideSheet() {
+            document.getElementById('sheet-backdrop').classList.remove('visible');
+            document.getElementById('bottom-sheet').classList.remove('visible');
+        }
+
+        handleSearch(query) {
+            const results = document.getElementById('settlement-results');
+            if (query.length < 1) { results.classList.remove('visible'); return; }
+            const matches = this.allSettlements.filter(s => s.name.includes(query)).slice(0, 10);
+            if (!matches.length) { results.classList.remove('visible'); return; }
+            results.innerHTML = matches.map(s => `
+                <div class="search-result-item" data-name="${s.name}">
+                    ${s.name} <span class="detail">${s.count} קלפיות</span>
+                </div>
+            `).join('');
+            results.classList.add('visible');
+            results.querySelectorAll('.search-result-item').forEach(item => {
+                item.onclick = () => {
+                    const name = item.dataset.name;
+                    if (!this.selectedSettlements.includes(name)) {
+                        this.selectedSettlements.push(name);
+                        this.renderTags();
+                        this.updateChart();
+                    }
+                    document.getElementById('settlement-search').value = '';
+                    results.classList.remove('visible');
+                };
+            });
+        }
+
+        renderTags() {
+            const container = document.getElementById('settlement-tags');
+            container.innerHTML = this.selectedSettlements.map(name => `
+                <span class="chip">${name}<span class="remove" data-name="${name}">&times;</span></span>
+            `).join('');
+            container.querySelectorAll('.remove').forEach(btn => {
+                btn.onclick = e => {
+                    e.stopPropagation();
+                    this.selectedSettlements = this.selectedSettlements.filter(s => s !== btn.dataset.name);
+                    this.renderTags();
+                    this.updateChart();
+                };
+            });
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => new MobileScatter());
+    </script>
+</body>
+</html>

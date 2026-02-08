@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>מחשבון באדר-עופר - קולות נודדים</title>
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Parliament chart area */
+        .parliament-area {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .parliament-area svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .bloc-labels {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            padding: 0 16px;
+            position: absolute;
+            top: 4px;
+        }
+
+        .bloc-label {
+            text-align: center;
+        }
+
+        .bloc-label .bloc-name {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .bloc-label .bloc-seats {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .bloc-seats.majority { color: #10b981; }
+        .bloc-seats.minority { color: #ef4444; }
+
+        .parliament-center-text {
+            position: absolute;
+            bottom: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Results list area */
+        .results-area {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 50%;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 8px 10px;
+            border-top: 1px solid var(--border);
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .result-item:last-child { border-bottom: none; }
+
+        .result-color-bar {
+            width: 4px;
+            height: 36px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+
+        .result-main {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .result-name-row {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .result-party-name {
+            font-size: 0.85rem;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .result-agreement-icon {
+            font-size: 0.65rem;
+            color: var(--accent);
+        }
+
+        .result-votes-text {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .result-seats-num {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 36px;
+            text-align: center;
+        }
+
+        .result-marginals {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            min-width: 80px;
+        }
+
+        .marginal-text {
+            font-size: 0.6rem;
+            white-space: nowrap;
+        }
+
+        .marginal-gain { color: #22c55e; }
+        .marginal-lose { color: #ef4444; }
+
+        /* Edit panel (bottom sheet content) */
+        .edit-party-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .edit-party-item:last-child { border-bottom: none; }
+
+        .edit-color-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 4px;
+            flex-shrink: 0;
+        }
+
+        .edit-party-name {
+            flex: 1;
+            font-size: 0.85rem;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .edit-party-name.below { color: var(--text-muted); text-decoration: line-through; }
+
+        .edit-vote-controls {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .edit-vote-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .edit-vote-btn:active { background: var(--bg-hover); }
+        .edit-vote-btn.plus { color: #10b981; }
+        .edit-vote-btn.minus { color: #ef4444; }
+
+        .edit-vote-input {
+            width: 80px;
+            padding: 4px 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.8rem;
+            text-align: center;
+            direction: ltr;
+        }
+
+        .edit-vote-input:focus { border-color: var(--accent); outline: none; }
+
+        .edit-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            padding: 10px 0 6px;
+            border-bottom: 1px solid var(--border-light);
+            margin-bottom: 4px;
+        }
+
+        .threshold-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 0;
+        }
+
+        .threshold-row label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .threshold-input {
+            width: 60px;
+            padding: 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            text-align: center;
+        }
+
+        .threshold-input:focus { border-color: var(--accent); outline: none; }
+
+        /* Agreements in bottom sheet */
+        .agreement-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 0;
+            font-size: 0.8rem;
+        }
+
+        .agreement-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+
+        .agreement-link-icon {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+        }
+
+        .agreement-remove-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1rem;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+
+        .agreement-remove-btn:active { color: #ef4444; }
+
+        .add-agreement-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .agreement-select {
+            flex: 1;
+            padding: 6px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.75rem;
+        }
+
+        .add-agreement-btn {
+            padding: 6px 12px;
+            background: var(--accent);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .add-agreement-btn:disabled { background: var(--bg-tertiary); color: var(--text-muted); }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-top: 2px solid var(--border);
+            margin-top: 4px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .reset-btn {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .reset-btn:active { background: var(--bg-hover); }
+
+        /* Adjust FABs */
+        .fab-edit {
+            bottom: calc(70px + var(--safe-bottom));
+            left: 12px;
+        }
+
+        .fab-settings {
+            bottom: calc(120px + var(--safe-bottom));
+            left: 12px;
+        }
+
+        /* Step amount selector in edit sheet */
+        .step-selector {
+            display: flex;
+            gap: 4px;
+            padding: 6px 0 10px;
+            align-items: center;
+        }
+
+        .step-selector .label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-left: 6px;
+        }
+
+        .step-pill {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .step-pill.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <span class="title">מחשבון באדר-עופר</span>
+    </div>
+
+    <div class="main-area">
+        <div class="parliament-area">
+            <div class="bloc-labels">
+                <div class="bloc-label">
+                    <div class="bloc-name">ימין-חרדי</div>
+                    <div class="bloc-seats" id="right-seats">0</div>
+                </div>
+                <div class="bloc-label">
+                    <div class="bloc-name">מרכז-שמאל-ערבי</div>
+                    <div class="bloc-seats" id="left-seats">0</div>
+                </div>
+            </div>
+            <svg id="parliament-svg"></svg>
+            <div class="parliament-center-text">120 מושבים</div>
+        </div>
+        <div class="results-area" id="results-list"></div>
+    </div>
+
+    <!-- Edit votes FAB -->
+    <button class="fab fab-edit" id="fab-edit">✏️</button>
+    <!-- Settings FAB -->
+    <button class="fab fab-settings" id="fab-settings">⚙️</button>
+
+    <!-- Bottom sheet backdrop -->
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+
+    <!-- Edit votes bottom sheet -->
+    <div class="bottom-sheet" id="edit-sheet" style="max-height: 80vh;">
+        <div class="sheet-handle"></div>
+        <div class="edit-section-title">קולות למפלגות</div>
+        <div class="step-selector">
+            <span class="label">צעד:</span>
+            <button class="step-pill" data-step="1000">1K</button>
+            <button class="step-pill active" data-step="10000">10K</button>
+            <button class="step-pill" data-step="50000">50K</button>
+            <button class="step-pill" data-step="100000">100K</button>
+        </div>
+        <div id="edit-party-list"></div>
+        <div class="total-row">
+            <span>סה״כ קולות:</span>
+            <span id="edit-total-votes">0</span>
+        </div>
+    </div>
+
+    <!-- Settings bottom sheet -->
+    <div class="bottom-sheet" id="settings-sheet">
+        <div class="sheet-handle"></div>
+        <div class="edit-section-title">הגדרות</div>
+        <div class="threshold-row">
+            <label>אחוז חסימה:</label>
+            <input type="number" class="threshold-input" id="threshold-input" value="3.25" min="0" max="10" step="0.25">
+            <span>%</span>
+        </div>
+
+        <div class="edit-section-title">הסכמי עודפים</div>
+        <div id="agreements-list"></div>
+        <div class="add-agreement-row">
+            <select class="agreement-select" id="agree-party1"><option value="">מפלגה 1...</option></select>
+            <select class="agreement-select" id="agree-party2"><option value="">מפלגה 2...</option></select>
+            <button class="add-agreement-btn" id="add-agree-btn" disabled>+</button>
+        </div>
+
+        <button class="reset-btn" id="reset-btn">אפס לתוצאות כנסת 25</button>
+    </div>
+
+    <nav class="tab-bar">
+        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
+        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
+        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
+        <a href="dhondt.html" class="active"><span class="tab-icon">🏛️</span>מנדטים</a>
+    </nav>
+
+    <script>
+    const defaultParties = [
+        { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right' },
+        { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left' },
+        { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right' },
+        { name: 'המחנה הממלכתי', votes: 432482, color: '#7c3aed', block: 'left' },
+        { name: 'ש״ס', votes: 392964, color: '#1e3a8a', block: 'right' },
+        { name: 'יהדות התורה', votes: 280194, color: '#4b5563', block: 'right' },
+        { name: 'ישראל ביתנו', votes: 213687, color: '#db2777', block: 'left' },
+        { name: 'רע״ם', votes: 194047, color: '#84cc16', block: 'arab' },
+        { name: 'חד״ש-תע״ל', votes: 178735, color: '#f43f5e', block: 'arab' },
+        { name: 'העבודה', votes: 175992, color: '#dc2626', block: 'left' },
+        { name: 'מרצ', votes: 150793, color: '#16a34a', block: 'left' },
+        { name: 'בל״ד', votes: 138617, color: '#065f46', block: 'arab' },
+        { name: 'הבית היהודי', votes: 56775, color: '#059669', block: 'right' },
+        { name: 'חופש כלכלי', votes: 15801, color: '#6366f1', block: 'left' },
+        { name: 'באומץ בשבילך', votes: 14694, color: '#8b5cf6', block: 'left' },
+        { name: 'הכלכלית החדשה', votes: 13920, color: '#ec4899', block: 'left' },
+    ];
+
+    const defaultAgreements = [
+        [0, 2],  // הליכוד + הציונות הדתית
+        [4, 5],  // ש״ס + יהדות התורה
+        [1, 3],  // יש עתיד + המחנה הממלכתי
+        [9, 10], // העבודה + מרצ
+    ];
+
+    const politicalOrder = {
+        'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
+        'העבודה': 5, 'המחנה הממלכתי': 6, 'יש עתיד': 7,
+        'ישראל ביתנו': 8, 'ש״ס': 9, 'יהדות התורה': 10,
+        'הליכוד': 11, 'הציונות הדתית': 12, 'הבית היהודי': 13,
+    };
+
+    class MobileDHondt {
+        constructor() {
+            this.parties = JSON.parse(JSON.stringify(defaultParties));
+            this.agreements = JSON.parse(JSON.stringify(defaultAgreements));
+            this.threshold = 3.25;
+            this.totalSeats = 120;
+            this.step = 10000;
+            this.activeSheet = null;
+
+            this.init();
+        }
+
+        init() {
+            this.setupSheets();
+            this.setupFABs();
+            this.setupStepSelector();
+            this.setupThreshold();
+            this.setupReset();
+            this.calculate();
+        }
+
+        // ---- Sheet management ----
+        setupSheets() {
+            const backdrop = document.getElementById('sheet-backdrop');
+            backdrop.addEventListener('click', () => this.closeSheets());
+        }
+
+        openSheet(id) {
+            this.closeSheets();
+            this.activeSheet = id;
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById(id).classList.add('visible');
+
+            if (id === 'edit-sheet') this.renderEditList();
+            if (id === 'settings-sheet') {
+                this.renderAgreements();
+                this.renderAgreementSelects();
+            }
+        }
+
+        closeSheets() {
+            this.activeSheet = null;
+            document.getElementById('sheet-backdrop').classList.remove('visible');
+            document.querySelectorAll('.bottom-sheet').forEach(s => s.classList.remove('visible'));
+        }
+
+        // ---- FABs ----
+        setupFABs() {
+            document.getElementById('fab-edit').addEventListener('click', () => this.openSheet('edit-sheet'));
+            document.getElementById('fab-settings').addEventListener('click', () => this.openSheet('settings-sheet'));
+        }
+
+        // ---- Step selector ----
+        setupStepSelector() {
+            document.querySelectorAll('.step-pill').forEach(pill => {
+                pill.addEventListener('click', () => {
+                    document.querySelectorAll('.step-pill').forEach(p => p.classList.remove('active'));
+                    pill.classList.add('active');
+                    this.step = parseInt(pill.dataset.step);
+                });
+            });
+        }
+
+        // ---- Threshold ----
+        setupThreshold() {
+            document.getElementById('threshold-input').addEventListener('change', (e) => {
+                this.threshold = parseFloat(e.target.value) || 3.25;
+                this.calculate();
+            });
+        }
+
+        // ---- Reset ----
+        setupReset() {
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                this.parties = JSON.parse(JSON.stringify(defaultParties));
+                this.agreements = JSON.parse(JSON.stringify(defaultAgreements));
+                this.threshold = 3.25;
+                document.getElementById('threshold-input').value = '3.25';
+                this.closeSheets();
+                this.calculate();
+            });
+        }
+
+        // ---- Edit list ----
+        renderEditList() {
+            const totalVotes = this.parties.reduce((s, p) => s + p.votes, 0);
+            const thresholdVotes = totalVotes * (this.threshold / 100);
+            const container = document.getElementById('edit-party-list');
+
+            container.innerHTML = this.parties.map((party, idx) => {
+                const below = party.votes < thresholdVotes;
+                return `
+                <div class="edit-party-item">
+                    <div class="edit-color-dot" style="background:${party.color}"></div>
+                    <div class="edit-party-name ${below ? 'below' : ''}">${party.name}</div>
+                    <div class="edit-vote-controls">
+                        <button class="edit-vote-btn minus" data-idx="${idx}" data-dir="-1">−</button>
+                        <input type="text" class="edit-vote-input" id="edit-input-${idx}"
+                               value="${party.votes.toLocaleString()}" data-idx="${idx}">
+                        <button class="edit-vote-btn plus" data-idx="${idx}" data-dir="1">+</button>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('edit-total-votes').textContent = totalVotes.toLocaleString();
+
+            // Button listeners
+            container.querySelectorAll('.edit-vote-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const idx = parseInt(btn.dataset.idx);
+                    const dir = parseInt(btn.dataset.dir);
+                    this.parties[idx].votes = Math.max(0, this.parties[idx].votes + dir * this.step);
+                    const input = document.getElementById(`edit-input-${idx}`);
+                    input.value = this.parties[idx].votes.toLocaleString();
+                    this.updateEditTotal();
+                    this.calculate();
+                });
+            });
+
+            // Input listeners
+            container.querySelectorAll('.edit-vote-input').forEach(input => {
+                input.addEventListener('focus', () => {
+                    const idx = parseInt(input.dataset.idx);
+                    input.value = this.parties[idx].votes || '';
+                    input.select();
+                });
+                input.addEventListener('blur', () => {
+                    const idx = parseInt(input.dataset.idx);
+                    const val = parseInt(input.value.replace(/,/g, '')) || 0;
+                    this.parties[idx].votes = Math.max(0, val);
+                    input.value = this.parties[idx].votes.toLocaleString();
+                    this.updateEditTotal();
+                    this.calculate();
+                });
+            });
+        }
+
+        updateEditTotal() {
+            const total = this.parties.reduce((s, p) => s + p.votes, 0);
+            document.getElementById('edit-total-votes').textContent = total.toLocaleString();
+        }
+
+        // ---- Agreements ----
+        renderAgreements() {
+            const container = document.getElementById('agreements-list');
+            if (this.agreements.length === 0) {
+                container.innerHTML = '<div style="font-size:0.75rem;color:var(--text-muted);padding:4px 0">אין הסכמים</div>';
+                return;
+            }
+
+            container.innerHTML = this.agreements.map((ag, idx) => {
+                const p1 = this.parties[ag[0]], p2 = this.parties[ag[1]];
+                return `
+                <div class="agreement-item">
+                    <span class="agreement-dot" style="background:${p1.color}"></span>
+                    <span>${p1.name}</span>
+                    <span class="agreement-link-icon">⟷</span>
+                    <span class="agreement-dot" style="background:${p2.color}"></span>
+                    <span>${p2.name}</span>
+                    <button class="agreement-remove-btn" data-idx="${idx}">×</button>
+                </div>`;
+            }).join('');
+
+            container.querySelectorAll('.agreement-remove-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.agreements.splice(parseInt(btn.dataset.idx), 1);
+                    this.renderAgreements();
+                    this.renderAgreementSelects();
+                    this.calculate();
+                });
+            });
+        }
+
+        renderAgreementSelects() {
+            const inAg = new Set();
+            this.agreements.forEach(a => { inAg.add(a[0]); inAg.add(a[1]); });
+            const available = this.parties.map((p, i) => ({ name: p.name, idx: i })).filter(p => !inAg.has(p.idx));
+            const opts = '<option value="">בחר...</option>' + available.map(p => `<option value="${p.idx}">${p.name}</option>`).join('');
+
+            const s1 = document.getElementById('agree-party1');
+            const s2 = document.getElementById('agree-party2');
+            const btn = document.getElementById('add-agree-btn');
+            s1.innerHTML = opts;
+            s2.innerHTML = opts;
+
+            const updateBtn = () => { btn.disabled = !s1.value || !s2.value || s1.value === s2.value; };
+            s1.onchange = updateBtn;
+            s2.onchange = updateBtn;
+            btn.onclick = () => {
+                const i1 = parseInt(s1.value), i2 = parseInt(s2.value);
+                if (!isNaN(i1) && !isNaN(i2) && i1 !== i2) {
+                    this.agreements.push([i1, i2]);
+                    this.renderAgreements();
+                    this.renderAgreementSelects();
+                    this.calculate();
+                }
+            };
+        }
+
+        // ---- D'Hondt calculation ----
+        calculate() {
+            const totalVotes = this.parties.reduce((s, p) => s + p.votes, 0);
+            const thresholdVotes = totalVotes * (this.threshold / 100);
+
+            const eligible = this.parties.map((p, i) => ({ ...p, idx: i })).filter(p => p.votes >= thresholdVotes);
+            const eligibleSet = new Set(eligible.map(p => p.idx));
+
+            // Build agreement groups
+            const groups = [];
+            const pToG = {};
+            this.agreements.forEach(([i1, i2]) => {
+                if (!eligibleSet.has(i1) || !eligibleSet.has(i2)) return;
+                const g1 = pToG[i1], g2 = pToG[i2];
+                if (g1 === undefined && g2 === undefined) {
+                    const gi = groups.length;
+                    groups.push([i1, i2]);
+                    pToG[i1] = gi; pToG[i2] = gi;
+                } else if (g1 !== undefined && g2 === undefined) {
+                    groups[g1].push(i2); pToG[i2] = g1;
+                } else if (g1 === undefined && g2 !== undefined) {
+                    groups[g2].push(i1); pToG[i1] = g2;
+                }
+            });
+
+            const seats = {};
+            eligible.forEach(p => seats[p.name] = 0);
+
+            for (let i = 0; i < this.totalSeats; i++) {
+                let maxQ = -1, winner = null;
+                eligible.forEach(party => {
+                    const gi = pToG[party.idx];
+                    if (gi !== undefined) {
+                        const grp = groups[gi];
+                        const cVotes = grp.reduce((s, idx) => s + this.parties[idx].votes, 0);
+                        const cSeats = grp.reduce((s, idx) => s + (seats[this.parties[idx].name] || 0), 0);
+                        const gq = cVotes / (cSeats + 1);
+                        if (gq > maxQ) {
+                            maxQ = gq;
+                            let best = null, bestQ = -1;
+                            grp.forEach(idx => {
+                                const p = this.parties[idx];
+                                const iq = p.votes / ((seats[p.name] || 0) + 1);
+                                if (iq > bestQ) { bestQ = iq; best = p.name; }
+                            });
+                            winner = best;
+                        }
+                    } else {
+                        const q = party.votes / ((seats[party.name] || 0) + 1);
+                        if (q > maxQ) { maxQ = q; winner = party.name; }
+                    }
+                });
+                if (winner) seats[winner]++;
+            }
+
+            // Marginal votes
+            const marginals = this.calcMarginals(thresholdVotes);
+
+            // Build results
+            const results = this.parties.map((p, i) => ({
+                ...p, idx: i,
+                seats: seats[p.name] || 0,
+                eligible: p.votes >= thresholdVotes,
+                hasAgreement: pToG[i] !== undefined,
+                toGain: marginals[p.name]?.toGain,
+                toLose: marginals[p.name]?.toLose,
+                gainFrom: marginals[p.name]?.gainFrom,
+                loseTo: marginals[p.name]?.loseTo,
+            })).sort((a, b) => b.seats - a.seats);
+
+            this.renderResults(results);
+            this.renderParliament(results);
+        }
+
+        calcMarginals(thresholdVotes) {
+            const results = {};
+            const currentSeats = this.simulateSeats(this.parties);
+
+            this.parties.forEach((party, idx) => {
+                if (party.votes < thresholdVotes) {
+                    const needed = Math.ceil(thresholdVotes) - party.votes;
+                    results[party.name] = { toGain: needed > 0 ? needed : null, toLose: null };
+                    return;
+                }
+
+                const curS = currentSeats[party.name] || 0;
+
+                // Votes to gain
+                let toGain = null, gainFrom = null;
+                if (curS < this.totalSeats) {
+                    let lo = 1, hi = 500000;
+                    while (lo < hi) {
+                        const mid = (lo + hi) >> 1;
+                        const tp = this.parties.map((p, i) => i === idx ? { ...p, votes: p.votes + mid } : p);
+                        if ((this.simulateSeats(tp)[party.name] || 0) > curS) hi = mid; else lo = mid + 1;
+                    }
+                    if (lo <= 500000) {
+                        toGain = lo;
+                        const tp = this.parties.map((p, i) => i === idx ? { ...p, votes: p.votes + lo } : p);
+                        const ns = this.simulateSeats(tp);
+                        for (const [n, s] of Object.entries(currentSeats)) {
+                            if (n !== party.name && (ns[n] || 0) < s) { gainFrom = n; break; }
+                        }
+                    }
+                }
+
+                // Votes to lose
+                let toLose = null, loseTo = null;
+                if (curS > 0) {
+                    let lo = 1, hi = party.votes;
+                    while (lo < hi) {
+                        const mid = (lo + hi) >> 1;
+                        const nv = party.votes - mid;
+                        if (nv < thresholdVotes) { hi = mid; continue; }
+                        const tp = this.parties.map((p, i) => i === idx ? { ...p, votes: nv } : p);
+                        if ((this.simulateSeats(tp)[party.name] || 0) < curS) hi = mid; else lo = mid + 1;
+                    }
+                    if (lo <= party.votes && lo > 0) {
+                        toLose = lo;
+                        const tp = this.parties.map((p, i) => i === idx ? { ...p, votes: party.votes - lo } : p);
+                        const ns = this.simulateSeats(tp);
+                        for (const [n, s] of Object.entries(currentSeats)) {
+                            if (n !== party.name && (ns[n] || 0) > s) { loseTo = n; break; }
+                        }
+                    }
+                }
+
+                results[party.name] = { toGain, toLose, gainFrom, loseTo };
+            });
+
+            return results;
+        }
+
+        simulateSeats(parties) {
+            const total = parties.reduce((s, p) => s + p.votes, 0);
+            const thresh = total * (this.threshold / 100);
+            const elig = parties.map((p, i) => ({ ...p, idx: i })).filter(p => p.votes >= thresh);
+            const eSet = new Set(elig.map(p => p.idx));
+
+            const grps = []; const ptg = {};
+            this.agreements.forEach(([i1, i2]) => {
+                if (!eSet.has(i1) || !eSet.has(i2)) return;
+                const g1 = ptg[i1], g2 = ptg[i2];
+                if (g1 === undefined && g2 === undefined) {
+                    const gi = grps.length; grps.push([i1, i2]); ptg[i1] = gi; ptg[i2] = gi;
+                } else if (g1 !== undefined && g2 === undefined) {
+                    grps[g1].push(i2); ptg[i2] = g1;
+                } else if (g1 === undefined && g2 !== undefined) {
+                    grps[g2].push(i1); ptg[i1] = g2;
+                }
+            });
+
+            const seats = {};
+            elig.forEach(p => seats[p.name] = 0);
+
+            for (let i = 0; i < this.totalSeats; i++) {
+                let maxQ = -1, winner = null;
+                elig.forEach(party => {
+                    const gi = ptg[party.idx];
+                    if (gi !== undefined) {
+                        const g = grps[gi];
+                        const cv = g.reduce((s, idx) => s + parties[idx].votes, 0);
+                        const cs = g.reduce((s, idx) => s + (seats[parties[idx].name] || 0), 0);
+                        const gq = cv / (cs + 1);
+                        if (gq > maxQ) {
+                            maxQ = gq;
+                            let best = null, bq = -1;
+                            g.forEach(idx => {
+                                const p = parties[idx];
+                                const iq = p.votes / ((seats[p.name] || 0) + 1);
+                                if (iq > bq) { bq = iq; best = p.name; }
+                            });
+                            winner = best;
+                        }
+                    } else {
+                        const q = party.votes / ((seats[party.name] || 0) + 1);
+                        if (q > maxQ) { maxQ = q; winner = party.name; }
+                    }
+                });
+                if (winner) seats[winner]++;
+            }
+            return seats;
+        }
+
+        // ---- Render results list ----
+        renderResults(results) {
+            const container = document.getElementById('results-list');
+            const eligible = results.filter(r => r.seats > 0);
+
+            container.innerHTML = eligible.map(r => {
+                const agIcon = r.hasAgreement ? '<span class="result-agreement-icon">🤝</span>' : '';
+                const gainText = r.toGain
+                    ? `<span class="marginal-text marginal-gain">+${r.toGain.toLocaleString()}${r.gainFrom ? ' מ' + r.gainFrom : ''}</span>`
+                    : '';
+                const loseText = r.toLose
+                    ? `<span class="marginal-text marginal-lose">−${r.toLose.toLocaleString()}${r.loseTo ? ' ל' + r.loseTo : ''}</span>`
+                    : '';
+
+                return `
+                <div class="result-item">
+                    <div class="result-color-bar" style="background:${r.color}"></div>
+                    <div class="result-main">
+                        <div class="result-name-row">
+                            ${agIcon}
+                            <span class="result-party-name">${r.name}</span>
+                        </div>
+                        <div class="result-votes-text">${r.votes.toLocaleString()} קולות</div>
+                    </div>
+                    <div class="result-seats-num">${r.seats}</div>
+                    <div class="result-marginals">${gainText}${loseText}</div>
+                </div>`;
+            }).join('');
+
+            // Coalition counts
+            const rightSeats = results.filter(r => r.block === 'right').reduce((s, r) => s + r.seats, 0);
+            const leftArabSeats = results.filter(r => r.block === 'left' || r.block === 'arab').reduce((s, r) => s + r.seats, 0);
+
+            const rEl = document.getElementById('right-seats');
+            const lEl = document.getElementById('left-seats');
+            rEl.textContent = rightSeats;
+            lEl.textContent = leftArabSeats;
+            rEl.className = 'bloc-seats ' + (rightSeats >= 61 ? 'majority' : 'minority');
+            lEl.className = 'bloc-seats ' + (leftArabSeats >= 61 ? 'majority' : 'minority');
+        }
+
+        // ---- Parliament semicircle ----
+        renderParliament(results) {
+            const svg = document.getElementById('parliament-svg');
+            const rect = svg.parentElement.getBoundingClientRect();
+            const width = rect.width;
+            const height = rect.height - 40; // leave room for labels
+
+            d3.select(svg).selectAll('*').remove();
+            d3.select(svg).attr('width', width).attr('height', height);
+
+            const sorted = [...results].filter(r => r.seats > 0)
+                .sort((a, b) => (politicalOrder[a.name] || 50) - (politicalOrder[b.name] || 50));
+
+            const seatArr = [];
+            sorted.forEach(p => {
+                for (let i = 0; i < p.seats; i++) seatArr.push({ party: p.name, color: p.color });
+            });
+
+            const rows = 5;
+            const centerX = width / 2;
+            const centerY = height - 10;
+            const minR = Math.min(60, height * 0.2);
+            const maxR = Math.min(width / 2 - 10, height - 30);
+            const rStep = (maxR - minR) / (rows - 1);
+
+            const seatsPerRow = [];
+            let remaining = this.totalSeats;
+            for (let r = 0; r < rows; r++) {
+                const radius = minR + r * rStep;
+                const circ = Math.PI * radius;
+                const dotSize = Math.max(8, Math.min(14, width / 35));
+                const max = Math.floor(circ / (dotSize + 2));
+                const n = Math.min(max, remaining);
+                seatsPerRow.push(n);
+                remaining -= n;
+            }
+
+            const allPos = [];
+            for (let r = 0; r < rows; r++) {
+                const radius = minR + r * rStep;
+                const n = seatsPerRow[r];
+                const aStep = Math.PI / (n + 1);
+                for (let s = 0; s < n; s++) {
+                    const angle = Math.PI - aStep * (s + 1);
+                    allPos.push({ x: centerX + radius * Math.cos(angle), y: centerY - radius * Math.sin(angle), angle });
+                }
+            }
+
+            allPos.sort((a, b) => b.angle - a.angle);
+
+            const dotR = Math.max(3, Math.min(6, width / 80));
+            const positions = allPos.slice(0, seatArr.length).map((pos, i) => ({ ...pos, ...seatArr[i] }));
+
+            d3.select(svg).selectAll('circle')
+                .data(positions)
+                .join('circle')
+                .attr('cx', d => d.x)
+                .attr('cy', d => d.y)
+                .attr('r', dotR)
+                .attr('fill', d => d.color)
+                .attr('stroke', '#000')
+                .attr('stroke-width', 0.3);
+        }
+    }
+
+    new MobileDHondt();
+    </script>
+</body>
+</html>

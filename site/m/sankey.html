@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>נדידת קולות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .transition-pills {
+            display: flex;
+            gap: 4px;
+            margin-right: auto;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .transition-pill {
+            padding: 4px 8px;
+            border-radius: 14px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--text-muted);
+            cursor: pointer;
+            min-height: 28px;
+            white-space: nowrap;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .transition-pill.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .transition-pill .arrow { opacity: 0.5; font-size: 0.6rem; }
+
+        /* Sankey area */
+        #sankey-chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .sankey-link {
+            fill: none;
+            stroke-opacity: 0.35;
+            cursor: pointer;
+        }
+
+        .sankey-link.highlighted { stroke-opacity: 0.7; }
+        .sankey-link.dimmed { stroke-opacity: 0.08; }
+
+        .sankey-node text {
+            font-family: 'Heebo', sans-serif;
+            fill: var(--text-primary);
+            pointer-events: none;
+        }
+
+        .sankey-node rect {
+            cursor: pointer;
+        }
+
+        /* Election info strip */
+        .election-strip {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 6px 12px;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem;
+        }
+
+        .election-strip .side {
+            text-align: center;
+        }
+
+        .election-strip .side .name {
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        .election-strip .side .date {
+            color: var(--text-muted);
+        }
+
+        .election-strip .arrow-mid {
+            color: var(--accent);
+            font-size: 1.2rem;
+        }
+
+        /* Percent toggle */
+        .pct-toggle {
+            position: fixed;
+            bottom: calc(62px + var(--safe-bottom));
+            right: 8px;
+            z-index: 400;
+        }
+
+        .pct-toggle button {
+            padding: 6px 12px;
+            border-radius: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.7rem;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .pct-toggle button:active { background: var(--bg-hover); }
+
+        /* Legend FAB */
+        .legend-fab {
+            bottom: calc(62px + var(--safe-bottom));
+            left: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <span class="title">🗳️ נדידה</span>
+        <div class="transition-pills" id="transition-pills"></div>
+    </div>
+
+    <!-- Election Info Strip -->
+    <div class="election-strip" id="election-strip" style="display:none;">
+        <div class="side">
+            <div class="name" id="from-name"></div>
+            <div class="date" id="from-date"></div>
+        </div>
+        <div class="arrow-mid">←</div>
+        <div class="side">
+            <div class="name" id="to-name"></div>
+            <div class="date" id="to-date"></div>
+        </div>
+    </div>
+
+    <!-- Main Area -->
+    <div class="main-area" id="main-area">
+        <svg id="sankey-chart"></svg>
+        <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+    </div>
+
+    <!-- Percent Toggle -->
+    <div class="pct-toggle">
+        <button id="pct-btn">% מהקודמות</button>
+    </div>
+
+    <!-- Legend FAB -->
+    <div class="fab legend-fab" id="legend-btn">📋</div>
+
+    <!-- Bottom Sheet -->
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div id="sheet-content"></div>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <nav class="tab-bar">
+        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
+        <a href="sankey.html" class="active"><span class="tab-icon">📊</span>נדידה</a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
+        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+    </nav>
+
+    <script>
+    class MobileSankey {
+        constructor() {
+            this.currentTransition = '24_to_25';
+            this.data = null;
+            this.officialResults = null;
+            this.percentMode = 'source';
+            this.nodes = null;
+            this.links = null;
+
+            this.initPills();
+            this.initEvents();
+            this.loadOfficialResults().then(() => this.loadTransition(this.currentTransition));
+        }
+
+        initPills() {
+            const pills = document.getElementById('transition-pills');
+            const transitions = [
+                { id: '21_to_22', from: '21', to: '22' },
+                { id: '22_to_23', from: '22', to: '23' },
+                { id: '23_to_24', from: '23', to: '24' },
+                { id: '24_to_25', from: '24', to: '25' }
+            ];
+            transitions.forEach(t => {
+                const btn = document.createElement('button');
+                btn.className = 'transition-pill' + (t.id === this.currentTransition ? ' active' : '');
+                btn.innerHTML = `${t.from}<span class="arrow">←</span>${t.to}`;
+                btn.dataset.transition = t.id;
+                btn.onclick = () => {
+                    this.currentTransition = t.id;
+                    document.querySelectorAll('.transition-pill').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.loadTransition(t.id);
+                };
+                pills.appendChild(btn);
+            });
+        }
+
+        initEvents() {
+            document.getElementById('sheet-backdrop').onclick = () => this.hideSheet();
+
+            // Percent toggle
+            document.getElementById('pct-btn').onclick = () => {
+                this.percentMode = this.percentMode === 'source' ? 'target' : 'source';
+                document.getElementById('pct-btn').textContent =
+                    this.percentMode === 'source' ? '% מהקודמות' : '% מהחדשות';
+            };
+
+            // Legend button
+            document.getElementById('legend-btn').onclick = () => this.showLegendSheet();
+
+            // Resize
+            let timer;
+            window.addEventListener('resize', () => {
+                clearTimeout(timer);
+                timer = setTimeout(() => { if (this.data) this.render(); }, 250);
+            });
+        }
+
+        async loadOfficialResults() {
+            try {
+                const res = await fetch('../data/wiki_official_results.json');
+                this.officialResults = await res.json();
+            } catch (e) { console.warn('No official results', e); }
+        }
+
+        async loadTransition(id) {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const res = await fetch(`../data/transfer_${id}.json`);
+                this.data = await res.json();
+                this.updateElectionStrip();
+                this.render();
+            } catch (e) { console.error(e); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        updateElectionStrip() {
+            const strip = document.getElementById('election-strip');
+            strip.style.display = 'flex';
+            document.getElementById('from-name').textContent = this.data.from_election.name;
+            document.getElementById('from-date').textContent = this.data.from_election.date;
+            document.getElementById('to-name').textContent = this.data.to_election.name;
+            document.getElementById('to-date').textContent = this.data.to_election.date;
+
+            // Adjust main area top
+            const mainArea = document.getElementById('main-area');
+            mainArea.style.top = (44 + strip.offsetHeight) + 'px';
+        }
+
+        render() {
+            const container = document.getElementById('main-area');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+
+            const margin = { top: 10, right: 45, bottom: 10, left: 45 };
+            const innerWidth = width - margin.left - margin.right;
+            const innerHeight = height - margin.top - margin.bottom;
+
+            d3.select('#sankey-chart').selectAll('*').remove();
+
+            const svg = d3.select('#sankey-chart')
+                .attr('width', width)
+                .attr('height', height);
+
+            const g = svg.append('g')
+                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+            // Build nodes & links
+            const nodesFrom = this.data.nodes_from.map((n, i) => ({
+                ...n, id: `from_${i}`, side: 'from'
+            }));
+            const nodesTo = this.data.nodes_to.map((n, i) => ({
+                ...n, id: `to_${i}`, side: 'to'
+            }));
+            const allNodes = [...nodesFrom, ...nodesTo];
+
+            const nodeMap = {};
+            allNodes.forEach(n => nodeMap[n.id] = n);
+
+            const links = (this.data.transfers || []).map(t => {
+                const srcIdx = nodesFrom.findIndex(n => n.name === t.source || n.symbol === t.source_symbol);
+                const tgtIdx = nodesTo.findIndex(n => n.name === t.target || n.symbol === t.target_symbol);
+                if (srcIdx < 0 || tgtIdx < 0 || !t.votes) return null;
+                return {
+                    source: `from_${srcIdx}`,
+                    target: `to_${tgtIdx}`,
+                    value: t.votes,
+                    percentage: t.percentage,
+                    sourceName: t.source,
+                    targetName: t.target
+                };
+            }).filter(Boolean);
+
+            // Sankey layout
+            const sankey = d3.sankey()
+                .nodeId(d => d.id)
+                .nodeWidth(16)
+                .nodePadding(8)
+                .nodeAlign(d3.sankeyJustify)
+                .extent([[0, 0], [innerWidth, innerHeight]]);
+
+            const graph = sankey({
+                nodes: allNodes.map(d => ({ ...d })),
+                links: links.map(d => ({ ...d }))
+            });
+
+            // RTL flip
+            graph.nodes.forEach(node => {
+                const x0 = innerWidth - node.x1;
+                const x1 = innerWidth - node.x0;
+                node.x0 = x0;
+                node.x1 = x1;
+            });
+
+            // Draw links
+            this.links = g.append('g')
+                .selectAll('.sankey-link')
+                .data(graph.links)
+                .join('path')
+                .attr('class', 'sankey-link')
+                .attr('d', d3.sankeyLinkHorizontal())
+                .attr('stroke', d => d.target.color || '#6b7280')
+                .attr('stroke-width', d => Math.max(1, d.width))
+                .on('click', (event, d) => this.showFlowSheet(d));
+
+            // Draw nodes
+            this.nodes = g.append('g')
+                .selectAll('.sankey-node')
+                .data(graph.nodes)
+                .join('g')
+                .attr('class', 'sankey-node')
+                .attr('transform', d => `translate(${d.x0},${d.y0})`);
+
+            this.nodes.append('rect')
+                .attr('width', d => d.x1 - d.x0)
+                .attr('height', d => Math.max(1, d.y1 - d.y0))
+                .attr('fill', d => d.color || '#6b7280')
+                .attr('rx', 3)
+                .on('click', (event, d) => this.showPartySheet(d));
+
+            // Labels
+            this.nodes.append('text')
+                .attr('x', d => d.side === 'from' ? (d.x1 - d.x0) + 5 : -5)
+                .attr('y', d => (d.y1 - d.y0) / 2)
+                .attr('dy', '0.35em')
+                .attr('text-anchor', d => d.side === 'from' ? 'start' : 'end')
+                .text(d => {
+                    const h = d.y1 - d.y0;
+                    if (h < 12) return '';
+                    return d.name;
+                })
+                .style('font-size', '9px')
+                .style('font-weight', '500');
+
+            // Touch highlight: tap node to highlight flows
+            this.nodes.on('click', (event, d) => {
+                event.stopPropagation();
+                this.highlightNode(d);
+                this.showPartySheet(d);
+            });
+
+            // Tap background to reset
+            svg.on('click', () => this.resetHighlight());
+        }
+
+        highlightNode(node) {
+            const connected = new Set([node.id]);
+            const connectedLinks = new Set();
+
+            this.links.each(function(d) {
+                if (d.source.id === node.id || d.target.id === node.id) {
+                    connectedLinks.add(this);
+                    connected.add(d.source.id);
+                    connected.add(d.target.id);
+                }
+            });
+
+            this.links.attr('class', function(d) {
+                return 'sankey-link ' + (connectedLinks.has(this) ? 'highlighted' : 'dimmed');
+            });
+            this.nodes.style('opacity', d => connected.has(d.id) ? 1 : 0.3);
+        }
+
+        resetHighlight() {
+            if (!this.links) return;
+            this.links.attr('class', 'sankey-link');
+            this.nodes.style('opacity', 1);
+        }
+
+        // ---- Bottom Sheets ----
+
+        showFlowSheet(link) {
+            const reversePercent = link.target.votes > 0
+                ? ((link.value / link.target.votes) * 100).toFixed(1) : 0;
+            const pct = this.percentMode === 'source' ? link.percentage : reversePercent;
+            const desc = this.percentMode === 'source'
+                ? `מקולות ${link.sourceName} בבחירות הקודמות`
+                : `מקולות ${link.targetName} בבחירות החדשות`;
+
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;">
+                    <span style="display:flex;align-items:center;gap:4px;">
+                        <span class="party-dot" style="background:${link.source.color}"></span>
+                        <strong>${link.sourceName}</strong>
+                    </span>
+                    <span style="color:var(--text-muted);">←</span>
+                    <span style="display:flex;align-items:center;gap:4px;">
+                        <span class="party-dot" style="background:${link.target.color}"></span>
+                        <strong>${link.targetName}</strong>
+                    </span>
+                </div>
+                <div style="text-align:center;font-size:2rem;font-weight:700;color:var(--accent);margin:8px 0;">${pct}%</div>
+                <div style="text-align:center;color:var(--text-secondary);font-size:0.85rem;margin-bottom:8px;">${desc}</div>
+                <div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding-top:8px;border-top:1px solid var(--border);">
+                    ${link.value.toLocaleString('he-IL')} קולות
+                </div>
+            `;
+            this.showSheet();
+        }
+
+        showPartySheet(node) {
+            const info = node.info || {};
+            const elType = node.side === 'from' ? 'בחירות קודמות' : 'בחירות חדשות';
+
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <span class="party-dot" style="background:${node.color};width:14px;height:14px;"></span>
+                    <strong style="font-size:1.1rem;">${node.name}</strong>
+                    ${info.name_en ? `<span style="color:var(--text-muted);font-size:0.8rem;">${info.name_en}</span>` : ''}
+                </div>
+                ${info.leader ? `
+                <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg-tertiary);border-radius:8px;margin-bottom:8px;">
+                    ${info.leader_image ? `<img src="../${info.leader_image}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">` : ''}
+                    <div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);">מנהיג</div>
+                        <div style="font-weight:500;">${info.leader}</div>
+                    </div>
+                </div>` : ''}
+                <div class="stat-grid">
+                    <span class="label">${elType}</span><span class="value">${node.votes?.toLocaleString('he-IL')} קולות</span>
+                    ${node.seats ? `<span class="label">מנדטים</span><span class="value">${node.seats}</span>` : ''}
+                </div>
+                ${info.ideology ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">${info.ideology}</div>` : ''}
+                ${info.description ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">${info.description}</div>` : ''}
+            `;
+            this.showSheet();
+        }
+
+        showLegendSheet() {
+            if (!this.data) return;
+
+            const makeList = (parties, label) => {
+                const sorted = [...parties].sort((a, b) => b.votes - a.votes);
+                return `
+                    <div style="font-weight:600;margin:10px 0 6px;font-size:0.85rem;">${label}</div>
+                    ${sorted.map(p => `
+                        <div class="party-row">
+                            <span class="party-dot" style="background:${p.color}"></span>
+                            <span class="party-name">${p.name}</span>
+                            <span class="party-pct">${p.votes?.toLocaleString('he-IL')}</span>
+                            <span style="font-size:0.75rem;color:${p.seats > 0 ? 'var(--accent)' : 'var(--text-muted)'};min-width:45px;text-align:left;">
+                                ${p.seats > 0 ? p.seats + ' מנדטים' : 'לא עברה'}
+                            </span>
+                        </div>
+                    `).join('')}
+                `;
+            };
+
+            document.getElementById('sheet-content').innerHTML =
+                makeList(this.data.nodes_from, this.data.from_election.name) +
+                makeList(this.data.nodes_to, this.data.to_election.name);
+            this.showSheet();
+        }
+
+        showSheet() {
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        }
+
+        hideSheet() {
+            document.getElementById('sheet-backdrop').classList.remove('visible');
+            document.getElementById('bottom-sheet').classList.remove('visible');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => new MobileSankey());
+    </script>
+</body>
+</html>
