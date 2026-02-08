@@ -149,7 +149,7 @@
         methodology_short:     { he: 'מתודולוגיה:', en: 'Methodology:' },
         methodology_text:      { he: 'כל קלפי מהווה תצפית רועשת (noisy observation) של דפוס מעבר הקולות הארצי. המצביעים בכל קלפי נוהגים באופן דומה לאוכלוסייה הכללית, אך גודל המדגם הקטן (מאות בוחרים) יוצר רעש סטטיסטי. על ידי רגרסיה על אלפי קלפיות ברחבי הארץ, ניתן לשחזר את מטריצת המעבר הארצית האמיתית.', en: 'Each ballot box is a noisy observation of the national vote transfer pattern. Voters in each box behave similarly to the general population, but the small sample size (hundreds of voters) creates statistical noise. By regressing over thousands of ballot boxes nationwide, we can recover the true national transfer matrix.' },
         read_more_methodology: { he: 'קראו עוד על המתודולוגיה...', en: 'Read more about the methodology...' },
-        credits_line:          { he: '© הראל קין', en: '© Harel Kain' },
+        credits_line:          { he: '© הראל קין', en: '© Harel Cain' },
         source_code:           { he: 'קוד מקור', en: 'Source code' },
         bmc_text:              { he: 'אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה', en: 'Like it? Help support the site\'s development – buy me a coffee' },
         bmc_title:             { he: 'קנו לי כוס קפה ☕', en: 'Buy me a coffee ☕' },
