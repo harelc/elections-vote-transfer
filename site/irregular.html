@@ -821,8 +821,8 @@
 
     <div class="app-container">
         <header class="main-header">
-            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
-            <p class="subtitle">זיהוי קלפיות עם דפוסי הצבעה חריגים</p>
+            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <p class="subtitle" data-i18n="irregular_subtitle">זיהוי קלפיות עם דפוסי הצבעה חריגים</p>
             <nav class="view-switcher">
                 <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
                 <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
@@ -846,26 +846,26 @@
             <div class="stats-bar" id="stats-bar">
                 <div class="stat-item">
                     <div class="stat-value" id="stat-total">-</div>
-                    <div class="stat-label">קלפיות נותחו</div>
+                    <div class="stat-label" data-i18n="stat_analyzed">קלפיות נותחו</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="stat-irregular">-</div>
-                    <div class="stat-label">חשודות שנמצאו</div>
+                    <div class="stat-label" data-i18n="stat_suspects">חשודות שנמצאו</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="stat-fixed">-</div>
-                    <div class="stat-label">תוקנו באתר הרשמי</div>
+                    <div class="stat-label" data-i18n="stat_fixed">תוקנו באתר הרשמי</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value" id="stat-shown">-</div>
-                    <div class="stat-label">נותרו חריגות</div>
+                    <div class="stat-label" data-i18n="stat_remaining">נותרו חריגות</div>
                 </div>
             </div>
 
             <div class="irregularities-container" id="irregularities-container">
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <p>טוען נתונים...</p>
+                    <p data-i18n="loading">טוען נתונים...</p>
                 </div>
             </div>
         </main>

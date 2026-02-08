@@ -613,8 +613,8 @@
 
     <div class="app-container">
         <header class="main-header">
-            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
-            <p class="subtitle">השוואת תמיכה במפלגות לפי קלפיות</p>
+            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <p class="subtitle" data-i18n="scatter_subtitle">השוואת תמיכה במפלגות לפי קלפיות</p>
             <nav class="view-switcher">
                 <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
                 <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
@@ -629,7 +629,7 @@
         <main class="main-content">
             <aside class="control-panel">
                 <div class="control-section">
-                    <h3 class="control-title">ציר X (אופקי)</h3>
+                    <h3 class="control-title" data-i18n="x_axis_horizontal">ציר X (אופקי)</h3>
                     <select id="election-x" class="control-select">
                         <option value="21">כנסת 21 (אפריל 2019)</option>
                         <option value="22">כנסת 22 (ספטמבר 2019)</option>
@@ -643,7 +643,7 @@
                 </div>
 
                 <div class="control-section">
-                    <h3 class="control-title">ציר Y (אנכי)</h3>
+                    <h3 class="control-title" data-i18n="y_axis_vertical">ציר Y (אנכי)</h3>
                     <select id="election-y" class="control-select">
                         <option value="21">כנסת 21 (אפריל 2019)</option>
                         <option value="22">כנסת 22 (ספטמבר 2019)</option>
@@ -657,16 +657,16 @@
                 </div>
 
                 <div class="control-section">
-                    <h3 class="control-title">הגדרות תצוגה</h3>
+                    <h3 class="control-title" data-i18n="display_settings">הגדרות תצוגה</h3>
                     <div class="scale-toggle">
-                        <label class="toggle-label">יחידות:</label>
+                        <label class="toggle-label" data-i18n="units">יחידות:</label>
                         <div class="toggle-buttons">
                             <button class="toggle-btn active" data-units="relative" data-i18n="pct_unit">אחוזים</button>
                             <button class="toggle-btn" data-units="absolute" data-i18n="votes">קולות</button>
                         </div>
                     </div>
                     <div class="scale-toggle" style="margin-top: 0.75rem;">
-                        <label class="toggle-label">סוג סקאלה:</label>
+                        <label class="toggle-label" data-i18n="scale_type">סוג סקאלה:</label>
                         <div class="toggle-buttons">
                             <button class="toggle-btn active" data-scale="linear">לינארי</button>
                             <button class="toggle-btn" data-scale="symlog">לוגריתמי</button>
@@ -675,7 +675,7 @@
                 </div>
 
                 <div class="control-section">
-                    <h3 class="control-title">סינון לפי יישוב</h3>
+                    <h3 class="control-title" data-i18n="filter_by_settlement">סינון לפי יישוב</h3>
                     <div class="search-container">
                         <input type="text" id="settlement-search" class="control-select" placeholder="חפש יישוב..." data-i18n-placeholder="search_settlement" style="margin-bottom: 0.5rem;">
                         <div class="search-results" id="search-results"></div>
@@ -684,7 +684,7 @@
                 </div>
 
                 <div class="control-section">
-                    <h3 class="control-title">סטטיסטיקות</h3>
+                    <h3 class="control-title" data-i18n="statistics">סטטיסטיקות</h3>
                     <div class="stats-box">
                         <div class="stat-row">
                             <span class="stat-label">מתאם (Correlation):</span>

@@ -862,8 +862,8 @@
 
     <div class="app-container">
         <header class="main-header">
-            <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
-            <p class="subtitle">מיפוי T-SNE של קלפיות לפי התפלגות ההצבעה</p>
+            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <p class="subtitle" data-i18n="tsne_subtitle">מיפוי T-SNE של קלפיות לפי התפלגות ההצבעה</p>
             <nav class="view-switcher">
                 <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
                 <span class="view-btn active" data-i18n="nav_tsne">התפלגות קלפיות</span>
@@ -885,7 +885,7 @@
 
         <main class="main-content">
             <aside class="legend-panel">
-                <h3 class="legend-title">סינון לפי יישוב</h3>
+                <h3 class="legend-title" data-i18n="filter_by_settlement">סינון לפי יישוב</h3>
                 <div class="search-container">
                     <input type="text" id="settlement-search" class="settlement-search" placeholder="חפש יישוב..." data-i18n-placeholder="search_settlement" autocomplete="off">
                     <div id="search-results" class="search-results"></div>
@@ -893,7 +893,7 @@
                 <div id="selected-settlements" class="selected-settlements"></div>
 
                 <div class="legend-divider"></div>
-                <h3 class="legend-title">חיפוש קלפי</h3>
+                <h3 class="legend-title" data-i18n="search_ballot">חיפוש קלפי</h3>
                 <div class="search-container">
                     <input type="text" id="station-search" class="settlement-search" placeholder="יישוב, מספר או מיקום..." data-i18n-placeholder="search_station" autocomplete="off">
                     <div id="station-search-results" class="search-results"></div>
@@ -901,7 +901,7 @@
                 <div id="selected-station" class="selected-station"></div>
 
                 <div class="legend-divider"></div>
-                <h3 class="legend-title">צביעה לפי</h3>
+                <h3 class="legend-title" data-i18n="color_by_short">צביעה לפי</h3>
                 <div class="legend-item active" id="turnout-option" data-mode="turnout">
                     <span class="legend-color" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
                     <span class="legend-name" data-i18n="turnout">שיעור הצבעה</span>
@@ -918,7 +918,7 @@
             <div class="visualization-container">
                 <svg id="tsne-chart"></svg>
                 <div class="tooltip" id="tooltip"></div>
-                <div class="zoom-hint">גודל = מספר מצביעים | גלגל לזום | גרירה להזזה</div>
+                <div class="zoom-hint" data-i18n="zoom_hint">גודל = מספר מצביעים | גלגל לזום | גרירה להזזה</div>
                 <div class="color-scale" id="color-scale">
                     <div class="color-scale-title">שיעור הצבעה</div>
                     <div class="color-scale-bar" id="color-scale-bar"></div>
@@ -928,7 +928,7 @@
                     </div>
                     <label class="color-scale-toggle hidden" id="color-scale-toggle">
                         <input type="checkbox" id="dynamic-range-toggle" checked>
-                        <span>טווח דינמי</span>
+                        <span data-i18n="dynamic_range">טווח דינמי</span>
                     </label>
                 </div>
             </div>

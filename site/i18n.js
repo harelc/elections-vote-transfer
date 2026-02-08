@@ -69,7 +69,13 @@
 
         /* ── T-SNE page ── */
         tsne_title:            { he: 'התפלגות קלפיות', en: 'Ballot Distribution' },
+        tsne_subtitle:         { he: 'מיפוי T-SNE של קלפיות לפי התפלגות ההצבעה', en: 'T-SNE mapping of ballot boxes by voting distribution' },
+        filter_by_settlement:  { he: 'סינון לפי יישוב', en: 'Filter by settlement' },
+        search_ballot:         { he: 'חיפוש קלפי', en: 'Search ballot' },
         color_by:              { he: 'צביעה לפי:', en: 'Color by:' },
+        color_by_short:        { he: 'צביעה לפי', en: 'Color by' },
+        zoom_hint:             { he: 'גודל = מספר מצביעים | גלגל לזום | גרירה להזזה', en: 'Size = number of voters | Scroll to zoom | Drag to pan' },
+        dynamic_range:         { he: 'טווח דינמי', en: 'Dynamic range' },
         turnout:               { he: 'אחוז הצבעה', en: 'Turnout' },
         socioeconomic:         { he: 'אשכול חברתי-כלכלי', en: 'Socioeconomic cluster' },
         party_support:         { he: 'תמיכה במפלגה', en: 'Party support' },
@@ -86,6 +92,8 @@
 
         /* ── Geomap page ── */
         geomap_title:          { he: 'מפה גיאוגרפית', en: 'Geographic Map' },
+        geomap_subtitle:       { he: 'מפה גיאוגרפית של קלפיות הצבעה', en: 'Geographic map of polling stations' },
+        display_settings:      { he: 'הגדרות תצוגה', en: 'Display settings' },
         color_mode:            { he: 'צביעה:', en: 'Color:' },
         winner:                { he: 'מפלגה מנצחת', en: 'Winning party' },
         specific_party:        { he: 'מפלגה ספציפית', en: 'Specific party' },
@@ -94,8 +102,13 @@
 
         /* ── Scatter page ── */
         scatter_title:         { he: 'השוואת תמיכה במפלגות', en: 'Party Support Comparison' },
+        scatter_subtitle:      { he: 'השוואת תמיכה במפלגות לפי קלפיות', en: 'Comparing party support across ballot boxes' },
         x_axis:                { he: 'ציר X:', en: 'X axis:' },
+        x_axis_horizontal:     { he: 'ציר X (אופקי)', en: 'X Axis (horizontal)' },
         y_axis:                { he: 'ציר Y:', en: 'Y axis:' },
+        y_axis_vertical:       { he: 'ציר Y (אנכי)', en: 'Y Axis (vertical)' },
+        statistics:            { he: 'סטטיסטיקות', en: 'Statistics' },
+        scale_type:            { he: 'סוג סקאלה:', en: 'Scale type:' },
         election:              { he: 'בחירות', en: 'Election' },
         party:                 { he: 'מפלגה', en: 'Party' },
         pct_unit:              { he: 'אחוזים', en: 'Percentages' },
@@ -105,6 +118,7 @@
 
         /* ── D'Hondt page ── */
         dhondt_title:          { he: 'מחשבון באדר-עופר', en: 'D\'Hondt Calculator' },
+        dhondt_subtitle:       { he: 'מחשבון חלוקת מנדטים בשיטת באדר-עופר', en: 'Seat allocation calculator using the D\'Hondt method' },
         threshold:             { he: 'אחוז חסימה', en: 'Electoral threshold' },
         threshold_pct:         { he: 'אחוז חסימה:', en: 'Threshold:' },
         surplus_agreements:    { he: 'הסכמי עודפים', en: 'Surplus agreements' },
@@ -129,6 +143,11 @@
 
         /* ── Irregular page ── */
         irregular_title:       { he: 'קלפיות חריגות', en: 'Irregular Ballots' },
+        irregular_subtitle:    { he: 'זיהוי קלפיות עם דפוסי הצבעה חריגים', en: 'Identifying ballot boxes with irregular voting patterns' },
+        stat_analyzed:         { he: 'קלפיות נותחו', en: 'Ballots analyzed' },
+        stat_suspects:         { he: 'חשודות שנמצאו', en: 'Suspects found' },
+        stat_fixed:            { he: 'תוקנו באתר הרשמי', en: 'Fixed on official site' },
+        stat_remaining:        { he: 'נותרו חריגות', en: 'Remaining irregular' },
         anomaly_types:         { he: 'סוגי חריגות:', en: 'Anomaly types:' },
         severity:              { he: 'חומרה', en: 'Severity' },
         high_severity:         { he: 'גבוהה', en: 'High' },
