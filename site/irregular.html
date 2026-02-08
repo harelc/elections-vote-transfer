@@ -1290,12 +1290,24 @@
 
         // Re-render dynamic content when language changes
         window.addEventListener('langchange', () => {
+            // Update election buttons
+            document.querySelectorAll('.election-btn[data-election]').forEach(btn => {
+                const id = btn.dataset.election;
+                btn.textContent = i18n.getLang() === 'en' ? `Knesset ${id}` : `כנסת ${id}`;
+            });
             if (currentData) {
                 updateStats();
                 renderIrregularities();
                 setupTooltipListeners();
             }
         });
+
+        // Initial election button language
+        if (i18n.getLang() === 'en') {
+            document.querySelectorAll('.election-btn[data-election]').forEach(btn => {
+                btn.textContent = `Knesset ${btn.dataset.election}`;
+            });
+        }
 
         // Initial load
         loadData('25');
