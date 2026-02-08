@@ -1769,7 +1769,7 @@
                 }
 
                 const matches = this.settlements
-                    .filter(s => s.name.includes(query))
+                    .filter(s => i18n.settlementMatches(s.name, query))
                     .slice(0, 15);
 
                 if (matches.length === 0) {
@@ -1837,8 +1837,7 @@
                     const coordData = this.coordinates?.stations?.[key];
                     const location = station.l || coordData?.location || '';
 
-                    const searchStr = `${name} ${ballot} ${location}`;
-                    if (searchStr.includes(query)) {
+                    if (i18n.settlementMatches(name, query) || String(ballot).includes(query) || location.includes(query)) {
                         matches.push({ name, ballot, location, key });
                     }
                 });

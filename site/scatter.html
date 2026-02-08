@@ -947,7 +947,7 @@
                 }
 
                 const matches = this.settlements
-                    .filter(s => s.name.includes(query))
+                    .filter(s => i18n.settlementMatches(s.name, query))
                     .slice(0, 15);
 
                 if (matches.length === 0) {

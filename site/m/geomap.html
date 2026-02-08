@@ -772,7 +772,7 @@
             if (query.length < 1) { results.classList.remove('visible'); return; }
 
             const matches = this.settlements
-                .filter(s => s.name.includes(query))
+                .filter(s => i18n.settlementMatches(s.name, query))
                 .slice(0, 10);
 
             if (!matches.length) { results.classList.remove('visible'); return; }
@@ -805,10 +805,9 @@
             const q = query.toLowerCase();
             const matches = this.tsneData.stations
                 .filter(s => {
-                    const n = (s.n || '').toLowerCase();
                     const b = String(s.b || '');
                     const l = (s.l || '').toLowerCase();
-                    return n.includes(q) || b.includes(query) || l.includes(q);
+                    return i18n.settlementMatches(s.n || '', query) || b.includes(query) || l.includes(q);
                 }).slice(0, 15);
 
             if (!matches.length) { results.classList.remove('visible'); return; }

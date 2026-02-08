@@ -567,7 +567,7 @@
         handleSettlementSearch(query) {
             const results = document.getElementById('settlement-results');
             if (query.length < 1) { results.classList.remove('visible'); return; }
-            const matches = this.settlements.filter(s => s.name.includes(query)).slice(0, 10);
+            const matches = this.settlements.filter(s => i18n.settlementMatches(s.name, query)).slice(0, 10);
             if (!matches.length) { results.classList.remove('visible'); return; }
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">
@@ -594,7 +594,7 @@
             if (query.length < 2) { results.classList.remove('visible'); return; }
             const q = query.toLowerCase();
             const matches = this.data.stations.filter(s => {
-                return (s.n || '').toLowerCase().includes(q) ||
+                return i18n.settlementMatches(s.n || '', query) ||
                        String(s.b || '').includes(query) ||
                        (s.l || '').toLowerCase().includes(q);
             }).slice(0, 15);

@@ -554,7 +554,7 @@
         handleSearch(query) {
             const results = document.getElementById('settlement-results');
             if (query.length < 1) { results.classList.remove('visible'); return; }
-            const matches = this.allSettlements.filter(s => s.name.includes(query)).slice(0, 10);
+            const matches = this.allSettlements.filter(s => i18n.settlementMatches(s.name, query)).slice(0, 10);
             if (!matches.length) { results.classList.remove('visible'); return; }
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">

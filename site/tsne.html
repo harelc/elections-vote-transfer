@@ -1072,7 +1072,7 @@
                 }
 
                 const matches = this.settlements
-                    .filter(s => s.name.includes(query))
+                    .filter(s => i18n.settlementMatches(s.name, query))
                     .slice(0, 15);
 
                 if (matches.length === 0) {
@@ -1157,10 +1157,10 @@
                 const queryLower = query.toLowerCase();
                 const matches = this.data.stations
                     .filter(s => {
-                        const name = (s.n || s.settlement_name || '').toLowerCase();
+                        const name = s.n || s.settlement_name || '';
                         const ballot = String(s.b || s.ballot_number || '');
                         const location = (s.l || '').toLowerCase();
-                        return name.includes(queryLower) ||
+                        return i18n.settlementMatches(name, query) ||
                                ballot.includes(query) ||
                                location.includes(queryLower);
                     })

@@ -347,6 +347,16 @@
         return _settlementMap[name] || name;
     }
 
+    /** Check if a settlement (by Hebrew name) matches a search query.
+     *  In English mode, searches English transliteration (case-insensitive) + Hebrew fallback.
+     *  In Hebrew mode, searches Hebrew name. */
+    function settlementMatches(hebrewName, query) {
+        if (!hebrewName || !query) return false;
+        if (currentLang === 'he') return hebrewName.includes(query);
+        const enName = settlementName(hebrewName);
+        return enName.toLowerCase().includes(query.toLowerCase()) || hebrewName.includes(query);
+    }
+
     /** Locale-aware number formatting. */
     function fmtNum(n) {
         if (n == null) return '';
@@ -489,6 +499,7 @@
         leaderName,
         electionName,
         settlementName,
+        settlementMatches,
         fmtNum,
         getLang,
         isRTL,
