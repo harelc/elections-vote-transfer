@@ -620,12 +620,14 @@ class VoteTransferSankey {
         });
 
         // Flip X coordinates for RTL layout (from on right, to on left)
-        graph.nodes.forEach(node => {
-            const newX0 = innerWidth - node.x1;
-            const newX1 = innerWidth - node.x0;
-            node.x0 = newX0;
-            node.x1 = newX1;
-        });
+        if (i18n.isRTL()) {
+            graph.nodes.forEach(node => {
+                const newX0 = innerWidth - node.x1;
+                const newX1 = innerWidth - node.x0;
+                node.x0 = newX0;
+                node.x1 = newX1;
+            });
+        }
 
         // Create groups
         const linksGroup = this.g.append('g').attr('class', 'sankey-links');
@@ -699,12 +701,22 @@ class VoteTransferSankey {
             .attr('ry', 4)
             .style('cursor', 'pointer');
 
-        // Node labels - RTL: from nodes on right (label on right), to nodes on left (label on left)
+        // Node labels - position outside the node on the far side
+        const isRTL = i18n.isRTL();
+        const labelOutside = d => {
+            // In RTL: from=right side, label goes right; to=left side, label goes left
+            // In LTR: from=left side, label goes left; to=right side, label goes right
+            if (isRTL) return d.side === 'from' ? 'start' : 'end';
+            return d.side === 'from' ? 'end' : 'start';
+        };
         this.nodes.append('text')
-            .attr('x', d => d.side === 'from' ? (d.x1 - d.x0) + 6 : -6)
+            .attr('x', d => {
+                if (isRTL) return d.side === 'from' ? (d.x1 - d.x0) + 6 : -6;
+                return d.side === 'from' ? -6 : (d.x1 - d.x0) + 6;
+            })
             .attr('y', d => (d.y1 - d.y0) / 2)
             .attr('dy', '0.35em')
-            .attr('text-anchor', d => d.side === 'from' ? 'start' : 'end')
+            .attr('text-anchor', d => labelOutside(d))
             .text(d => i18n.partyName(d))
             .style('font-size', this.isMobile() ? '10px' : '13px')
             .style('font-weight', '500')
