@@ -121,6 +121,7 @@
             <div class="stat-item">n=<span class="stat-val" id="stat-n">-</span></div>
             <div class="stat-item">r=<span class="stat-val" id="stat-corr">-</span></div>
             <div class="stat-item">R²=<span class="stat-val" id="stat-r2">-</span></div>
+            <div class="stat-item" style="direction:ltr;"><span class="stat-val" id="stat-eq" style="font-family:monospace;"></span></div>
         </div>
         <svg id="scatter-chart"></svg>
         <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
@@ -514,10 +515,13 @@
                 corrEl.textContent = regression.correlation.toFixed(3);
                 corrEl.className = `stat-val ${regression.correlation >= 0 ? 'corr-pos' : 'corr-neg'}`;
                 document.getElementById('stat-r2').textContent = regression.rSquared.toFixed(3);
+                const sign = regression.intercept >= 0 ? '+' : '';
+                document.getElementById('stat-eq').textContent = `y=${regression.slope.toFixed(2)}x${sign}${regression.intercept.toFixed(2)}`;
             } else {
                 document.getElementById('stat-corr').textContent = '-';
                 document.getElementById('stat-corr').className = 'stat-val';
                 document.getElementById('stat-r2').textContent = '-';
+                document.getElementById('stat-eq').textContent = '';
             }
         }
 
