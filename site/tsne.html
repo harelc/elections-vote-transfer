@@ -2067,6 +2067,13 @@
                 });
             }
         });
+
+        // Initial English load for election buttons
+        if (i18n.getLang() === 'en') {
+            document.querySelectorAll('.nav-btn[data-election]').forEach(btn => {
+                btn.textContent = `Knesset ${btn.dataset.election}`;
+            });
+        }
     </script>
 
     <!-- Buy Me a Coffee button -->

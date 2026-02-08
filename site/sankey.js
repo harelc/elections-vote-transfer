@@ -909,7 +909,7 @@ class VoteTransferSankey {
 
         // Update title
         if (title) {
-            const num = electionName.replace('הכנסת ה-', '');
+            const num = electionName.match(/(\d+)/)?.[1] || electionName;
             title.textContent = i18n.t('official_results', { n: num });
         }
 

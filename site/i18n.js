@@ -64,7 +64,7 @@
         votes_from_common_only:{ he: '{n} קולות (מתוך הקלפיות המשותפות בלבד)', en: '{n} votes (from common precincts only)' },
         in_prev_election:      { he: 'בבחירות הקודמות', en: 'In previous election' },
         in_new_election:       { he: 'בבחירות החדשות', en: 'In new election' },
-        official_results:      { he: 'תוצאות רשמיות - כנסת ה-{n}', en: 'Official results – {n}th Knesset' },
+        official_results:      { he: 'תוצאות רשמיות - כנסת ה-{n}', en: 'Official results – Knesset {n}' },
         below_threshold:       { he: 'לא עברה', en: 'Below threshold' },
 
         /* ── T-SNE page ── */
@@ -302,7 +302,12 @@
     /** Get election display name from an election object. */
     function electionName(electionObj) {
         if (!electionObj) return '';
-        if (currentLang === 'en' && electionObj.name_en) return electionObj.name_en;
+        if (currentLang === 'en') {
+            if (electionObj.name_en) return electionObj.name_en;
+            // Derive English from Hebrew: "הכנסת ה-24" → "Knesset 24"
+            const m = (electionObj.name || '').match(/(\d+)/);
+            if (m) return `Knesset ${m[1]}`;
+        }
         return electionObj.name || '';
     }
 
