@@ -84,6 +84,8 @@
             font-size: 0.65rem;
             color: var(--text-muted);
             pointer-events: none;
+            direction: ltr;
+            unicode-bidi: bidi-override;
         }
         .stats-bar .stat-item { display: flex; gap: 3px; align-items: center; }
         .stats-bar .stat-val { color: var(--text-secondary); font-weight: 600; font-variant-numeric: tabular-nums; }
@@ -121,7 +123,7 @@
             <div class="stat-item">n=<span class="stat-val" id="stat-n">-</span></div>
             <div class="stat-item">r=<span class="stat-val" id="stat-corr">-</span></div>
             <div class="stat-item">R²=<span class="stat-val" id="stat-r2">-</span></div>
-            <div class="stat-item" style="direction:ltr;"><span class="stat-val" id="stat-eq" style="font-family:monospace;"></span></div>
+            <div class="stat-item"><span class="stat-val" id="stat-eq" style="font-family:monospace;"></span></div>
         </div>
         <svg id="scatter-chart"></svg>
         <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
