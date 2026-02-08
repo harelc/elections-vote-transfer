@@ -1082,7 +1082,7 @@
 
                 searchResults.innerHTML = matches.map(s => `
                     <div class="search-result-item" data-settlement="${s.name}">
-                        ${s.name}
+                        ${i18n.settlementName(s.name)}
                         <span class="station-count">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}${i18n.getLang() === 'en' ? 's' : 'ות'}</span>
                     </div>
                 `).join('');
@@ -1128,7 +1128,7 @@
 
                 container.innerHTML = this.selectedSettlements.map(name => `
                     <span class="settlement-tag" data-settlement="${name}">
-                        ${name}
+                        ${i18n.settlementName(name)}
                         <button class="remove-btn" title="${i18n.getLang() === 'en' ? 'Remove' : 'הסר'}">&times;</button>
                     </span>
                 `).join('');
@@ -1177,7 +1177,7 @@
                     const location = s.l || '';
                     return `
                         <div class="search-result-item" data-station-idx="${idx}">
-                            <strong>${name}</strong> - ${i18n.t('ballot')} ${ballot}
+                            <strong>${i18n.settlementName(name)}</strong> - ${i18n.t('ballot')} ${ballot}
                             ${location ? `<br><span class="station-count">${location}</span>` : ''}
                         </div>
                     `;
@@ -1210,7 +1210,7 @@
                 const selectedEl = document.getElementById('selected-station');
                 selectedEl.innerHTML = `
                     <div class="selected-station-header">
-                        <span class="selected-station-name">${name} - ${i18n.t('ballot')} ${ballot}</span>
+                        <span class="selected-station-name">${i18n.settlementName(name)} - ${i18n.t('ballot')} ${ballot}</span>
                         <button class="clear-btn" title="${i18n.t('clear_filter')}">&times;</button>
                     </div>
                     ${location ? `<div class="selected-station-details">${location}</div>` : ''}
@@ -1792,7 +1792,7 @@
                     : '';
 
                 this.tooltip.html(`
-                    <div class="tooltip-title">${settlementName}${clusterHtml}</div>
+                    <div class="tooltip-title">${i18n.settlementName(settlementName)}${clusterHtml}</div>
                     <div class="tooltip-subtitle">${i18n.t('ballot')} ${ballotNumber}</div>
                     ${locationHtml}
                     <div class="tooltip-turnout">

@@ -286,6 +286,36 @@
         return electionObj.name || '';
     }
 
+    /** Settlement name English lookup (loaded lazily). */
+    let _settlementMap = null;
+    let _settlementMapLoading = false;
+
+    function loadSettlementNames() {
+        if (_settlementMap || _settlementMapLoading) return;
+        _settlementMapLoading = true;
+        // Determine path prefix: mobile pages are in m/ subfolder
+        const prefix = location.pathname.includes('/m/') ? '../' : '';
+        fetch(prefix + 'data/settlement_names_en.json')
+            .then(r => r.json())
+            .then(data => { _settlementMap = data; })
+            .catch(() => { _settlementMap = {}; })
+            .finally(() => { _settlementMapLoading = false; });
+    }
+
+    // Pre-load if starting in English
+    if (currentLang === 'en') loadSettlementNames();
+
+    /** Get settlement display name (English transliteration or Hebrew original). */
+    function settlementName(name) {
+        if (!name) return '';
+        if (currentLang === 'he') return name;
+        if (!_settlementMap) {
+            loadSettlementNames();
+            return name; // Return Hebrew until loaded
+        }
+        return _settlementMap[name] || name;
+    }
+
     /** Locale-aware number formatting. */
     function fmtNum(n) {
         if (n == null) return '';
@@ -335,6 +365,7 @@
     /** Set language and update the page. */
     function setLang(lang) {
         currentLang = lang;
+        if (lang === 'en') loadSettlementNames();
         const isHe = lang === 'he';
 
         // Update dir & lang on html
@@ -426,6 +457,7 @@
         partyName,
         leaderName,
         electionName,
+        settlementName,
         fmtNum,
         getLang,
         isRTL,

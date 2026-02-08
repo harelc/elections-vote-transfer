@@ -1106,13 +1106,13 @@
                 const settlementList = [...settlements];
                 let title = '';
                 if (settlementList.length === 1) {
-                    title = settlementList[0];
+                    title = i18n.settlementName(settlementList[0]);
                 } else if (settlementList.length <= 3) {
-                    title = settlementList.join(', ');
+                    title = settlementList.map(n => i18n.settlementName(n)).join(', ');
                 } else {
                     const moreCount = settlementList.length - 2;
                     const moreLabel = i18n.getLang() === 'en' ? `and ${moreCount} more` : `ועוד ${moreCount}`;
-                    title = `${settlementList.slice(0, 2).join(', ')} ${moreLabel}`;
+                    title = `${settlementList.slice(0, 2).map(n => i18n.settlementName(n)).join(', ')} ${moreLabel}`;
                 }
 
                 // Most common cluster
@@ -1190,7 +1190,7 @@
                     </div>
                 `).join('');
 
-                const title = location ? `${settlement} / ${location}` : settlement;
+                const title = location ? `${i18n.settlementName(settlement)} / ${location}` : i18n.settlementName(settlement);
                 const clusterLabel = i18n.getLang() === 'en' ? 'Cluster:' : 'אשכול:';
 
                 const tooltip = document.getElementById('cluster-tooltip');
@@ -1742,7 +1742,7 @@
 
                 return `
                     <div class="station-popup" style="direction: ${i18n.isRTL() ? 'rtl' : 'ltr'}">
-                        <div class="station-popup-title">${settlement}${clusterText}</div>
+                        <div class="station-popup-title">${i18n.settlementName(settlement)}${clusterText}</div>
                         <div class="station-popup-ballot">${i18n.t('ballot')} ${ballot}</div>
                         ${location ? `<div class="station-popup-location">${location}</div>` : ''}
                         <div class="station-popup-stats">
@@ -1779,7 +1779,7 @@
 
                 searchResults.innerHTML = matches.map(s => `
                     <div class="search-result-item" data-settlement="${s.name}">
-                        ${s.name}
+                        ${i18n.settlementName(s.name)}
                         <span style="color: var(--text-muted); font-size: 0.75rem;">${i18n.fmtNum(s.count)} ${i18n.t('stations')}</span>
                     </div>
                 `).join('');
@@ -1850,7 +1850,7 @@
 
                 resultsDiv.innerHTML = matches.slice(0, 15).map(m => `
                     <div class="search-result-item" data-key="${m.key}">
-                        ${m.name} / ${m.ballot}
+                        ${i18n.settlementName(m.name)} / ${m.ballot}
                         <span style="color: var(--text-muted); font-size: 0.7rem; display: block;">${m.location}</span>
                     </div>
                 `).join('');

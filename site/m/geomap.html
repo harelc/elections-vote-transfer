@@ -200,7 +200,7 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
-        <span class="title">🗳️ <span data-i18n="tab_map">מפה</span></span>
+        <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="tab_map">מפה</span></span>
         <div class="election-pills" id="election-pills"></div>
         <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
@@ -650,7 +650,7 @@
             }).join('');
 
             document.getElementById('sheet-content').innerHTML = `
-                <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${name}</div>
+                <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${i18n.settlementName(name)}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
                     ${i18n.t('ballot')} ${ballot}${location ? ' · ' + location : ''}${se ? ' · ' + i18n.t('socioeconomic') + ' ' + se : ''}
                 </div>
@@ -689,9 +689,9 @@
             const andMore = i18n.getLang() === 'he'
                 ? `ועוד ${setList.length - 2}`
                 : `and ${setList.length - 2} more`;
-            const title = setList.length === 1 ? setList[0]
-                : setList.length <= 3 ? setList.join(', ')
-                : `${setList.slice(0, 2).join(', ')} ${andMore}`;
+            const title = setList.length === 1 ? i18n.settlementName(setList[0])
+                : setList.length <= 3 ? setList.map(n => i18n.settlementName(n)).join(', ')
+                : `${setList.slice(0, 2).map(n => i18n.settlementName(n)).join(', ')} ${andMore}`;
             const venue = locations.size === 1 ? [...locations][0] : '';
 
             const topParties = Object.entries(partyVotes)
@@ -774,7 +774,7 @@
 
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">
-                    ${s.name} <span class="detail">${i18n.fmtNum(s.count)} ${i18n.t('stations')}</span>
+                    ${i18n.settlementName(s.name)} <span class="detail">${i18n.fmtNum(s.count)} ${i18n.t('stations')}</span>
                 </div>
             `).join('');
             results.classList.add('visible');
@@ -810,7 +810,7 @@
 
             results.innerHTML = matches.map((s, i) => `
                 <div class="search-result-item" data-idx="${i}">
-                    <strong>${s.n}</strong> - ${i18n.t('ballot')} ${s.b}
+                    <strong>${i18n.settlementName(s.n)}</strong> - ${i18n.t('ballot')} ${s.b}
                     ${s.l ? `<br><span class="detail">${s.l}</span>` : ''}
                 </div>
             `).join('');
@@ -836,7 +836,7 @@
         renderSettlementTags() {
             const container = document.getElementById('settlement-tags');
             container.innerHTML = this.selectedSettlements.map(name => `
-                <span class="chip">${name}<span class="remove" data-name="${name}">&times;</span></span>
+                <span class="chip">${i18n.settlementName(name)}<span class="remove" data-name="${name}">&times;</span></span>
             `).join('');
 
             container.querySelectorAll('.remove').forEach(btn => {

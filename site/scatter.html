@@ -957,7 +957,7 @@
 
                 searchResults.innerHTML = matches.map(s => `
                     <div class="search-result-item" data-settlement="${s.name}">
-                        ${s.name}
+                        ${i18n.settlementName(s.name)}
                         <span class="station-count">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}</span>
                     </div>
                 `).join('');
@@ -993,7 +993,7 @@
                 const container = document.getElementById('selected-settlements');
                 container.innerHTML = this.selectedSettlements.map(name => `
                     <div class="selected-settlement">
-                        <span>${name}</span>
+                        <span>${i18n.settlementName(name)}</span>
                         <span class="remove-btn" data-settlement="${name}">×</span>
                     </div>
                 `).join('');
@@ -1437,7 +1437,7 @@
                 const elXShort = this.electionShort(this.currentElectionX);
                 const elYShort = this.electionShort(this.currentElectionY);
                 const html = `
-                    <div class="tooltip-title">${d.settlement}</div>
+                    <div class="tooltip-title">${i18n.settlementName(d.settlement)}</div>
                     <div class="tooltip-subtitle">${i18n.t('ballot')} ${d.ballot}</div>
                     ${locationHtml}
                     <div class="tooltip-values">

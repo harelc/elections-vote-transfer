@@ -74,7 +74,7 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
-        <span class="title">🗳️ <span data-i18n="tab_scatter">השוואה</span></span>
+        <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="tab_scatter">השוואה</span></span>
         <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
 
@@ -451,7 +451,7 @@
 
         showDotSheet(d) {
             document.getElementById('sheet-content').innerHTML = `
-                <div style="font-weight:600;font-size:1rem;">${d.settlement}</div>
+                <div style="font-weight:600;font-size:1rem;">${i18n.settlementName(d.settlement)}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
                     ${i18n.t('ballot')} ${d.ballot}${d.location ? ' · ' + d.location : ''}
                 </div>
@@ -480,7 +480,7 @@
             if (!matches.length) { results.classList.remove('visible'); return; }
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">
-                    ${s.name} <span class="detail">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}</span>
+                    ${i18n.settlementName(s.name)} <span class="detail">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}</span>
                 </div>
             `).join('');
             results.classList.add('visible');
@@ -501,7 +501,7 @@
         renderTags() {
             const container = document.getElementById('settlement-tags');
             container.innerHTML = this.selectedSettlements.map(name => `
-                <span class="chip">${name}<span class="remove" data-name="${name}">&times;</span></span>
+                <span class="chip">${i18n.settlementName(name)}<span class="remove" data-name="${name}">&times;</span></span>
             `).join('');
             container.querySelectorAll('.remove').forEach(btn => {
                 btn.onclick = e => {
