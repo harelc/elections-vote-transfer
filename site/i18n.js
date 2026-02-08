@@ -261,7 +261,13 @@
     };
 
     /* ── State ── */
-    let currentLang = 'he';
+    // Determine language immediately (before DOMContentLoaded) so page scripts can read it
+    const _urlParams = new URLSearchParams(window.location.search);
+    const _urlLang = _urlParams.get('lang');
+    const _storedLang = localStorage.getItem('lang');
+    let currentLang = (_urlLang === 'en' || _urlLang === 'he') ? _urlLang
+        : (_storedLang === 'en' || _storedLang === 'he') ? _storedLang
+        : 'he';
 
     /* ── Core functions ── */
 
