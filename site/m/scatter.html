@@ -66,7 +66,24 @@
         .axis text { fill: var(--text-muted); font-size: 9px; font-family: 'Heebo', sans-serif; }
         .axis line, .axis path { stroke: var(--border); }
         .diagonal-line { stroke: var(--border-light); stroke-dasharray: 4,4; stroke-opacity: 0.5; }
+        .regression-line { stroke: #f59e0b; stroke-width: 2; stroke-dasharray: 5,5; opacity: 0.7; fill: none; }
         .axis-title { fill: var(--text-secondary); font-size: 10px; font-family: 'Heebo', sans-serif; }
+
+        .stats-bar {
+            position: absolute;
+            top: 4px;
+            left: 50px;
+            right: 8px;
+            display: flex;
+            gap: 10px;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+        .stats-bar .stat-item { display: flex; gap: 3px; align-items: center; }
+        .stats-bar .stat-val { color: var(--text-secondary); font-weight: 600; font-variant-numeric: tabular-nums; }
+        .stats-bar .corr-pos { color: #10b981; }
+        .stats-bar .corr-neg { color: #ef4444; }
 
         .search-fab { top: auto; bottom: calc(62px + var(--safe-bottom)); right: 8px; }
     </style>
@@ -95,6 +112,11 @@
 
     <!-- Main Area -->
     <div class="main-area" id="main-area">
+        <div class="stats-bar" id="stats-bar">
+            <div class="stat-item">n=<span class="stat-val" id="stat-n">-</span></div>
+            <div class="stat-item">r=<span class="stat-val" id="stat-corr">-</span></div>
+            <div class="stat-item">R²=<span class="stat-val" id="stat-r2">-</span></div>
+        </div>
         <svg id="scatter-chart"></svg>
         <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
     </div>
@@ -411,6 +433,21 @@
                 .attr('text-anchor', 'middle')
                 .text(`${i18n.partyName(this.currentPartyY)} (${this.electionShort(this.currentElectionY)})`);
 
+            // Regression line
+            const regression = this.calculateRegression(data);
+            if (regression) {
+                const x1 = 0, x2 = maxVal;
+                const y1 = regression.intercept + regression.slope * x1;
+                const y2 = regression.intercept + regression.slope * x2;
+                g.append('line')
+                    .attr('class', 'regression-line')
+                    .attr('x1', xScale(x1))
+                    .attr('y1', yScale(Math.max(0, y1)))
+                    .attr('x2', xScale(x2))
+                    .attr('y2', yScale(Math.max(0, y2)));
+            }
+            this.updateStats(data, regression);
+
             // Background dots when filtering
             if (this.selectedSettlements.length > 0) {
                 g.selectAll('.bg-dot')
@@ -447,6 +484,36 @@
             svg.on('click', () => {
                 document.getElementById('search-panel').classList.remove('visible');
             });
+        }
+
+        calculateRegression(data) {
+            if (data.length < 2) return null;
+            const n = data.length;
+            const sumX = d3.sum(data, d => d.x);
+            const sumY = d3.sum(data, d => d.y);
+            const sumXY = d3.sum(data, d => d.x * d.y);
+            const sumX2 = d3.sum(data, d => d.x * d.x);
+            const sumY2 = d3.sum(data, d => d.y * d.y);
+            const denom = (n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY);
+            if (denom <= 0) return null;
+            const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+            const intercept = (sumY - slope * sumX) / n;
+            const correlation = (n * sumXY - sumX * sumY) / Math.sqrt(denom);
+            return { slope, intercept, correlation, rSquared: correlation * correlation };
+        }
+
+        updateStats(data, regression) {
+            document.getElementById('stat-n').textContent = i18n.fmtNum(data.length);
+            if (regression) {
+                const corrEl = document.getElementById('stat-corr');
+                corrEl.textContent = regression.correlation.toFixed(3);
+                corrEl.className = `stat-val ${regression.correlation >= 0 ? 'corr-pos' : 'corr-neg'}`;
+                document.getElementById('stat-r2').textContent = regression.rSquared.toFixed(3);
+            } else {
+                document.getElementById('stat-corr').textContent = '-';
+                document.getElementById('stat-corr').className = 'stat-val';
+                document.getElementById('stat-r2').textContent = '-';
+            }
         }
 
         showDotSheet(d) {

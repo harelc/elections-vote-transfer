@@ -46,6 +46,7 @@
         prev_election:         { he: 'בחירות קודמות', en: 'Previous election' },
         new_election:          { he: 'בחירות חדשות', en: 'New election' },
         loading:               { he: 'טוען נתונים...', en: 'Loading data...' },
+        loading_please_wait:   { he: 'טוען נתונים, נא להמתין...', en: 'Loading data, please wait...' },
         error_loading:         { he: 'שגיאה בטעינת הנתונים', en: 'Error loading data' },
         error_init:            { he: 'שגיאה באתחול', en: 'Initialization error' },
         no_data:               { he: 'אין נתונים להצגה', en: 'No data to display' },
