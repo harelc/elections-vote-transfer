@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop'))location.replace('m/sankey.html')</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/sankey.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>קולות נודדים - ניתוח מעבר קולות בבחירות לכנסת</title>
@@ -12,6 +12,8 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->
@@ -26,18 +28,18 @@
             <div class="header-content">
                 <h1 class="site-title">
                     <span class="title-icon">🗳️</span>
-                    קולות נודדים
+                    <span data-i18n="site_title">קולות נודדים</span>
                 </h1>
-                <p class="site-subtitle">ניתוח מעבר קולות בין בחירות לכנסת ישראל</p>
+                <p class="site-subtitle" data-i18n="site_subtitle">ניתוח מעבר קולות בין בחירות לכנסת ישראל</p>
             </div>
             <nav class="view-switcher">
-                <span class="view-btn active">נדידת קולות</span>
-                <a href="tsne.html" class="view-btn">התפלגות קלפיות</a>
-                <a href="geomap.html" class="view-btn">מפה גיאוגרפית</a>
-                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
-                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
-                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
-                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+                <span class="view-btn active" data-i18n="nav_sankey">נדידת קולות</span>
+                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
+                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
+                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
+                <button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button>
             </nav>
         </header>
 
@@ -70,13 +72,13 @@
             <div class="info-panel">
                 <div class="election-info">
                     <div class="election-card from-election">
-                        <span class="election-label">מבחירות</span>
+                        <span class="election-label" data-i18n="from_election">מבחירות</span>
                         <h3 class="election-name" id="from-election-name">הכנסת ה-24</h3>
                         <span class="election-date" id="from-election-date">23.03.2021</span>
                         <div class="election-stats">
-                            <span class="election-stat"><span id="from-eligible">6,578,084</span> בעלי זכות</span>
-                            <span class="election-stat"><span id="from-votes">4,436,365</span> הצביעו</span>
-                            <span class="election-stat"><span id="from-turnout">67.4%</span> אחוז הצבעה</span>
+                            <span class="election-stat"><span id="from-eligible">6,578,084</span> <span data-i18n="eligible_voters">בעלי זכות</span></span>
+                            <span class="election-stat"><span id="from-votes">4,436,365</span> <span data-i18n="voted">הצביעו</span></span>
+                            <span class="election-stat"><span id="from-turnout">67.4%</span> <span data-i18n="turnout_pct">אחוז הצבעה</span></span>
                         </div>
                     </div>
                     <div class="arrow-container">
@@ -85,29 +87,29 @@
                         </svg>
                     </div>
                     <div class="election-card to-election">
-                        <span class="election-label">לבחירות</span>
+                        <span class="election-label" data-i18n="to_election">לבחירות</span>
                         <h3 class="election-name" id="to-election-name">הכנסת ה-25</h3>
                         <span class="election-date" id="to-election-date">01.11.2022</span>
                         <div class="election-stats">
-                            <span class="election-stat"><span id="to-eligible">6,788,804</span> בעלי זכות</span>
-                            <span class="election-stat"><span id="to-votes">4,794,593</span> הצביעו</span>
-                            <span class="election-stat"><span id="to-turnout">70.6%</span> אחוז הצבעה</span>
+                            <span class="election-stat"><span id="to-eligible">6,788,804</span> <span data-i18n="eligible_voters">בעלי זכות</span></span>
+                            <span class="election-stat"><span id="to-votes">4,794,593</span> <span data-i18n="voted">הצביעו</span></span>
+                            <span class="election-stat"><span id="to-turnout">70.6%</span> <span data-i18n="turnout_pct">אחוז הצבעה</span></span>
                         </div>
                     </div>
                 </div>
                 <div class="stats-panel">
                     <div class="stat-item">
                         <span class="stat-value" id="stat-precincts">6,857</span>
-                        <span class="stat-label">קלפיות משותפות</span>
+                        <span class="stat-label" data-i18n="common_precincts">קלפיות משותפות</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="stat-r2">0.896</span>
-                        <span class="stat-label">R² (מידת התאמה)</span>
+                        <span class="stat-label" data-i18n="r_squared">R² (מידת התאמה)</span>
                     </div>
                     <div class="stat-item toggle-item">
                         <button class="percent-toggle" id="percent-toggle">
-                            <span class="toggle-label">תצוגת אחוזים:</span>
-                            <span class="toggle-value" id="toggle-value">מהבחירות הקודמות</span>
+                            <span class="toggle-label" data-i18n="pct_display">תצוגת אחוזים:</span>
+                            <span class="toggle-value" id="toggle-value" data-i18n="pct_from_prev">מהבחירות הקודמות</span>
                         </button>
                     </div>
                 </div>
@@ -115,14 +117,14 @@
 
             <div class="visualization-container">
                 <div class="legend-container legend-from">
-                    <h4 id="legend-from-title">מפלגות מקור</h4>
+                    <h4 id="legend-from-title" data-i18n="source_parties">מפלגות מקור</h4>
                     <div id="legend-from" class="legend-grid"></div>
                 </div>
                 <div class="sankey-wrapper">
                     <div id="sankey-chart"></div>
                 </div>
                 <div class="legend-container legend-to">
-                    <h4 id="legend-to-title">מפלגות יעד</h4>
+                    <h4 id="legend-to-title" data-i18n="target_parties">מפלגות יעד</h4>
                     <div id="legend-to" class="legend-grid"></div>
                 </div>
             </div>
@@ -139,15 +141,15 @@
             <div class="legends-overlay" id="legends-overlay">
                 <div class="legends-overlay-content">
                     <div class="legends-overlay-header">
-                        <span class="legends-overlay-title">מפלגות</span>
+                        <span class="legends-overlay-title" data-i18n="parties_label">מפלגות</span>
                         <button class="legends-overlay-close" id="close-legends">×</button>
                     </div>
                     <div class="legends-section">
-                        <div class="legends-section-title" id="overlay-from-title">בחירות קודמות</div>
+                        <div class="legends-section-title" id="overlay-from-title" data-i18n="prev_election">בחירות קודמות</div>
                         <div class="legends-list" id="overlay-from-list"></div>
                     </div>
                     <div class="legends-section">
-                        <div class="legends-section-title" id="overlay-to-title">בחירות חדשות</div>
+                        <div class="legends-section-title" id="overlay-to-title" data-i18n="new_election">בחירות חדשות</div>
                         <div class="legends-list" id="overlay-to-list"></div>
                     </div>
                 </div>
@@ -156,10 +158,10 @@
             <!-- Mobile controls -->
             <div class="mobile-controls">
                 <button class="mobile-btn" id="show-legends-btn">
-                    <span>מפלגות</span>
+                    <span data-i18n="parties_label">מפלגות</span>
                 </button>
                 <button class="mobile-btn" id="mobile-percent-toggle">
-                    <span id="mobile-toggle-value">% מהקודמות</span>
+                    <span id="mobile-toggle-value" data-i18n="pct_prev_short">% מהקודמות</span>
                 </button>
             </div>
         </main>
@@ -167,16 +169,14 @@
         <footer class="main-footer">
             <div class="footer-content">
                 <p class="methodology">
-                    <strong>מתודולוגיה:</strong>
-                    כל קלפי מהווה תצפית רועשת (noisy observation) של דפוס מעבר הקולות הארצי.
-                    המצביעים בכל קלפי נוהגים באופן דומה לאוכלוסייה הכללית, אך גודל המדגם הקטן (מאות בוחרים) יוצר רעש סטטיסטי.
-                    על ידי רגרסיה על אלפי קלפיות ברחבי הארץ, ניתן לשחזר את מטריצת המעבר הארצית האמיתית.
-                    <a href="#" class="methodology-link" id="open-methodology">קראו עוד על המתודולוגיה...</a>
+                    <strong data-i18n="methodology_short">מתודולוגיה:</strong>
+                    <span data-i18n="methodology_text">כל קלפי מהווה תצפית רועשת (noisy observation) של דפוס מעבר הקולות הארצי. המצביעים בכל קלפי נוהגים באופן דומה לאוכלוסייה הכללית, אך גודל המדגם הקטן (מאות בוחרים) יוצר רעש סטטיסטי. על ידי רגרסיה על אלפי קלפיות ברחבי הארץ, ניתן לשחזר את מטריצת המעבר הארצית האמיתית.</span>
+                    <a href="#" class="methodology-link" id="open-methodology" data-i18n="read_more_methodology">קראו עוד על המתודולוגיה...</a>
                 </p>
                 <p class="credits">
-                    © הראל קין |
+                    <span data-i18n="credits_line">© הראל קין</span> |
                     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
-                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
                 </p>
             </div>
         </footer>
@@ -185,111 +185,59 @@
         <div class="modal-overlay" id="methodology-modal">
             <div class="modal-content">
                 <button class="modal-close" id="close-methodology">&times;</button>
-                <h2>על המתודולוגיה</h2>
+                <h2 data-i18n="about_methodology">על המתודולוגיה</h2>
 
                 <section class="methodology-section">
-                    <h3>🎯 הרעיון הבסיסי</h3>
-                    <p>
-                        דמיינו שאתם רוצים לדעת לאן עברו הקולות של מפלגה X בבחירות הקודמות.
-                        ברור שחלק מהמצביעים נשארו נאמנים, אחרים עברו למפלגה Y, ואחרים למפלגה Z.
-                        אבל איך אפשר לדעת את הפילוח הזה בלי לשאול כל אזרח איך הצביע?
-                    </p>
-                    <p>
-                        הפתרון: <strong>להסתכל על קלפיות בודדות</strong>.
-                        בכל קלפי יש כמה מאות מצביעים, ויש לנו את תוצאות ההצבעה שלהם בשתי בחירות עוקבות.
-                        אם בקלפי מסוימת הייתה תמיכה גבוהה במפלגה X בבחירות הקודמות, ובבחירות הנוכחיות יש תמיכה גבוהה במפלגה Y -
-                        זה רמז שמצביעי X עברו ל-Y.
-                    </p>
-                    <p>
-                        כמובן, קלפי בודדת היא מדגם קטן ורועש. אבל כשמנתחים <strong>אלפי קלפיות</strong> יחד,
-                        הרעש מתקזז והתמונה האמיתית מתגלה.
-                    </p>
+                    <h3 data-i18n="method_basic_idea">🎯 הרעיון הבסיסי</h3>
+                    <p data-i18n-html="method_p1"></p>
+                    <p data-i18n-html="method_p2"></p>
+                    <p data-i18n-html="method_p3"></p>
                 </section>
 
                 <section class="methodology-section">
-                    <h3>📊 המודל המתמטי</h3>
-                    <p>
-                        אנחנו מחפשים <strong>מטריצת מעבר</strong> M, כך שכל תא M[i,j] מייצג את
-                        ההסתברות שמצביע שהצביע למפלגה i בבחירות הקודמות יצביע למפלגה j בבחירות הנוכחיות.
-                    </p>
-                    <p>
-                        המודל מניח שהתפלגות ההצבעה בכל קלפי מקיימת את המשוואה:
-                    </p>
+                    <h3 data-i18n="method_math_model">📊 המודל המתמטי</h3>
+                    <p data-i18n-html="method_p4"></p>
+                    <p data-i18n-html="method_p5"></p>
                     <div class="formula">
-                        V<sub>לפני</sub> × M ≈ V<sub>אחרי</sub>
+                        V<sub>before</sub> × M ≈ V<sub>after</sub>
                     </div>
-                    <p>
-                        כאשר V<sub>לפני</sub> הוא וקטור אחוזי ההצבעה בבחירות הקודמות,
-                        ו-V<sub>אחרי</sub> הוא וקטור אחוזי ההצבעה בבחירות הנוכחיות.
-                    </p>
                 </section>
 
                 <section class="methodology-section">
-                    <h3>⚙️ האופטימיזציה</h3>
-                    <p>
-                        המטריצה M מחושבת באמצעות <strong>אופטימיזציה קמורה</strong> (Convex Optimization),
-                        שמוצאת את M שממזערת את סכום ריבועי השגיאות:
-                    </p>
+                    <h3 data-i18n="method_optimization">⚙️ האופטימיזציה</h3>
+                    <p data-i18n-html="method_p6"></p>
                     <div class="formula">
-                        minimize Σ<sub>קלפי</sub> ||V<sub>לפני</sub> × M - V<sub>אחרי</sub>||²
+                        minimize Σ<sub>box</sub> ||V<sub>before</sub> × M - V<sub>after</sub>||²
                     </div>
-                    <p>תחת האילוצים הבאים:</p>
+                    <p data-i18n="method_constraints">תחת האילוצים הבאים:</p>
                     <ul>
-                        <li><strong>אי-שליליות:</strong> M[i,j] ≥ 0 (לא ייתכן מעבר שלילי)</li>
-                        <li><strong>סטוכסטיות:</strong> סכום כל שורה שווה ל-1 (כל המצביעים הולכים למקום כלשהו)</li>
+                        <li data-i18n-html="method_nonneg"></li>
+                        <li data-i18n-html="method_stochastic"></li>
                     </ul>
-                    <p>
-                        הפתרון מתקבל באמצעות הספרייה CVXPY עם הפותר SCS.
-                    </p>
+                    <p data-i18n="method_solver">הפתרון מתקבל באמצעות הספרייה CVXPY עם הפותר SCS.</p>
                 </section>
 
                 <section class="methodology-section">
-                    <h3>📈 מדד איכות: R²</h3>
-                    <p>
-                        מדד R² (R-squared) מציין כמה טוב המודל מסביר את השונות בנתונים.
-                        ערך 1.0 מציין התאמה מושלמת, וערך 0 מציין שהמודל לא מסביר כלום.
-                    </p>
-                    <p>
-                        בפועל, אנחנו מקבלים ערכי R² בטווח 0.7-0.9, שמעידים על התאמה טובה אך לא מושלמת -
-                        מה שהגיוני, כי המודל הוא פישוט של המציאות.
-                    </p>
+                    <h3 data-i18n="method_r_squared">📈 מדד איכות: R²</h3>
+                    <p data-i18n="method_r2_desc"></p>
+                    <p data-i18n="method_r2_range"></p>
                 </section>
 
                 <section class="methodology-section">
-                    <h3>⚠️ מגבלות ואזהרות</h3>
+                    <h3 data-i18n="method_limitations">⚠️ מגבלות ואזהרות</h3>
                     <ul class="limitations-list">
-                        <li>
-                            <strong>הנחת אחידות:</strong>
-                            המודל מניח שדפוס המעבר זהה בכל הארץ. במציאות, מצביעי ליכוד בתל אביב
-                            עשויים להתנהג אחרת ממצביעי ליכוד בירושלים.
-                        </li>
-                        <li>
-                            <strong>מצביעים חדשים ונפטרים:</strong>
-                            המודל מתעלם מכניסת מצביעים חדשים (בני 18+) וממצביעים שנפטרו.
-                            אלה מיוצגים באופן מאולץ כ"מעבר" ממפלגה כלשהי.
-                        </li>
-                        <li>
-                            <strong>שינויים בהרכב הקלפי:</strong>
-                            תושבים עוברים דירה, קלפיות מתפצלות או מתמזגות.
-                            אנחנו משווים רק קלפיות עם אותו מזהה, מה שמפספס חלק מהתמונה.
-                        </li>
-                        <li>
-                            <strong>קורלציה ≠ סיבתיות:</strong>
-                            המודל מוצא קשרים סטטיסטיים, לא מוכיח שמצביעים באמת עברו.
-                            יכולים להיות גורמים נסתרים שמסבירים את הקורלציות.
-                        </li>
-                        <li>
-                            <strong>אי-ודאות:</strong>
-                            התוצאות הן אומדנים סטטיסטיים עם שולי שגיאה.
-                            מעברים קטנים (פחות מ-5%) עשויים להיות רעש סטטיסטי ולא מגמה אמיתית.
-                        </li>
+                        <li data-i18n-html="method_lim_uniform"></li>
+                        <li data-i18n-html="method_lim_new"></li>
+                        <li data-i18n-html="method_lim_changes"></li>
+                        <li data-i18n-html="method_lim_causal"></li>
+                        <li data-i18n-html="method_lim_uncertainty"></li>
                     </ul>
                 </section>
 
                 <section class="methodology-section">
-                    <h3>📚 קריאה נוספת</h3>
+                    <h3 data-i18n="method_further">📚 קריאה נוספת</h3>
                     <p>
-                        הקוד המלא זמין ב<a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">GitHub</a>.
+                        <span data-i18n="method_code_link">הקוד המלא זמין ב</span><a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">GitHub</a>.
                     </p>
                 </section>
             </div>
@@ -332,7 +280,7 @@
                 padding: 32px;
                 position: relative;
                 box-shadow: var(--shadow-lg), 0 0 40px rgba(99, 102, 241, 0.15);
-                direction: rtl;
+                direction: inherit;
                 border: 1px solid var(--border-color);
             }
             .modal-close {
@@ -441,9 +389,9 @@
     <script src="sankey.js"></script>
 
     <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" data-i18n-title="bmc_title">
         <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
     </a>
     <style>
         .bmc-button {
@@ -482,5 +430,6 @@
             display: inline-block;
         }
     </style>
+    <script>i18n.injectLangToggle('.view-switcher');</script>
 </body>
 </html>

@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop'))location.replace('m/dhondt.html')</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/dhondt.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מחשבון באדר-עופר - קולות נודדים</title>
@@ -720,6 +720,8 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->
@@ -734,13 +736,13 @@
             <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
             <p class="subtitle">מחשבון חלוקת מנדטים בשיטת באדר-עופר</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn">נדידת קולות</a>
-                <a href="tsne.html" class="view-btn">התפלגות קלפיות</a>
-                <a href="geomap.html" class="view-btn">מפה גיאוגרפית</a>
-                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
-                <span class="view-btn active">מחשבון באדר-עופר</span>
-                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
-                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
+                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
+                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
+                <span class="view-btn active" data-i18n="nav_dhondt">מחשבון באדר-עופר</span>
+                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
+                <button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button>
             </nav>
         </header>
 
@@ -748,19 +750,19 @@
             <aside class="control-panel">
                 <div class="control-panel-scrollable">
                     <div class="control-section">
-                        <h3 class="control-title">הגדרות</h3>
+                        <h3 class="control-title" data-i18n="settings">הגדרות</h3>
                         <div class="threshold-control">
-                            <label>אחוז חסימה:</label>
+                            <label data-i18n="threshold_pct">אחוז חסימה:</label>
                             <input type="number" id="threshold" class="threshold-input" value="3.25" min="0" max="10" step="0.25">
                             <span>%</span>
                         </div>
                     </div>
 
                     <div class="control-section">
-                        <h3 class="control-title">קולות למפלגות</h3>
+                        <h3 class="control-title" data-i18n="edit_votes">קולות למפלגות</h3>
                         <div id="party-inputs"></div>
                         <div class="total-row">
-                            <span>סה״כ קולות:</span>
+                            <span data-i18n="total_votes">סה״כ קולות:</span>
                             <span id="total-votes">0</span>
                         </div>
                     </div>
@@ -768,7 +770,7 @@
 
                 <div class="control-panel-fixed">
                     <div class="control-section">
-                        <h3 class="control-title">הסכמי עודפים</h3>
+                        <h3 class="control-title" data-i18n="surplus_agreements">הסכמי עודפים</h3>
                         <div id="agreements-list" class="agreements-list"></div>
                         <div class="add-agreement">
                             <select id="agreement-party1" class="agreement-select">
@@ -781,28 +783,28 @@
                         </div>
                     </div>
 
-                    <button class="reset-btn" id="reset-btn">אפס לתוצאות כנסת 25</button>
+                    <button class="reset-btn" id="reset-btn" data-i18n="reset_to_official">אפס לתוצאות כנסת 25</button>
                 </div>
             </aside>
 
             <div class="visualization-container">
                 <div class="parliament-container">
-                    <h3 class="parliament-title">הרכב הכנסת (120 מושבים)</h3>
+                    <h3 class="parliament-title" data-i18n="knesset_composition">הרכב הכנסת (120 מושבים)</h3>
                     <div class="parliament-wrapper">
                         <div class="coalition-side">
-                            <div class="coalition-label">גוש ימין-חרדי</div>
+                            <div class="coalition-label" data-i18n="right_bloc">גוש ימין-חרדי</div>
                             <div class="coalition-seats" id="right-seats">0</div>
                         </div>
                         <svg id="parliament-chart"></svg>
                         <div class="coalition-side">
-                            <div class="coalition-label">גוש מרכז-שמאל-ערבי</div>
+                            <div class="coalition-label" data-i18n="left_bloc">גוש מרכז-שמאל-ערבי</div>
                             <div class="coalition-seats" id="left-seats">0</div>
                         </div>
                     </div>
                 </div>
 
                 <div class="results-container">
-                    <h3 class="results-title">חלוקת המנדטים</h3>
+                    <h3 class="results-title" data-i18n="seat_allocation">חלוקת המנדטים</h3>
                     <div id="results-grid" class="results-grid"></div>
                 </div>
             </div>
@@ -811,15 +813,16 @@
         <footer class="main-footer">
             <div class="footer-content">
                 <p class="methodology">
-                    <strong>שיטת באדר-עופר:</strong>
-                    שיטה לחלוקת מנדטים יחסית המיושמת בישראל. בכל סיבוב, מחלקים את מספר הקולות של כל מפלגה במספר המנדטים שכבר קיבלה +1.
+                    <strong data-i18n="methodology_short">שיטת באדר-עופר:</strong>
+                    <span data-i18n="methodology_text">שיטה לחלוקת מנדטים יחסית המיושמת בישראל. בכל סיבוב, מחלקים את מספר הקולות של כל מפלגה במספר המנדטים שכבר קיבלה +1.
                     המפלגה עם התוצאה הגבוהה ביותר מקבלת את המנדט הבא. התהליך חוזר עד לחלוקת כל 120 המנדטים.
-                    <strong>הסכמי עודפים:</strong> מפלגות שעברו את אחוז החסימה יכולות לחתום על הסכם עודפים - קולותיהן מצורפות יחד לחישוב המנה, אך המנדט ניתן למפלגה עם המנה הגבוהה ביותר בתוך ההסכם.
+                    <strong>הסכמי עודפים:</strong> מפלגות שעברו את אחוז החסימה יכולות לחתום על הסכם עודפים - קולותיהן מצורפות יחד לחישוב המנה, אך המנדט ניתן למפלגה עם המנה הגבוהה ביותר בתוך ההסכם.</span>
+                    <a href="methodology.html" data-i18n="read_more_methodology"></a>
                 </p>
-                <p class="credits">
+                <p class="credits" data-i18n="credits_line">
                     © הראל קין |
                     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
-                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
                 </p>
             </div>
         </footer>
@@ -830,22 +833,22 @@
     <script>
         // Party data from Knesset 25 - Official Wikipedia results
         const defaultParties = [
-            { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right' },
-            { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left' },
-            { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right' },
-            { name: 'המחנה הממלכתי', votes: 432482, color: '#7c3aed', block: 'left' },
-            { name: 'ש״ס', votes: 392964, color: '#1e3a8a', block: 'right' },
-            { name: 'יהדות התורה', votes: 280194, color: '#4b5563', block: 'right' },
-            { name: 'ישראל ביתנו', votes: 213687, color: '#db2777', block: 'left' },
-            { name: 'רע״ם', votes: 194047, color: '#84cc16', block: 'arab' },
-            { name: 'חד״ש-תע״ל', votes: 178735, color: '#f43f5e', block: 'arab' },
-            { name: 'העבודה', votes: 175992, color: '#dc2626', block: 'left' },
-            { name: 'מרצ', votes: 150793, color: '#16a34a', block: 'left' },
-            { name: 'בל״ד', votes: 138617, color: '#065f46', block: 'arab' },
-            { name: 'הבית היהודי', votes: 56775, color: '#059669', block: 'right' },
-            { name: 'חופש כלכלי', votes: 15801, color: '#6366f1', block: 'left' },
-            { name: 'באומץ בשבילך', votes: 14694, color: '#8b5cf6', block: 'left' },
-            { name: 'הכלכלית החדשה', votes: 13920, color: '#ec4899', block: 'left' },
+            { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right', name_en: 'Likud' },
+            { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
+            { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+            { name: 'המחנה הממלכתי', votes: 432482, color: '#7c3aed', block: 'left', name_en: 'National Unity' },
+            { name: 'ש״ס', votes: 392964, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+            { name: 'יהדות התורה', votes: 280194, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+            { name: 'ישראל ביתנו', votes: 213687, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+            { name: 'רע״ם', votes: 194047, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
+            { name: 'חד״ש-תע״ל', votes: 178735, color: '#f43f5e', block: 'arab', name_en: 'Hadash-Taal' },
+            { name: 'העבודה', votes: 175992, color: '#dc2626', block: 'left', name_en: 'Labor' },
+            { name: 'מרצ', votes: 150793, color: '#16a34a', block: 'left', name_en: 'Meretz' },
+            { name: 'בל״ד', votes: 138617, color: '#065f46', block: 'arab', name_en: 'Balad' },
+            { name: 'הבית היהודי', votes: 56775, color: '#059669', block: 'right', name_en: 'The Jewish Home' },
+            { name: 'חופש כלכלי', votes: 15801, color: '#6366f1', block: 'left', name_en: 'Economic Freedom' },
+            { name: 'באומץ בשבילך', votes: 14694, color: '#8b5cf6', block: 'left', name_en: 'Courageously For You' },
+            { name: 'הכלכלית החדשה', votes: 13920, color: '#ec4899', block: 'left', name_en: 'The New Economy' },
         ];
 
         // Default surplus agreements (by party indices)
@@ -887,17 +890,18 @@
                     const indicatorHtml = agreementPartner !== null
                         ? `<span class="agreement-indicator">🤝</span>`
                         : '';
+                    const displayName = i18n.partyName(party);
                     return `
                     <div class="party-input-row ${hasAgreement ? 'has-agreement' : ''}">
                         <div class="party-color" style="background: ${party.color}"></div>
-                        <span class="party-name" id="party-name-${idx}">${indicatorHtml}${party.name}</span>
+                        <span class="party-name" id="party-name-${idx}">${indicatorHtml}${displayName}</span>
                         <div class="vote-adjust-btns right">
                             <button class="vote-adjust-btn add" data-idx="${idx}" data-delta="50000">+50k</button>
                             <button class="vote-adjust-btn add" data-idx="${idx}" data-delta="10000">+10k</button>
                             <button class="vote-adjust-btn add" data-idx="${idx}" data-delta="1000">+1k</button>
                         </div>
                         <input type="text" class="vote-input" id="votes-${idx}"
-                               value="${party.votes.toLocaleString()}"
+                               value="${i18n.fmtNum(party.votes)}"
                                data-idx="${idx}">
                         <div class="vote-adjust-btns left">
                             <button class="vote-adjust-btn sub" data-idx="${idx}" data-delta="-1000">-1k</button>
@@ -928,11 +932,11 @@
                 });
 
                 const availableParties = this.parties
-                    .map((p, idx) => ({ name: p.name, idx }))
+                    .map((p, idx) => ({ ...p, idx }))
                     .filter(p => !inAgreement.has(p.idx));
 
-                const optionsHtml = '<option value="">בחר מפלגה...</option>' +
-                    availableParties.map(p => `<option value="${p.idx}">${p.name}</option>`).join('');
+                const optionsHtml = `<option value="">${i18n.t('choose')}</option>` +
+                    availableParties.map(p => `<option value="${p.idx}">${i18n.partyName(p)}</option>`).join('');
 
                 select1.innerHTML = optionsHtml;
                 select2.innerHTML = optionsHtml;
@@ -942,7 +946,7 @@
                 const container = document.getElementById('agreements-list');
 
                 if (this.agreements.length === 0) {
-                    container.innerHTML = '<div style="font-size: 0.75rem; color: var(--text-muted);">אין הסכמים פעילים</div>';
+                    container.innerHTML = `<div style="font-size: 0.75rem; color: var(--text-muted);">${i18n.t('no_agreements')}</div>`;
                     return;
                 }
 
@@ -953,12 +957,12 @@
                         <div class="agreement-item">
                             <div class="agreement-parties">
                                 <span class="agreement-party-color" style="background: ${party1.color}"></span>
-                                <span>${party1.name}</span>
+                                <span>${i18n.partyName(party1)}</span>
                                 <span class="agreement-link">⟷</span>
                                 <span class="agreement-party-color" style="background: ${party2.color}"></span>
-                                <span>${party2.name}</span>
+                                <span>${i18n.partyName(party2)}</span>
                             </div>
-                            <button class="agreement-remove" data-idx="${idx}" title="הסר הסכם">×</button>
+                            <button class="agreement-remove" data-idx="${idx}" title="${i18n.t('reset')}">×</button>
                         </div>
                     `;
                 }).join('');
@@ -1016,7 +1020,7 @@
                         this.parties[idx].votes = Math.max(0, this.parties[idx].votes + delta);
                         const inputEl = document.getElementById(`votes-${idx}`);
                         if (inputEl) {
-                            inputEl.value = this.parties[idx].votes.toLocaleString();
+                            inputEl.value = i18n.fmtNum(this.parties[idx].votes);
                         }
                         this.calculate();
                     }
@@ -1026,7 +1030,7 @@
                 document.getElementById('party-inputs').addEventListener('blur', (e) => {
                     if (e.target.classList.contains('vote-input')) {
                         const idx = parseInt(e.target.dataset.idx);
-                        e.target.value = this.parties[idx].votes.toLocaleString();
+                        e.target.value = i18n.fmtNum(this.parties[idx].votes);
                     }
                 }, true);
 
@@ -1082,7 +1086,7 @@
                 const thresholdVotes = totalVotes * (this.threshold / 100);
 
                 // Update total display
-                document.getElementById('total-votes').textContent = totalVotes.toLocaleString();
+                document.getElementById('total-votes').textContent = i18n.fmtNum(totalVotes);
 
                 // Filter parties above threshold
                 const eligibleParties = this.parties
@@ -1383,18 +1387,21 @@
                 const eligibleResults = results.filter(r => r.seats > 0);
 
                 container.innerHTML = eligibleResults.map(r => {
-                    const agreementIcon = r.hasAgreement ? '<span class="agreement-indicator" title="בהסכם עודפים">🤝</span>' : '';
-                    const gainFromText = r.gainFrom ? ` מ${r.gainFrom}` : '';
-                    const loseToText = r.loseTo ? ` ל${r.loseTo}` : '';
-                    const gainText = r.votesToGain ? `<span class="marginal-gain">+${r.votesToGain.toLocaleString()} לתוספת מנדט${gainFromText}</span>` : '';
-                    const loseText = r.votesToLose ? `<span class="marginal-lose">-${r.votesToLose.toLocaleString()} לאיבוד מנדט${loseToText}</span>` : '';
+                    const agreementIcon = r.hasAgreement ? `<span class="agreement-indicator" title="${i18n.t('in_surplus_agreement')}">🤝</span>` : '';
+                    const displayName = i18n.partyName(r);
+                    const gainFromParty = r.gainFrom ? i18n.partyName(r.gainFrom) : '';
+                    const loseToParty = r.loseTo ? i18n.partyName(r.loseTo) : '';
+                    const gainFromText = r.gainFrom ? ` ${i18n.t('gain_from', { party: gainFromParty })}` : '';
+                    const loseToText = r.loseTo ? ` ${i18n.t('lose_to', { party: loseToParty })}` : '';
+                    const gainText = r.votesToGain ? `<span class="marginal-gain">${i18n.t('votes_to_gain', { n: i18n.fmtNum(r.votesToGain) })}${gainFromText}</span>` : '';
+                    const loseText = r.votesToLose ? `<span class="marginal-lose">${i18n.t('votes_to_lose', { n: i18n.fmtNum(r.votesToLose) })}${loseToText}</span>` : '';
                     return `
                     <div class="result-card">
                         <div class="result-color" style="background: ${r.color}"></div>
                         <div class="result-info">
-                            <div class="result-name">${agreementIcon}${r.name}</div>
-                            <div class="result-seats">${r.seats} מנדטים</div>
-                            <div class="result-votes">${r.votes.toLocaleString()} קולות</div>
+                            <div class="result-name">${agreementIcon}${displayName}</div>
+                            <div class="result-seats">${r.seats} ${i18n.t('seats_mandatim')}</div>
+                            <div class="result-votes">${i18n.fmtNum(r.votes)} ${i18n.t('votes')}</div>
                             <div class="result-marginal">${gainText} ${loseText}</div>
                         </div>
                     </div>
@@ -1408,8 +1415,8 @@
                 const rightEl = document.getElementById('right-seats');
                 const leftEl = document.getElementById('left-seats');
 
-                rightEl.textContent = rightSeats;
-                leftEl.textContent = leftSeats + arabSeats;
+                rightEl.textContent = i18n.fmtNum(rightSeats);
+                leftEl.textContent = i18n.fmtNum(leftSeats + arabSeats);
 
                 rightEl.className = 'coalition-seats ' + (rightSeats >= 61 ? 'majority' : 'minority');
                 leftEl.className = 'coalition-seats ' + ((leftSeats + arabSeats) >= 61 ? 'majority' : 'minority');
@@ -1518,7 +1525,7 @@
                     .attr('stroke-width', 0.5)
                     .style('cursor', 'pointer')
                     .on('mouseenter', (event, d) => {
-                        this.tooltip.html(d.party)
+                        this.tooltip.html(i18n.partyName(d.party))
                             .classed('visible', true)
                             .style('left', (event.clientX + 10) + 'px')
                             .style('top', (event.clientY - 20) + 'px');
@@ -1534,7 +1541,7 @@
                     .attr('text-anchor', 'middle')
                     .attr('fill', 'var(--text-muted)')
                     .attr('font-size', '0.9rem')
-                    .text('120 מושבים');
+                    .text(i18n.t('seats_120'));
             }
         }
 
@@ -1665,7 +1672,7 @@
                 ctx.fillStyle = '#f8fafc';
                 ctx.font = 'bold 18px Heebo, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('הרכב הכנסת (120 מושבים)', width / 2, 35);
+                ctx.fillText(i18n.t('knesset_composition'), width / 2, 35);
 
                 // Center the parliament chart
                 const parliamentX = (width - svgWidth) / 2;
@@ -1679,7 +1686,7 @@
                 ctx.font = '14px Heebo, sans-serif';
                 ctx.fillStyle = '#94a3b8';
                 ctx.textAlign = 'right';
-                ctx.fillText('גוש ימין-חרדי', width - 40, 180);
+                ctx.fillText(i18n.t('right_bloc'), width - 40, 180);
                 ctx.fillStyle = parseInt(rightSeats) >= 61 ? '#10b981' : '#ef4444';
                 ctx.font = 'bold 28px Heebo, sans-serif';
                 ctx.fillText(rightSeats, width - 40, 215);
@@ -1687,7 +1694,7 @@
                 ctx.font = '14px Heebo, sans-serif';
                 ctx.fillStyle = '#94a3b8';
                 ctx.textAlign = 'left';
-                ctx.fillText('גוש מרכז-שמאל-ערבי', 40, 180);
+                ctx.fillText(i18n.t('left_bloc'), 40, 180);
                 ctx.fillStyle = parseInt(leftSeats) >= 61 ? '#10b981' : '#ef4444';
                 ctx.font = 'bold 28px Heebo, sans-serif';
                 ctx.textAlign = 'left';
@@ -1699,7 +1706,7 @@
                 ctx.fillStyle = '#64748b';
                 ctx.font = '11px Heebo, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(`אחוז חסימה: ${thresholdValue}% | סה״כ קולות: ${totalVotes}`, width / 2, parliamentHeight - 15);
+                ctx.fillText(`${i18n.t('threshold_pct')} ${thresholdValue}% | ${i18n.t('total_votes')} ${totalVotes}`, width / 2, parliamentHeight - 15);
 
                 // Results section
                 const resultsY = parliamentHeight;
@@ -1710,7 +1717,7 @@
                 ctx.fillStyle = '#f8fafc';
                 ctx.font = 'bold 16px Heebo, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('חלוקת המנדטים', width - 25, resultsY + 28);
+                ctx.fillText(i18n.t('seat_allocation'), width - 25, resultsY + 28);
 
                 // Draw result cards
                 const startY = resultsY + resultsTitle + 5;
@@ -1790,7 +1797,7 @@
                     ctx.fillStyle = '#f8fafc';
                     ctx.font = 'bold 14px Heebo, sans-serif';
                     ctx.textAlign = 'right';
-                    ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', width - 15, watermarkY + 25);
+                    ctx.fillText(i18n.t('watermark_created'), width - 15, watermarkY + 25);
 
                     ctx.fillStyle = '#64748b';
                     ctx.font = '12px Heebo, sans-serif';
@@ -1811,13 +1818,22 @@
         document.getElementById('export-png').addEventListener('click', exportPNG);
 
         // Initialize
-        new DHondtCalculator();
+        const calculator = new DHondtCalculator();
+
+        // Re-render all dynamic content when language changes
+        window.addEventListener('langchange', () => {
+            calculator.renderPartyInputs();
+            calculator.renderAgreementSelects();
+            calculator.renderAgreementsList();
+            calculator.setupVoteInputListeners();
+            calculator.calculate();
+        });
     </script>
 
     <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕" data-i18n-title="bmc_title">
         <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
     </a>
     <style>
         .bmc-button {
@@ -1856,5 +1872,6 @@
             display: inline-block;
         }
     </style>
+    <script>i18n.injectLangToggle('.view-switcher');</script>
 </body>
 </html>

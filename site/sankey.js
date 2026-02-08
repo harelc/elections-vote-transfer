@@ -23,6 +23,15 @@ class VoteTransferSankey {
         this.setupEventListeners();
         this.setupMobileListeners();
 
+        // Listen for language changes
+        window.addEventListener('langchange', () => {
+            if (this.data) {
+                this.updateInfo();
+                this.render();
+                this.updateLegend();
+            }
+        });
+
         // Load official results then initial data
         this.loadOfficialResults().then(() => {
             this.loadTransition(this.currentTransition);
@@ -165,12 +174,17 @@ class VoteTransferSankey {
         ctx.fillStyle = '#f8fafc';
         ctx.font = 'bold 18px Heebo, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`מעבר קולות: ${this.data.from_election.name} ← ${this.data.to_election.name}`, svgWidth / 2, 28);
+        const fromName = i18n.electionName(this.data.from_election);
+        const toName = i18n.electionName(this.data.to_election);
+        const headerLabel = i18n.getLang() === 'en'
+            ? `Vote Transfer: ${fromName} → ${toName}`
+            : `מעבר קולות: ${fromName} ← ${toName}`;
+        ctx.fillText(headerLabel, svgWidth / 2, 28);
 
         // Stats line
         ctx.fillStyle = '#94a3b8';
         ctx.font = '12px Heebo, sans-serif';
-        ctx.fillText(`קלפיות משותפות: ${this.data.stats.common_precincts.toLocaleString()} | R² (מידת התאמה): ${this.data.stats.r_squared.toFixed(3)}`, svgWidth / 2, 50);
+        ctx.fillText(`${i18n.t('common_precincts')}: ${i18n.fmtNum(this.data.stats.common_precincts)} | ${i18n.t('r_squared')}: ${this.data.stats.r_squared.toFixed(3)}`, svgWidth / 2, 50);
 
         // Draw chart area background
         ctx.fillStyle = '#1e1e2a';
@@ -210,7 +224,7 @@ class VoteTransferSankey {
                 ctx.fillStyle = '#f8fafc';
                 ctx.font = 'bold 14px Heebo, sans-serif';
                 ctx.textAlign = 'right';
-                ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', svgWidth - 15, watermarkY + 25);
+                ctx.fillText(i18n.t('watermark_created'), svgWidth - 15, watermarkY + 25);
 
                 ctx.fillStyle = '#64748b';
                 ctx.font = '12px Heebo, sans-serif';
@@ -295,13 +309,13 @@ class VoteTransferSankey {
         // Update desktop toggle
         const toggleValue = document.getElementById('toggle-value');
         if (toggleValue) {
-            toggleValue.textContent = isSource ? 'מהבחירות הקודמות' : 'מהבחירות החדשות';
+            toggleValue.textContent = i18n.t(isSource ? 'pct_from_prev' : 'pct_from_next');
         }
 
         // Update mobile toggle
         const mobileToggleValue = document.getElementById('mobile-toggle-value');
         if (mobileToggleValue) {
-            mobileToggleValue.textContent = isSource ? '% מהקודמות' : '% מהחדשות';
+            mobileToggleValue.textContent = i18n.t(isSource ? 'pct_prev_short' : 'pct_next_short');
         }
     }
 
@@ -314,25 +328,27 @@ class VoteTransferSankey {
 
         const isSource = this.percentMode === 'source';
         const percent = isSource ? link.percentage : reversePercent;
+        const srcName = i18n.partyName(link.sourceName);
+        const tgtName = i18n.partyName(link.targetName);
         const description = isSource
-            ? `מקולות ${link.sourceName} בבחירות הקודמות`
-            : `מקולות ${link.targetName} בבחירות החדשות`;
+            ? i18n.t('from_votes_of', { party: srcName })
+            : i18n.t('from_votes_of_new', { party: tgtName });
 
         this.bottomSheetContent.innerHTML = `
             <div class="sheet-parties">
                 <span class="sheet-party">
                     <span class="sheet-party-color" style="background: ${link.source.color}"></span>
-                    ${link.sourceName}
+                    ${srcName}
                 </span>
                 <span class="sheet-arrow">←</span>
                 <span class="sheet-party">
                     <span class="sheet-party-color" style="background: ${link.target.color}"></span>
-                    ${link.targetName}
+                    ${tgtName}
                 </span>
             </div>
             <div class="sheet-percent">${percent}%</div>
             <div class="sheet-description">${description}</div>
-            <div class="sheet-votes">${link.value.toLocaleString('he-IL')} קולות (מתוך הקלפיות המשותפות)</div>
+            <div class="sheet-votes">${i18n.t('votes_from_common', { n: i18n.fmtNum(link.value) })}</div>
         `;
 
         this.bottomSheet.classList.add('visible');
@@ -348,22 +364,24 @@ class VoteTransferSankey {
         if (!this.bottomSheet || !this.bottomSheetContent) return;
 
         const info = node.info || {};
-        const electionType = node.side === 'from' ? 'בבחירות הקודמות' : 'בבחירות החדשות';
+        const electionType = node.side === 'from' ? i18n.t('in_prev_election') : i18n.t('in_new_election');
+        const pName = i18n.partyName(node);
+        const lName = i18n.leaderName(info);
 
         this.bottomSheetContent.innerHTML = `
             <div class="sheet-party-details">
                 <div class="sheet-party-header">
                     <span class="sheet-party-color" style="background: ${node.color}"></span>
-                    <span class="sheet-party-name">${node.name}</span>
+                    <span class="sheet-party-name">${pName}</span>
                 </div>
-                <div class="sheet-party-votes">${node.votes.toLocaleString('he-IL')} קולות ${electionType}</div>
-                ${node.seats ? `<div class="sheet-party-seats">${node.seats} מנדטים</div>` : ''}
-                ${info.leader ? `
+                <div class="sheet-party-votes">${i18n.fmtNum(node.votes)} ${i18n.t('votes')} ${electionType}</div>
+                ${node.seats ? `<div class="sheet-party-seats">${node.seats} ${i18n.t('seats')}</div>` : ''}
+                ${lName ? `
                     <div class="sheet-party-leader">
-                        ${info.leader_image ? `<img class="sheet-leader-img" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">` : ''}
+                        ${info.leader_image ? `<img class="sheet-leader-img" src="${info.leader_image}" alt="${lName}" onerror="this.style.display='none'">` : ''}
                         <div class="sheet-leader-info">
-                            <span class="sheet-leader-label">מנהיג:</span>
-                            <span class="sheet-leader-name">${info.leader}</span>
+                            <span class="sheet-leader-label">${i18n.t('leader_label')}</span>
+                            <span class="sheet-leader-name">${lName}</span>
                         </div>
                     </div>
                 ` : ''}
@@ -384,8 +402,8 @@ class VoteTransferSankey {
         const fromTitle = document.getElementById('overlay-from-title');
         const toTitle = document.getElementById('overlay-to-title');
 
-        if (fromTitle) fromTitle.textContent = this.data.from_election.name;
-        if (toTitle) toTitle.textContent = this.data.to_election.name;
+        if (fromTitle) fromTitle.textContent = i18n.electionName(this.data.from_election);
+        if (toTitle) toTitle.textContent = i18n.electionName(this.data.to_election);
 
         if (fromList) {
             fromList.innerHTML = this.data.nodes_from
@@ -430,8 +448,8 @@ class VoteTransferSankey {
             <div class="legend-row" ${hasDetails ? 'data-expandable="true"' : ''}>
                 <div class="legend-row-main">
                     <span class="legend-row-color" style="background: ${party.color}"></span>
-                    <span class="legend-row-name">${party.name}</span>
-                    <span class="legend-row-votes">${party.votes.toLocaleString('he-IL')}</span>
+                    <span class="legend-row-name">${i18n.partyName(party)}</span>
+                    <span class="legend-row-votes">${i18n.fmtNum(party.votes)}</span>
                     ${hasDetails ? '<span class="legend-row-chevron">▼</span>' : ''}
                 </div>
                 ${detailsHTML}
@@ -455,7 +473,7 @@ class VoteTransferSankey {
 
     async loadTransition(transitionId) {
         this.currentTransition = transitionId;
-        this.container.innerHTML = '<div class="loading">טוען נתונים...</div>';
+        this.container.innerHTML = `<div class="loading">${i18n.t('loading')}</div>`;
 
         try {
             const url = `/data/transfer_${transitionId}.json`;
@@ -474,7 +492,7 @@ class VoteTransferSankey {
             this.updateLegend();
         } catch (error) {
             console.error('Error loading data:', error);
-            this.container.innerHTML = `<div class="loading">שגיאה בטעינת הנתונים: ${error.message}</div>`;
+            this.container.innerHTML = `<div class="loading">${i18n.t('error_loading')}: ${error.message}</div>`;
         }
     }
 
@@ -482,33 +500,34 @@ class VoteTransferSankey {
         const { from_election, to_election, stats } = this.data;
 
         // Update election info
-        document.getElementById('from-election-name').textContent = from_election.name;
+        document.getElementById('from-election-name').textContent = i18n.electionName(from_election);
         document.getElementById('from-election-date').textContent = this.formatDate(from_election.date);
-        document.getElementById('to-election-name').textContent = to_election.name;
+        document.getElementById('to-election-name').textContent = i18n.electionName(to_election);
         document.getElementById('to-election-date').textContent = this.formatDate(to_election.date);
 
         // Update voter statistics for "from" election
         if (from_election.eligible_voters) {
-            document.getElementById('from-eligible').textContent = from_election.eligible_voters.toLocaleString('he-IL');
-            document.getElementById('from-votes').textContent = from_election.votes_cast.toLocaleString('he-IL');
+            document.getElementById('from-eligible').textContent = i18n.fmtNum(from_election.eligible_voters);
+            document.getElementById('from-votes').textContent = i18n.fmtNum(from_election.votes_cast);
             document.getElementById('from-turnout').textContent = from_election.turnout_percent.toFixed(1) + '%';
         }
 
         // Update voter statistics for "to" election
         if (to_election.eligible_voters) {
-            document.getElementById('to-eligible').textContent = to_election.eligible_voters.toLocaleString('he-IL');
-            document.getElementById('to-votes').textContent = to_election.votes_cast.toLocaleString('he-IL');
+            document.getElementById('to-eligible').textContent = i18n.fmtNum(to_election.eligible_voters);
+            document.getElementById('to-votes').textContent = i18n.fmtNum(to_election.votes_cast);
             document.getElementById('to-turnout').textContent = to_election.turnout_percent.toFixed(1) + '%';
         }
 
         // Update stats
-        document.getElementById('stat-precincts').textContent = stats.common_precincts.toLocaleString('he-IL');
+        document.getElementById('stat-precincts').textContent = i18n.fmtNum(stats.common_precincts);
         document.getElementById('stat-r2').textContent = stats.r_squared.toFixed(3);
     }
 
     formatDate(dateStr) {
         const date = new Date(dateStr);
-        return date.toLocaleDateString('he-IL', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const locale = i18n.getLang() === 'he' ? 'he-IL' : 'en-GB';
+        return date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
     }
 
     render() {
@@ -580,7 +599,7 @@ class VoteTransferSankey {
         console.log('Nodes:', nodes.length, 'Links:', links.length);
 
         if (links.length === 0) {
-            this.container.innerHTML = '<div class="loading">אין נתונים להצגה</div>';
+            this.container.innerHTML = `<div class="loading">${i18n.t('no_data')}</div>`;
             return;
         }
 
@@ -686,7 +705,7 @@ class VoteTransferSankey {
             .attr('y', d => (d.y1 - d.y0) / 2)
             .attr('dy', '0.35em')
             .attr('text-anchor', d => d.side === 'from' ? 'start' : 'end')
-            .text(d => d.name)
+            .text(d => i18n.partyName(d))
             .style('font-size', this.isMobile() ? '10px' : '13px')
             .style('font-weight', '500')
             .style('fill', '#f0f0f5')
@@ -752,22 +771,23 @@ class VoteTransferSankey {
 
     showNodeTooltip(event, node) {
         const info = node.info || {};
+        const lName = i18n.leaderName(info);
 
         let html = `
             <div class="tooltip-header">
                 <div class="tooltip-color" style="background-color: ${node.color}"></div>
-                <span class="tooltip-title">${node.name}</span>
+                <span class="tooltip-title">${i18n.partyName(node)}</span>
                 <span class="tooltip-symbol">(${node.symbol})</span>
             </div>
             <div class="tooltip-body">
                 <div class="tooltip-stat">
-                    <span class="tooltip-stat-label">סה״כ קולות:</span>
-                    <span class="tooltip-stat-value">${node.votes.toLocaleString('he-IL')}</span>
+                    <span class="tooltip-stat-label">${i18n.t('total_votes')}</span>
+                    <span class="tooltip-stat-value">${i18n.fmtNum(node.votes)}</span>
                 </div>
-                ${info.leader ? `
+                ${lName ? `
                 <div class="tooltip-stat">
-                    <span class="tooltip-stat-label">מנהיג:</span>
-                    <span class="tooltip-stat-value">${info.leader}</span>
+                    <span class="tooltip-stat-label">${i18n.t('leader_label')}</span>
+                    <span class="tooltip-stat-value">${lName}</span>
                 </div>
                 ` : ''}
                 ${info.description ? `
@@ -787,19 +807,21 @@ class VoteTransferSankey {
             ? ((link.value / link.target.votes) * 100).toFixed(1)
             : 0;
 
+        const srcName = i18n.partyName(link.sourceName);
+        const tgtName = i18n.partyName(link.targetName);
         const percentText = this.percentMode === 'source'
-            ? `${link.percentage}% מקולות ${link.sourceName} בבחירות הקודמות`
-            : `${reversePercent}% מקולות ${link.targetName} בבחירות החדשות`;
+            ? `${link.percentage}% ${i18n.t('from_votes_of', { party: srcName })}`
+            : `${reversePercent}% ${i18n.t('from_votes_of_new', { party: tgtName })}`;
 
         const html = `
             <div class="tooltip-flow">
                 <div class="tooltip-flow-parties">
-                    <span class="tooltip-flow-party">${link.sourceName}</span>
+                    <span class="tooltip-flow-party">${srcName}</span>
                     <span class="tooltip-flow-arrow">←</span>
-                    <span class="tooltip-flow-party">${link.targetName}</span>
+                    <span class="tooltip-flow-party">${tgtName}</span>
                 </div>
                 <div class="tooltip-flow-value">${percentText}</div>
-                <div class="tooltip-flow-note">${link.value.toLocaleString('he-IL')} קולות (מתוך הקלפיות המשותפות בלבד)</div>
+                <div class="tooltip-flow-note">${i18n.t('votes_from_common_only', { n: i18n.fmtNum(link.value) })}</div>
             </div>
         `;
 
@@ -875,7 +897,8 @@ class VoteTransferSankey {
 
         // Update title
         if (title) {
-            title.textContent = `תוצאות רשמיות - כנסת ה-${electionName.replace('הכנסת ה-', '')}`;
+            const num = electionName.replace('הכנסת ה-', '');
+            title.textContent = i18n.t('official_results', { n: num });
         }
 
         // Create a color lookup from sankey nodes
@@ -899,13 +922,13 @@ class VoteTransferSankey {
             // Get color from sankey nodes or use default
             const color = party.color || colorMap[party.name] || '#6b7280';
             const seatsText = party.seats > 0
-                ? `<span class="legend-seats">${party.seats} מנדטים</span>`
-                : `<span class="legend-seats below">לא עברה</span>`;
+                ? `<span class="legend-seats">${party.seats} ${i18n.t('seats')}</span>`
+                : `<span class="legend-seats below">${i18n.t('below_threshold')}</span>`;
 
             item.innerHTML = `
                 <div class="legend-color" style="background-color: ${color}"></div>
-                <span class="legend-name">${party.name}</span>
-                <span class="legend-votes">${party.votes.toLocaleString('he-IL')} קולות</span>
+                <span class="legend-name">${i18n.partyName(party)}</span>
+                <span class="legend-votes">${i18n.fmtNum(party.votes)} ${i18n.t('votes')}</span>
                 ${seatsText}
             `;
 
@@ -935,43 +958,47 @@ class VoteTransferSankey {
 
     showPartyTooltip(event, party) {
         const info = party.info || {};
+        const pName = i18n.partyName(party);
+        const lName = i18n.leaderName(info);
+        // Show both Hebrew and English names in tooltip
+        const altName = i18n.getLang() === 'he' ? (info.name_en || '') : (party.name || '');
 
         let html = `
             <div class="tooltip-party">
                 <div class="tooltip-party-header">
-                    ${info.logo ? `<img class="tooltip-logo" src="${info.logo}" alt="${party.name}" onerror="this.style.display='none'">` : ''}
+                    ${info.logo ? `<img class="tooltip-logo" src="${info.logo}" alt="${pName}" onerror="this.style.display='none'">` : ''}
                     <div class="tooltip-party-title">
-                        <span class="tooltip-party-name">${party.name}</span>
-                        ${info.name_en ? `<span class="tooltip-party-name-en">${info.name_en}</span>` : ''}
+                        <span class="tooltip-party-name">${pName}</span>
+                        ${altName ? `<span class="tooltip-party-name-en">${altName}</span>` : ''}
                     </div>
                 </div>
                 ${info.leader_image ? `
                 <div class="tooltip-leader">
-                    <img class="tooltip-leader-image" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">
+                    <img class="tooltip-leader-image" src="${info.leader_image}" alt="${lName}" onerror="this.style.display='none'">
                     <div class="tooltip-leader-info">
-                        <span class="tooltip-leader-label">מנהיג:</span>
-                        <span class="tooltip-leader-name">${info.leader || ''}</span>
+                        <span class="tooltip-leader-label">${i18n.t('leader_label')}</span>
+                        <span class="tooltip-leader-name">${lName}</span>
                     </div>
                 </div>
-                ` : (info.leader ? `
+                ` : (lName ? `
                 <div class="tooltip-stat">
-                    <span class="tooltip-stat-label">מנהיג:</span>
-                    <span class="tooltip-stat-value">${info.leader}</span>
+                    <span class="tooltip-stat-label">${i18n.t('leader_label')}</span>
+                    <span class="tooltip-stat-value">${lName}</span>
                 </div>
                 ` : '')}
                 <div class="tooltip-stat">
-                    <span class="tooltip-stat-label">סה״כ קולות:</span>
-                    <span class="tooltip-stat-value">${party.votes.toLocaleString('he-IL')}</span>
+                    <span class="tooltip-stat-label">${i18n.t('total_votes')}</span>
+                    <span class="tooltip-stat-value">${i18n.fmtNum(party.votes)}</span>
                 </div>
                 ${info.ideology ? `
                 <div class="tooltip-stat">
-                    <span class="tooltip-stat-label">אידאולוגיה:</span>
+                    <span class="tooltip-stat-label">${i18n.t('ideology_label')}</span>
                     <span class="tooltip-stat-value">${info.ideology}</span>
                 </div>
                 ` : ''}
                 ${info.founded ? `
                 <div class="tooltip-stat">
-                    <span class="tooltip-stat-label">שנת הקמה:</span>
+                    <span class="tooltip-stat-label">${i18n.t('founded_label')}</span>
                     <span class="tooltip-stat-value">${info.founded}</span>
                 </div>
                 ` : ''}
@@ -1001,6 +1028,6 @@ function init() {
     } catch (error) {
         console.error('Failed to initialize:', error);
         document.getElementById('sankey-chart').innerHTML =
-            `<div class="loading">שגיאה באתחול: ${error.message}</div>`;
+            `<div class="loading">${i18n.t('error_init')}: ${error.message}</div>`;
     }
 }

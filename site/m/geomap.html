@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
     <style>
         #map {
             width: 100%;
@@ -53,6 +55,12 @@
             gap: 6px;
         }
 
+        .color-fab-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .color-fab {
             width: 36px;
             height: 36px;
@@ -61,10 +69,26 @@
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.4);
             transition: all 0.15s;
+            flex-shrink: 0;
         }
 
         .color-fab.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
         .color-fab:active { transform: scale(0.9); }
+
+        .color-fab-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            background: rgba(10, 10, 15, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            pointer-events: none;
+            transition: opacity 0.15s;
+        }
+
+        .color-fab-wrapper.active .color-fab-label {
+            color: var(--text-primary);
+        }
 
         /* Search FAB */
         .search-fab {
@@ -176,8 +200,9 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
-        <span class="title">🗳️ מפה</span>
+        <span class="title">🗳️ <span data-i18n="tab_map">מפה</span></span>
         <div class="election-pills" id="election-pills"></div>
+        <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
 
     <!-- Main Map -->
@@ -195,17 +220,17 @@
     <!-- Search Panel (slides from right) -->
     <div class="search-panel" id="search-panel">
         <div class="search-section">
-            <div class="section-title">חיפוש יישוב</div>
+            <div class="section-title" data-i18n="search_settlement">חיפוש יישוב</div>
             <div style="position: relative;">
-                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." autocomplete="off">
+                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." data-i18n-placeholder="filter_settlement" autocomplete="off">
                 <div class="search-results" id="settlement-results"></div>
             </div>
             <div class="selected-tags" id="settlement-tags"></div>
         </div>
         <div class="search-section">
-            <div class="section-title">חיפוש קלפי</div>
+            <div class="section-title" data-i18n="search_station">חיפוש קלפי</div>
             <div style="position: relative;">
-                <input class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                <input class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." data-i18n-placeholder="search_station" autocomplete="off">
                 <div class="search-results" id="station-results"></div>
             </div>
         </div>
@@ -230,11 +255,11 @@
 
     <!-- Bottom Tabs -->
     <nav class="tab-bar">
-        <a href="geomap.html" class="active"><span class="tab-icon">🗺️</span>מפה</a>
-        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
-        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
-        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
-        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+        <a href="geomap.html" class="active"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -256,6 +281,14 @@
             this.initMap();
             this.initEvents();
             this.loadData();
+
+            // Re-render on language change
+            window.addEventListener('langchange', () => {
+                i18n.applyTranslations();
+                this.buildColorFabs();
+                this.updateColorScale();
+                this.renderMarkers();
+            });
         }
 
         initElectionPills() {
@@ -387,22 +420,23 @@
         buildColorFabs() {
             const container = document.getElementById('color-fabs');
             const modes = [
-                { id: 'winner', bg: 'linear-gradient(135deg, #2563eb, #dc2626, #16a34a)', label: 'מנצחת' },
-                { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', label: 'הצבעה' },
-                { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', label: 'אשכול' },
-                { id: 'party', bg: '#6366f1', label: 'מפלגה' }
+                { id: 'winner', bg: 'linear-gradient(135deg, #2563eb, #dc2626, #16a34a)', label: i18n.t('winner') },
+                { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', label: i18n.t('turnout') },
+                { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', label: i18n.t('socioeconomic') },
+                { id: 'party', bg: '#6366f1', label: i18n.t('party') }
             ];
 
             container.innerHTML = modes.map(m => `
-                <div class="color-fab ${m.id === this.colorMode ? 'active' : ''}"
-                     data-mode="${m.id}"
-                     style="background: ${m.bg};"
-                     title="${m.label}"></div>
+                <div class="color-fab-wrapper ${m.id === this.colorMode ? 'active' : ''}" data-mode="${m.id}">
+                    <div class="color-fab ${m.id === this.colorMode ? 'active' : ''}"
+                         style="background: ${m.bg};"></div>
+                    <span class="color-fab-label">${m.label}</span>
+                </div>
             `).join('');
 
-            container.querySelectorAll('.color-fab').forEach(fab => {
-                fab.onclick = () => {
-                    const mode = fab.dataset.mode;
+            container.querySelectorAll('.color-fab-wrapper').forEach(wrapper => {
+                wrapper.onclick = () => {
+                    const mode = wrapper.dataset.mode;
                     if (mode === 'party') {
                         this.showPartyPicker();
                     } else {
@@ -416,8 +450,11 @@
             this.colorMode = mode;
             this.selectedParty = party;
 
-            document.querySelectorAll('.color-fab').forEach(f =>
-                f.classList.toggle('active', f.dataset.mode === mode));
+            document.querySelectorAll('.color-fab-wrapper').forEach(w => {
+                const isActive = w.dataset.mode === mode;
+                w.classList.toggle('active', isActive);
+                w.querySelector('.color-fab').classList.toggle('active', isActive);
+            });
 
             this.updateColorScale();
             this.renderMarkers();
@@ -432,19 +469,19 @@
 
             if (this.colorMode === 'turnout') {
                 el.style.display = 'block';
-                title.textContent = 'שיעור הצבעה';
+                title.textContent = i18n.t('turnout');
                 bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
                 min.textContent = '40%';
                 max.textContent = '90%';
             } else if (this.colorMode === 'socioeconomic') {
                 el.style.display = 'block';
-                title.textContent = 'אשכול חברתי-כלכלי';
+                title.textContent = i18n.t('socioeconomic');
                 bar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
                 min.textContent = '1';
                 max.textContent = '10';
             } else if (this.colorMode === 'party' && this.selectedParty) {
                 el.style.display = 'block';
-                title.textContent = this.selectedParty.name;
+                title.textContent = i18n.partyName(this.selectedParty.name);
                 const c = this.selectedParty.color;
                 bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
                 min.textContent = '0%';
@@ -606,7 +643,7 @@
                 const color = party?.color || '#64748b';
                 return `<div class="party-row">
                     <span class="party-dot" style="background:${color}"></span>
-                    <span class="party-name">${pname}</span>
+                    <span class="party-name">${i18n.partyName(pname)}</span>
                     <span class="party-pct">${Math.round(pct)}%</span>
                     <div class="party-bar"><div class="party-bar-fill" style="width:${pct}%;background:${color}"></div></div>
                 </div>`;
@@ -615,12 +652,12 @@
             document.getElementById('sheet-content').innerHTML = `
                 <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${name}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
-                    קלפי ${ballot}${location ? ' · ' + location : ''}${se ? ' · אשכול ' + se : ''}
+                    ${i18n.t('ballot')} ${ballot}${location ? ' · ' + location : ''}${se ? ' · ' + i18n.t('socioeconomic') + ' ' + se : ''}
                 </div>
                 <div class="stat-grid">
-                    <span class="label">רשומים</span><span class="value">${eligible.toLocaleString()}</span>
-                    <span class="label">הצביעו</span><span class="value">${voters.toLocaleString()}</span>
-                    <span class="label">שיעור</span><span class="value">${turnout}%</span>
+                    <span class="label">${i18n.t('eligible_voters')}</span><span class="value">${i18n.fmtNum(eligible)}</span>
+                    <span class="label">${i18n.t('voted')}</span><span class="value">${i18n.fmtNum(voters)}</span>
+                    <span class="label">${i18n.t('turnout')}</span><span class="value">${turnout}%</span>
                 </div>
                 ${partyHtml}
             `;
@@ -649,9 +686,12 @@
 
             const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
             const setList = [...settlements];
+            const andMore = i18n.getLang() === 'he'
+                ? `ועוד ${setList.length - 2}`
+                : `and ${setList.length - 2} more`;
             const title = setList.length === 1 ? setList[0]
                 : setList.length <= 3 ? setList.join(', ')
-                : `${setList.slice(0, 2).join(', ')} ועוד ${setList.length - 2}`;
+                : `${setList.slice(0, 2).join(', ')} ${andMore}`;
             const venue = locations.size === 1 ? [...locations][0] : '';
 
             const topParties = Object.entries(partyVotes)
@@ -665,7 +705,7 @@
             const partyHtml = topParties.map(p => `
                 <div class="party-row">
                     <span class="party-dot" style="background:${p.color}"></span>
-                    <span class="party-name">${p.name}</span>
+                    <span class="party-name">${i18n.partyName(p.name)}</span>
                     <span class="party-pct">${p.pct}%</span>
                     <div class="party-bar"><div class="party-bar-fill" style="width:${p.pct}%;background:${p.color}"></div></div>
                 </div>
@@ -675,9 +715,9 @@
                 <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${title}</div>
                 ${venue ? `<div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;margin-bottom:6px;">${venue}</div>` : ''}
                 <div class="stat-grid">
-                    <span class="label">קלפיות</span><span class="value">${count}</span>
-                    <span class="label">מצביעים</span><span class="value">${totalVoters.toLocaleString()}</span>
-                    <span class="label">שיעור</span><span class="value">${avgTurnout}%</span>
+                    <span class="label">${i18n.t('stations')}</span><span class="value">${i18n.fmtNum(count)}</span>
+                    <span class="label">${i18n.t('voters')}</span><span class="value">${i18n.fmtNum(totalVoters)}</span>
+                    <span class="label">${i18n.t('turnout')}</span><span class="value">${avgTurnout}%</span>
                 </div>
                 ${partyHtml}
             `;
@@ -686,12 +726,12 @@
 
         showPartyPicker() {
             const html = `
-                <div style="font-weight:600;font-size:1rem;margin-bottom:10px;">צביעה לפי מפלגה</div>
+                <div style="font-weight:600;font-size:1rem;margin-bottom:10px;">${i18n.t('specific_party')}</div>
                 <div class="party-list-grid">
                     ${this.parties.map(p => `
                         <div class="party-list-item ${this.selectedParty?.name === p.name ? 'active' : ''}" data-party="${p.name}">
                             <span class="dot" style="background:${p.color}"></span>
-                            <span class="name">${p.name}</span>
+                            <span class="name">${i18n.partyName(p.name)}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -734,7 +774,7 @@
 
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">
-                    ${s.name} <span class="detail">${s.count} קלפיות</span>
+                    ${s.name} <span class="detail">${i18n.fmtNum(s.count)} ${i18n.t('stations')}</span>
                 </div>
             `).join('');
             results.classList.add('visible');
@@ -770,7 +810,7 @@
 
             results.innerHTML = matches.map((s, i) => `
                 <div class="search-result-item" data-idx="${i}">
-                    <strong>${s.n}</strong> - קלפי ${s.b}
+                    <strong>${s.n}</strong> - ${i18n.t('ballot')} ${s.b}
                     ${s.l ? `<br><span class="detail">${s.l}</span>` : ''}
                 </div>
             `).join('');
@@ -858,7 +898,32 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => new MobileGeoMap());
+    document.addEventListener('DOMContentLoaded', () => {
+        new MobileGeoMap();
+
+        // Info button click handler
+        document.getElementById('info-btn').onclick = () => {
+            document.getElementById('sheet-content').innerHTML = `
+                <div class="about-sheet">
+                    <h3 data-i18n="about_site">${i18n.t('about_site')}</h3>
+                    <p data-i18n-html="about_description">${i18n.t('about_description')}</p>
+                    <h3 data-i18n="methodology_short">${i18n.t('methodology_short')}</h3>
+                    <p data-i18n-html="methodology_text">${i18n.t('methodology_text')}</p>
+                    <h3 data-i18n="license">${i18n.t('license')}</h3>
+                    <p>CC BY-NC-SA 4.0 &nbsp;|&nbsp; <span data-i18n="credits_line">${i18n.t('credits_line')}</span></p>
+                    <p><a href="https://github.com/harelkain/elections-vote-transfer" target="_blank" data-i18n="source_code">${i18n.t('source_code')}</a></p>
+                    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-inline">
+                        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="">
+                        <span data-i18n="bmc_title">${i18n.t('bmc_title')}</span>
+                    </a>
+                </div>
+            `;
+            // Show the bottom sheet
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        };
+    });
     </script>
+    <script>i18n.injectLangToggle('.top-bar');</script>
 </body>
 </html>

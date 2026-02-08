@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
     <style>
         #scatter-chart {
             width: 100%;
@@ -72,19 +74,20 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
-        <span class="title">🗳️ השוואה</span>
+        <span class="title">🗳️ <span data-i18n="tab_scatter">השוואה</span></span>
+        <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
 
     <!-- Controls Strip -->
     <div class="controls-strip" id="controls-strip">
         <div class="axis-group">
-            <span class="axis-label">X:</span>
+            <span class="axis-label" data-i18n="x_axis">ציר X:</span>
             <select class="axis-select" id="election-x"></select>
             <select class="axis-select" id="party-x"></select>
         </div>
         <div class="controls-divider"></div>
         <div class="axis-group">
-            <span class="axis-label">Y:</span>
+            <span class="axis-label" data-i18n="y_axis">ציר Y:</span>
             <select class="axis-select" id="election-y"></select>
             <select class="axis-select" id="party-y"></select>
         </div>
@@ -102,9 +105,9 @@
     <!-- Search Panel (reused from geomap pattern) -->
     <div class="search-panel" id="search-panel" style="top:auto;bottom:calc(56px + var(--safe-bottom));right:0;border-radius:var(--radius) 0 0 0;border-top:1px solid var(--border);max-height:50vh;">
         <div class="search-section">
-            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;">סינון לפי יישוב</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:6px;" data-i18n="filter_settlement">סנן לפי יישוב...</div>
             <div style="position:relative;">
-                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." autocomplete="off">
+                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." data-i18n-placeholder="search_settlement" autocomplete="off">
                 <div class="search-results" id="settlement-results"></div>
             </div>
             <div class="selected-tags" id="settlement-tags" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;"></div>
@@ -120,17 +123,18 @@
 
     <!-- Bottom Tabs -->
     <nav class="tab-bar">
-        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
-        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
-        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
-        <a href="scatter.html" class="active"><span class="tab-icon">📈</span>השוואה</a>
-        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+        <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="scatter.html" class="active"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
     </nav>
 
     <script>
     class MobileScatter {
         constructor() {
             this.electionsData = {};
+            this.electionIds = ['21', '22', '23', '24', '25'];
             this.currentElectionX = '25';
             this.currentElectionY = '25';
             this.currentPartyX = null;
@@ -144,19 +148,36 @@
             this.init();
         }
 
-        initControls() {
-            const elections = [
-                { id: '21', name: 'כנסת 21' },
-                { id: '22', name: 'כנסת 22' },
-                { id: '23', name: 'כנסת 23' },
-                { id: '24', name: 'כנסת 24' },
-                { id: '25', name: 'כנסת 25' }
-            ];
+        /** Get short localized election label (e.g., "Knesset 25" / "כנסת 25") */
+        electionShort(id) {
+            return i18n.getLang() === 'en' ? `Knesset ${id}` : `כנסת ${id}`;
+        }
 
+        initControls() {
+            this.rebuildElectionDropdowns();
+        }
+
+        /** Rebuild election select options with current language */
+        rebuildElectionDropdowns() {
             ['x', 'y'].forEach(axis => {
                 const select = document.getElementById(`election-${axis}`);
-                select.innerHTML = elections.map(e =>
-                    `<option value="${e.id}" ${e.id === '25' ? 'selected' : ''}>${e.name}</option>`
+                const currentVal = axis === 'x' ? this.currentElectionX : this.currentElectionY;
+                select.innerHTML = this.electionIds.map(id =>
+                    `<option value="${id}" ${id === currentVal ? 'selected' : ''}>${this.electionShort(id)}</option>`
+                ).join('');
+            });
+        }
+
+        /** Rebuild party select options with current language (preserving selection) */
+        rebuildPartyDropdowns() {
+            ['x', 'y'].forEach(axis => {
+                const electionId = axis === 'x' ? this.currentElectionX : this.currentElectionY;
+                const data = this.electionsData[electionId];
+                if (!data) return;
+                const select = document.getElementById(`party-${axis}`);
+                const currentVal = axis === 'x' ? this.currentPartyX : this.currentPartyY;
+                select.innerHTML = data.parties.map(p =>
+                    `<option value="${p.name}"${p.name === currentVal ? ' selected' : ''}>${i18n.partyName(p)}</option>`
                 ).join('');
             });
         }
@@ -191,6 +212,13 @@
             window.addEventListener('resize', () => {
                 clearTimeout(timer);
                 timer = setTimeout(() => this.updateChart(), 250);
+            });
+
+            // Listen for language changes
+            window.addEventListener('langchange', () => {
+                this.rebuildElectionDropdowns();
+                this.rebuildPartyDropdowns();
+                this.updateChart();
             });
         }
 
@@ -228,7 +256,7 @@
             const names = data.parties.map(p => p.name);
 
             select.innerHTML = data.parties.map(p =>
-                `<option value="${p.name}">${p.name}</option>`
+                `<option value="${p.name}">${i18n.partyName(p)}</option>`
             ).join('');
 
             let sel = current && names.includes(current) ? current : data.parties[0]?.name;
@@ -375,13 +403,13 @@
             g.append('text').attr('class', 'axis-title')
                 .attr('x', iw / 2).attr('y', ih + 30)
                 .attr('text-anchor', 'middle')
-                .text(`${this.currentPartyX} (כנסת ${this.currentElectionX})`);
+                .text(`${i18n.partyName(this.currentPartyX)} (${this.electionShort(this.currentElectionX)})`);
 
             g.append('text').attr('class', 'axis-title')
                 .attr('transform', 'rotate(-90)')
                 .attr('x', -ih / 2).attr('y', -35)
                 .attr('text-anchor', 'middle')
-                .text(`${this.currentPartyY} (כנסת ${this.currentElectionY})`);
+                .text(`${i18n.partyName(this.currentPartyY)} (${this.electionShort(this.currentElectionY)})`);
 
             // Background dots when filtering
             if (this.selectedSettlements.length > 0) {
@@ -425,15 +453,15 @@
             document.getElementById('sheet-content').innerHTML = `
                 <div style="font-weight:600;font-size:1rem;">${d.settlement}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
-                    קלפי ${d.ballot}${d.location ? ' · ' + d.location : ''}
+                    ${i18n.t('ballot')} ${d.ballot}${d.location ? ' · ' + d.location : ''}
                 </div>
                 <div class="stat-grid">
-                    <span class="label">${this.currentPartyX}</span>
+                    <span class="label">${i18n.partyName(this.currentPartyX)}</span>
                     <span class="value">${d.x.toFixed(1)}%</span>
-                    <span class="label">${this.currentPartyY}</span>
+                    <span class="label">${i18n.partyName(this.currentPartyY)}</span>
                     <span class="value">${d.y.toFixed(1)}%</span>
-                    <span class="label">מצביעים</span>
-                    <span class="value">${d.voters.toLocaleString()}</span>
+                    <span class="label">${i18n.t('voters')}</span>
+                    <span class="value">${i18n.fmtNum(d.voters)}</span>
                 </div>
             `;
             document.getElementById('sheet-backdrop').classList.add('visible');
@@ -452,7 +480,7 @@
             if (!matches.length) { results.classList.remove('visible'); return; }
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">
-                    ${s.name} <span class="detail">${s.count} קלפיות</span>
+                    ${s.name} <span class="detail">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}</span>
                 </div>
             `).join('');
             results.classList.add('visible');
@@ -486,7 +514,32 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => new MobileScatter());
+    document.addEventListener('DOMContentLoaded', () => {
+        new MobileScatter();
+
+        // Info button click handler
+        document.getElementById('info-btn').onclick = () => {
+            document.getElementById('sheet-content').innerHTML = `
+                <div class="about-sheet">
+                    <h3 data-i18n="about_site">${i18n.t('about_site')}</h3>
+                    <p data-i18n-html="about_description">${i18n.t('about_description')}</p>
+                    <h3 data-i18n="methodology_short">${i18n.t('methodology_short')}</h3>
+                    <p data-i18n-html="methodology_text">${i18n.t('methodology_text')}</p>
+                    <h3 data-i18n="license">${i18n.t('license')}</h3>
+                    <p>CC BY-NC-SA 4.0 &nbsp;|&nbsp; <span data-i18n="credits_line">${i18n.t('credits_line')}</span></p>
+                    <p><a href="https://github.com/harelkain/elections-vote-transfer" target="_blank" data-i18n="source_code">${i18n.t('source_code')}</a></p>
+                    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-inline">
+                        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="">
+                        <span data-i18n="bmc_title">${i18n.t('bmc_title')}</span>
+                    </a>
+                </div>
+            `;
+            // Show the bottom sheet
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        };
+    });
     </script>
+    <script>i18n.injectLangToggle('.top-bar');</script>
 </body>
 </html>

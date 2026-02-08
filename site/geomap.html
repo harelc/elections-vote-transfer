@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop'))location.replace('m/geomap.html')</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/geomap.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>מפה גיאוגרפית - קולות נודדים</title>
@@ -836,6 +836,8 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -843,12 +845,12 @@
             <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
             <p class="subtitle">מפה גיאוגרפית של קלפיות הצבעה</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn">נדידת קולות</a>
-                <a href="tsne.html" class="view-btn">התפלגות קלפיות</a>
-                <span class="view-btn active">מפה גיאוגרפית</span>
-                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
-                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
-                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
+                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
+                <span class="view-btn active" data-i18n="nav_geomap">מפה גיאוגרפית</span>
+                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
             </nav>
         </header>
 
@@ -863,9 +865,9 @@
         <main class="main-content">
             <aside class="control-panel" id="control-panel">
                 <div class="panel-section">
-                    <div class="panel-title">חיפוש יישוב</div>
+                    <div class="panel-title" data-i18n="search_settlement">חיפוש יישוב</div>
                     <div style="position: relative;">
-                        <input type="text" class="search-input" id="settlement-search" placeholder="הקלד שם יישוב..." autocomplete="off">
+                        <input type="text" class="search-input" id="settlement-search" placeholder="הקלד שם יישוב..." data-i18n-placeholder="search_settlement" autocomplete="off">
                         <div class="search-results" id="search-results"></div>
                     </div>
                 </div>
@@ -873,9 +875,9 @@
                 <div class="panel-divider"></div>
 
                 <div class="panel-section">
-                    <div class="panel-title">חיפוש קלפי</div>
+                    <div class="panel-title" data-i18n="search_station">חיפוש קלפי</div>
                     <div style="position: relative;">
-                        <input type="text" class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                        <input type="text" class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." data-i18n-placeholder="search_station" autocomplete="off">
                         <div class="search-results" id="station-search-results"></div>
                     </div>
                 </div>
@@ -883,25 +885,25 @@
                 <div class="panel-divider"></div>
 
                 <div class="panel-section">
-                    <div class="panel-title">צביעה לפי</div>
+                    <div class="panel-title" data-i18n="color_mode">צביעה לפי</div>
                     <div class="color-option active" data-mode="winner">
                         <span class="color-swatch" style="background: linear-gradient(135deg, #2563eb, #dc2626, #16a34a);"></span>
-                        <span class="color-label">מפלגה מנצחת</span>
+                        <span class="color-label" data-i18n="winner">מפלגה מנצחת</span>
                     </div>
                     <div class="color-option" data-mode="turnout">
                         <span class="color-swatch" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
-                        <span class="color-label">שיעור הצבעה</span>
+                        <span class="color-label" data-i18n="turnout">שיעור הצבעה</span>
                     </div>
                     <div class="color-option" data-mode="socioeconomic">
                         <span class="color-swatch" style="background: linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142);"></span>
-                        <span class="color-label">אשכול חברתי-כלכלי</span>
+                        <span class="color-label" data-i18n="socioeconomic">אשכול חברתי-כלכלי</span>
                     </div>
                 </div>
 
                 <div class="panel-divider"></div>
 
                 <div class="panel-section">
-                    <div class="panel-title">תמיכה במפלגה</div>
+                    <div class="panel-title" data-i18n="party_support">תמיכה במפלגה</div>
                     <div class="party-list" id="party-list"></div>
                 </div>
             </aside>
@@ -914,7 +916,7 @@
                     <div class="loading-spinner"></div>
                 </div>
                 <div class="stats-badge" id="stats-badge">
-                    <span class="stats-badge-value" id="station-count">0</span> / <span id="total-count">0</span> קלפיות
+                    <span class="stats-badge-value" id="station-count">0</span> / <span id="total-count">0</span> <span data-i18n="stations">קלפיות</span>
                 </div>
                 <div class="color-scale-legend" id="color-legend">
                     <div class="color-scale-title" id="legend-title">מפלגה מנצחת</div>
@@ -931,9 +933,9 @@
 
         <footer class="main-footer">
             <p class="credits">
-                © הראל קין |
+                <span data-i18n="credits_line">© הראל קין</span> |
                 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
-                <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a> |
+                <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a> |
                 מפות: <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>
             </p>
         </footer>
@@ -968,10 +970,49 @@
                 // Set up event listeners
                 this.setupEventListeners();
 
+                // Apply initial language to dynamic elements
+                this.applyDynamicLang();
+
                 // Load data
                 await this.loadSocioeconomicData();
                 await this.loadCoordinates();
                 await this.loadElection('25');
+            }
+
+            applyDynamicLang() {
+                const isEn = i18n.getLang() === 'en';
+
+                // Update page title
+                document.title = isEn ? 'Geographic Map - Migrating Votes' : 'מפה גיאוגרפית - קולות נודדים';
+
+                // Update header h1 and subtitle
+                const h1 = document.querySelector('.main-header h1');
+                if (h1) {
+                    h1.innerHTML = `<span class="title-icon">🗳️</span>${i18n.t('site_title')}`;
+                }
+                const subtitle = document.querySelector('.main-header .subtitle');
+                if (subtitle) {
+                    subtitle.textContent = isEn ? 'Geographic map of voting stations' : 'מפה גיאוגרפית של קלפיות הצבעה';
+                }
+
+                // Update election nav button labels
+                document.querySelectorAll('.nav-btn[data-election]').forEach(btn => {
+                    const id = btn.dataset.election;
+                    btn.textContent = isEn ? `Knesset ${id}` : `כנסת ${id}`;
+                });
+
+                // Update toggle panel button text
+                const toggleBtn = document.getElementById('toggle-panel');
+                if (toggleBtn) {
+                    toggleBtn.textContent = isEn ? 'Display settings' : 'הגדרות תצוגה';
+                }
+
+                // Update footer "maps:" label
+                const footer = document.querySelector('.credits');
+                if (footer) {
+                    const mapsLabel = isEn ? 'Maps:' : 'מפות:';
+                    footer.innerHTML = footer.innerHTML.replace(/מפות:|Maps:/g, mapsLabel);
+                }
             }
 
             initMap() {
@@ -1069,7 +1110,9 @@
                 } else if (settlementList.length <= 3) {
                     title = settlementList.join(', ');
                 } else {
-                    title = `${settlementList.slice(0, 2).join(', ')} ועוד ${settlementList.length - 2}`;
+                    const moreCount = settlementList.length - 2;
+                    const moreLabel = i18n.getLang() === 'en' ? `and ${moreCount} more` : `ועוד ${moreCount}`;
+                    title = `${settlementList.slice(0, 2).join(', ')} ${moreLabel}`;
                 }
 
                 // Most common cluster
@@ -1080,7 +1123,7 @@
                     <div class="cluster-tooltip-party">
                         <span class="cluster-tooltip-party-name">
                             <span class="cluster-tooltip-party-dot" style="background: ${p.color}"></span>
-                            ${p.name}
+                            ${i18n.partyName(this.parties.find(pp => pp.name === p.name) || p.name)}
                         </span>
                         <span class="cluster-tooltip-party-pct">${p.pct}%</span>
                     </div>
@@ -1089,18 +1132,20 @@
                 // Show venue name if all stations share the same location
                 const commonVenue = locations.size === 1 ? [...locations][0] : '';
 
+                const clusterLabel = i18n.getLang() === 'en' ? 'Cluster:' : 'אשכול:';
                 const tooltip = document.getElementById('cluster-tooltip');
+                tooltip.style.direction = i18n.isRTL() ? 'rtl' : 'ltr';
                 tooltip.innerHTML = `
                     <div class="cluster-tooltip-title">${title}</div>
                     ${commonVenue ? `<div style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 6px; font-style: italic;">${commonVenue}</div>` : ''}
                     <div class="cluster-tooltip-stats">
-                        <span class="cluster-tooltip-label">קלפיות:</span>
-                        <span class="cluster-tooltip-value">${count.toLocaleString()}</span>
-                        <span class="cluster-tooltip-label">מצביעים:</span>
-                        <span class="cluster-tooltip-value">${totalVoters.toLocaleString()}</span>
-                        <span class="cluster-tooltip-label">שיעור הצבעה:</span>
+                        <span class="cluster-tooltip-label">${i18n.t('stations')}:</span>
+                        <span class="cluster-tooltip-value">${i18n.fmtNum(count)}</span>
+                        <span class="cluster-tooltip-label">${i18n.t('voters')}:</span>
+                        <span class="cluster-tooltip-value">${i18n.fmtNum(totalVoters)}</span>
+                        <span class="cluster-tooltip-label">${i18n.t('turnout')}:</span>
                         <span class="cluster-tooltip-value">${avgTurnout}%</span>
-                        ${avgCluster ? `<span class="cluster-tooltip-label">אשכול:</span><span class="cluster-tooltip-value">${avgCluster}</span>` : ''}
+                        ${avgCluster ? `<span class="cluster-tooltip-label">${clusterLabel}</span><span class="cluster-tooltip-value">${avgCluster}</span>` : ''}
                     </div>
                     <div class="cluster-tooltip-parties">
                         ${partyRows}
@@ -1139,25 +1184,27 @@
                     <div class="cluster-tooltip-party">
                         <span class="cluster-tooltip-party-name">
                             <span class="cluster-tooltip-party-dot" style="background: ${p.color}"></span>
-                            ${p.name}
+                            ${i18n.partyName(this.parties.find(pp => pp.name === p.name) || p.name)}
                         </span>
                         <span class="cluster-tooltip-party-pct">${p.pct}%</span>
                     </div>
                 `).join('');
 
                 const title = location ? `${settlement} / ${location}` : settlement;
+                const clusterLabel = i18n.getLang() === 'en' ? 'Cluster:' : 'אשכול:';
 
                 const tooltip = document.getElementById('cluster-tooltip');
+                tooltip.style.direction = i18n.isRTL() ? 'rtl' : 'ltr';
                 tooltip.innerHTML = `
                     <div class="cluster-tooltip-title">${title}</div>
                     <div class="cluster-tooltip-stats">
-                        <span class="cluster-tooltip-label">קלפי:</span>
+                        <span class="cluster-tooltip-label">${i18n.t('ballot')}:</span>
                         <span class="cluster-tooltip-value">${ballot}</span>
-                        <span class="cluster-tooltip-label">מצביעים:</span>
-                        <span class="cluster-tooltip-value">${voters.toLocaleString()}</span>
-                        <span class="cluster-tooltip-label">שיעור הצבעה:</span>
+                        <span class="cluster-tooltip-label">${i18n.t('voters')}:</span>
+                        <span class="cluster-tooltip-value">${i18n.fmtNum(voters)}</span>
+                        <span class="cluster-tooltip-label">${i18n.t('turnout')}:</span>
                         <span class="cluster-tooltip-value">${turnout}%</span>
-                        ${seCluster ? `<span class="cluster-tooltip-label">אשכול:</span><span class="cluster-tooltip-value">${seCluster}</span>` : ''}
+                        ${seCluster ? `<span class="cluster-tooltip-label">${clusterLabel}</span><span class="cluster-tooltip-value">${seCluster}</span>` : ''}
                     </div>
                     <div class="cluster-tooltip-parties">
                         ${partyRows}
@@ -1274,6 +1321,7 @@
 
                     this.buildSettlementsList();
                     this.updatePartyList();
+                    this.updateLegend();
                     this.renderMarkers();
                 } catch (error) {
                     console.error('Failed to load election data:', error);
@@ -1311,7 +1359,7 @@
                     item.dataset.party = party.name;
                     item.innerHTML = `
                         <span class="party-color" style="background: ${party.color}"></span>
-                        <span class="party-name">${party.name}</span>
+                        <span class="party-name">${i18n.partyName(party)}</span>
                     `;
                     item.addEventListener('click', () => this.selectParty(party));
                     item.addEventListener('mouseenter', (e) => this.showPartyTooltip(e, party));
@@ -1338,25 +1386,29 @@
             showPartyTooltip(event, party) {
                 const info = party.info || {};
                 const tooltip = document.getElementById('party-tooltip');
+                const displayName = i18n.partyName(party);
+                const displayLeader = i18n.leaderName(info);
+                const ideologyText = (i18n.getLang() === 'en' && info.ideology_en) ? info.ideology_en : (info.ideology || '');
+                const descText = (i18n.getLang() === 'en' && info.description_en) ? info.description_en : (info.description || '');
                 tooltip.innerHTML = `
                     <div class="party-tooltip-header">
                         ${info.logo ? `<img class="party-tooltip-logo" src="${info.logo}" alt="" onerror="this.style.display='none'">` : `<div class="party-tooltip-color" style="background-color: ${party.color}"></div>`}
-                        <span class="party-tooltip-title">${party.name}</span>
+                        <span class="party-tooltip-title">${displayName}</span>
                         <span class="party-tooltip-symbol">(${party.symbol})</span>
                     </div>
                     <div class="party-tooltip-body">
                         ${info.leader ? `<div class="party-tooltip-leader">
-                            ${info.leader_image ? `<img class="party-tooltip-leader-img" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">` : ''}
+                            ${info.leader_image ? `<img class="party-tooltip-leader-img" src="${info.leader_image}" alt="${displayLeader}" onerror="this.style.display='none'">` : ''}
                             <div class="party-tooltip-leader-info">
-                                <span class="party-tooltip-leader-label">מנהיג:</span>
-                                <span class="party-tooltip-leader-name">${info.leader}</span>
+                                <span class="party-tooltip-leader-label">${i18n.t('leader_label')}</span>
+                                <span class="party-tooltip-leader-name">${displayLeader}</span>
                             </div>
                         </div>` : ''}
-                        ${info.ideology ? `<div class="party-tooltip-stat">
-                            <span class="party-tooltip-stat-label">אידיאולוגיה:</span>
-                            <span class="party-tooltip-stat-value">${info.ideology}</span>
+                        ${ideologyText ? `<div class="party-tooltip-stat">
+                            <span class="party-tooltip-stat-label">${i18n.t('ideology_label')}</span>
+                            <span class="party-tooltip-stat-value">${ideologyText}</span>
                         </div>` : ''}
-                        ${info.description ? `<div class="party-tooltip-description">${info.description}</div>` : ''}
+                        ${descText ? `<div class="party-tooltip-description">${descText}</div>` : ''}
                     </div>
                 `;
                 tooltip.classList.add('visible');
@@ -1390,27 +1442,33 @@
                 const legendBar = document.getElementById('legend-bar');
                 const legendMin = document.getElementById('legend-min');
                 const legendMax = document.getElementById('legend-max');
+                const isEn = i18n.getLang() === 'en';
 
                 if (this.colorMode === 'turnout') {
-                    legendTitle.textContent = 'שיעור הצבעה';
+                    legendTitle.textContent = i18n.t('turnout');
                     legendBar.style.display = '';
                     legendBar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
                     legendMin.textContent = '40%';
                     legendMax.textContent = '90%';
                 } else if (this.colorMode === 'socioeconomic') {
-                    legendTitle.textContent = 'אשכול חברתי-כלכלי';
+                    legendTitle.textContent = i18n.t('socioeconomic');
                     legendBar.style.display = '';
                     legendBar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
                     legendMin.textContent = '1';
                     legendMax.textContent = '10';
                 } else if (this.colorMode === 'winner') {
-                    legendTitle.textContent = 'מפלגה מנצחת';
+                    legendTitle.textContent = i18n.t('winner');
                     legendBar.style.display = 'none';
                     legendMin.textContent = '';
                     legendMax.textContent = '';
                 } else if (this.colorMode === 'party' && this.selectedParty) {
-                    const partyName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
-                    legendTitle.textContent = `תמיכה ב${partyName}`;
+                    const displayName = i18n.partyName(this.selectedParty);
+                    if (isEn) {
+                        legendTitle.textContent = `${displayName} support`;
+                    } else {
+                        const heName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
+                        legendTitle.textContent = `תמיכה ב${heName}`;
+                    }
                     legendBar.style.display = '';
                     legendBar.style.background = `linear-gradient(to left, ${this.selectedParty.color}, ${this.lightenColor(this.selectedParty.color, 0.8)})`;
                     legendMin.textContent = '0%';
@@ -1560,7 +1618,7 @@
                 } else if (this.colorMode === 'socioeconomic' && avgCluster) {
                     const colors = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
                     bgColor = colors[Math.min(Math.max(parseInt(avgCluster), 1), 10) - 1];
-                    infoText = `אשכול ${avgCluster}`;
+                    infoText = i18n.getLang() === 'en' ? `Cl. ${avgCluster}` : `אשכול ${avgCluster}`;
                 } else if (this.colorMode === 'winner' && winnerName) {
                     const party = this.parties.find(p => p.name === winnerName);
                     bgColor = party ? party.color : '#6b7280';
@@ -1644,8 +1702,8 @@
                     markerCount++;
                 });
 
-                document.getElementById('station-count').textContent = markerCount.toLocaleString();
-                document.getElementById('total-count').textContent = totalCount.toLocaleString();
+                document.getElementById('station-count').textContent = i18n.fmtNum(markerCount);
+                document.getElementById('total-count').textContent = i18n.fmtNum(totalCount);
             }
 
             createPopupContent(station, coordData) {
@@ -1665,11 +1723,12 @@
                 const partyRows = topParties.map(([name, pct]) => {
                     const party = this.parties.find(p => p.name === name);
                     const color = party ? party.color : '#64748b';
+                    const displayName = i18n.partyName(party || name);
                     return `
                         <div class="station-popup-party">
                             <span class="station-popup-party-name">
                                 <span class="station-popup-party-color" style="background: ${color}"></span>
-                                ${name}
+                                ${displayName}
                             </span>
                             <span class="station-popup-party-pct">${pct}%</span>
                         </div>
@@ -1678,19 +1737,20 @@
 
                 // Get socioeconomic cluster
                 const cluster = this.socioeconomicData?.[settlement] || this.socioeconomicData?.[this.normalizeName(settlement)];
-                const clusterText = cluster ? ` (אשכול ${cluster})` : '';
+                const clusterLabel = i18n.getLang() === 'en' ? 'cluster' : 'אשכול';
+                const clusterText = cluster ? ` (${clusterLabel} ${cluster})` : '';
 
                 return `
-                    <div class="station-popup">
+                    <div class="station-popup" style="direction: ${i18n.isRTL() ? 'rtl' : 'ltr'}">
                         <div class="station-popup-title">${settlement}${clusterText}</div>
-                        <div class="station-popup-ballot">קלפי ${ballot}</div>
+                        <div class="station-popup-ballot">${i18n.t('ballot')} ${ballot}</div>
                         ${location ? `<div class="station-popup-location">${location}</div>` : ''}
                         <div class="station-popup-stats">
-                            <span class="station-popup-stat-label">רשומים:</span>
-                            <span class="station-popup-stat-value">${eligible.toLocaleString()}</span>
-                            <span class="station-popup-stat-label">הצביעו:</span>
-                            <span class="station-popup-stat-value">${voters.toLocaleString()}</span>
-                            <span class="station-popup-stat-label">שיעור:</span>
+                            <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span>
+                            <span class="station-popup-stat-value">${i18n.fmtNum(eligible)}</span>
+                            <span class="station-popup-stat-label">${i18n.t('voted')}:</span>
+                            <span class="station-popup-stat-value">${i18n.fmtNum(voters)}</span>
+                            <span class="station-popup-stat-label">${i18n.t('turnout')}:</span>
                             <span class="station-popup-stat-value">${turnout}%</span>
                         </div>
                         <div class="station-popup-parties">
@@ -1720,7 +1780,7 @@
                 searchResults.innerHTML = matches.map(s => `
                     <div class="search-result-item" data-settlement="${s.name}">
                         ${s.name}
-                        <span style="color: var(--text-muted); font-size: 0.75rem;">${s.count} קלפיות</span>
+                        <span style="color: var(--text-muted); font-size: 0.75rem;">${i18n.fmtNum(s.count)} ${i18n.t('stations')}</span>
                     </div>
                 `).join('');
 
@@ -1815,7 +1875,34 @@
         }
 
         // Initialize
-        new GeoMapVisualization();
+        const geoViz = new GeoMapVisualization();
+
+        // Listen for language changes and re-render dynamic content
+        window.addEventListener('langchange', () => {
+            // Update election nav buttons and toggle button
+            geoViz.applyDynamicLang();
+
+            // Re-render party list (party names)
+            if (geoViz.tsneData) {
+                geoViz.updatePartyList();
+
+                // Re-select the active party if one was selected
+                if (geoViz.selectedParty) {
+                    document.querySelectorAll('.party-item').forEach(p => {
+                        p.classList.toggle('active', p.dataset.party === geoViz.selectedParty.name);
+                    });
+                }
+            }
+
+            // Re-render legend
+            geoViz.updateLegend();
+
+            // Re-render markers (popups use i18n)
+            if (geoViz.tsneData) {
+                geoViz.renderMarkers();
+            }
+        });
     </script>
+    <script>i18n.injectLangToggle('.view-switcher');</script>
 </body>
 </html>

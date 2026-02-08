@@ -9,6 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
     <style>
         #tsne-chart {
             width: 100%;
@@ -29,6 +31,12 @@
             gap: 6px;
         }
 
+        .color-fab-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
         .color-fab {
             width: 36px;
             height: 36px;
@@ -37,10 +45,25 @@
             cursor: pointer;
             box-shadow: 0 2px 6px rgba(0,0,0,0.4);
             transition: all 0.15s;
+            flex-shrink: 0;
         }
 
         .color-fab.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
         .color-fab:active { transform: scale(0.9); }
+
+        .color-fab-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            background: rgba(10, 10, 15, 0.7);
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .color-fab-wrapper.active .color-fab-label {
+            color: var(--text-primary);
+        }
 
         /* Search FAB */
         .search-fab { top: 52px; right: 8px; }
@@ -126,8 +149,9 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
-        <span class="title">🗳️ פיזור</span>
+        <span class="title">🗳️ <span data-i18n="tab_tsne">פיזור</span></span>
         <div class="election-pills" id="election-pills"></div>
+        <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
 
     <!-- Main Area -->
@@ -145,17 +169,17 @@
     <!-- Search Panel -->
     <div class="search-panel" id="search-panel">
         <div class="search-section">
-            <div class="section-title">סינון לפי יישוב</div>
+            <div class="section-title" data-i18n="search_settlement">סינון לפי יישוב</div>
             <div style="position: relative;">
-                <input class="search-input" id="settlement-search" placeholder="שם יישוב..." autocomplete="off">
+                <input class="search-input" id="settlement-search" data-i18n-placeholder="search_settlement" placeholder="חיפוש יישוב..." autocomplete="off">
                 <div class="search-results" id="settlement-results"></div>
             </div>
             <div class="selected-tags" id="settlement-tags"></div>
         </div>
         <div class="search-section">
-            <div class="section-title">חיפוש קלפי</div>
+            <div class="section-title" data-i18n="search_station">חיפוש קלפי</div>
             <div style="position: relative;">
-                <input class="search-input" id="station-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                <input class="search-input" id="station-search" data-i18n-placeholder="search_station" placeholder="חיפוש תחנה, קלפי או מיקום..." autocomplete="off">
                 <div class="search-results" id="station-results"></div>
             </div>
         </div>
@@ -170,7 +194,7 @@
         </div>
     </div>
 
-    <div class="zoom-hint">צבוט לזום · גרור להזזה</div>
+    <div class="zoom-hint" id="zoom-hint">צבוט לזום · גרור להזזה</div>
 
     <!-- Bottom Sheet -->
     <div class="sheet-backdrop" id="sheet-backdrop"></div>
@@ -181,11 +205,11 @@
 
     <!-- Bottom Tabs -->
     <nav class="tab-bar">
-        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
-        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
-        <a href="tsne.html" class="active"><span class="tab-icon">🔵</span>פיזור</a>
-        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
-        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+        <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="tsne.html" class="active"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
     </nav>
 
     <script>
@@ -289,20 +313,21 @@
         buildColorFabs() {
             const container = document.getElementById('color-fabs');
             const modes = [
-                { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', label: 'הצבעה' },
-                { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', label: 'אשכול' },
-                { id: 'party', bg: '#6366f1', label: 'מפלגה' }
+                { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', labelKey: 'turnout' },
+                { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', labelKey: 'socioeconomic' },
+                { id: 'party', bg: '#6366f1', labelKey: 'party' }
             ];
             container.innerHTML = modes.map(m => `
-                <div class="color-fab ${m.id === this.colorMode ? 'active' : ''}"
-                     data-mode="${m.id}"
-                     style="background: ${m.bg};"
-                     title="${m.label}"></div>
+                <div class="color-fab-wrapper ${m.id === this.colorMode ? 'active' : ''}" data-mode="${m.id}">
+                    <div class="color-fab ${m.id === this.colorMode ? 'active' : ''}"
+                         style="background: ${m.bg};"></div>
+                    <span class="color-fab-label">${i18n.t(m.labelKey)}</span>
+                </div>
             `).join('');
 
-            container.querySelectorAll('.color-fab').forEach(fab => {
-                fab.onclick = () => {
-                    const mode = fab.dataset.mode;
+            container.querySelectorAll('.color-fab-wrapper').forEach(wrapper => {
+                wrapper.onclick = () => {
+                    const mode = wrapper.dataset.mode;
                     if (mode === 'party') this.showPartyPicker();
                     else this.setColorMode(mode);
                 };
@@ -319,8 +344,11 @@
                 this.partyScaleMax = vals.length > 0
                     ? Math.ceil(vals[Math.floor(vals.length * 0.98)]) : 50;
             }
-            document.querySelectorAll('.color-fab').forEach(f =>
-                f.classList.toggle('active', f.dataset.mode === mode));
+            document.querySelectorAll('.color-fab-wrapper').forEach(w => {
+                const isActive = w.dataset.mode === mode;
+                w.classList.toggle('active', isActive);
+                w.querySelector('.color-fab').classList.toggle('active', isActive);
+            });
             this.updateColorScale();
             this.updateColors();
         }
@@ -334,17 +362,17 @@
 
             if (this.colorMode === 'turnout') {
                 el.style.display = 'block';
-                title.textContent = 'שיעור הצבעה';
+                title.textContent = i18n.t('turnout');
                 bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
                 min.textContent = '40%'; max.textContent = '90%';
             } else if (this.colorMode === 'socioeconomic') {
                 el.style.display = 'block';
-                title.textContent = 'אשכול חברתי-כלכלי';
+                title.textContent = i18n.t('socioeconomic');
                 bar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
                 min.textContent = '1'; max.textContent = '10';
             } else if (this.colorMode === 'party' && this.selectedParty) {
                 el.style.display = 'block';
-                title.textContent = this.selectedParty.name;
+                title.textContent = i18n.partyName(this.selectedParty.name);
                 const c = this.selectedParty.color;
                 bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
                 min.textContent = '0%'; max.textContent = this.partyScaleMax + '%';
@@ -482,21 +510,22 @@
                 const color = party?.color || '#64748b';
                 return `<div class="party-row">
                     <span class="party-dot" style="background:${color}"></span>
-                    <span class="party-name">${name}</span>
+                    <span class="party-name">${i18n.partyName(name)}</span>
                     <span class="party-pct">${Math.round(pct)}%</span>
                     <div class="party-bar"><div class="party-bar-fill" style="width:${pct}%;background:${color}"></div></div>
                 </div>`;
             }).join('');
 
+            const seLabel = se ? (' · ' + i18n.t('socioeconomic') + ' ' + se) : '';
             document.getElementById('sheet-content').innerHTML = `
                 <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${station.n}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
-                    קלפי ${station.b}${station.l ? ' · ' + station.l : ''}${se ? ' · אשכול ' + se : ''}
+                    ${i18n.t('ballot')} ${station.b}${station.l ? ' · ' + station.l : ''}${seLabel}
                 </div>
                 <div class="stat-grid">
-                    <span class="label">רשומים</span><span class="value">${(station.e || 0).toLocaleString()}</span>
-                    <span class="label">הצביעו</span><span class="value">${(station.v || 0).toLocaleString()}</span>
-                    <span class="label">שיעור</span><span class="value">${station.t || 0}%</span>
+                    <span class="label">${i18n.t('eligible_voters')}</span><span class="value">${i18n.fmtNum(station.e || 0)}</span>
+                    <span class="label">${i18n.t('voted')}</span><span class="value">${i18n.fmtNum(station.v || 0)}</span>
+                    <span class="label">${i18n.t('turnout')}</span><span class="value">${station.t || 0}%</span>
                 </div>
                 ${partyHtml}
             `;
@@ -505,12 +534,12 @@
 
         showPartyPicker() {
             document.getElementById('sheet-content').innerHTML = `
-                <div style="font-weight:600;font-size:1rem;margin-bottom:10px;">צביעה לפי מפלגה</div>
+                <div style="font-weight:600;font-size:1rem;margin-bottom:10px;">${i18n.t('party_support')}</div>
                 <div class="party-list-grid">
                     ${this.data.parties.map(p => `
                         <div class="party-list-item ${this.selectedParty?.name === p.name ? 'active' : ''}" data-party="${p.name}">
                             <span class="dot" style="background:${p.color}"></span>
-                            <span class="name">${p.name}</span>
+                            <span class="name">${i18n.partyName(p.name)}</span>
                         </div>
                     `).join('')}
                 </div>
@@ -542,7 +571,7 @@
             if (!matches.length) { results.classList.remove('visible'); return; }
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">
-                    ${s.name} <span class="detail">${s.count} קלפיות</span>
+                    ${s.name} <span class="detail">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}${i18n.getLang() === 'en' ? 's' : 'ות'}</span>
                 </div>
             `).join('');
             results.classList.add('visible');
@@ -572,7 +601,7 @@
             if (!matches.length) { results.classList.remove('visible'); return; }
             results.innerHTML = matches.map((s, i) => `
                 <div class="search-result-item" data-idx="${i}">
-                    <strong>${s.n}</strong> - קלפי ${s.b}
+                    <strong>${s.n}</strong> - ${i18n.t('ballot')} ${s.b}
                     ${s.l ? `<br><span class="detail">${s.l}</span>` : ''}
                 </div>
             `).join('');
@@ -633,7 +662,56 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => new MobileTSNE());
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new MobileTSNE();
+
+        // Info button click handler
+        document.getElementById('info-btn').onclick = () => {
+            document.getElementById('sheet-content').innerHTML = `
+                <div class="about-sheet">
+                    <h3 data-i18n="about_site">${i18n.t('about_site')}</h3>
+                    <p data-i18n-html="about_description">${i18n.t('about_description')}</p>
+                    <h3 data-i18n="methodology_short">${i18n.t('methodology_short')}</h3>
+                    <p data-i18n-html="methodology_text">${i18n.t('methodology_text')}</p>
+                    <h3 data-i18n="license">${i18n.t('license')}</h3>
+                    <p>CC BY-NC-SA 4.0 &nbsp;|&nbsp; <span data-i18n="credits_line">${i18n.t('credits_line')}</span></p>
+                    <p><a href="https://github.com/harelkain/elections-vote-transfer" target="_blank" data-i18n="source_code">${i18n.t('source_code')}</a></p>
+                    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-inline">
+                        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="">
+                        <span data-i18n="bmc_title">${i18n.t('bmc_title')}</span>
+                    </a>
+                </div>
+            `;
+            // Show the bottom sheet
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        };
+
+        // Update zoom hint text for current language
+        function updateZoomHint() {
+            const hint = document.getElementById('zoom-hint');
+            if (hint) {
+                hint.textContent = i18n.getLang() === 'en'
+                    ? 'Pinch to zoom · Drag to pan'
+                    : 'צבוט לזום · גרור להזזה';
+            }
+        }
+        updateZoomHint();
+
+        window.addEventListener('langchange', () => {
+            i18n.applyTranslations();
+            updateZoomHint();
+            // Re-build color FABs with translated titles
+            app.buildColorFabs();
+            // Re-render color scale labels
+            app.updateColorScale();
+            // Re-render settlement tags
+            app.renderSettlementTags();
+            // Re-render the chart if data is loaded (to update any visible sheets)
+            if (app.data) app.render();
+        });
+    });
     </script>
+    <script>i18n.injectLangToggle('.top-bar');</script>
 </body>
 </html>

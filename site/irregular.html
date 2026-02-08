@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop'))location.replace('m/geomap.html')</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/geomap.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>קלפיות חריגות - קולות נודדים</title>
@@ -808,6 +808,8 @@
             transform: rotate(180deg);
         }
     </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes -->
@@ -822,12 +824,12 @@
             <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
             <p class="subtitle">זיהוי קלפיות עם דפוסי הצבעה חריגים</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn">נדידת קולות</a>
-                <a href="tsne.html" class="view-btn">התפלגות קלפיות</a>
-                <a href="geomap.html" class="view-btn">מפה גיאוגרפית</a>
-                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
-                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
-                <span class="view-btn active">קלפיות חריגות</span>
+                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
+                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
+                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
+                <span class="view-btn active" data-i18n="nav_irregular">קלפיות חריגות</span>
                 <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
             </nav>
         </header>
@@ -871,33 +873,81 @@
         <footer class="main-footer">
             <div class="footer-content">
                 <p class="methodology">
-                    <strong>שיטת הזיהוי:</strong>
-                    המערכת מנתחת כל קלפי ומחפשת דפוסים חריגים:
+                    <strong data-i18n="methodology_short">שיטת הזיהוי:</strong>
+                    <span data-i18n="methodology_text">המערכת מנתחת כל קלפי ומחפשת דפוסים חריגים:
                     <strong>טעויות הזנה</strong> - קולות שנרשמו בעמודת מפלגה לא נכונה;
                     <strong>מספרים עגולים</strong> - ריכוז חריג של מספרים עגולים;
                     <strong>חריגה סטטיסטית</strong> - דפוסים שלא מתאימים לאף אשכול דמוגרפי ידוע;
                     <strong>מפלגות קטנות</strong> - תוצאות גבוהות באופן יוצא דופן למפלגות שיזניות.
-                    הנתונים מבוססים על תוצאות רשמיות מאתר ועדת הבחירות.
+                    הנתונים מבוססים על תוצאות רשמיות מאתר ועדת הבחירות.</span>
+                    <a href="methodology.html" data-i18n="read_more_methodology"></a>
                 </p>
-                <p class="credits">
+                <p class="credits" data-i18n="credits_line">
                     © הראל קין |
                     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
-                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
                 </p>
             </div>
         </footer>
     </div>
 
     <script>
-        // Anomaly type translations
-        const anomalyTypes = {
-            'shift_error': 'חשד לטעות הזנה',
-            'round_numbers': 'מספרים עגולים',
-            'turnout_anomaly': 'אנומליית השתתפות',
-            'statistical_outlier': 'חריגה סטטיסטית',
-            'extreme_dominance': 'שליטה קיצונית',
-            'small_party_spike': 'חריגה במפלגה קטנה'
+        // Supplementary translations for irregular page detail strings
+        const localDict = {
+            adjacent_letters:    { he: 'אותיות סמוכות בפתק:', en: 'Adjacent letters on ballot slip:' },
+            votes_count:         { he: 'קולות', en: 'votes' },
+            national_expectation:{ he: 'ציפייה ארצית:', en: 'National expectation:' },
+            round_numbers_label: { he: 'מספרים עגולים:', en: 'Round numbers:' },
+            distance_from_cluster:{ he: 'מרחק מהאשכול הקרוב:', en: 'Distance from nearest cluster:' },
+            received:            { he: 'קיבלה', en: 'received' },
+            of_the_votes:        { he: 'מהקולות', en: 'of the votes' },
+            national_avg:        { he: 'ממוצע ארצי:', en: 'National average:' },
+            ratio:               { he: 'יחס:', en: 'Ratio:' },
+            anomalies_detected:  { he: 'חריגות שזוהו', en: 'Anomalies detected' },
+            eligible:            { he: 'בעלי זכות', en: 'Eligible' },
+            voted_label:         { he: 'הצביעו', en: 'Voted' },
+            turnout_pct:         { he: 'אחוז הצבעה', en: 'Turnout' },
+            valid_votes:         { he: 'קולות כשרים', en: 'Valid votes' },
+            invalid_votes:       { he: 'פסולים', en: 'Invalid' },
+            vote_distribution:   { he: 'התפלגות הקולות', en: 'Vote distribution' },
+            valid_short:         { he: 'כשרים', en: 'valid' },
+            compare_official:    { he: 'השווה לתוצאות הרשמיות', en: 'Compare to official results' },
+            no_anomalies_found:  { he: 'לא נמצאו חריגות בבחירות אלו', en: 'No anomalies found for this election' },
+            export_png_wip:      { he: 'ייצוא PNG עדיין בפיתוח', en: 'PNG export is still in development' },
+            ballot_label:        { he: 'קלפי', en: 'Ballot' },
         };
+
+        function tl(key, params) {
+            const entry = localDict[key];
+            if (!entry) return key;
+            let text = entry[i18n.getLang()] || entry.he || key;
+            if (params) {
+                Object.keys(params).forEach(k => {
+                    text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
+                });
+            }
+            return text;
+        }
+
+        // Anomaly type translation keys
+        const anomalyTypeKeys = {
+            'shift_error': 'data_entry_error',
+            'round_numbers': 'round_numbers',
+            'turnout_anomaly': 'turnout_anomaly',
+            'statistical_outlier': 'statistical_outlier',
+            'extreme_dominance': 'extreme_dominance',
+            'small_party_spike': 'small_party_spike'
+        };
+
+        function getAnomalyTypeName(type) {
+            return i18n.t(anomalyTypeKeys[type] || type);
+        }
+
+        function getSeverityLabel(severity) {
+            if (severity === 'high') return i18n.t('high_severity');
+            if (severity === 'medium') return i18n.t('medium_severity');
+            return i18n.t('low_severity');
+        }
 
         // Current data
         let currentData = null;
@@ -914,7 +964,7 @@
             container.innerHTML = `
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <p>טוען נתונים...</p>
+                    <p>${i18n.t('loading')}</p>
                 </div>
             `;
 
@@ -934,7 +984,7 @@
                 setupTooltipListeners();
             } catch (error) {
                 console.error('Error loading data:', error);
-                container.innerHTML = `<div class="loading"><p>שגיאה בטעינת הנתונים</p></div>`;
+                container.innerHTML = `<div class="loading"><p>${i18n.t('error_loading')}</p></div>`;
             }
         }
 
@@ -959,12 +1009,12 @@
             tooltip.innerHTML = `
                 <div class="party-tooltip-header">
                     <div class="party-tooltip-color" style="background: ${party.color}"></div>
-                    <span class="party-tooltip-name">${party.name}</span>
+                    <span class="party-tooltip-name">${i18n.partyName(party.name)}</span>
                     <span class="party-tooltip-symbol">(${symbol})</span>
                 </div>
-                ${leader ? `<div class="party-tooltip-row"><span class="party-tooltip-label">מנהיג:</span><span class="party-tooltip-value">${leader}</span></div>` : ''}
-                ${ideology ? `<div class="party-tooltip-row"><span class="party-tooltip-label">אידאולוגיה:</span><span class="party-tooltip-value">${ideology}</span></div>` : ''}
-                <div class="party-tooltip-row"><span class="party-tooltip-label">קולות:</span><span class="party-tooltip-value">${party.votes?.toLocaleString() || '?'} (${proportion})</span></div>
+                ${leader ? `<div class="party-tooltip-row"><span class="party-tooltip-label">${i18n.t('leader_label')}</span><span class="party-tooltip-value">${leader}</span></div>` : ''}
+                ${ideology ? `<div class="party-tooltip-row"><span class="party-tooltip-label">${i18n.t('ideology_label')}</span><span class="party-tooltip-value">${ideology}</span></div>` : ''}
+                <div class="party-tooltip-row"><span class="party-tooltip-label">${i18n.t('votes')}:</span><span class="party-tooltip-value">${party.votes != null ? i18n.fmtNum(party.votes) : '?'} (${proportion})</span></div>
                 ${description ? `<div class="party-tooltip-desc">${description}</div>` : ''}
             `;
 
@@ -1010,18 +1060,18 @@
             const fixed = found - shown;
 
             document.getElementById('stat-total').textContent =
-                currentData.election.analyzed_ballots.toLocaleString();
+                i18n.fmtNum(currentData.election.analyzed_ballots);
             document.getElementById('stat-irregular').textContent =
-                found.toLocaleString();
+                i18n.fmtNum(found);
             document.getElementById('stat-fixed').textContent =
-                fixed.toLocaleString();
+                i18n.fmtNum(fixed);
             document.getElementById('stat-shown').textContent =
-                shown.toLocaleString();
+                i18n.fmtNum(shown);
         }
 
         function getPartyName(symbol) {
             const party = currentData.parties.find(p => p.symbol === symbol);
-            return party ? party.name : symbol;
+            return party ? i18n.partyName(party.name) : symbol;
         }
 
         function getPartyColor(symbol) {
@@ -1049,15 +1099,15 @@
                         return details.map(d => `
                             <div class="shift-error-detail">
                                 <div class="shift-symbols">
-                                    אותיות סמוכות בפתק: <code class="symbol-code">${d.missing} ↔ ${d.unexpected}</code>
+                                    ${tl('adjacent_letters')} <code class="symbol-code">${d.missing} ↔ ${d.unexpected}</code>
                                 </div>
                                 <div>
-                                    <strong>${d.missing}</strong> (${getPartyName(d.missing)}): <code>${d.missing_votes}</code> קולות
-                                    (ציפייה ארצית: <code>${d.expected_missing}</code>)
+                                    <strong>${d.missing}</strong> (${getPartyName(d.missing)}): <code>${i18n.fmtNum(d.missing_votes)}</code> ${tl('votes_count')}
+                                    (${tl('national_expectation')} <code>${i18n.fmtNum(d.expected_missing)}</code>)
                                 </div>
                                 <div>
-                                    <strong>${d.unexpected}</strong> (${getPartyName(d.unexpected)}): <code>${d.unexpected_votes}</code> קולות
-                                    (ציפייה ארצית: <code>${d.expected_unexpected}</code>)
+                                    <strong>${d.unexpected}</strong> (${getPartyName(d.unexpected)}): <code>${i18n.fmtNum(d.unexpected_votes)}</code> ${tl('votes_count')}
+                                    (${tl('national_expectation')} <code>${i18n.fmtNum(d.expected_unexpected)}</code>)
                                 </div>
                             </div>
                         `).join('');
@@ -1067,9 +1117,9 @@
                 case 'round_numbers':
                     if (Array.isArray(details)) {
                         const items = details.slice(0, 5).map(d =>
-                            `<strong>${getPartyName(d[0])}</strong>: <code>${d[1]}</code>`
+                            `<strong>${getPartyName(d[0])}</strong>: <code>${i18n.fmtNum(d[1])}</code>`
                         );
-                        return `מספרים עגולים: ${items.join(', ')}${details.length > 5 ? '...' : ''}`;
+                        return `${tl('round_numbers_label')} ${items.join(', ')}${details.length > 5 ? '...' : ''}`;
                     }
                     return '';
 
@@ -1080,23 +1130,23 @@
                     return '';
 
                 case 'statistical_outlier':
-                    return `מרחק מהאשכול הקרוב: <code>${details.distance_score}</code>`;
+                    return `${tl('distance_from_cluster')} <code>${details.distance_score}</code>`;
 
                 case 'extreme_dominance':
                     return `
-                        <strong>${details.party_name || getPartyName(details.party)}</strong>
-                        קיבלה <code>${details.proportion}</code> מהקולות
-                        (<code>${details.votes}</code> קולות)
+                        <strong>${details.party_name ? i18n.partyName(details.party_name) : getPartyName(details.party)}</strong>
+                        ${tl('received')} <code>${details.proportion}</code> ${tl('of_the_votes')}
+                        (<code>${i18n.fmtNum(details.votes)}</code> ${tl('votes_count')})
                     `;
 
                 case 'small_party_spike':
                     if (Array.isArray(details)) {
                         return details.map(d => `
                             <div>
-                                <strong>${d.party_name || getPartyName(d.party)}</strong>:
-                                <code>${d.votes}</code> קולות (<code>${d.proportion}</code>),
-                                ממוצע ארצי: <code>${d.national_avg}</code>,
-                                יחס: <code>${d.ratio}</code>
+                                <strong>${d.party_name ? i18n.partyName(d.party_name) : getPartyName(d.party)}</strong>:
+                                <code>${i18n.fmtNum(d.votes)}</code> ${tl('votes_count')} (<code>${d.proportion}</code>),
+                                ${tl('national_avg')} <code>${d.national_avg}</code>,
+                                ${tl('ratio')} <code>${d.ratio}</code>
                             </div>
                         `).join('');
                     }
@@ -1111,7 +1161,7 @@
             const container = document.getElementById('irregularities-container');
 
             if (!currentData.irregularities.length) {
-                container.innerHTML = '<div class="loading"><p>לא נמצאו חריגות בבחירות אלו</p></div>';
+                container.innerHTML = `<div class="loading"><p>${tl('no_anomalies_found')}</p></div>`;
                 return;
             }
 
@@ -1136,12 +1186,12 @@
                                 <div class="card-rank">${idx + 1}</div>
                                 <div>
                                     <div class="card-title">${item.settlement}</div>
-                                    <div class="card-subtitle">קלפי ${item.ballot}</div>
+                                    <div class="card-subtitle">${tl('ballot_label')} ${item.ballot}</div>
                                 </div>
                             </div>
                             <div class="card-badges">
                                 ${item.anomalies.map(a => `
-                                    <span class="anomaly-badge ${a.type}">${anomalyTypes[a.type] || a.type}</span>
+                                    <span class="anomaly-badge ${a.type}">${getAnomalyTypeName(a.type)}</span>
                                 `).join('')}
                                 <span class="expand-icon">▼</span>
                             </div>
@@ -1149,38 +1199,38 @@
                         <div class="card-body" id="card-body-${idx}">
                             <div class="card-stats">
                                 <div class="card-stat">
-                                    <div class="card-stat-value">${item.eligible.toLocaleString()}</div>
-                                    <div class="card-stat-label">בעלי זכות</div>
+                                    <div class="card-stat-value">${i18n.fmtNum(item.eligible)}</div>
+                                    <div class="card-stat-label">${tl('eligible')}</div>
                                 </div>
                                 <div class="card-stat">
-                                    <div class="card-stat-value">${item.voted.toLocaleString()}</div>
-                                    <div class="card-stat-label">הצביעו</div>
+                                    <div class="card-stat-value">${i18n.fmtNum(item.voted)}</div>
+                                    <div class="card-stat-label">${tl('voted_label')}</div>
                                 </div>
                                 <div class="card-stat">
                                     <div class="card-stat-value">${turnoutPct}%</div>
-                                    <div class="card-stat-label">אחוז הצבעה</div>
+                                    <div class="card-stat-label">${tl('turnout_pct')}</div>
                                 </div>
                                 <div class="card-stat">
-                                    <div class="card-stat-value">${item.valid.toLocaleString()}</div>
-                                    <div class="card-stat-label">קולות כשרים</div>
+                                    <div class="card-stat-value">${i18n.fmtNum(item.valid)}</div>
+                                    <div class="card-stat-label">${tl('valid_votes')}</div>
                                 </div>
                                 <div class="card-stat">
-                                    <div class="card-stat-value">${item.invalid}</div>
-                                    <div class="card-stat-label">פסולים</div>
+                                    <div class="card-stat-value">${i18n.fmtNum(item.invalid)}</div>
+                                    <div class="card-stat-label">${tl('invalid_votes')}</div>
                                 </div>
                             </div>
 
                             <a href="${getOfficialUrl(item)}" target="_blank" class="compare-link">
-                                🔗 השווה לתוצאות הרשמיות
+                                🔗 ${tl('compare_official')}
                             </a>
 
                             <div class="anomalies-section">
-                                <h4 class="anomalies-title">חריגות שזוהו</h4>
+                                <h4 class="anomalies-title">${tl('anomalies_detected')}</h4>
                                 ${item.anomalies.map(a => `
                                     <div class="anomaly-item ${a.type}">
                                         <div class="anomaly-header">
-                                            <span class="anomaly-type">${anomalyTypes[a.type] || a.type}</span>
-                                            <span class="anomaly-badge ${a.type}">${a.severity === 'high' ? 'גבוה' : a.severity === 'medium' ? 'בינוני' : 'נמוך'}</span>
+                                            <span class="anomaly-type">${getAnomalyTypeName(a.type)}</span>
+                                            <span class="anomaly-badge ${a.type}">${getSeverityLabel(a.severity)}</span>
                                         </div>
                                         <div class="anomaly-description">${a.description}</div>
                                         <div class="anomaly-details">${formatAnomalyDetails(a)}</div>
@@ -1189,7 +1239,7 @@
                             </div>
 
                             <div class="votes-section">
-                                <h4 class="votes-title">התפלגות הקולות (${item.valid.toLocaleString()} כשרים)</h4>
+                                <h4 class="votes-title">${tl('vote_distribution')} (${i18n.fmtNum(item.valid)} ${tl('valid_short')})</h4>
                                 <div class="votes-grid">
                                     ${sortedVotes.map(([symbol, count]) => {
                                         const pct = ((count / item.valid) * 100).toFixed(1);
@@ -1197,7 +1247,7 @@
                                             <div class="vote-item" data-symbol="${symbol}">
                                                 <div class="vote-color" style="background: ${getPartyColor(symbol)}"></div>
                                                 <span class="vote-party">${getPartyName(symbol)}</span>
-                                                <span class="vote-count">${count}</span>
+                                                <span class="vote-count">${i18n.fmtNum(count)}</span>
                                                 <span class="vote-pct">${pct}%</span>
                                             </div>
                                         `;
@@ -1235,7 +1285,16 @@
 
         // Export PNG
         document.getElementById('export-png').addEventListener('click', () => {
-            alert('ייצוא PNG עדיין בפיתוח');
+            alert(tl('export_png_wip'));
+        });
+
+        // Re-render dynamic content when language changes
+        window.addEventListener('langchange', () => {
+            if (currentData) {
+                updateStats();
+                renderIrregularities();
+                setupTooltipListeners();
+            }
         });
 
         // Initial load
@@ -1243,9 +1302,9 @@
     </script>
 
     <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה">
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה" data-i18n-title="bmc_title">
         <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span>אהבתם? עזרו לתמוך בפיתוח האתר</span>
+        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר</span>
     </a>
     <style>
         .bmc-button {
@@ -1284,5 +1343,6 @@
             display: inline-block;
         }
     </style>
+    <script>i18n.injectLangToggle('.view-switcher');</script>
 </body>
 </html>

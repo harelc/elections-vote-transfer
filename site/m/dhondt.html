@@ -7,6 +7,8 @@
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         /* Parliament chart area */
@@ -380,23 +382,24 @@
 </head>
 <body>
     <div class="top-bar">
-        <span class="title">מחשבון באדר-עופר</span>
+        <span class="title" data-i18n="tab_dhondt">מנדטים</span>
+        <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
 
     <div class="main-area">
         <div class="parliament-area">
             <div class="bloc-labels">
                 <div class="bloc-label">
-                    <div class="bloc-name">ימין-חרדי</div>
+                    <div class="bloc-name" data-i18n="right_bloc">גוש ימין-חרדי</div>
                     <div class="bloc-seats" id="right-seats">0</div>
                 </div>
                 <div class="bloc-label">
-                    <div class="bloc-name">מרכז-שמאל-ערבי</div>
+                    <div class="bloc-name" data-i18n="left_bloc">גוש מרכז-שמאל-ערבי</div>
                     <div class="bloc-seats" id="left-seats">0</div>
                 </div>
             </div>
             <svg id="parliament-svg"></svg>
-            <div class="parliament-center-text">120 מושבים</div>
+            <div class="parliament-center-text" data-i18n="seats_120">120 מושבים</div>
         </div>
         <div class="results-area" id="results-list"></div>
     </div>
@@ -412,9 +415,9 @@
     <!-- Edit votes bottom sheet -->
     <div class="bottom-sheet" id="edit-sheet" style="max-height: 80vh;">
         <div class="sheet-handle"></div>
-        <div class="edit-section-title">קולות למפלגות</div>
+        <div class="edit-section-title" data-i18n="edit_votes">עריכת קולות</div>
         <div class="step-selector">
-            <span class="label">צעד:</span>
+            <span class="label" data-i18n="step">צעד:</span>
             <button class="step-pill" data-step="1000">1K</button>
             <button class="step-pill active" data-step="10000">10K</button>
             <button class="step-pill" data-step="50000">50K</button>
@@ -422,7 +425,7 @@
         </div>
         <div id="edit-party-list"></div>
         <div class="total-row">
-            <span>סה״כ קולות:</span>
+            <span data-i18n="total_votes">סה״כ קולות:</span>
             <span id="edit-total-votes">0</span>
         </div>
     </div>
@@ -430,50 +433,50 @@
     <!-- Settings bottom sheet -->
     <div class="bottom-sheet" id="settings-sheet">
         <div class="sheet-handle"></div>
-        <div class="edit-section-title">הגדרות</div>
+        <div class="edit-section-title" data-i18n="settings">הגדרות</div>
         <div class="threshold-row">
-            <label>אחוז חסימה:</label>
+            <label data-i18n="threshold_pct">אחוז חסימה:</label>
             <input type="number" class="threshold-input" id="threshold-input" value="3.25" min="0" max="10" step="0.25">
             <span>%</span>
         </div>
 
-        <div class="edit-section-title">הסכמי עודפים</div>
+        <div class="edit-section-title" data-i18n="surplus_agreements">הסכמי עודפים</div>
         <div id="agreements-list"></div>
         <div class="add-agreement-row">
-            <select class="agreement-select" id="agree-party1"><option value="">מפלגה 1...</option></select>
-            <select class="agreement-select" id="agree-party2"><option value="">מפלגה 2...</option></select>
+            <select class="agreement-select" id="agree-party1"><option value="" data-i18n="choose">בחר...</option></select>
+            <select class="agreement-select" id="agree-party2"><option value="" data-i18n="choose">בחר...</option></select>
             <button class="add-agreement-btn" id="add-agree-btn" disabled>+</button>
         </div>
 
-        <button class="reset-btn" id="reset-btn">אפס לתוצאות כנסת 25</button>
+        <button class="reset-btn" id="reset-btn" data-i18n="reset_to_official">איפוס לתוצאות רשמיות</button>
     </div>
 
     <nav class="tab-bar">
-        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
-        <a href="sankey.html"><span class="tab-icon">📊</span>נדידה</a>
-        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
-        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
-        <a href="dhondt.html" class="active"><span class="tab-icon">🏛️</span>מנדטים</a>
+        <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html" class="active"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
     </nav>
 
     <script>
     const defaultParties = [
-        { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right' },
-        { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left' },
-        { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right' },
-        { name: 'המחנה הממלכתי', votes: 432482, color: '#7c3aed', block: 'left' },
-        { name: 'ש״ס', votes: 392964, color: '#1e3a8a', block: 'right' },
-        { name: 'יהדות התורה', votes: 280194, color: '#4b5563', block: 'right' },
-        { name: 'ישראל ביתנו', votes: 213687, color: '#db2777', block: 'left' },
-        { name: 'רע״ם', votes: 194047, color: '#84cc16', block: 'arab' },
-        { name: 'חד״ש-תע״ל', votes: 178735, color: '#f43f5e', block: 'arab' },
-        { name: 'העבודה', votes: 175992, color: '#dc2626', block: 'left' },
-        { name: 'מרצ', votes: 150793, color: '#16a34a', block: 'left' },
-        { name: 'בל״ד', votes: 138617, color: '#065f46', block: 'arab' },
-        { name: 'הבית היהודי', votes: 56775, color: '#059669', block: 'right' },
-        { name: 'חופש כלכלי', votes: 15801, color: '#6366f1', block: 'left' },
-        { name: 'באומץ בשבילך', votes: 14694, color: '#8b5cf6', block: 'left' },
-        { name: 'הכלכלית החדשה', votes: 13920, color: '#ec4899', block: 'left' },
+        { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right', name_en: 'Likud' },
+        { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
+        { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+        { name: 'המחנה הממלכתי', votes: 432482, color: '#7c3aed', block: 'left', name_en: 'National Unity' },
+        { name: 'ש״ס', votes: 392964, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+        { name: 'יהדות התורה', votes: 280194, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+        { name: 'ישראל ביתנו', votes: 213687, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+        { name: 'רע״ם', votes: 194047, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
+        { name: 'חד״ש-תע״ל', votes: 178735, color: '#f43f5e', block: 'arab', name_en: 'Hadash-Taal' },
+        { name: 'העבודה', votes: 175992, color: '#dc2626', block: 'left', name_en: 'Labor' },
+        { name: 'מרצ', votes: 150793, color: '#16a34a', block: 'left', name_en: 'Meretz' },
+        { name: 'בל״ד', votes: 138617, color: '#065f46', block: 'arab', name_en: 'Balad' },
+        { name: 'הבית היהודי', votes: 56775, color: '#059669', block: 'right', name_en: 'The Jewish Home' },
+        { name: 'חופש כלכלי', votes: 15801, color: '#6366f1', block: 'left', name_en: 'Economic Freedom' },
+        { name: 'באומץ בשבילך', votes: 14694, color: '#8b5cf6', block: 'left', name_en: 'Courageously For You' },
+        { name: 'הכלכלית החדשה', votes: 13920, color: '#ec4899', block: 'left', name_en: 'The New Economy' },
     ];
 
     const defaultAgreements = [
@@ -584,17 +587,17 @@
                 return `
                 <div class="edit-party-item">
                     <div class="edit-color-dot" style="background:${party.color}"></div>
-                    <div class="edit-party-name ${below ? 'below' : ''}">${party.name}</div>
+                    <div class="edit-party-name ${below ? 'below' : ''}">${i18n.partyName(party)}</div>
                     <div class="edit-vote-controls">
                         <button class="edit-vote-btn minus" data-idx="${idx}" data-dir="-1">−</button>
                         <input type="text" class="edit-vote-input" id="edit-input-${idx}"
-                               value="${party.votes.toLocaleString()}" data-idx="${idx}">
+                               value="${i18n.fmtNum(party.votes)}" data-idx="${idx}">
                         <button class="edit-vote-btn plus" data-idx="${idx}" data-dir="1">+</button>
                     </div>
                 </div>`;
             }).join('');
 
-            document.getElementById('edit-total-votes').textContent = totalVotes.toLocaleString();
+            document.getElementById('edit-total-votes').textContent = i18n.fmtNum(totalVotes);
 
             // Button listeners
             container.querySelectorAll('.edit-vote-btn').forEach(btn => {
@@ -603,7 +606,7 @@
                     const dir = parseInt(btn.dataset.dir);
                     this.parties[idx].votes = Math.max(0, this.parties[idx].votes + dir * this.step);
                     const input = document.getElementById(`edit-input-${idx}`);
-                    input.value = this.parties[idx].votes.toLocaleString();
+                    input.value = i18n.fmtNum(this.parties[idx].votes);
                     this.updateEditTotal();
                     this.calculate();
                 });
@@ -620,7 +623,7 @@
                     const idx = parseInt(input.dataset.idx);
                     const val = parseInt(input.value.replace(/,/g, '')) || 0;
                     this.parties[idx].votes = Math.max(0, val);
-                    input.value = this.parties[idx].votes.toLocaleString();
+                    input.value = i18n.fmtNum(this.parties[idx].votes);
                     this.updateEditTotal();
                     this.calculate();
                 });
@@ -629,14 +632,14 @@
 
         updateEditTotal() {
             const total = this.parties.reduce((s, p) => s + p.votes, 0);
-            document.getElementById('edit-total-votes').textContent = total.toLocaleString();
+            document.getElementById('edit-total-votes').textContent = i18n.fmtNum(total);
         }
 
         // ---- Agreements ----
         renderAgreements() {
             const container = document.getElementById('agreements-list');
             if (this.agreements.length === 0) {
-                container.innerHTML = '<div style="font-size:0.75rem;color:var(--text-muted);padding:4px 0">אין הסכמים</div>';
+                container.innerHTML = `<div style="font-size:0.75rem;color:var(--text-muted);padding:4px 0">${i18n.t('no_agreements')}</div>`;
                 return;
             }
 
@@ -645,10 +648,10 @@
                 return `
                 <div class="agreement-item">
                     <span class="agreement-dot" style="background:${p1.color}"></span>
-                    <span>${p1.name}</span>
+                    <span>${i18n.partyName(p1)}</span>
                     <span class="agreement-link-icon">⟷</span>
                     <span class="agreement-dot" style="background:${p2.color}"></span>
-                    <span>${p2.name}</span>
+                    <span>${i18n.partyName(p2)}</span>
                     <button class="agreement-remove-btn" data-idx="${idx}">×</button>
                 </div>`;
             }).join('');
@@ -666,8 +669,8 @@
         renderAgreementSelects() {
             const inAg = new Set();
             this.agreements.forEach(a => { inAg.add(a[0]); inAg.add(a[1]); });
-            const available = this.parties.map((p, i) => ({ name: p.name, idx: i })).filter(p => !inAg.has(p.idx));
-            const opts = '<option value="">בחר...</option>' + available.map(p => `<option value="${p.idx}">${p.name}</option>`).join('');
+            const available = this.parties.map((p, i) => ({ ...p, idx: i })).filter(p => !inAg.has(p.idx));
+            const opts = `<option value="">${i18n.t('choose')}</option>` + available.map(p => `<option value="${p.idx}">${i18n.partyName(p)}</option>`).join('');
 
             const s1 = document.getElementById('agree-party1');
             const s2 = document.getElementById('agree-party2');
@@ -879,12 +882,16 @@
             const eligible = results.filter(r => r.seats > 0);
 
             container.innerHTML = eligible.map(r => {
-                const agIcon = r.hasAgreement ? '<span class="result-agreement-icon">🤝</span>' : '';
+                const agIcon = r.hasAgreement ? `<span class="result-agreement-icon" title="${i18n.t('in_surplus_agreement')}">🤝</span>` : '';
+                const gainFromParty = r.gainFrom ? i18n.partyName({name: r.gainFrom, name_en: (this.parties.find(p => p.name === r.gainFrom) || {}).name_en}) : '';
+                const loseToParty = r.loseTo ? i18n.partyName({name: r.loseTo, name_en: (this.parties.find(p => p.name === r.loseTo) || {}).name_en}) : '';
+                const gainFromText = r.gainFrom ? ` ${i18n.t('gain_from', { party: gainFromParty })}` : '';
+                const loseToText = r.loseTo ? ` ${i18n.t('lose_to', { party: loseToParty })}` : '';
                 const gainText = r.toGain
-                    ? `<span class="marginal-text marginal-gain">+${r.toGain.toLocaleString()}${r.gainFrom ? ' מ' + r.gainFrom : ''}</span>`
+                    ? `<span class="marginal-text marginal-gain">${i18n.t('votes_to_gain', { n: i18n.fmtNum(r.toGain) })}${gainFromText}</span>`
                     : '';
                 const loseText = r.toLose
-                    ? `<span class="marginal-text marginal-lose">−${r.toLose.toLocaleString()}${r.loseTo ? ' ל' + r.loseTo : ''}</span>`
+                    ? `<span class="marginal-text marginal-lose">${i18n.t('votes_to_lose', { n: i18n.fmtNum(r.toLose) })}${loseToText}</span>`
                     : '';
 
                 return `
@@ -893,9 +900,9 @@
                     <div class="result-main">
                         <div class="result-name-row">
                             ${agIcon}
-                            <span class="result-party-name">${r.name}</span>
+                            <span class="result-party-name">${i18n.partyName(r)}</span>
                         </div>
-                        <div class="result-votes-text">${r.votes.toLocaleString()} קולות</div>
+                        <div class="result-votes-text">${i18n.fmtNum(r.votes)} ${i18n.t('votes')}</div>
                     </div>
                     <div class="result-seats-num">${r.seats}</div>
                     <div class="result-marginals">${gainText}${loseText}</div>
@@ -979,7 +986,41 @@
         }
     }
 
-    new MobileDHondt();
+    const app = new MobileDHondt();
+
+    // Info button click handler
+    document.getElementById('info-btn').onclick = () => {
+        document.getElementById('sheet-content').innerHTML = `
+            <div class="about-sheet">
+                <h3 data-i18n="about_site">${i18n.t('about_site')}</h3>
+                <p data-i18n-html="about_description">${i18n.t('about_description')}</p>
+                <h3 data-i18n="methodology_short">${i18n.t('methodology_short')}</h3>
+                <p data-i18n-html="methodology_text">${i18n.t('methodology_text')}</p>
+                <h3 data-i18n="license">${i18n.t('license')}</h3>
+                <p>CC BY-NC-SA 4.0 &nbsp;|&nbsp; <span data-i18n="credits_line">${i18n.t('credits_line')}</span></p>
+                <p><a href="https://github.com/harelkain/elections-vote-transfer" target="_blank" data-i18n="source_code">${i18n.t('source_code')}</a></p>
+                <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-inline">
+                    <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="">
+                    <span data-i18n="bmc_title">${i18n.t('bmc_title')}</span>
+                </a>
+            </div>
+        `;
+        // Show the bottom sheet
+        document.getElementById('sheet-backdrop').classList.add('visible');
+        document.getElementById('bottom-sheet').classList.add('visible');
+    };
+
+    // Re-render on language change
+    window.addEventListener('langchange', () => {
+        i18n.applyTranslations();
+        app.calculate();
+        if (app.activeSheet === 'edit-sheet') app.renderEditList();
+        if (app.activeSheet === 'settings-sheet') {
+            app.renderAgreements();
+            app.renderAgreementSelects();
+        }
+    });
     </script>
+    <script>i18n.injectLangToggle('.top-bar');</script>
 </body>
 </html>

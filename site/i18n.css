@@ -1,0 +1,200 @@
+/**
+ * i18n styles – LTR overrides, language toggle, Inter font
+ */
+
+/* ── Inter font for English mode ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* ── Language toggle button ── */
+.lang-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 28px;
+    padding: 0 8px;
+    border-radius: 14px;
+    border: 1px solid var(--border-color, #2a2a3a);
+    background: var(--bg-tertiary, #1a1a25);
+    color: var(--text-secondary, #94a3b8);
+    font-family: 'Inter', 'Heebo', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.lang-toggle:hover {
+    background: var(--bg-hover, #252535);
+    border-color: var(--accent-primary, #6366f1);
+    color: var(--text-primary, #f8fafc);
+}
+
+/* ── Mobile top-bar toggle adjustments ── */
+.top-bar .lang-toggle {
+    border-color: var(--border, #2a2a3a);
+    background: transparent;
+    margin-right: 4px;
+}
+
+/* ── Mobile info button ── */
+.info-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent, #6366f1);
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent, #6366f1);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
+}
+
+.info-toggle:active {
+    background: rgba(99, 102, 241, 0.3);
+    transform: scale(0.92);
+}
+
+/* ── About bottom sheet content ── */
+.about-sheet h3 {
+    font-size: 1rem;
+    margin: 16px 0 8px;
+    color: var(--text-primary, #f0f0f5);
+}
+
+.about-sheet h3:first-child {
+    margin-top: 0;
+}
+
+.about-sheet p {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-secondary, #a0a0b0);
+    margin: 0 0 8px;
+}
+
+.about-sheet a {
+    color: var(--accent, #6366f1);
+    text-decoration: none;
+}
+
+.about-sheet a:hover {
+    text-decoration: underline;
+}
+
+.about-sheet .bmc-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #FFDD00;
+    color: #000;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    margin-top: 8px;
+}
+
+.about-sheet .bmc-inline img {
+    width: 20px;
+    height: 20px;
+}
+
+/* ── LTR overrides ── */
+[dir="ltr"] {
+    text-align: left;
+}
+
+/* Desktop nav – flip margins */
+[dir="ltr"] .view-switcher {
+    direction: ltr;
+}
+
+/* Election pills – flip auto-margin side */
+[dir="ltr"] .election-pills {
+    margin-right: 0;
+    margin-left: auto;
+}
+
+/* Desktop election cards – flip flow arrow */
+[dir="ltr"] .flow-arrow {
+    transform: scaleX(-1);
+}
+
+[dir="ltr"] .nav-arrow {
+    transform: scaleX(-1);
+    display: inline-block;
+}
+
+/* Desktop footer – flip methodology padding */
+[dir="ltr"] .methodology-section ul {
+    padding-right: 0;
+    padding-left: 24px;
+}
+
+/* Desktop modal close – flip position */
+[dir="ltr"] .modal-close {
+    left: auto;
+    right: 16px;
+}
+
+/* Desktop methodology link – flip margin */
+[dir="ltr"] .methodology-link {
+    margin-right: 0;
+    margin-left: 8px;
+}
+
+/* BMC button – flip position */
+[dir="ltr"] .bmc-button {
+    left: auto;
+    right: 18px;
+}
+
+/* Desktop legend – flip alignment */
+[dir="ltr"] .legend-container.legend-from {
+    text-align: left;
+}
+
+[dir="ltr"] .legend-container.legend-to {
+    text-align: right;
+}
+
+/* Mobile: transition pills flip */
+[dir="ltr"] .transition-pills {
+    margin-right: 0;
+    margin-left: auto;
+}
+
+/* D'Hondt: flip vote adjust buttons */
+[dir="ltr"] .vote-adjust-btns.right {
+    order: -1;
+}
+
+[dir="ltr"] .vote-adjust-btns.left {
+    order: 1;
+}
+
+/* Search input placeholder direction */
+[dir="ltr"] .search-input {
+    text-align: left;
+}
+
+/* Tooltip direction */
+[dir="ltr"] .tooltip {
+    direction: ltr;
+    text-align: left;
+}
+
+/* Scatter axis controls */
+[dir="ltr"] .axis-controls {
+    direction: ltr;
+}

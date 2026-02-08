@@ -10,6 +10,8 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
     <style>
         .transition-pills {
             display: flex;
@@ -130,8 +132,9 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
-        <span class="title">🗳️ נדידה</span>
+        <span class="title">🗳️ <span data-i18n="tab_sankey">נדידה</span></span>
         <div class="transition-pills" id="transition-pills"></div>
+        <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
 
     <!-- Election Info Strip -->
@@ -155,7 +158,7 @@
 
     <!-- Percent Toggle -->
     <div class="pct-toggle">
-        <button id="pct-btn">% מהקודמות</button>
+        <button id="pct-btn" data-i18n="pct_prev_short">% מהקודמות</button>
     </div>
 
     <!-- Legend FAB -->
@@ -170,11 +173,11 @@
 
     <!-- Bottom Tabs -->
     <nav class="tab-bar">
-        <a href="geomap.html"><span class="tab-icon">🗺️</span>מפה</a>
-        <a href="sankey.html" class="active"><span class="tab-icon">📊</span>נדידה</a>
-        <a href="tsne.html"><span class="tab-icon">🔵</span>פיזור</a>
-        <a href="scatter.html"><span class="tab-icon">📈</span>השוואה</a>
-        <a href="dhondt.html"><span class="tab-icon">🏛️</span>מנדטים</a>
+        <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="sankey.html" class="active"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
     </nav>
 
     <script>
@@ -222,7 +225,7 @@
             document.getElementById('pct-btn').onclick = () => {
                 this.percentMode = this.percentMode === 'source' ? 'target' : 'source';
                 document.getElementById('pct-btn').textContent =
-                    this.percentMode === 'source' ? '% מהקודמות' : '% מהחדשות';
+                    i18n.t(this.percentMode === 'source' ? 'pct_prev_short' : 'pct_next_short');
             };
 
             // Legend button
@@ -257,9 +260,9 @@
         updateElectionStrip() {
             const strip = document.getElementById('election-strip');
             strip.style.display = 'flex';
-            document.getElementById('from-name').textContent = this.data.from_election.name;
+            document.getElementById('from-name').textContent = i18n.electionName(this.data.from_election);
             document.getElementById('from-date').textContent = this.data.from_election.date;
-            document.getElementById('to-name').textContent = this.data.to_election.name;
+            document.getElementById('to-name').textContent = i18n.electionName(this.data.to_election);
             document.getElementById('to-date').textContent = this.data.to_election.date;
 
             // Adjust main area top
@@ -367,7 +370,7 @@
                 .text(d => {
                     const h = d.y1 - d.y0;
                     if (h < 12) return '';
-                    return d.name;
+                    return i18n.partyName(d);
                 })
                 .style('font-size', '9px')
                 .style('font-weight', '500');
@@ -413,26 +416,28 @@
             const reversePercent = link.target.votes > 0
                 ? ((link.value / link.target.votes) * 100).toFixed(1) : 0;
             const pct = this.percentMode === 'source' ? link.percentage : reversePercent;
+            const srcName = i18n.partyName(link.sourceName);
+            const tgtName = i18n.partyName(link.targetName);
             const desc = this.percentMode === 'source'
-                ? `מקולות ${link.sourceName} בבחירות הקודמות`
-                : `מקולות ${link.targetName} בבחירות החדשות`;
+                ? i18n.t('from_votes_of', { party: srcName })
+                : i18n.t('from_votes_of_new', { party: tgtName });
 
             document.getElementById('sheet-content').innerHTML = `
                 <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:12px;">
                     <span style="display:flex;align-items:center;gap:4px;">
                         <span class="party-dot" style="background:${link.source.color}"></span>
-                        <strong>${link.sourceName}</strong>
+                        <strong>${srcName}</strong>
                     </span>
                     <span style="color:var(--text-muted);">←</span>
                     <span style="display:flex;align-items:center;gap:4px;">
                         <span class="party-dot" style="background:${link.target.color}"></span>
-                        <strong>${link.targetName}</strong>
+                        <strong>${tgtName}</strong>
                     </span>
                 </div>
                 <div style="text-align:center;font-size:2rem;font-weight:700;color:var(--accent);margin:8px 0;">${pct}%</div>
                 <div style="text-align:center;color:var(--text-secondary);font-size:0.85rem;margin-bottom:8px;">${desc}</div>
                 <div style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding-top:8px;border-top:1px solid var(--border);">
-                    ${link.value.toLocaleString('he-IL')} קולות
+                    ${i18n.fmtNum(link.value)} ${i18n.t('votes')}
                 </div>
             `;
             this.showSheet();
@@ -440,25 +445,28 @@
 
         showPartySheet(node) {
             const info = node.info || {};
-            const elType = node.side === 'from' ? 'בחירות קודמות' : 'בחירות חדשות';
+            const pName = i18n.partyName(node);
+            const lName = i18n.leaderName(info);
+            const altName = i18n.getLang() === 'he' ? (info.name_en || '') : (node.name || '');
+            const elType = node.side === 'from' ? i18n.t('prev_election') : i18n.t('new_election');
 
             document.getElementById('sheet-content').innerHTML = `
                 <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
                     <span class="party-dot" style="background:${node.color};width:14px;height:14px;"></span>
-                    <strong style="font-size:1.1rem;">${node.name}</strong>
-                    ${info.name_en ? `<span style="color:var(--text-muted);font-size:0.8rem;">${info.name_en}</span>` : ''}
+                    <strong style="font-size:1.1rem;">${pName}</strong>
+                    ${altName ? `<span style="color:var(--text-muted);font-size:0.8rem;">${altName}</span>` : ''}
                 </div>
-                ${info.leader ? `
+                ${lName ? `
                 <div style="display:flex;align-items:center;gap:10px;padding:8px;background:var(--bg-tertiary);border-radius:8px;margin-bottom:8px;">
                     ${info.leader_image ? `<img src="../${info.leader_image}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" onerror="this.style.display='none'">` : ''}
                     <div>
-                        <div style="font-size:0.7rem;color:var(--text-muted);">מנהיג</div>
-                        <div style="font-weight:500;">${info.leader}</div>
+                        <div style="font-size:0.7rem;color:var(--text-muted);">${i18n.t('leader_label')}</div>
+                        <div style="font-weight:500;">${lName}</div>
                     </div>
                 </div>` : ''}
                 <div class="stat-grid">
-                    <span class="label">${elType}</span><span class="value">${node.votes?.toLocaleString('he-IL')} קולות</span>
-                    ${node.seats ? `<span class="label">מנדטים</span><span class="value">${node.seats}</span>` : ''}
+                    <span class="label">${elType}</span><span class="value">${i18n.fmtNum(node.votes)} ${i18n.t('votes')}</span>
+                    ${node.seats ? `<span class="label">${i18n.t('seats')}</span><span class="value">${node.seats}</span>` : ''}
                 </div>
                 ${info.ideology ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:6px;">${info.ideology}</div>` : ''}
                 ${info.description ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:6px;line-height:1.4;">${info.description}</div>` : ''}
@@ -469,17 +477,17 @@
         showLegendSheet() {
             if (!this.data) return;
 
-            const makeList = (parties, label) => {
+            const makeList = (parties, electionObj) => {
                 const sorted = [...parties].sort((a, b) => b.votes - a.votes);
                 return `
-                    <div style="font-weight:600;margin:10px 0 6px;font-size:0.85rem;">${label}</div>
+                    <div style="font-weight:600;margin:10px 0 6px;font-size:0.85rem;">${i18n.electionName(electionObj)}</div>
                     ${sorted.map(p => `
                         <div class="party-row">
                             <span class="party-dot" style="background:${p.color}"></span>
-                            <span class="party-name">${p.name}</span>
-                            <span class="party-pct">${p.votes?.toLocaleString('he-IL')}</span>
+                            <span class="party-name">${i18n.partyName(p)}</span>
+                            <span class="party-pct">${i18n.fmtNum(p.votes)}</span>
                             <span style="font-size:0.75rem;color:${p.seats > 0 ? 'var(--accent)' : 'var(--text-muted)'};min-width:45px;text-align:left;">
-                                ${p.seats > 0 ? p.seats + ' מנדטים' : 'לא עברה'}
+                                ${p.seats > 0 ? p.seats + ' ' + i18n.t('seats') : i18n.t('below_threshold')}
                             </span>
                         </div>
                     `).join('')}
@@ -487,8 +495,8 @@
             };
 
             document.getElementById('sheet-content').innerHTML =
-                makeList(this.data.nodes_from, this.data.from_election.name) +
-                makeList(this.data.nodes_to, this.data.to_election.name);
+                makeList(this.data.nodes_from, this.data.from_election) +
+                makeList(this.data.nodes_to, this.data.to_election);
             this.showSheet();
         }
 
@@ -503,7 +511,41 @@
         }
     }
 
-    document.addEventListener('DOMContentLoaded', () => new MobileSankey());
+    document.addEventListener('DOMContentLoaded', () => {
+        const app = new MobileSankey();
+
+        // Language change listener
+        window.addEventListener('langchange', () => {
+            if (app.data) {
+                app.updateElectionStrip();
+                app.render();
+            }
+        });
+
+        // Info / About button
+        document.getElementById('info-btn').onclick = () => {
+            document.getElementById('sheet-content').innerHTML = `
+                <div class="about-sheet">
+                    <h3 data-i18n="about_site">${i18n.t('about_site')}</h3>
+                    <p data-i18n="about_description">${i18n.t('about_description')}</p>
+
+                    <h3 data-i18n="methodology_short">${i18n.t('methodology_short')}</h3>
+                    <p data-i18n="methodology_text">${i18n.t('methodology_text')}</p>
+
+                    <h3 data-i18n="license">${i18n.t('license')}</h3>
+                    <p>CC BY-NC-SA 4.0 &nbsp;|&nbsp; <span data-i18n="credits_line">${i18n.t('credits_line')}</span></p>
+                    <p><a href="https://github.com/harelkain/elections-vote-transfer" target="_blank" data-i18n="source_code">${i18n.t('source_code')}</a></p>
+
+                    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-inline">
+                        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="">
+                        <span data-i18n="bmc_title">${i18n.t('bmc_title')}</span>
+                    </a>
+                </div>
+            `;
+            app.showSheet();
+        };
+    });
     </script>
+    <script>i18n.injectLangToggle('.top-bar');</script>
 </body>
 </html>

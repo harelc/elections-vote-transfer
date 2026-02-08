@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop'))location.replace('m/scatter.html')</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/scatter.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>השוואת תמיכה במפלגות - קולות נודדים</title>
@@ -600,6 +600,8 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->
@@ -614,13 +616,13 @@
             <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
             <p class="subtitle">השוואת תמיכה במפלגות לפי קלפיות</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn">נדידת קולות</a>
-                <a href="tsne.html" class="view-btn">התפלגות קלפיות</a>
-                <a href="geomap.html" class="view-btn">מפה גיאוגרפית</a>
-                <span class="view-btn active">השוואת מפלגות</span>
-                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
-                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
-                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
+                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
+                <span class="view-btn active" data-i18n="nav_scatter">השוואת מפלגות</span>
+                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
+                <button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button>
             </nav>
         </header>
 
@@ -659,8 +661,8 @@
                     <div class="scale-toggle">
                         <label class="toggle-label">יחידות:</label>
                         <div class="toggle-buttons">
-                            <button class="toggle-btn active" data-units="relative">אחוזים</button>
-                            <button class="toggle-btn" data-units="absolute">קולות</button>
+                            <button class="toggle-btn active" data-units="relative" data-i18n="pct_unit">אחוזים</button>
+                            <button class="toggle-btn" data-units="absolute" data-i18n="votes">קולות</button>
                         </div>
                     </div>
                     <div class="scale-toggle" style="margin-top: 0.75rem;">
@@ -675,7 +677,7 @@
                 <div class="control-section">
                     <h3 class="control-title">סינון לפי יישוב</h3>
                     <div class="search-container">
-                        <input type="text" id="settlement-search" class="control-select" placeholder="חפש יישוב..." style="margin-bottom: 0.5rem;">
+                        <input type="text" id="settlement-search" class="control-select" placeholder="חפש יישוב..." data-i18n-placeholder="search_settlement" style="margin-bottom: 0.5rem;">
                         <div class="search-results" id="search-results"></div>
                     </div>
                     <div class="selected-settlements" id="selected-settlements"></div>
@@ -706,7 +708,7 @@
             </aside>
 
             <div class="visualization-container">
-                <div class="loading" id="loading">טוען נתונים...</div>
+                <div class="loading" id="loading" data-i18n="loading">טוען נתונים...</div>
                 <svg id="scatter-chart"></svg>
                 <div class="tooltip" id="tooltip"></div>
             </div>
@@ -715,15 +717,15 @@
         <footer class="main-footer">
             <div class="footer-content">
                 <p class="methodology">
-                    <strong>מתודולוגיה:</strong>
-                    כל נקודה מייצגת קלפי אחת. מיקום הנקודה נקבע לפי אחוז התמיכה במפלגה הנבחרת בציר X (אופקי) ובציר Y (אנכי).
+                    <strong data-i18n="methodology_short">מתודולוגיה:</strong>
+                    <span data-i18n="scatter_methodology_text">כל נקודה מייצגת קלפי אחת. מיקום הנקודה נקבע לפי אחוז התמיכה במפלגה הנבחרת בציר X (אופקי) ובציר Y (אנכי).
                     ניתן להשוות מפלגות מאותן בחירות או מבחירות שונות - במקרה של בחירות שונות, מוצגות רק קלפיות שקיימות בשתי הבחירות.
-                    קו המגמה (מקווקו) מציג את קו הרגרסיה הליניארית.
+                    קו המגמה (מקווקו) מציג את קו הרגרסיה הליניארית.</span>
                 </p>
                 <p class="credits">
-                    © הראל קין |
+                    <span data-i18n="credits_line">© הראל קין</span> |
                     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
-                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
                 </p>
             </div>
         </footer>
@@ -743,7 +745,28 @@
                 this.settlements = []; // List of settlements with counts
                 this.tooltip = d3.select('#tooltip');
 
+                // Election metadata for labels
+                this.electionMeta = {
+                    '21': { he: 'כנסת 21 (אפריל 2019)',    en: 'Knesset 21 (April 2019)' },
+                    '22': { he: 'כנסת 22 (ספטמבר 2019)',    en: 'Knesset 22 (September 2019)' },
+                    '23': { he: 'כנסת 23 (מרץ 2020)',       en: 'Knesset 23 (March 2020)' },
+                    '24': { he: 'כנסת 24 (מרץ 2021)',       en: 'Knesset 24 (March 2021)' },
+                    '25': { he: 'כנסת 25 (נובמבר 2022)',    en: 'Knesset 25 (November 2022)' },
+                };
+
                 this.init();
+            }
+
+            /** Get localized election label for a given election ID */
+            electionLabel(id) {
+                const meta = this.electionMeta[id];
+                if (!meta) return id;
+                return meta[i18n.getLang()] || meta.he;
+            }
+
+            /** Get short localized election label (e.g., "Knesset 25" / "כנסת 25") */
+            electionShort(id) {
+                return i18n.getLang() === 'en' ? `Knesset ${id}` : `כנסת ${id}`;
             }
 
             async init() {
@@ -815,10 +838,45 @@
                     }
                 });
 
+                // Listen for language changes
+                window.addEventListener('langchange', () => {
+                    this.rebuildElectionDropdowns();
+                    this.rebuildPartyDropdowns();
+                    this.updateChart();
+                });
+
+                // Rebuild election dropdowns for current language
+                this.rebuildElectionDropdowns();
+
                 // Load initial data (don't update chart until both are loaded)
                 await this.loadElectionParties('x', '25', false);
                 await this.loadElectionParties('y', '25', false);
                 this.updateChart();
+            }
+
+            /** Rebuild election select options with current language */
+            rebuildElectionDropdowns() {
+                ['election-x', 'election-y'].forEach(id => {
+                    const select = document.getElementById(id);
+                    const currentVal = select.value;
+                    select.innerHTML = Object.keys(this.electionMeta).map(eid =>
+                        `<option value="${eid}"${eid === currentVal ? ' selected' : ''}>${this.electionLabel(eid)}</option>`
+                    ).join('');
+                });
+            }
+
+            /** Rebuild party select options with current language (preserving selection) */
+            rebuildPartyDropdowns() {
+                ['x', 'y'].forEach(axis => {
+                    const electionId = axis === 'x' ? this.currentElectionX : this.currentElectionY;
+                    const data = this.electionsData[electionId];
+                    if (!data) return;
+                    const select = document.getElementById(`party-${axis}`);
+                    const currentVal = axis === 'x' ? this.currentPartyX : this.currentPartyY;
+                    select.innerHTML = data.parties.map(p =>
+                        `<option value="${p.name}"${p.name === currentVal ? ' selected' : ''}>${i18n.partyName(p)}</option>`
+                    ).join('');
+                });
             }
 
             buildSettlementsList() {
@@ -900,7 +958,7 @@
                 searchResults.innerHTML = matches.map(s => `
                     <div class="search-result-item" data-settlement="${s.name}">
                         ${s.name}
-                        <span class="station-count">${s.count} קלפיות</span>
+                        <span class="station-count">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}</span>
                     </div>
                 `).join('');
 
@@ -968,7 +1026,7 @@
 
                 // Rebuild options
                 select.innerHTML = data.parties.map(p =>
-                    `<option value="${p.name}">${p.name}</option>`
+                    `<option value="${p.name}">${i18n.partyName(p)}</option>`
                 ).join('');
 
                 // Try to keep the same party selected if it exists in the new election
@@ -1243,7 +1301,7 @@
                     .attr('x', margin.left + innerWidth / 2)
                     .attr('y', height - 10)
                     .attr('text-anchor', 'middle')
-                    .text(`${this.currentPartyX} (כנסת ${this.currentElectionX})`);
+                    .text(`${i18n.partyName(this.currentPartyX)} (${this.electionShort(this.currentElectionX)})`);
 
                 svg.append('text')
                     .attr('class', 'axis-label-text')
@@ -1251,7 +1309,7 @@
                     .attr('x', -(margin.top + innerHeight / 2))
                     .attr('y', 20)
                     .attr('text-anchor', 'middle')
-                    .text(`${this.currentPartyY} (כנסת ${this.currentElectionY})`);
+                    .text(`${i18n.partyName(this.currentPartyY)} (${this.electionShort(this.currentElectionY)})`);
 
                 // Calculate regression line
                 const regression = this.calculateRegression(data);
@@ -1344,7 +1402,7 @@
             }
 
             updateStats(data, regression) {
-                document.getElementById('station-count').textContent = data.length.toLocaleString();
+                document.getElementById('station-count').textContent = i18n.fmtNum(data.length);
 
                 if (regression) {
                     const corrEl = document.getElementById('correlation');
@@ -1370,23 +1428,27 @@
                 const locationHtml = d.location ? `<div class="tooltip-location">${d.location}</div>` : '';
                 const formatValue = (val) => {
                     if (this.unitsMode === 'absolute') {
-                        return val.toLocaleString() + ' קולות';
+                        return i18n.fmtNum(val) + ' ' + i18n.t('votes');
                     }
                     return val.toFixed(1) + '%';
                 };
+                const partyXName = i18n.partyName(partyX);
+                const partyYName = i18n.partyName(partyY);
+                const elXShort = this.electionShort(this.currentElectionX);
+                const elYShort = this.electionShort(this.currentElectionY);
                 const html = `
                     <div class="tooltip-title">${d.settlement}</div>
-                    <div class="tooltip-subtitle">קלפי ${d.ballot}</div>
+                    <div class="tooltip-subtitle">${i18n.t('ballot')} ${d.ballot}</div>
                     ${locationHtml}
                     <div class="tooltip-values">
                         <div class="tooltip-party">
                             <span class="tooltip-party-color" style="background: ${partyX.color}"></span>
-                            ${this.currentPartyX} (כנסת ${this.currentElectionX}):
+                            ${partyXName} (${elXShort}):
                         </div>
                         <span class="tooltip-pct">${formatValue(d.x)}</span>
                         <div class="tooltip-party">
                             <span class="tooltip-party-color" style="background: ${partyY.color}"></span>
-                            ${this.currentPartyY} (כנסת ${this.currentElectionY}):
+                            ${partyYName} (${elYShort}):
                         </div>
                         <span class="tooltip-pct">${formatValue(d.y)}</span>
                     </div>
@@ -1549,12 +1611,17 @@
                 ctx.fillStyle = '#f8fafc';
                 ctx.font = 'bold 18px Heebo, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText('השוואת תמיכה במפלגות', svgWidth / 2, 28);
+                ctx.fillText(i18n.t('scatter_title'), svgWidth / 2, 28);
 
                 // Subtitle with axis info
                 ctx.fillStyle = '#94a3b8';
                 ctx.font = '13px Heebo, sans-serif';
-                const subtitle = `${this.currentPartyX} (כנסת ${this.currentElectionX}) מול ${this.currentPartyY} (כנסת ${this.currentElectionY})`;
+                const partyXLabel = i18n.partyName(this.currentPartyX);
+                const partyYLabel = i18n.partyName(this.currentPartyY);
+                const elXLabel = this.electionShort(this.currentElectionX);
+                const elYLabel = this.electionShort(this.currentElectionY);
+                const vsWord = i18n.getLang() === 'en' ? 'vs' : 'מול';
+                const subtitle = `${partyXLabel} (${elXLabel}) ${vsWord} ${partyYLabel} (${elYLabel})`;
                 ctx.fillText(subtitle, svgWidth / 2, 52);
 
                 // Chart area
@@ -1592,9 +1659,11 @@
 
                     // Draw each stat separately with proper spacing
                     const statsY = infoY + 25;
+                    const stationsLabel = i18n.getLang() === 'en' ? 'Ballots' : 'קלפיות';
+                    const corrLabel = i18n.getLang() === 'en' ? 'Correlation' : 'מתאם';
                     const items = [
-                        `קלפיות: ${stations}`,
-                        `מתאם: ${correlation}`,
+                        `${stationsLabel}: ${stations}`,
+                        `${corrLabel}: ${correlation}`,
                         `R²: ${rSquared}`,
                         equation
                     ];
@@ -1624,7 +1693,7 @@
                         ctx.fillStyle = '#f8fafc';
                         ctx.font = 'bold 14px Heebo, sans-serif';
                         ctx.textAlign = 'right';
-                        ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', svgWidth - 15, watermarkY + 25);
+                        ctx.fillText(i18n.t('watermark_created'), svgWidth - 15, watermarkY + 25);
 
                         ctx.fillStyle = '#64748b';
                         ctx.font = '12px Heebo, sans-serif';
@@ -1649,9 +1718,9 @@
     </script>
 
     <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" data-i18n-title="bmc_title" title="קנו לי כוס קפה ☕">
         <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
     </a>
     <style>
         .bmc-button {
@@ -1690,5 +1759,6 @@
             display: inline-block;
         }
     </style>
+    <script>i18n.injectLangToggle('.view-switcher');</script>
 </body>
 </html>

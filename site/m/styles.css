@@ -331,3 +331,45 @@ html, body {
     font-size: 0.75rem;
     color: var(--text-muted);
 }
+
+/* ---- About / Info Bottom Sheet ---- */
+.about-sheet h3 {
+    font-size: 1rem;
+    margin: 16px 0 8px;
+    color: var(--text-primary);
+}
+
+.about-sheet h3:first-child { margin-top: 0; }
+
+.about-sheet p {
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin: 0 0 8px;
+}
+
+.about-sheet a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.about-sheet a:hover { text-decoration: underline; }
+
+.about-sheet .bmc-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: #FFDD00;
+    color: #000;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-decoration: none;
+    margin-top: 8px;
+}
+
+.about-sheet .bmc-inline img {
+    width: 20px;
+    height: 20px;
+}

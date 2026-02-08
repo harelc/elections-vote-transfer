@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop'))location.replace('m/tsne.html')</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/tsne.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>התפלגות קלפיות - קולות נודדים</title>
@@ -849,6 +849,8 @@
             text-decoration: underline;
         }
     </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->
@@ -863,13 +865,13 @@
             <h1><span class="title-icon">🗳️</span>קולות נודדים</h1>
             <p class="subtitle">מיפוי T-SNE של קלפיות לפי התפלגות ההצבעה</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn">נדידת קולות</a>
-                <span class="view-btn active">התפלגות קלפיות</span>
-                <a href="geomap.html" class="view-btn">מפה גיאוגרפית</a>
-                <a href="scatter.html" class="view-btn">השוואת מפלגות</a>
-                <a href="dhondt.html" class="view-btn">מחשבון באדר-עופר</a>
-                <a href="irregular.html" class="view-btn">קלפיות חריגות</a>
-                <button class="export-btn header-export" id="export-png">📷 ייצוא PNG</button>
+                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <span class="view-btn active" data-i18n="nav_tsne">התפלגות קלפיות</span>
+                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
+                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
+                <button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button>
             </nav>
         </header>
 
@@ -885,7 +887,7 @@
             <aside class="legend-panel">
                 <h3 class="legend-title">סינון לפי יישוב</h3>
                 <div class="search-container">
-                    <input type="text" id="settlement-search" class="settlement-search" placeholder="חפש יישוב..." autocomplete="off">
+                    <input type="text" id="settlement-search" class="settlement-search" placeholder="חפש יישוב..." data-i18n-placeholder="search_settlement" autocomplete="off">
                     <div id="search-results" class="search-results"></div>
                 </div>
                 <div id="selected-settlements" class="selected-settlements"></div>
@@ -893,7 +895,7 @@
                 <div class="legend-divider"></div>
                 <h3 class="legend-title">חיפוש קלפי</h3>
                 <div class="search-container">
-                    <input type="text" id="station-search" class="settlement-search" placeholder="יישוב, מספר או מיקום..." autocomplete="off">
+                    <input type="text" id="station-search" class="settlement-search" placeholder="יישוב, מספר או מיקום..." data-i18n-placeholder="search_station" autocomplete="off">
                     <div id="station-search-results" class="search-results"></div>
                 </div>
                 <div id="selected-station" class="selected-station"></div>
@@ -902,11 +904,11 @@
                 <h3 class="legend-title">צביעה לפי</h3>
                 <div class="legend-item active" id="turnout-option" data-mode="turnout">
                     <span class="legend-color" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
-                    <span class="legend-name">שיעור הצבעה</span>
+                    <span class="legend-name" data-i18n="turnout">שיעור הצבעה</span>
                 </div>
                 <div class="legend-item" id="socioeconomic-option" data-mode="socioeconomic">
                     <span class="legend-color" style="background: linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142);"></span>
-                    <span class="legend-name">אשכול חברתי-כלכלי</span>
+                    <span class="legend-name" data-i18n="socioeconomic">אשכול חברתי-כלכלי</span>
                 </div>
                 <div class="legend-divider"></div>
                 <div id="legend-items"></div>
@@ -935,16 +937,16 @@
         <footer class="main-footer">
             <div class="footer-content">
                 <p class="methodology">
-                    <strong>מתודולוגיה:</strong>
-                    מפת הקלפיות מבוססת על אלגוריתם T-SNE (t-distributed Stochastic Neighbor Embedding) -
+                    <strong data-i18n="methodology_short">מתודולוגיה:</strong>
+                    <span data-i18n="methodology_text">מפת הקלפיות מבוססת על אלגוריתם T-SNE (t-distributed Stochastic Neighbor Embedding) -
                     טכניקת הפחתת מימדים שממירה נתונים רב-מימדיים (התפלגות ההצבעה לפי מפלגות) לנקודות דו-מימדיות.
                     קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו במפה.
-                    גודל הנקודה משקף את מספר המצביעים, והצבע מציג את שיעור ההצבעה או תמיכה במפלגה נבחרת.
+                    גודל הנקודה משקף את מספר המצביעים, והצבע מציג את שיעור ההצבעה או תמיכה במפלגה נבחרת.</span>
                 </p>
                 <p class="credits">
-                    © הראל קין |
+                    <span data-i18n="credits_line">© הראל קין</span> |
                     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
-                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">קוד מקור</a>
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
                 </p>
             </div>
         </footer>
@@ -1036,6 +1038,13 @@
                 // Export PNG button
                 document.getElementById('export-png').addEventListener('click', () => this.exportPNG());
 
+                // Update election nav buttons for current language
+                if (i18n.getLang() === 'en') {
+                    document.querySelectorAll('.nav-btn').forEach(btn => {
+                        btn.textContent = `Knesset ${btn.dataset.election}`;
+                    });
+                }
+
                 // Load initial election
                 this.loadElection('25');
             }
@@ -1074,7 +1083,7 @@
                 searchResults.innerHTML = matches.map(s => `
                     <div class="search-result-item" data-settlement="${s.name}">
                         ${s.name}
-                        <span class="station-count">${s.count} קלפיות</span>
+                        <span class="station-count">${i18n.fmtNum(s.count)} ${i18n.t('ballot')}${i18n.getLang() === 'en' ? 's' : 'ות'}</span>
                     </div>
                 `).join('');
 
@@ -1120,7 +1129,7 @@
                 container.innerHTML = this.selectedSettlements.map(name => `
                     <span class="settlement-tag" data-settlement="${name}">
                         ${name}
-                        <button class="remove-btn" title="הסר">&times;</button>
+                        <button class="remove-btn" title="${i18n.getLang() === 'en' ? 'Remove' : 'הסר'}">&times;</button>
                     </span>
                 `).join('');
 
@@ -1168,7 +1177,7 @@
                     const location = s.l || '';
                     return `
                         <div class="search-result-item" data-station-idx="${idx}">
-                            <strong>${name}</strong> - קלפי ${ballot}
+                            <strong>${name}</strong> - ${i18n.t('ballot')} ${ballot}
                             ${location ? `<br><span class="station-count">${location}</span>` : ''}
                         </div>
                     `;
@@ -1201,8 +1210,8 @@
                 const selectedEl = document.getElementById('selected-station');
                 selectedEl.innerHTML = `
                     <div class="selected-station-header">
-                        <span class="selected-station-name">${name} - קלפי ${ballot}</span>
-                        <button class="clear-btn" title="נקה">&times;</button>
+                        <span class="selected-station-name">${name} - ${i18n.t('ballot')} ${ballot}</span>
+                        <button class="clear-btn" title="${i18n.t('clear_filter')}">&times;</button>
                     </div>
                     ${location ? `<div class="selected-station-details">${location}</div>` : ''}
                 `;
@@ -1257,7 +1266,7 @@
                 // Update color scale for turnout
                 this.colorScale.classed('visible', true);
                 d3.select('#color-scale-bar').style('background', 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)');
-                d3.select('.color-scale-title').text('שיעור הצבעה');
+                d3.select('.color-scale-title').text(i18n.t('turnout'));
                 d3.select('#color-scale-min').text('40%');
                 d3.select('#color-scale-max').text('90%');
                 document.getElementById('color-scale-toggle').classList.add('hidden');
@@ -1307,7 +1316,7 @@
                 const discreteColors = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
                 const gradient = `linear-gradient(to left, ${discreteColors.slice().reverse().join(', ')})`;
                 d3.select('#color-scale-bar').style('background', gradient);
-                d3.select('.color-scale-title').text('אשכול חברתי-כלכלי');
+                d3.select('.color-scale-title').text(i18n.t('socioeconomic'));
                 d3.select('#color-scale-min').text('1');
                 d3.select('#color-scale-max').text('10');
                 document.getElementById('color-scale-toggle').classList.add('hidden');
@@ -1353,7 +1362,7 @@
             async loadElection(electionId) {
                 this.currentElection = electionId;
                 const container = document.querySelector('.visualization-container');
-                container.innerHTML = '<div class="loading">טוען נתונים...</div>';
+                container.innerHTML = `<div class="loading">${i18n.t('loading')}</div>`;
 
                 // Preserve current color mode
                 const previousColorMode = this.colorMode;
@@ -1368,12 +1377,16 @@
                     // Load party info from transfer data
                     await this.loadPartyInfo(electionId);
 
+                    const zoomHintText = i18n.getLang() === 'en'
+                        ? 'Size = number of voters | Scroll to zoom | Drag to pan'
+                        : 'גודל = מספר מצביעים | גלגל לזום | גרירה להזזה';
+                    const dynamicRangeText = i18n.getLang() === 'en' ? 'Dynamic range' : 'טווח דינמי';
                     container.innerHTML = `
                         <svg id="tsne-chart"></svg>
                         <div class="tooltip" id="tooltip"></div>
-                        <div class="zoom-hint">גודל = מספר מצביעים | גלגל לזום | גרירה להזזה</div>
+                        <div class="zoom-hint">${zoomHintText}</div>
                         <div class="color-scale visible" id="color-scale">
-                            <div class="color-scale-title">שיעור הצבעה</div>
+                            <div class="color-scale-title">${i18n.t('turnout')}</div>
                             <div class="color-scale-bar" id="color-scale-bar" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></div>
                             <div class="color-scale-labels">
                                 <span id="color-scale-min">40%</span>
@@ -1381,7 +1394,7 @@
                             </div>
                             <label class="color-scale-toggle hidden" id="color-scale-toggle">
                                 <input type="checkbox" id="dynamic-range-toggle" ${this.dynamicRange ? 'checked' : ''}>
-                                <span>טווח דינמי</span>
+                                <span>${dynamicRangeText}</span>
                             </label>
                         </div>
                     `;
@@ -1433,7 +1446,7 @@
                     }
                 } catch (error) {
                     console.error('Failed to load election data:', error);
-                    container.innerHTML = '<div class="loading" style="color: #ef4444;">שגיאה בטעינת הנתונים</div>';
+                    container.innerHTML = `<div class="loading" style="color: #ef4444;">${i18n.t('error_loading')}</div>`;
                 }
             }
 
@@ -1447,7 +1460,7 @@
                     item.dataset.party = party.name;
                     item.innerHTML = `
                         <span class="legend-color" style="background: ${party.color}"></span>
-                        <span class="legend-name">${party.name}</span>
+                        <span class="legend-name">${i18n.partyName(party)}</span>
                     `;
                     item.addEventListener('click', () => this.selectParty(party));
                     item.addEventListener('mouseenter', (event) => this.showPartyTooltip(event, party));
@@ -1459,22 +1472,24 @@
 
             showPartyTooltip(event, party) {
                 const info = party.info || {};
+                const displayName = i18n.partyName(party);
+                const displayLeader = i18n.leaderName(info);
                 const html = `
                     <div class="tooltip-header">
                         ${info.logo ? `<img class="tooltip-logo" src="${info.logo}" alt="" onerror="this.style.display='none'">` : `<div class="tooltip-color" style="background-color: ${party.color}"></div>`}
-                        <span class="tooltip-title">${party.name}</span>
+                        <span class="tooltip-title">${displayName}</span>
                         <span class="tooltip-symbol">(${party.symbol})</span>
                     </div>
                     <div class="tooltip-body">
-                        ${info.leader ? `<div class="tooltip-leader">
-                            ${info.leader_image ? `<img class="tooltip-leader-img" src="${info.leader_image}" alt="${info.leader}" onerror="this.style.display='none'">` : ''}
+                        ${displayLeader ? `<div class="tooltip-leader">
+                            ${info.leader_image ? `<img class="tooltip-leader-img" src="${info.leader_image}" alt="${displayLeader}" onerror="this.style.display='none'">` : ''}
                             <div class="tooltip-leader-info">
-                                <span class="tooltip-leader-label">מנהיג:</span>
-                                <span class="tooltip-leader-name">${info.leader}</span>
+                                <span class="tooltip-leader-label">${i18n.t('leader_label')}</span>
+                                <span class="tooltip-leader-name">${displayLeader}</span>
                             </div>
                         </div>` : ''}
                         ${info.ideology ? `<div class="tooltip-stat">
-                            <span class="tooltip-stat-label">אידיאולוגיה:</span>
+                            <span class="tooltip-stat-label">${i18n.t('ideology_label')}</span>
                             <span class="tooltip-stat-value">${info.ideology}</span>
                         </div>` : ''}
                         ${info.description ? `<div class="tooltip-description">${info.description}</div>` : ''}
@@ -1515,9 +1530,14 @@
                     this.colorScale.classed('visible', true);
                     const gradient = `linear-gradient(to left, ${party.color}, ${this.lightenColor(party.color, 0.8)})`;
                     d3.select('#color-scale-bar').style('background', gradient);
-                    // Handle Hebrew: drop ה from beginning when adding ב prefix
-                    const partyNameForLabel = party.name.startsWith('ה') ? party.name.slice(1) : party.name;
-                    d3.select('.color-scale-title').text(`תמיכה ב${partyNameForLabel}`);
+                    const displayPartyName = i18n.partyName(party);
+                    if (i18n.getLang() === 'en') {
+                        d3.select('.color-scale-title').text(`${displayPartyName} support`);
+                    } else {
+                        // Handle Hebrew: drop ה from beginning when adding ב prefix
+                        const partyNameForLabel = party.name.startsWith('ה') ? party.name.slice(1) : party.name;
+                        d3.select('.color-scale-title').text(`תמיכה ב${partyNameForLabel}`);
+                    }
                     d3.select('#color-scale-min').text(`${this.partyScaleMin}%`);
                     d3.select('#color-scale-max').text(`${this.partyScaleMax}%`);
 
@@ -1740,11 +1760,12 @@
                 const partyRows = topParties.map(([name, pct]) => {
                     const party = this.data.parties.find(p => p.name === name);
                     const color = party ? party.color : '#64748b';
+                    const displayName = party ? i18n.partyName(party) : i18n.partyName(name);
                     return `
                         <div class="tooltip-party-row">
                             <span class="tooltip-party-name">
                                 <span class="tooltip-party-color" style="background: ${color}"></span>
-                                ${name}
+                                ${displayName}
                             </span>
                             <span class="tooltip-party-pct">${pct}%</span>
                         </div>
@@ -1763,7 +1784,8 @@
                 if (cluster === null || cluster === undefined) {
                     cluster = this.socioeconomicData ? this.socioeconomicData[this.normalizeName(settlementName)] : null;
                 }
-                const clusterHtml = cluster ? ` <span class="tooltip-cluster">(אשכול ${cluster})</span>` : '';
+                const clusterLabel = i18n.getLang() === 'en' ? 'cluster' : 'אשכול';
+                const clusterHtml = cluster ? ` <span class="tooltip-cluster">(${clusterLabel} ${cluster})</span>` : '';
 
                 const locationHtml = location
                     ? `<div class="tooltip-location">${location}</div>`
@@ -1771,12 +1793,12 @@
 
                 this.tooltip.html(`
                     <div class="tooltip-title">${settlementName}${clusterHtml}</div>
-                    <div class="tooltip-subtitle">קלפי ${ballotNumber}</div>
+                    <div class="tooltip-subtitle">${i18n.t('ballot')} ${ballotNumber}</div>
                     ${locationHtml}
                     <div class="tooltip-turnout">
-                        <span>${eligibleVoters.toLocaleString()} רשומים</span>
-                        <span>${totalVoters.toLocaleString()} הצביעו</span>
-                        <span class="turnout-pct">${turnout}% שיעור הצבעה</span>
+                        <span>${i18n.fmtNum(eligibleVoters)} ${i18n.t('eligible_voters')}</span>
+                        <span>${i18n.fmtNum(totalVoters)} ${i18n.t('voted')}</span>
+                        <span class="turnout-pct">${turnout}% ${i18n.t('turnout')}</span>
                     </div>
                     <div class="tooltip-votes">
                         ${partyRows}
@@ -1908,12 +1930,18 @@
                 ctx.fillStyle = '#f8fafc';
                 ctx.font = 'bold 18px Heebo, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(`התפלגות קלפיות t-SNE - בחירות לכנסת ה-${this.currentElection}`, svgWidth / 2, 28);
+                const exportTitle = i18n.getLang() === 'en'
+                    ? `t-SNE Ballot Distribution – Knesset ${this.currentElection}`
+                    : `התפלגות קלפיות t-SNE - בחירות לכנסת ה-${this.currentElection}`;
+                ctx.fillText(exportTitle, svgWidth / 2, 28);
 
                 // Explanation
                 ctx.fillStyle = '#a0a0b0';
                 ctx.font = '12px Heebo, sans-serif';
-                ctx.fillText('כל נקודה מייצגת קלפי. קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו.', svgWidth / 2, 48);
+                const exportExplanation = i18n.getLang() === 'en'
+                    ? 'Each dot represents a ballot box. Boxes with similar voting patterns are placed close together.'
+                    : 'כל נקודה מייצגת קלפי. קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו.';
+                ctx.fillText(exportExplanation, svgWidth / 2, 48);
 
                 // Color and size info
                 // Get color scale info from DOM
@@ -1921,10 +1949,17 @@
                 const colorScaleMin = document.getElementById('color-scale-min');
                 const colorScaleMax = document.getElementById('color-scale-max');
 
-                let colorModeText = 'צבע לפי שיעור הצבעה';
-                let colorRangeText = '';
-                if (this.selectedParty && this.selectedParty.name) {
-                    colorModeText = `צבע לפי תמיכה ב${this.selectedParty.name}`;
+                let colorModeText, colorRangeText = '';
+                if (i18n.getLang() === 'en') {
+                    colorModeText = 'Color by turnout';
+                    if (this.selectedParty && this.selectedParty.name) {
+                        colorModeText = `Color by ${i18n.partyName(this.selectedParty)} support`;
+                    }
+                } else {
+                    colorModeText = 'צבע לפי שיעור הצבעה';
+                    if (this.selectedParty && this.selectedParty.name) {
+                        colorModeText = `צבע לפי תמיכה ב${this.selectedParty.name}`;
+                    }
                 }
                 if (colorScaleMin && colorScaleMax) {
                     colorRangeText = ` (${colorScaleMin.textContent} - ${colorScaleMax.textContent})`;
@@ -1934,7 +1969,9 @@
                 ctx.fillStyle = '#64748b';
                 ctx.font = '11px Heebo, sans-serif';
                 // Draw info line in parts to avoid RTL issues with mixed content
-                const infoText = `${colorModeText}${colorRangeText} | גודל נקודה = מספר מצביעים | סה״כ קלפיות: ${stationCount.toLocaleString()}`;
+                const infoText = i18n.getLang() === 'en'
+                    ? `${colorModeText}${colorRangeText} | Dot size = number of voters | Total ballots: ${i18n.fmtNum(stationCount)}`
+                    : `${colorModeText}${colorRangeText} | גודל נקודה = מספר מצביעים | סה״כ קלפיות: ${i18n.fmtNum(stationCount)}`;
                 ctx.fillText(infoText, svgWidth / 2, 65);
 
                 // Chart background
@@ -1973,7 +2010,7 @@
                         ctx.fillStyle = '#f8fafc';
                         ctx.font = 'bold 14px Heebo, sans-serif';
                         ctx.textAlign = 'right';
-                        ctx.fillText('נוצר באתר קולות נודדים, כל הזכויות שמורות', svgWidth - 15, watermarkY + 25);
+                        ctx.fillText(i18n.t('watermark_created'), svgWidth - 15, watermarkY + 25);
 
                         ctx.fillStyle = '#64748b';
                         ctx.font = '12px Heebo, sans-serif';
@@ -1992,13 +2029,50 @@
         }
 
         // Initialize
-        new TSNEVisualization();
+        const tsneViz = new TSNEVisualization();
+
+        // Listen for language changes and re-render dynamic content
+        window.addEventListener('langchange', () => {
+            if (tsneViz.data) {
+                tsneViz.updateLegend();
+                tsneViz.renderSettlementTags();
+                // Re-render color scale and labels for current mode
+                if (tsneViz.colorMode === 'turnout') {
+                    tsneViz.selectTurnoutMode();
+                } else if (tsneViz.colorMode === 'socioeconomic') {
+                    tsneViz.selectSocioeconomicMode();
+                } else if (tsneViz.colorMode === 'party' && tsneViz.selectedParty) {
+                    tsneViz.selectParty(tsneViz.selectedParty);
+                }
+                // Re-render zoom hint text
+                const zoomHint = document.querySelector('.zoom-hint');
+                if (zoomHint) {
+                    zoomHint.textContent = i18n.getLang() === 'en'
+                        ? 'Size = number of voters | Scroll to zoom | Drag to pan'
+                        : 'גודל = מספר מצביעים | גלגל לזום | גרירה להזזה';
+                }
+                // Re-render dynamic range toggle label
+                const toggleLabel = document.querySelector('#color-scale-toggle span');
+                if (toggleLabel) {
+                    toggleLabel.textContent = i18n.getLang() === 'en' ? 'Dynamic range' : 'טווח דינמי';
+                }
+                // Re-render selected station if any
+                if (tsneViz.selectedStation) {
+                    tsneViz.selectStation(tsneViz.selectedStation);
+                }
+                // Update election nav buttons
+                document.querySelectorAll('.nav-btn').forEach(btn => {
+                    const id = btn.dataset.election;
+                    btn.textContent = i18n.getLang() === 'en' ? `Knesset ${id}` : `כנסת ${id}`;
+                });
+            }
+        });
     </script>
 
     <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕">
+    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕" data-i18n-title="bmc_title">
         <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span>אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
+        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
     </a>
     <style>
         .bmc-button {
@@ -2037,5 +2111,6 @@
             display: inline-block;
         }
     </style>
+    <script>i18n.injectLangToggle('.view-switcher');</script>
 </body>
 </html>
