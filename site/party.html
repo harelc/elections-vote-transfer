@@ -1,0 +1,1088 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/party.html'+(qs?'?'+qs:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — פרופיל מפלגה">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>פרופיל מפלגה - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+    <style>
+        .profile-container {
+            flex: 1;
+            padding: var(--spacing-xl) var(--spacing-lg);
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Hero */
+        .profile-hero {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        .hero-color-bar {
+            width: 8px;
+            min-height: 80px;
+            border-radius: 4px;
+            flex-shrink: 0;
+            align-self: stretch;
+        }
+        .hero-info { flex: 1; min-width: 0; }
+        .hero-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .hero-name-en {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .hero-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        .hero-meta-item {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .hero-meta-item strong {
+            color: var(--text-primary);
+        }
+        .hero-aliases {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            line-height: 1.6;
+        }
+        .hero-aliases strong { color: var(--text-muted); }
+
+        /* Section */
+        .profile-section {
+            margin-bottom: 2.5rem;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Charts */
+        .trends-chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            height: 350px;
+            position: relative;
+        }
+
+        /* Election history table */
+        .history-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+        .history-table th {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 0.75rem;
+            text-align: start;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .history-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .history-table tr:last-child td { border-bottom: none; }
+        .history-table .color-dot {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            margin-inline-end: 0.4rem;
+            vertical-align: middle;
+        }
+        .history-table .merged-note {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Strongholds grid */
+        .strongholds-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .strongholds-list {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .strongholds-list h4 {
+            padding: 0.6rem 0.75rem;
+            background: var(--bg-tertiary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .stronghold-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+        .stronghold-item:last-child { border-bottom: none; }
+        .stronghold-item a {
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+        .stronghold-item a:hover { color: var(--accent-primary); }
+        .stronghold-pct { color: var(--text-muted); }
+
+        /* Mini map */
+        .strongholds-map-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-top: 1.5rem;
+        }
+        #strongholds-map { height: 350px; }
+
+        /* Migration */
+        .migration-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        .migration-controls select {
+            padding: 0.4rem 0.8rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.88rem;
+        }
+        .migration-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .migration-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+        }
+        .migration-panel h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.75rem;
+            color: var(--text-secondary);
+        }
+        .migration-bar-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.82rem;
+        }
+        .migration-bar-label {
+            min-width: 100px;
+            text-align: end;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .migration-bar-track {
+            flex: 1;
+            height: 18px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        .migration-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s;
+        }
+        .migration-bar-value {
+            min-width: 45px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+        }
+
+        /* Search */
+        .party-search {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .party-search input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .party-search input:focus { border-color: var(--accent-primary); }
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            max-height: 250px;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-top: 4px;
+            z-index: 100;
+            display: none;
+        }
+        .search-dropdown.visible { display: block; }
+        .search-dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.88rem;
+        }
+        .search-dropdown a:hover { background: var(--bg-hover); }
+        .search-dropdown .sdot {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        /* Landing grid */
+        .party-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .party-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+            text-decoration: none;
+            color: inherit;
+            transition: transform var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .party-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-glow);
+        }
+        .party-card-dot {
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .party-card-info { min-width: 0; }
+        .party-card-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .party-card-seats {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+
+        /* Loading */
+        .loading-msg {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .strongholds-grid { grid-template-columns: 1fr; }
+            .migration-grid { grid-template-columns: 1fr; }
+            .profile-hero { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="site-title">
+                    <span class="title-icon">🗳️</span>
+                    <span data-i18n="site_title">קולות נודדים</span>
+                </h1>
+                <p class="site-subtitle" data-i18n="party_profile">פרופיל מפלגה</p>
+            </div>
+            <nav class="view-switcher"></nav>
+        </header>
+
+        <div class="profile-container" id="profile-container">
+            <div class="loading-msg" id="loading" data-i18n="loading">טוען נתונים...</div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        i18n.renderNav('party');
+
+        /* ── Party Families ── */
+        const PARTY_FAMILIES = [
+            {
+                id: 'likud', name: 'הליכוד', name_en: 'Likud', color: '#2563eb',
+                elections: {
+                    '21': { partyName: 'הליכוד', symbol: 'מחל', seats: 35 },
+                    '22': { partyName: 'הליכוד', symbol: 'מחל', seats: 32 },
+                    '23': { partyName: 'הליכוד', symbol: 'מחל', seats: 36 },
+                    '24': { partyName: 'הליכוד', symbol: 'מחל', seats: 30 },
+                    '25': { partyName: 'הליכוד', symbol: 'מחל', seats: 32 },
+                }
+            },
+            {
+                id: 'yesh_atid', name: 'יש עתיד', name_en: 'Yesh Atid', color: '#06b6d4',
+                elections: {
+                    '21': { partyName: 'כחול לבן', symbol: 'פה', seats: 35 },
+                    '22': { partyName: 'כחול לבן', symbol: 'פה', seats: 33 },
+                    '23': { partyName: 'כחול לבן', symbol: 'פה', seats: 33 },
+                    '24': { partyName: 'יש עתיד', symbol: 'פה', seats: 17 },
+                    '25': { partyName: 'יש עתיד', symbol: 'פה', seats: 24 },
+                }
+            },
+            {
+                id: 'national_unity', name: 'המחנה הממלכתי', name_en: 'National Unity', color: '#7c3aed',
+                elections: {
+                    '24': { partyName: 'כחול לבן', symbol: 'כן', seats: 8 },
+                    '25': { partyName: 'המחנה הממלכתי', symbol: 'כן', seats: 12 },
+                },
+                notes: { '21': 'כחול לבן (פה)', '22': 'כחול לבן (פה)', '23': 'כחול לבן (פה)' }
+            },
+            {
+                id: 'shas', name: 'ש״ס', name_en: 'Shas', color: '#1e3a8a',
+                elections: {
+                    '21': { partyName: 'ש״ס', symbol: 'שס', seats: 8 },
+                    '22': { partyName: 'ש״ס', symbol: 'שס', seats: 9 },
+                    '23': { partyName: 'ש״ס', symbol: 'שס', seats: 9 },
+                    '24': { partyName: 'ש״ס', symbol: 'שס', seats: 9 },
+                    '25': { partyName: 'ש״ס', symbol: 'שס', seats: 11 },
+                }
+            },
+            {
+                id: 'utj', name: 'יהדות התורה', name_en: 'United Torah Judaism', color: '#4b5563',
+                elections: {
+                    '21': { partyName: 'יהדות התורה', symbol: 'ג', seats: 8 },
+                    '22': { partyName: 'יהדות התורה', symbol: 'ג', seats: 7 },
+                    '23': { partyName: 'יהדות התורה', symbol: 'ג', seats: 7 },
+                    '24': { partyName: 'יהדות התורה', symbol: 'ג', seats: 7 },
+                    '25': { partyName: 'יהדות התורה', symbol: 'ג', seats: 7 },
+                }
+            },
+            {
+                id: 'yisrael_beiteinu', name: 'ישראל ביתנו', name_en: 'Yisrael Beiteinu', color: '#db2777',
+                elections: {
+                    '21': { partyName: 'ישראל ביתנו', symbol: 'ל', seats: 5 },
+                    '22': { partyName: 'ישראל ביתנו', symbol: 'ל', seats: 8 },
+                    '23': { partyName: 'ישראל ביתנו', symbol: 'ל', seats: 7 },
+                    '24': { partyName: 'ישראל ביתנו', symbol: 'ל', seats: 7 },
+                    '25': { partyName: 'ישראל ביתנו', symbol: 'ל', seats: 6 },
+                }
+            },
+            {
+                id: 'labor', name: 'העבודה', name_en: 'Labor', color: '#dc2626',
+                elections: {
+                    '21': { partyName: 'העבודה', symbol: 'אמת', seats: 6 },
+                    '22': { partyName: 'העבודה-גשר', symbol: 'אמת', seats: 6 },
+                    '23': { partyName: 'עבודה-גשר-מרצ', symbol: 'אמת', seats: 7 },
+                    '24': { partyName: 'העבודה', symbol: 'אמת', seats: 7 },
+                    '25': { partyName: 'העבודה', symbol: 'אמת', seats: 4 },
+                }
+            },
+            {
+                id: 'meretz', name: 'מרצ', name_en: 'Meretz', color: '#16a34a',
+                elections: {
+                    '21': { partyName: 'מרצ', symbol: 'מרצ', seats: 4 },
+                    '22': { partyName: 'המחנה הדמוקרטי', symbol: 'מרצ', seats: 5 },
+                    '24': { partyName: 'מרצ', symbol: 'מרצ', seats: 6 },
+                    '25': { partyName: 'מרצ', symbol: 'מרצ', seats: 0 },
+                },
+                notes: { '23': 'עבודה-גשר-מרצ (אמת)' }
+            },
+            {
+                id: 'joint_list', name: 'הרשימה המשותפת', name_en: 'Joint List', color: '#059669',
+                elections: {
+                    '21': { partyName: 'חד״ש-תע״ל', symbol: 'ום', seats: 6 },
+                    '22': { partyName: 'הרשימה המשותפת', symbol: 'ודעם', seats: 13 },
+                    '23': { partyName: 'הרשימה המשותפת', symbol: 'ודעם', seats: 15 },
+                    '24': { partyName: 'הרשימה המשותפת', symbol: 'ודעם', seats: 6 },
+                    '25': { partyName: 'חד״ש-תע״ל', symbol: 'ום', seats: 5 },
+                }
+            },
+            {
+                id: 'raam', name: 'רע״ם', name_en: "Ra'am", color: '#84cc16',
+                elections: {
+                    '21': { partyName: 'רע״ם-בל״ד', symbol: 'דעם', seats: 4 },
+                    '24': { partyName: 'רע״ם', symbol: 'עם', seats: 4 },
+                    '25': { partyName: 'רע״ם', symbol: 'עם', seats: 5 },
+                },
+                notes: { '22': 'הרשימה המשותפת (ודעם)', '23': 'הרשימה המשותפת (ודעם)' }
+            },
+            {
+                id: 'yamina', name: 'ימינה', name_en: 'Yamina', color: '#ea580c',
+                elections: {
+                    '21': { partyName: 'הבית היהודי', symbol: 'טב', seats: 5 },
+                    '22': { partyName: 'ימינה', symbol: 'טב', seats: 7 },
+                    '23': { partyName: 'ימינה', symbol: 'טב', seats: 6 },
+                    '24': { partyName: 'ימינה', symbol: 'ב', seats: 7 },
+                }
+            },
+            {
+                id: 'religious_zionism', name: 'הציונות הדתית', name_en: 'Religious Zionism', color: '#92400e',
+                elections: {
+                    '24': { partyName: 'הציונות הדתית', symbol: 'ט', seats: 6 },
+                    '25': { partyName: 'הציונות הדתית', symbol: 'ט', seats: 14 },
+                }
+            },
+            {
+                id: 'new_hope', name: 'תקווה חדשה', name_en: 'New Hope', color: '#a855f7',
+                elections: {
+                    '24': { partyName: 'תקווה חדשה', symbol: 'ת', seats: 6 },
+                },
+                notes: { '25': 'המחנה הממלכתי (כן)' }
+            },
+            {
+                id: 'kulanu', name: 'כולנו', name_en: 'Kulanu', color: '#eab308',
+                elections: {
+                    '21': { partyName: 'כולנו', symbol: 'כ', seats: 4 },
+                },
+                notes: { '22': 'הליכוד (מחל)' }
+            },
+            {
+                id: 'balad', name: 'בל״ד', name_en: 'Balad', color: '#065f46',
+                elections: {
+                    '25': { partyName: 'בל״ד', symbol: 'ד', seats: 0 },
+                },
+                notes: { '21': 'רע״ם-בל״ד (דעם)', '22': 'הרשימה המשותפת (ודעם)', '23': 'הרשימה המשותפת (ודעם)', '24': 'הרשימה המשותפת (ודעם)' }
+            },
+        ];
+
+        const ELECTIONS = ['21', '22', '23', '24', '25'];
+        const ELECTION_LABELS = {
+            '21': { he: 'כנסת 21', en: 'Knesset 21' },
+            '22': { he: 'כנסת 22', en: 'Knesset 22' },
+            '23': { he: 'כנסת 23', en: 'Knesset 23' },
+            '24': { he: 'כנסת 24', en: 'Knesset 24' },
+            '25': { he: 'כנסת 25', en: 'Knesset 25' },
+        };
+        const TRANSITION_PAIRS = ['21_to_22', '22_to_23', '23_to_24', '24_to_25'];
+
+        const params = new URLSearchParams(location.search);
+        const partyParam = params.get('name');
+
+        let allMapData = {};
+        let allTransfers = {};
+        let coordsData = {};
+
+        if (!partyParam) {
+            showLanding();
+        } else {
+            showProfile(partyParam);
+        }
+
+        function findFamily(name) {
+            return PARTY_FAMILIES.find(f =>
+                f.name === name || f.name_en === name ||
+                Object.values(f.elections).some(e => e.partyName === name)
+            );
+        }
+
+        /* ── Landing ── */
+        function showLanding() {
+            const container = document.getElementById('profile-container');
+            const lang = i18n.getLang();
+
+            // Sort families by latest seats desc
+            const sorted = [...PARTY_FAMILIES].sort((a, b) => {
+                const aSeats = getLatestSeats(a);
+                const bSeats = getLatestSeats(b);
+                return bSeats - aSeats;
+            });
+
+            let html = '';
+            html += '<div class="party-search">';
+            html += '<input type="text" id="search-input" placeholder="' + i18n.t('search_party') + '">';
+            html += '<div class="search-dropdown" id="search-dropdown"></div>';
+            html += '</div>';
+
+            html += '<div class="party-grid">';
+            sorted.forEach(f => {
+                const seats = getLatestSeats(f);
+                const displayName = lang === 'en' ? f.name_en : f.name;
+                const seatsLabel = seats > 0 ? seats + ' ' + i18n.t('seats') : '—';
+                html += '<a class="party-card" href="party.html?name=' + encodeURIComponent(f.name) + '">';
+                html += '<span class="party-card-dot" style="background:' + f.color + '"></span>';
+                html += '<div class="party-card-info">';
+                html += '<div class="party-card-name">' + displayName + '</div>';
+                html += '<div class="party-card-seats">' + seatsLabel + '</div>';
+                html += '</div></a>';
+            });
+            html += '</div>';
+
+            container.innerHTML = html;
+            initPartySearch();
+
+            window.addEventListener('langchange', () => {
+                showLanding();
+            });
+        }
+
+        function getLatestSeats(family) {
+            for (let i = ELECTIONS.length - 1; i >= 0; i--) {
+                const e = family.elections[ELECTIONS[i]];
+                if (e) return e.seats;
+            }
+            return -1;
+        }
+
+        /* ── Profile ── */
+        function showProfile(familyName) {
+            const family = findFamily(familyName);
+            if (!family) {
+                document.getElementById('profile-container').innerHTML =
+                    '<div class="loading-msg">' + i18n.t('no_data') + '</div>';
+                return;
+            }
+
+            document.title = family.name + ' - קולות נודדים';
+
+            Promise.all([
+                ...ELECTIONS.map(e => fetch('data/map_' + e + '.json').then(r => r.json()).then(d => { allMapData[e] = d; })),
+                fetch('data/all_transfers.json').then(r => r.json()).then(d => { allTransfers = d; }).catch(() => {}),
+                fetch('data/station_coordinates.json').then(r => r.json()).then(d => { coordsData = d; }).catch(() => {}),
+            ]).then(() => {
+                renderProfile(family);
+            }).catch(() => {
+                document.getElementById('loading').textContent = i18n.t('error_loading');
+            });
+        }
+
+        function renderProfile(family) {
+            const container = document.getElementById('profile-container');
+            const lang = i18n.getLang();
+            const displayName = lang === 'en' ? family.name_en : family.name;
+
+            // Get party info from map data for leader etc.
+            let latestInfo = null;
+            for (let i = ELECTIONS.length - 1; i >= 0; i--) {
+                const elec = family.elections[ELECTIONS[i]];
+                if (!elec) continue;
+                const mapData = allMapData[ELECTIONS[i]];
+                if (!mapData) continue;
+                const p = mapData.parties.find(p => p.name === elec.partyName);
+                if (p && p.info) { latestInfo = p.info; break; }
+            }
+
+            let html = '';
+
+            // Search bar
+            html += '<div class="party-search">';
+            html += '<input type="text" id="search-input" placeholder="' + i18n.t('search_party') + '">';
+            html += '<div class="search-dropdown" id="search-dropdown"></div>';
+            html += '</div>';
+
+            // Hero
+            html += '<section class="profile-hero">';
+            html += '<div class="hero-color-bar" style="background:' + family.color + '"></div>';
+            html += '<div class="hero-info">';
+            html += '<h2 class="hero-name">' + displayName + '</h2>';
+            if (lang === 'he' && family.name_en) {
+                html += '<div class="hero-name-en">' + family.name_en + '</div>';
+            } else if (lang === 'en') {
+                html += '<div class="hero-name-en">' + family.name + '</div>';
+            }
+            html += '<div class="hero-meta">';
+            if (latestInfo) {
+                const leader = lang === 'en' && latestInfo.leader_en ? latestInfo.leader_en : latestInfo.leader;
+                if (leader) html += '<span class="hero-meta-item"><strong>' + leader + '</strong></span>';
+                if (latestInfo.ideology) html += '<span class="hero-meta-item">' + latestInfo.ideology + '</span>';
+                if (latestInfo.founded) html += '<span class="hero-meta-item">' + i18n.t('founded_label') + ' ' + latestInfo.founded + '</span>';
+            }
+            html += '</div>';
+
+            // Aliases — show unique names used across elections (different from canonical)
+            const aliases = [];
+            Object.entries(family.elections).forEach(([e, data]) => {
+                if (data.partyName !== family.name && !aliases.includes(data.partyName)) {
+                    aliases.push(data.partyName);
+                }
+            });
+            if (aliases.length > 0) {
+                html += '<div class="hero-aliases"><strong>' + i18n.t('also_known_as') + '</strong> ' + aliases.join(', ') + '</div>';
+            }
+
+            html += '</div></section>';
+
+            // Seats & Support trend chart
+            html += '<section class="profile-section">';
+            html += '<h3 class="section-title" data-i18n="seats_trend">' + i18n.t('seats_trend') + '</h3>';
+            html += '<div class="trends-chart-container"><canvas id="trends-chart"></canvas></div>';
+            html += '</section>';
+
+            // Election history table
+            html += '<section class="profile-section">';
+            html += '<h3 class="section-title" data-i18n="election_history">' + i18n.t('election_history') + '</h3>';
+            html += buildHistoryTable(family);
+            html += '</section>';
+
+            // Geographic strongholds (latest election with data)
+            html += '<section class="profile-section">';
+            html += '<h3 class="section-title" data-i18n="geographic_strongholds">' + i18n.t('geographic_strongholds') + '</h3>';
+            html += '<div class="strongholds-grid" id="strongholds-grid"></div>';
+            html += '<div class="strongholds-map-container"><div id="strongholds-map"></div></div>';
+            html += '</section>';
+
+            // Voter migration
+            html += '<section class="profile-section">';
+            html += '<h3 class="section-title" data-i18n="voter_migration">' + i18n.t('voter_migration') + '</h3>';
+            html += '<div class="migration-controls">';
+            html += '<span data-i18n="transition_label">' + i18n.t('transition_label') + '</span>';
+            html += '<select id="migration-select">';
+            TRANSITION_PAIRS.forEach(pair => {
+                const [from, to] = pair.split('_to_');
+                html += '<option value="' + pair + '">' + ELECTION_LABELS[from][lang] + ' → ' + ELECTION_LABELS[to][lang] + '</option>';
+            });
+            html += '</select></div>';
+            html += '<div class="migration-grid" id="migration-grid"></div>';
+            html += '</section>';
+
+            container.innerHTML = html;
+
+            setTimeout(() => {
+                initTrendsChart(family);
+                initStrongholds(family);
+                initMigration(family);
+                initPartySearch();
+            }, 50);
+        }
+
+        function buildHistoryTable(family) {
+            const lang = i18n.getLang();
+            let html = '<div class="history-table-container"><table class="history-table">';
+            html += '<thead><tr>';
+            html += '<th>' + i18n.t('election') + '</th>';
+            html += '<th>' + i18n.t('party') + '</th>';
+            html += '<th>' + i18n.t('symbol_label') + '</th>';
+            html += '<th>' + i18n.t('seats') + '</th>';
+            html += '<th>' + i18n.t('national_support') + '</th>';
+            html += '<th>' + i18n.t('leader_col') + '</th>';
+            html += '</tr></thead><tbody>';
+
+            ELECTIONS.forEach(e => {
+                const data = family.elections[e];
+                const label = ELECTION_LABELS[e][lang];
+
+                if (!data) {
+                    const note = family.notes && family.notes[e];
+                    html += '<tr><td>' + label + '</td>';
+                    if (note) {
+                        html += '<td colspan="5" class="merged-note">' + i18n.t('merged_into') + ' ' + note + '</td>';
+                    } else {
+                        html += '<td colspan="5" class="merged-note">' + i18n.t('did_not_run') + '</td>';
+                    }
+                    html += '</tr>';
+                    return;
+                }
+
+                // Get national support % from map data
+                let supportPct = '—';
+                const mapData = allMapData[e];
+                if (mapData && mapData.stats) {
+                    // Calculate national support: sum of party votes / total voters
+                    let partyVotes = 0, totalVoters = 0;
+                    if (mapData.settlements) {
+                        mapData.settlements.forEach(s => {
+                            if (s.proportions && s.proportions[data.partyName] != null) {
+                                partyVotes += (s.proportions[data.partyName] / 100) * (s.voters || 0);
+                            }
+                            totalVoters += s.voters || 0;
+                        });
+                    }
+                    if (totalVoters > 0) {
+                        supportPct = (partyVotes / totalVoters * 100).toFixed(1) + '%';
+                    }
+                }
+
+                // Get leader from party info
+                let leader = '—';
+                if (mapData && mapData.parties) {
+                    const p = mapData.parties.find(p => p.name === data.partyName);
+                    if (p && p.info) {
+                        leader = lang === 'en' && p.info.leader_en ? p.info.leader_en : (p.info.leader || '—');
+                    }
+                }
+
+                const partyDisplayName = i18n.partyName(data.partyName);
+                html += '<tr>';
+                html += '<td>' + label + '</td>';
+                html += '<td><span class="color-dot" style="background:' + family.color + '"></span>' + partyDisplayName + '</td>';
+                html += '<td>' + data.symbol + '</td>';
+                html += '<td>' + data.seats + '</td>';
+                html += '<td>' + supportPct + '</td>';
+                html += '<td>' + leader + '</td>';
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            return html;
+        }
+
+        function initTrendsChart(family) {
+            const canvas = document.getElementById('trends-chart');
+            if (!canvas) return;
+            const lang = i18n.getLang();
+
+            // Compute support % per election
+            const supportData = [];
+            const seatsData = [];
+            ELECTIONS.forEach(e => {
+                const data = family.elections[e];
+                if (!data) {
+                    supportData.push(null);
+                    seatsData.push(null);
+                    return;
+                }
+                seatsData.push(data.seats);
+
+                const mapData = allMapData[e];
+                if (mapData && mapData.settlements) {
+                    let pv = 0, tv = 0;
+                    mapData.settlements.forEach(s => {
+                        if (s.proportions && s.proportions[data.partyName] != null) {
+                            pv += (s.proportions[data.partyName] / 100) * (s.voters || 0);
+                        }
+                        tv += s.voters || 0;
+                    });
+                    supportData.push(tv > 0 ? +(pv / tv * 100).toFixed(2) : null);
+                } else {
+                    supportData.push(null);
+                }
+            });
+
+            new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: ELECTIONS.map(e => ELECTION_LABELS[e][lang]),
+                    datasets: [
+                        {
+                            label: i18n.t('support_pct'),
+                            data: supportData,
+                            borderColor: family.color,
+                            backgroundColor: family.color + '33',
+                            tension: 0.3,
+                            pointRadius: 5,
+                            pointBackgroundColor: family.color,
+                            yAxisID: 'y',
+                            spanGaps: false,
+                        },
+                        {
+                            label: i18n.t('seats'),
+                            data: seatsData,
+                            borderColor: family.color + '99',
+                            borderDash: [6, 4],
+                            tension: 0.3,
+                            pointRadius: 4,
+                            pointStyle: 'rectRot',
+                            yAxisID: 'y1',
+                            spanGaps: false,
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#a0a0b0', font: { family: 'Heebo' }, padding: 12 }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) {
+                                    if (ctx.datasetIndex === 0) return ctx.dataset.label + ': ' + ctx.parsed.y + '%';
+                                    return ctx.dataset.label + ': ' + ctx.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#a0a0b0', font: { family: 'Heebo' } },
+                            grid: { color: '#2a2a3a' }
+                        },
+                        y: {
+                            position: lang === 'en' ? 'left' : 'right',
+                            title: { display: true, text: i18n.t('support_pct'), color: '#a0a0b0' },
+                            ticks: { color: '#a0a0b0', callback: v => v + '%' },
+                            grid: { color: '#2a2a3a' },
+                            min: 0,
+                        },
+                        y1: {
+                            position: lang === 'en' ? 'right' : 'left',
+                            title: { display: true, text: i18n.t('seats'), color: '#a0a0b0' },
+                            ticks: { color: '#94a3b8', stepSize: 5 },
+                            grid: { display: false },
+                            min: 0,
+                        }
+                    }
+                }
+            });
+        }
+
+        function initStrongholds(family) {
+            const grid = document.getElementById('strongholds-grid');
+            if (!grid) return;
+
+            // Find latest election with data
+            let latestE = null, latestPartyName = null;
+            for (let i = ELECTIONS.length - 1; i >= 0; i--) {
+                if (family.elections[ELECTIONS[i]]) {
+                    latestE = ELECTIONS[i];
+                    latestPartyName = family.elections[latestE].partyName;
+                    break;
+                }
+            }
+            if (!latestE || !allMapData[latestE]) return;
+
+            const settlements = allMapData[latestE].settlements || [];
+            const withSupport = settlements
+                .filter(s => s.proportions && s.proportions[latestPartyName] != null && s.voters >= 100)
+                .map(s => ({ name: s.name, pct: s.proportions[latestPartyName], lat: s.lat, lng: s.lng }))
+                .sort((a, b) => b.pct - a.pct);
+
+            const top10 = withSupport.slice(0, 10);
+            const bottom10 = withSupport.slice(-10).reverse();
+
+            function buildList(items, titleKey) {
+                let html = '<div class="strongholds-list"><h4 data-i18n="' + titleKey + '">' + i18n.t(titleKey) + '</h4>';
+                items.forEach(s => {
+                    const display = i18n.getLang() === 'en' ? i18n.settlementName(s.name) : s.name;
+                    html += '<div class="stronghold-item">';
+                    html += '<a href="settlement.html?name=' + encodeURIComponent(s.name) + '">' + display + '</a>';
+                    html += '<span class="stronghold-pct">' + s.pct.toFixed(1) + '%</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                return html;
+            }
+
+            grid.innerHTML = buildList(top10, 'top_strongholds') + buildList(bottom10, 'bottom_strongholds');
+
+            // Mini map
+            const mapEl = document.getElementById('strongholds-map');
+            if (!mapEl) return;
+
+            const map = L.map('strongholds-map', {
+                center: [31.5, 35.0],
+                zoom: 7,
+                zoomControl: false,
+            });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OSM &copy; CARTO',
+                maxZoom: 19,
+            }).addTo(map);
+
+            // Color scale: low support → grey, high support → party color
+            const maxPct = withSupport.length > 0 ? withSupport[0].pct : 50;
+            withSupport.forEach(s => {
+                if (!s.lat || !s.lng) return;
+                const intensity = Math.min(s.pct / maxPct, 1);
+                const alpha = 0.2 + intensity * 0.65;
+                L.circleMarker([s.lat, s.lng], {
+                    radius: 4 + intensity * 6,
+                    fillColor: family.color,
+                    color: '#fff',
+                    weight: 0.5,
+                    fillOpacity: alpha,
+                }).addTo(map).bindPopup(
+                    '<strong>' + s.name + '</strong><br>' + s.pct.toFixed(1) + '%'
+                );
+            });
+        }
+
+        function initMigration(family) {
+            const select = document.getElementById('migration-select');
+            const grid = document.getElementById('migration-grid');
+            if (!select || !grid || !allTransfers.transitions) return;
+
+            function render(pair) {
+                const tr = allTransfers.transitions[pair];
+                if (!tr) { grid.innerHTML = '<p>' + i18n.t('no_data') + '</p>'; return; }
+
+                const [fromE, toE] = pair.split('_to_');
+                const fromData = family.elections[fromE];
+                const toData = family.elections[toE];
+
+                let fromHtml = '', toHtml = '';
+
+                // "Where voters came from" — transfers INTO this party in toE
+                if (toData) {
+                    const incoming = tr.transfers.filter(t => t.target === toData.partyName && t.votes > 0)
+                        .sort((a, b) => b.percentage - a.percentage)
+                        .slice(0, 8);
+
+                    // These percentages are "of the SOURCE party", we need "of the TARGET party"
+                    // Recalculate: what fraction of target's votes came from each source?
+                    const targetNode = tr.nodes_to.find(n => n.name === toData.partyName);
+                    const targetVotes = targetNode ? targetNode.votes : 0;
+
+                    fromHtml = '<div class="migration-panel"><h4 data-i18n="where_from">' + i18n.t('where_from') + '</h4>';
+                    if (incoming.length === 0) {
+                        fromHtml += '<p>' + i18n.t('no_data') + '</p>';
+                    } else {
+                        incoming.forEach(t => {
+                            const pct = targetVotes > 0 ? (t.votes / targetVotes * 100) : 0;
+                            const label = i18n.partyName(t.source);
+                            fromHtml += buildMigrationBar(label, pct, family.color);
+                        });
+                    }
+                    fromHtml += '</div>';
+                } else {
+                    fromHtml = '<div class="migration-panel"><h4>' + i18n.t('where_from') + '</h4><p class="merged-note">' + i18n.t('did_not_run') + '</p></div>';
+                }
+
+                // "Where voters went" — transfers FROM this party in fromE
+                if (fromData) {
+                    const outgoing = tr.transfers.filter(t => t.source === fromData.partyName && t.votes > 0)
+                        .sort((a, b) => b.percentage - a.percentage)
+                        .slice(0, 8);
+
+                    toHtml = '<div class="migration-panel"><h4 data-i18n="where_to">' + i18n.t('where_to') + '</h4>';
+                    if (outgoing.length === 0) {
+                        toHtml += '<p>' + i18n.t('no_data') + '</p>';
+                    } else {
+                        outgoing.forEach(t => {
+                            const label = i18n.partyName(t.target);
+                            toHtml += buildMigrationBar(label, t.percentage, family.color);
+                        });
+                    }
+                    toHtml += '</div>';
+                } else {
+                    toHtml = '<div class="migration-panel"><h4>' + i18n.t('where_to') + '</h4><p class="merged-note">' + i18n.t('did_not_run') + '</p></div>';
+                }
+
+                grid.innerHTML = fromHtml + toHtml;
+            }
+
+            // Default: select last pair where party participated
+            let defaultPair = TRANSITION_PAIRS[TRANSITION_PAIRS.length - 1];
+            for (let i = TRANSITION_PAIRS.length - 1; i >= 0; i--) {
+                const [f, t] = TRANSITION_PAIRS[i].split('_to_');
+                if (family.elections[f] || family.elections[t]) {
+                    defaultPair = TRANSITION_PAIRS[i];
+                    break;
+                }
+            }
+            select.value = defaultPair;
+            render(defaultPair);
+
+            select.addEventListener('change', () => render(select.value));
+        }
+
+        function buildMigrationBar(label, pct, color) {
+            return '<div class="migration-bar-row">' +
+                '<span class="migration-bar-label">' + label + '</span>' +
+                '<div class="migration-bar-track"><div class="migration-bar-fill" style="width:' + Math.min(pct, 100) + '%;background:' + color + '"></div></div>' +
+                '<span class="migration-bar-value">' + pct.toFixed(1) + '%</span>' +
+                '</div>';
+        }
+
+        function initPartySearch() {
+            const input = document.getElementById('search-input');
+            const dropdown = document.getElementById('search-dropdown');
+            if (!input || !dropdown) return;
+
+            input.addEventListener('input', () => {
+                const q = input.value.trim().toLowerCase();
+                if (q.length < 1) { dropdown.classList.remove('visible'); return; }
+
+                const lang = i18n.getLang();
+                const matches = PARTY_FAMILIES.filter(f => {
+                    const names = [f.name, f.name_en, ...Object.values(f.elections).map(e => e.partyName)];
+                    return names.some(n => n && n.toLowerCase().includes(q));
+                }).slice(0, 10);
+
+                if (matches.length === 0) { dropdown.classList.remove('visible'); return; }
+
+                dropdown.innerHTML = matches.map(f => {
+                    const display = lang === 'en' ? f.name_en : f.name;
+                    return '<a href="party.html?name=' + encodeURIComponent(f.name) + '">' +
+                        '<span class="sdot" style="background:' + f.color + '"></span>' + display + '</a>';
+                }).join('');
+                dropdown.classList.add('visible');
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => dropdown.classList.remove('visible'), 200);
+            });
+        }
+    })();
+    </script>
+</body>
+</html>

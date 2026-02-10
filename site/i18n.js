@@ -238,6 +238,28 @@
         card_irregular_desc:       { he: 'זיהוי קלפיות עם דפוסי הצבעה חריגים', en: 'Identifying ballot boxes with irregular voting patterns' },
         card_regional_desc:        { he: 'סימולציית בחירות אזוריות לכנסת', en: 'Simulating regional elections for the Knesset' },
         card_settlement_desc:      { he: 'פרופיל הצבעה מפורט לכל יישוב', en: 'Detailed voting profile for each settlement' },
+        card_party_desc:           { he: 'מעקב אחרי מפלגות לאורך הבחירות', en: 'Track parties across elections' },
+
+        /* ── Party profile ── */
+        party_profile:             { he: 'פרופיל מפלגה', en: 'Party Profile' },
+        nav_party:                 { he: 'פרופיל מפלגה', en: 'Party Profile' },
+        seats_trend:               { he: 'מנדטים ותמיכה', en: 'Seats & Support' },
+        voter_migration:           { he: 'נדידת מצביעים', en: 'Voter Migration' },
+        geographic_strongholds:    { he: 'מעוזים גיאוגרפיים', en: 'Geographic Strongholds' },
+        also_known_as:             { he: 'שמות נוספים:', en: 'Also known as:' },
+        election_history:          { he: 'היסטוריית בחירות', en: 'Election History' },
+        where_from:                { he: 'מאיפה הגיעו מצביעים', en: 'Where voters came from' },
+        where_to:                  { he: 'לאן הלכו מצביעים', en: 'Where voters went' },
+        national_support:          { he: 'תמיכה ארצית', en: 'National support' },
+        top_strongholds:           { he: 'יישובים חזקים', en: 'Top strongholds' },
+        bottom_strongholds:        { he: 'יישובים חלשים', en: 'Weakest settlements' },
+        merged_into:               { he: 'מוזגה לתוך', en: 'Merged into' },
+        did_not_run:               { he: 'לא התמודדה', en: 'Did not run' },
+        search_party:              { he: 'חיפוש מפלגה...', en: 'Search party...' },
+        support_pct:               { he: '% תמיכה', en: '% support' },
+        symbol_label:              { he: 'סמל', en: 'Symbol' },
+        leader_col:                { he: 'מנהיג', en: 'Leader' },
+        transition_label:          { he: 'מעבר:', en: 'Transition:' },
 
         /* ── Settlement profile ── */
         settlement_profile:        { he: 'פרופיל יישוב', en: 'Settlement Profile' },
@@ -591,7 +613,11 @@
             return href + (href.includes('?') ? '&' : '?') + 'e26=1';
         }
 
-        const isDiscussions = activeId === 'discussions';
+        const extraLinks = [
+            { id: 'settlement', href: 'settlement.html', i18n: 'settlement_profile', text: 'פרופיל יישוב' },
+            { id: 'party',      href: 'party.html',      i18n: 'party_profile',      text: 'פרופיל מפלגה' },
+            { id: 'discussions', href: 'discussions.html', i18n: 'nav_discussions',    text: 'דיונים', cls: 'nav-discuss' },
+        ];
         nav.innerHTML = navViews.map(v => {
             if (v.id === activeId) {
                 return '<span class="view-btn active" data-i18n="' + v.i18n + '">' + v.text + '</span>';
@@ -599,9 +625,13 @@
             return '<a href="' + addE26(v.href) + '" class="view-btn" data-i18n="' + v.i18n + '">' + v.text + '</a>';
         }).join('\n') +
             '\n<span class="nav-sep">\u00b7</span>' +
-            (isDiscussions
-                ? '\n<span class="view-btn nav-discuss active" data-i18n="nav_discussions">דיונים</span>'
-                : '\n<a href="' + addE26('discussions.html') + '" class="view-btn nav-discuss" data-i18n="nav_discussions">דיונים</a>');
+            extraLinks.map(v => {
+                const cls = 'view-btn' + (v.cls ? ' ' + v.cls : '');
+                if (v.id === activeId) {
+                    return '\n<span class="' + cls + ' active" data-i18n="' + v.i18n + '">' + v.text + '</span>';
+                }
+                return '\n<a href="' + addE26(v.href) + '" class="' + cls + '" data-i18n="' + v.i18n + '">' + v.text + '</a>';
+            }).join('');
 
         if (exportBtn) nav.appendChild(exportBtn);
         injectLangToggle('.view-switcher');
