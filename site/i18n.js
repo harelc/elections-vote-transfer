@@ -115,6 +115,12 @@
         abs_unit:              { he: 'מספרים מוחלטים', en: 'Absolute numbers' },
         units:                 { he: 'יחידות:', en: 'Units:' },
         all_settlements:       { he: 'כל היישובים', en: 'All settlements' },
+        swap_axes:             { he: 'החלף צירים', en: 'Swap axes' },
+        legend_small_ballot:   { he: 'קלפי קטנה', en: 'Small ballot' },
+        legend_large_ballot:   { he: 'קלפי גדולה', en: 'Large ballot' },
+        reset_zoom:            { he: 'איפוס תקריב', en: 'Reset zoom' },
+
+        scatter_methodology_text: { he: 'כל נקודה מייצגת קלפי אחת. מיקום הנקודה נקבע לפי אחוז התמיכה במפלגה הנבחרת בציר X (אופקי) ובציר Y (אנכי). ניתן להשוות מפלגות מאותן בחירות או מבחירות שונות - במקרה של בחירות שונות, מוצגות רק קלפיות שקיימות בשתי הבחירות. קו המגמה (מקווקו) מציג את קו הרגרסיה הליניארית.', en: 'Each dot represents one ballot box. Its position is determined by support percentage for the selected party on the X axis (horizontal) and Y axis (vertical). You can compare parties from the same or different elections — when comparing different elections, only ballot boxes that exist in both are shown. The dashed trend line shows the linear regression.' },
 
         /* ── D'Hondt page ── */
         dhondt_title:          { he: 'מחשבון באדר-עופר', en: 'D\'Hondt Calculator' },
@@ -144,6 +150,9 @@
         /* ── Irregular page ── */
         irregular_title:       { he: 'קלפיות חריגות', en: 'Irregular Ballots' },
         irregular_subtitle:    { he: 'זיהוי קלפיות עם דפוסי הצבעה חריגים', en: 'Identifying ballot boxes with irregular voting patterns' },
+        irregular_methodology_text: { he: 'המערכת מנתחת את תוצאות כל קלפי ומחפשת דפוסים חריגים בכמה קטגוריות: טעויות הזנה (קולות שנרשמו בעמודה לא נכונה), מספרים עגולים חשודים, חריגות סטטיסטיות (תוצאות שלא מתאימות לאף אשכול דמוגרפי), ותוצאות חריגות למפלגות שוליים. הנתונים מבוססים על תוצאות רשמיות מאתר ועדת הבחירות המרכזית.', en: 'The system analyzes results from every ballot box and searches for irregular patterns across several categories: data entry errors (votes recorded in the wrong party column), suspicious round numbers, statistical outliers (results that don\'t match any known demographic cluster), and unusually high results for fringe parties. Data is based on official results from the Central Elections Committee website.' },
+        tsne_methodology_text:      { he: 'מפת הקלפיות מבוססת על אלגוריתם T-SNE (t-distributed Stochastic Neighbor Embedding) — טכניקת הפחתת מימדים שממירה נתונים רב-מימדיים (התפלגות ההצבעה לפי מפלגות) לנקודות דו-מימדיות. קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו במפה. גודל הנקודה משקף את מספר המצביעים, והצבע מציג את שיעור ההצבעה או תמיכה במפלגה נבחרת.', en: 'The ballot map is based on the T-SNE algorithm (t-distributed Stochastic Neighbor Embedding) — a dimensionality reduction technique that converts high-dimensional data (party vote distributions) into 2D points. Ballot boxes with similar voting patterns are placed close together on the map. Dot size reflects voter count, and color shows turnout rate or support for a selected party.' },
+        dhondt_methodology_text:    { he: 'שיטת באדר-עופר (D\'Hondt) היא שיטה לחלוקת מנדטים יחסית המיושמת בישראל. בכל סיבוב, מחלקים את מספר הקולות של כל מפלגה במספר המנדטים שכבר קיבלה + 1. המפלגה עם התוצאה הגבוהה ביותר מקבלת את המנדט הבא. התהליך חוזר עד לחלוקת כל 120 המנדטים. מפלגות שעברו את אחוז החסימה יכולות לחתום על הסכם עודפים — קולותיהן מצורפות יחד לחישוב המנה, אך המנדט ניתן למפלגה עם המנה הגבוהה ביותר בתוך ההסכם.', en: 'The Bader-Ofer method (D\'Hondt) is a proportional seat allocation system used in Israel. In each round, each party\'s vote count is divided by the number of seats it has already received + 1. The party with the highest quotient wins the next seat. This repeats until all 120 seats are allocated. Parties that pass the electoral threshold can sign surplus agreements — their votes are combined for quotient calculation, but the seat goes to the party with the highest quotient within the agreement.' },
         stat_analyzed:         { he: 'קלפיות נותחו', en: 'Ballots analyzed' },
         stat_suspects:         { he: 'חשודות שנמצאו', en: 'Suspects found' },
         stat_fixed:            { he: 'תוקנו באתר הרשמי', en: 'Fixed on official site' },
@@ -249,6 +258,28 @@
         click_region:          { he: 'לחצו על אזור במפה לפרטים', en: 'Click a region on the map for details' },
         no_coords_note:        { he: '{n} קלפיות ללא קואורדינטות (לא נכללו באזורים)', en: '{n} stations without coordinates (excluded from regions)' },
         regional_seats_label:  { he: 'מנדטים אזוריים:', en: 'Regional seats:' },
+        district_method_label: { he: 'שיטת חלוקה:', en: 'District method:' },
+        method_dhondt:         { he: 'באדר-עופר', en: "D'Hondt" },
+        method_fptp:           { he: 'זוכה-לוקח-הכל', en: 'Winner takes all' },
+
+        /* ── Mobile per-page info texts ── */
+        about_this_view:       { he: 'על תצוגה זו', en: 'About this view' },
+        sankey_info:           { he: 'תרשים הנדידה מציג את זרימת הקולות בין שתי בחירות עוקבות לכנסת. הרוחב של כל קשר מייצג את מספר הקולות שעברו ממפלגה אחת לאחרת. החישוב מבוסס על רגרסיה של אלפי קלפיות עם אילוצי אי-שליליות וסטוכסטיות.', en: 'The migration diagram shows vote flow between two consecutive Knesset elections. Each link\'s width represents the number of votes that transferred between parties. The calculation is based on regression across thousands of ballot boxes with non-negativity and stochasticity constraints.' },
+        tsne_info:             { he: 'מפת הפיזור מציגה את כל הקלפיות כנקודות דו-מימדיות באמצעות אלגוריתם T-SNE. קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו. גודל הנקודה משקף את מספר המצביעים, והצבע מציג שיעור הצבעה, תמיכה במפלגה, או אשכול חברתי-כלכלי.', en: 'The distribution map displays all ballot boxes as 2D points using the T-SNE algorithm. Boxes with similar voting patterns are placed close together. Dot size reflects voter count, and color shows turnout, party support, or socioeconomic cluster.' },
+        geomap_info:           { he: 'המפה הגיאוגרפית מציגה את מיקומן הפיזי של כל הקלפיות על פני מפת ישראל. ניתן לצבוע לפי מפלגה מנצחת, אחוז הצבעה, מפלגה ספציפית או אשכול חברתי-כלכלי. לחצו על קלפי או אשכול לפרטים.', en: 'The geographic map shows the physical location of all ballot boxes across Israel. Color by winning party, turnout, specific party support, or socioeconomic cluster. Click a station or cluster for details.' },
+        scatter_info:          { he: 'גרף ההשוואה מציג כל קלפי כנקודה לפי אחוזי תמיכה בשתי מפלגות. ציר X מציג מפלגה אחת וציר Y מפלגה אחרת. ניתן להשוות מפלגות מאותן בחירות או מבחירות שונות, ולסנן לפי יישוב.', en: 'The comparison chart plots each ballot box by support percentage for two parties. The X axis shows one party and the Y axis another. Compare parties from the same or different elections, and filter by settlement.' },
+        dhondt_info:           { he: 'מחשבון באדר-עופר מדמה את חלוקת 120 מנדטי הכנסת. ניתן לערוך את מספרי הקולות, לשנות את אחוז החסימה ולהוסיף הסכמי עודפים. בכל סיבוב, קולות כל מפלגה מחולקים במנדטים שקיבלה + 1, והמפלגה עם המנה הגבוהה ביותר מקבלת מנדט.', en: 'The D\'Hondt calculator simulates the allocation of the Knesset\'s 120 seats. Edit vote counts, change the electoral threshold, and add surplus agreements. In each round, each party\'s votes are divided by seats received + 1, and the highest quotient wins the next seat.' },
+        regional_info:         { he: 'סימולטור הבחירות האזוריות מחלק את הארץ למחוזות בחירה ומקצה מנדטים בכל מחוז בנפרד. ניתן לבחור מספר מחוזות, שיטת חלוקה (באדר-עופר או זוכה-לוקח-הכל), ולשלב מנדטים ארציים. הסימולציה חושפת כיצד שינוי שיטת הבחירות משפיע על הרכב הכנסת.', en: 'The regional elections simulator divides the country into electoral districts and allocates seats per district separately. Choose the number of districts, allocation method (D\'Hondt or winner-takes-all), and mix national seats. The simulation reveals how changing the electoral system affects Knesset composition.' },
+        regional_methodology_text: { he: 'הסימולטור מחלק את כלל הקלפיות בעלות קואורדינטות גיאוגרפיות למחוזות בחירה באמצעות חלוקה בינארית חוזרת: בכל שלב, המחוז הגדול ביותר (לפי מספר בעלי זכות בחירה) נחצה לשניים לאורך הציר הארוך יותר שלו, כך שמספר הבוחרים מתחלק שווה בשווה. התוצאה היא מחוזות רציפים גיאוגרפית ומאוזנים באוכלוסייה. המנדטים מחולקים למחוזות לפי מכסת הייר (Hare quota) עם שארית גדולה ביותר. בכל מחוז מוקצים מנדטים לפי שיטת באדר-עופר או לפי זוכה-לוקח-הכל (FPTP), בהתאם לבחירת המשתמש. במצב מעורב, חלק מהמנדטים מוקצים ארצית (עם אחוז חסימה) והשאר אזורית. ככל שמספר המחוזות עולה ומספר המנדטים לכל מחוז יורד, מפלגות גדולות מרוויחות על חשבון מפלגות קטנות — עד למקרה הקיצוני של 120 מחוזות עם מנדט אחד כל אחד, שהוא למעשה שיטת FPTP מלאה.', en: 'The simulator partitions all ballot stations with geographic coordinates into electoral districts using recursive binary splitting: at each step, the largest district (by eligible voters) is split in two along its longer axis, balancing the voter population evenly. This produces geographically contiguous, population-balanced districts. Seats are apportioned to districts using the Hare quota with largest remainder. Within each district, seats are allocated using D\'Hondt or winner-takes-all (FPTP), depending on user selection. In mixed mode, some seats are allocated nationally (with an electoral threshold) and the rest regionally. As the number of districts increases and seats per district decreases, large parties gain at the expense of smaller ones — reaching the extreme case of 120 single-seat districts, which is effectively a full FPTP system.' },
+        feedback_question:     { he: 'רעיונות? מחשבות? הצעות? דונו כאן', en: 'Ideas? Thoughts? Suggestions? Discuss them here' },
+        nav_discussions:       { he: 'דיונים', en: 'Discussions' },
+        discussions_title:     { he: 'דיונים', en: 'Discussions' },
+        discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
+        forum_feedback:        { he: 'משוב על האתר', en: 'Site Feedback' },
+        forum_features:        { he: 'הצעות לפיצ\'רים', en: 'Feature Ideas' },
+        forum_elections:       { he: 'תאוריית בחירות', en: 'Elections Theory' },
+        forum_data:            { he: 'נתונים ומתודולוגיה', en: 'Data & Methodology' },
+        forum_general:         { he: 'שיחה חופשית', en: 'General' },
     };
 
     /* ── Party Hebrew→English name map (for data-driven parties) ── */
@@ -461,6 +492,15 @@
             btn.setAttribute('title', isHe ? 'Switch to English' : 'עבור לעברית');
         });
 
+        // Update giscus language if embedded
+        const giscusFrame = document.querySelector('iframe.giscus-frame');
+        if (giscusFrame) {
+            giscusFrame.contentWindow.postMessage(
+                { giscus: { setConfig: { lang: isHe ? 'he' : 'en' } } },
+                'https://giscus.app'
+            );
+        }
+
         // Dispatch event for page-specific re-renders
         window.dispatchEvent(new CustomEvent('langchange', { detail: { lang } }));
     }
@@ -481,6 +521,55 @@
             setLang(currentLang === 'he' ? 'en' : 'he');
         });
         container.appendChild(btn);
+    }
+
+    /** Render shared navigation into .view-switcher element. */
+    const navViews = [
+        { id: 'sankey',    href: 'index.html',     i18n: 'nav_sankey',    text: 'נדידת קולות' },
+        { id: 'tsne',      href: 'tsne.html',      i18n: 'nav_tsne',     text: 'התפלגות קלפיות' },
+        { id: 'geomap',    href: 'geomap.html',    i18n: 'nav_geomap',   text: 'מפה גיאוגרפית' },
+        { id: 'scatter',   href: 'scatter.html',   i18n: 'nav_scatter',  text: 'השוואת מפלגות' },
+        { id: 'dhondt',    href: 'dhondt.html',    i18n: 'nav_dhondt',   text: 'מחשבון באדר-עופר' },
+        { id: 'irregular', href: 'irregular.html',  i18n: 'nav_irregular', text: 'קלפיות חריגות' },
+        { id: 'regional',  href: 'regional.html',  i18n: 'nav_regional', text: 'בחירות אזוריות' },
+    ];
+
+    function renderNav(activeId) {
+        const nav = document.querySelector('.view-switcher');
+        if (!nav) return;
+
+        // Preserve export button if present
+        const exportBtn = nav.querySelector('.header-export');
+
+        const isDiscussions = activeId === 'discussions';
+        nav.innerHTML = navViews.map(v => {
+            if (v.id === activeId) {
+                return '<span class="view-btn active" data-i18n="' + v.i18n + '">' + v.text + '</span>';
+            }
+            return '<a href="' + v.href + '" class="view-btn" data-i18n="' + v.i18n + '">' + v.text + '</a>';
+        }).join('\n') +
+            '\n<span class="nav-sep">\u00b7</span>' +
+            (isDiscussions
+                ? '\n<span class="view-btn nav-discuss active" data-i18n="nav_discussions">דיונים</span>'
+                : '\n<a href="discussions.html" class="view-btn nav-discuss" data-i18n="nav_discussions">דיונים</a>');
+
+        if (exportBtn) nav.appendChild(exportBtn);
+        injectLangToggle('.view-switcher');
+        applyTranslations();
+    }
+
+    /** Inject the Buy Me a Coffee button. */
+    function renderBMC() {
+        if (document.querySelector('.bmc-button')) return;
+        const a = document.createElement('a');
+        a.href = 'https://www.buymeacoffee.com/harelc';
+        a.target = '_blank';
+        a.className = 'bmc-button';
+        a.setAttribute('data-i18n-title', 'bmc_title');
+        a.title = t('bmc_title');
+        a.innerHTML = '<img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">' +
+            '<span data-i18n="bmc_text">' + t('bmc_text') + '</span>';
+        document.body.appendChild(a);
     }
 
     /* ── Initialization ── */
@@ -528,6 +617,8 @@
         setLang,
         applyTranslations,
         injectLangToggle,
+        renderNav,
+        renderBMC,
         dict,
         partyNameMap,
     };

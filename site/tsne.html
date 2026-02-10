@@ -111,7 +111,7 @@
         /* Header */
         .main-header {
             text-align: center;
-            padding: 2rem 1.5rem;
+            padding: 1.2rem 1.5rem 0.8rem;
             background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
             border-bottom: 1px solid var(--border-color);
         }
@@ -120,7 +120,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
             background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -144,7 +144,7 @@
             justify-content: center;
             align-items: center;
             gap: 0.25rem;
-            margin-top: 1rem;
+            margin-top: 0.6rem;
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
@@ -939,10 +939,7 @@
             <div class="footer-content">
                 <p class="methodology">
                     <strong data-i18n="methodology_short">מתודולוגיה:</strong>
-                    <span data-i18n="methodology_text">מפת הקלפיות מבוססת על אלגוריתם T-SNE (t-distributed Stochastic Neighbor Embedding) -
-                    טכניקת הפחתת מימדים שממירה נתונים רב-מימדיים (התפלגות ההצבעה לפי מפלגות) לנקודות דו-מימדיות.
-                    קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו במפה.
-                    גודל הנקודה משקף את מספר המצביעים, והצבע מציג את שיעור ההצבעה או תמיכה במפלגה נבחרת.</span>
+                    <span data-i18n="tsne_methodology_text">מפת הקלפיות מבוססת על אלגוריתם T-SNE (t-distributed Stochastic Neighbor Embedding) — טכניקת הפחתת מימדים שממירה נתונים רב-מימדיים (התפלגות ההצבעה לפי מפלגות) לנקודות דו-מימדיות. קלפיות עם דפוסי הצבעה דומים ממוקמות קרוב זו לזו במפה. גודל הנקודה משקף את מספר המצביעים, והצבע מציג את שיעור ההצבעה או תמיכה במפלגה נבחרת.</span>
                 </p>
                 <p class="credits">
                     <span data-i18n="credits_line">© הראל קין</span> |
@@ -2076,49 +2073,6 @@
             });
         }
     </script>
-
-    <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה ☕" data-i18n-title="bmc_title">
-        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
-    </a>
-    <style>
-        .bmc-button {
-            position: fixed;
-            bottom: 18px;
-            left: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: #FFDD00;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #000;
-            font-family: 'Heebo', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            z-index: 9999;
-        }
-        .bmc-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-        }
-        .bmc-button img {
-            width: 24px;
-            height: 24px;
-        }
-        .bmc-button span {
-            display: none;
-            max-width: 200px;
-            line-height: 1.4;
-        }
-        .bmc-button:hover span {
-            display: inline-block;
-        }
-    </style>
-    <script>i18n.injectLangToggle('.view-switcher');</script>
+    <script>i18n.renderNav('tsne'); i18n.renderBMC();</script>
 </body>
 </html>

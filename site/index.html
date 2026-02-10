@@ -388,49 +388,6 @@
     </div>
 
     <script src="sankey.js"></script>
-
-    <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" data-i18n-title="bmc_title">
-        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
-    </a>
-    <style>
-        .bmc-button {
-            position: fixed;
-            bottom: 18px;
-            left: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: #FFDD00;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #000;
-            font-family: 'Heebo', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            z-index: 9999;
-        }
-        .bmc-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-        }
-        .bmc-button img {
-            width: 24px;
-            height: 24px;
-        }
-        .bmc-button span {
-            display: none;
-            max-width: 200px;
-            line-height: 1.4;
-        }
-        .bmc-button:hover span {
-            display: inline-block;
-        }
-    </style>
-    <script>i18n.injectLangToggle('.view-switcher');</script>
+    <script>i18n.renderNav('sankey'); i18n.renderBMC();</script>
 </body>
 </html>

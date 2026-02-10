@@ -121,7 +121,7 @@
         /* Header */
         .main-header {
             text-align: center;
-            padding: 2rem 1.5rem;
+            padding: 1.2rem 1.5rem 0.8rem;
             background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
             border-bottom: 1px solid var(--border-color);
         }
@@ -130,7 +130,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
             background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -154,7 +154,7 @@
             justify-content: center;
             align-items: center;
             gap: 0.25rem;
-            margin-top: 1rem;
+            margin-top: 0.6rem;
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
@@ -162,12 +162,12 @@
         }
 
         .view-btn {
-            padding: 0.5rem 1rem;
+            padding: 0.5rem 1.5rem;
             background: var(--bg-tertiary);
             color: var(--text-secondary);
             text-decoration: none;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             border: 1px solid var(--border-color);
             transition: var(--transition-fast);
             cursor: pointer;
@@ -874,17 +874,11 @@
         <footer class="main-footer">
             <div class="footer-content">
                 <p class="methodology">
-                    <strong data-i18n="methodology_short">שיטת הזיהוי:</strong>
-                    <span data-i18n="methodology_text">המערכת מנתחת כל קלפי ומחפשת דפוסים חריגים:
-                    <strong>טעויות הזנה</strong> - קולות שנרשמו בעמודת מפלגה לא נכונה;
-                    <strong>מספרים עגולים</strong> - ריכוז חריג של מספרים עגולים;
-                    <strong>חריגה סטטיסטית</strong> - דפוסים שלא מתאימים לאף אשכול דמוגרפי ידוע;
-                    <strong>מפלגות קטנות</strong> - תוצאות גבוהות באופן יוצא דופן למפלגות שיזניות.
-                    הנתונים מבוססים על תוצאות רשמיות מאתר ועדת הבחירות.</span>
-                    <a href="methodology.html" data-i18n="read_more_methodology"></a>
+                    <strong data-i18n="methodology_short">מתודולוגיה:</strong>
+                    <span data-i18n="irregular_methodology_text">המערכת מנתחת את תוצאות כל קלפי ומחפשת דפוסים חריגים בכמה קטגוריות: טעויות הזנה (קולות שנרשמו בעמודה לא נכונה), מספרים עגולים חשודים, חריגות סטטיסטיות (תוצאות שלא מתאימות לאף אשכול דמוגרפי), ותוצאות חריגות למפלגות שוליים. הנתונים מבוססים על תוצאות רשמיות מאתר ועדת הבחירות המרכזית.</span>
                 </p>
-                <p class="credits" data-i18n="credits_line">
-                    © הראל קין |
+                <p class="credits">
+                    <span data-i18n="credits_line">© הראל קין</span> |
                     <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
                     <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
                 </p>
@@ -1313,49 +1307,6 @@
         // Initial load
         loadData('25');
     </script>
-
-    <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" title="קנו לי כוס קפה" data-i18n-title="bmc_title">
-        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר</span>
-    </a>
-    <style>
-        .bmc-button {
-            position: fixed;
-            bottom: 18px;
-            left: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: #FFDD00;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #000;
-            font-family: 'Heebo', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            z-index: 9999;
-        }
-        .bmc-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-        }
-        .bmc-button img {
-            width: 24px;
-            height: 24px;
-        }
-        .bmc-button span {
-            display: none;
-            max-width: 200px;
-            line-height: 1.4;
-        }
-        .bmc-button:hover span {
-            display: inline-block;
-        }
-    </style>
-    <script>i18n.injectLangToggle('.view-switcher');</script>
+    <script>i18n.renderNav('irregular'); i18n.renderBMC();</script>
 </body>
 </html>

@@ -53,7 +53,7 @@
         /* Header */
         .main-header {
             text-align: center;
-            padding: 1.5rem 1.5rem 1rem;
+            padding: 1.2rem 1.5rem 0.8rem;
             background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
@@ -63,7 +63,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
             background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -87,7 +87,7 @@
             justify-content: center;
             align-items: center;
             gap: 0.25rem;
-            margin-top: 1rem;
+            margin-top: 0.6rem;
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
@@ -174,7 +174,9 @@
 
         /* Left panel */
         .results-panel {
-            width: 50vw;
+            width: 550px;
+            min-width: 400px;
+            max-width: 65vw;
             flex-shrink: 0;
             background: var(--bg-secondary);
             border-inline-end: 1px solid var(--border-color);
@@ -200,11 +202,17 @@
         /* Parliament hemicycle */
         .parliament-wrapper {
             display: flex;
-            align-items: flex-end;
-            gap: 0.5rem;
+            flex-direction: column;
         }
 
-        .parliament-wrapper svg { flex: 1; }
+        .parliament-wrapper svg { width: 100%; }
+
+        .coalition-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 1rem 0;
+        }
 
         .parliament-legend {
             text-align: center;
@@ -345,6 +353,18 @@
         /* Mini hemicycle for region detail */
         .mini-parliament { margin-top: 0.75rem; }
 
+        /* Resize handle */
+        .resize-handle {
+            width: 6px;
+            cursor: col-resize;
+            background: var(--border-color);
+            flex-shrink: 0;
+            transition: background var(--transition-fast);
+        }
+        .resize-handle:hover, .resize-handle.dragging {
+            background: var(--accent-primary);
+        }
+
         /* Map */
         .map-container {
             flex: 1;
@@ -454,6 +474,20 @@
             flex-shrink: 0;
         }
 
+        .main-footer .methodology {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .main-footer .methodology strong {
+            color: var(--text-primary);
+        }
+
         .main-footer .credits {
             font-size: 0.8rem;
             color: var(--text-muted);
@@ -514,6 +548,13 @@
                     <option value="5">5%</option>
                 </select>
             </div>
+            <div class="control-group">
+                <label data-i18n="district_method_label">שיטת חלוקה:</label>
+                <div class="pill-group" id="method-pills">
+                    <button class="pill-btn active" data-value="dhondt" data-i18n="method_dhondt">באדר-עופר</button>
+                    <button class="pill-btn" data-value="fptp" data-i18n="method_fptp">זוכה-לוקח-הכל</button>
+                </div>
+            </div>
         </div>
 
         <div class="main-content">
@@ -522,15 +563,17 @@
                 <div class="panel-section">
                     <div class="section-title" data-i18n="knesset_composition">הרכב הכנסת (120 מושבים)</div>
                     <div class="parliament-wrapper">
-                        <div class="coalition-side">
-                            <div class="coalition-label" data-i18n="right_bloc">גוש ימין-חרדי</div>
-                            <div class="coalition-seats" id="right-seats">0</div>
-                        </div>
                         <svg id="parliament-chart"></svg>
                         <div id="parliament-legend" class="parliament-legend" style="display:none"></div>
-                        <div class="coalition-side">
-                            <div class="coalition-label" data-i18n="left_bloc">גוש מרכז-שמאל-ערבי</div>
-                            <div class="coalition-seats" id="left-seats">0</div>
+                        <div class="coalition-bar">
+                            <div class="coalition-side">
+                                <div class="coalition-label" data-i18n="right_bloc">גוש ימין-חרדי</div>
+                                <div class="coalition-seats" id="right-seats">0</div>
+                            </div>
+                            <div class="coalition-side">
+                                <div class="coalition-label" data-i18n="left_bloc">גוש מרכז-שמאל-ערבי</div>
+                                <div class="coalition-seats" id="left-seats">0</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -561,6 +604,8 @@
                 </div>
             </aside>
 
+            <div class="resize-handle" id="resize-handle"></div>
+
             <div class="map-container">
                 <div id="map"></div>
                 <div class="loading-overlay" id="loading-overlay">
@@ -572,6 +617,10 @@
         <div class="info-note" id="info-note" style="display:none;"></div>
 
         <footer class="main-footer">
+            <p class="methodology">
+                <strong data-i18n="methodology_short">מתודולוגיה:</strong>
+                <span data-i18n="regional_methodology_text">הסימולטור מחלק את כלל הקלפיות בעלות קואורדינטות גיאוגרפיות למחוזות בחירה באמצעות חלוקה בינארית חוזרת: בכל שלב, המחוז הגדול ביותר (לפי מספר בעלי זכות בחירה) נחצה לשניים לאורך הציר הארוך יותר שלו, כך שמספר הבוחרים מתחלק שווה בשווה. התוצאה היא מחוזות רציפים גיאוגרפית ומאוזנים באוכלוסייה. המנדטים מחולקים למחוזות לפי מכסת הייר (Hare quota) עם שארית גדולה ביותר. בכל מחוז מוקצים מנדטים לפי שיטת באדר-עופר או לפי זוכה-לוקח-הכל (FPTP), בהתאם לבחירת המשתמש. במצב מעורב, חלק מהמנדטים מוקצים ארצית (עם אחוז חסימה) והשאר אזורית. ככל שמספר המחוזות עולה ומספר המנדטים לכל מחוז יורד, מפלגות גדולות מרוויחות על חשבון מפלגות קטנות — עד למקרה הקיצוני של 120 מחוזות עם מנדט אחד כל אחד, שהוא למעשה שיטת FPTP מלאה.</span>
+            </p>
             <p class="credits">
                 <span data-i18n="credits_line">© הראל קין</span> |
                 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
@@ -860,6 +909,7 @@
         let numRegions = 12;
         let nationalSeats = 0;
         let threshold = 3.25;
+        let regionalMethod = 'dhondt'; // 'dhondt' or 'fptp'
 
         // ── Data loading ──
         async function loadData() {
@@ -1027,6 +1077,23 @@
             return seats;
         }
 
+        // ── FPTP per region (winner takes all seats) ──
+        function fptpForRegion(stationList, seatCount) {
+            if (seatCount <= 0) return {};
+            const partyVotes = {};
+            for (const s of stationList) {
+                for (const [party, pct] of Object.entries(s.parties)) {
+                    if (!partyVotes[party]) partyVotes[party] = 0;
+                    partyVotes[party] += s.voters * pct / 100;
+                }
+            }
+            let maxV = 0, winner = null;
+            for (const [party, votes] of Object.entries(partyVotes)) {
+                if (votes > maxV) { maxV = votes; winner = party; }
+            }
+            return winner ? { [winner]: seatCount } : {};
+        }
+
         // ── Run simulation ──
         function runSimulation() {
             const regionalSeatCount = 120 - nationalSeats;
@@ -1056,9 +1123,11 @@
                 // Allocate seats to regions
                 const regionSeatCounts = allocateSeatsToRegions(regions, regionalSeatCount);
 
-                // D'Hondt per region
+                // Allocate seats per region using selected method
                 regionResults = regions.map((region, i) => {
-                    const seats = dhondtForRegion(region, regionSeatCounts[i], threshold);
+                    const seats = regionalMethod === 'fptp'
+                        ? fptpForRegion(region, regionSeatCounts[i])
+                        : dhondtForRegion(region, regionSeatCounts[i], threshold);
                     for (const [party, s] of Object.entries(seats)) {
                         if (!totalSeats[party]) totalSeats[party] = 0;
                         totalSeats[party] += s;
@@ -1114,8 +1183,9 @@
         // ── Parliament hemicycle ──
         function renderParliament(results, nNational) {
             const container = document.getElementById('parliament-chart');
-            const width = container.clientWidth || 400;
-            const height = 480;
+            const wrapper = container.closest('.parliament-wrapper') || container.parentElement;
+            const width = wrapper.clientWidth || 400;
+            const height = Math.round(width * 0.55) + 30; // hemicycle is a half-circle, scale to width
 
             d3.select('#parliament-chart').selectAll('*').remove();
             const svg = d3.select('#parliament-chart')
@@ -1749,7 +1819,77 @@
                 threshold = parseFloat(e.target.value);
                 runSimulation();
             });
+
+            // District method pills
+            document.querySelectorAll('#method-pills .pill-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#method-pills .pill-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    regionalMethod = btn.dataset.value;
+                    runSimulation();
+                });
+            });
         }
+
+        // ── Draggable resize handle ──
+        (function() {
+            const handle = document.getElementById('resize-handle');
+            const panel = document.querySelector('.results-panel');
+            let dragging = false;
+
+            handle.addEventListener('mousedown', e => {
+                e.preventDefault();
+                dragging = true;
+                handle.classList.add('dragging');
+                document.body.style.cursor = 'col-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', e => {
+                if (!dragging) return;
+                const container = panel.parentElement;
+                const rect = container.getBoundingClientRect();
+                const isRTL = document.dir === 'rtl' || document.documentElement.dir === 'rtl';
+                const x = isRTL ? (rect.right - e.clientX) : (e.clientX - rect.left);
+                const pct = Math.max(20, Math.min(75, (x / rect.width) * 100));
+                panel.style.width = pct + '%';
+                map.invalidateSize();
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!dragging) return;
+                dragging = false;
+                handle.classList.remove('dragging');
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+                map.invalidateSize();
+                // Re-render parliament to fit new width
+                if (window._regionResults) {
+                    const totalSeats = {}, nationalSeatsByParty = {};
+                    window._regionResults.forEach(r => {
+                        for (const [p, s] of Object.entries(r.seats)) {
+                            if (!totalSeats[p]) totalSeats[p] = 0;
+                            totalSeats[p] += s;
+                        }
+                    });
+                    if (nationalSeats > 0) {
+                        const natResult = dhondtForRegion(stations, nationalSeats, threshold);
+                        for (const [p, s] of Object.entries(natResult)) {
+                            if (!totalSeats[p]) totalSeats[p] = 0;
+                            totalSeats[p] += s;
+                            nationalSeatsByParty[p] = s;
+                        }
+                    }
+                    const results = partyConfig.map(p => ({
+                        name: p.name, name_en: p.name_en, color: p.color, block: p.block,
+                        seats: totalSeats[p.name] || 0, actual: actualSeats[p.name] || 0,
+                        regionalSeats: (totalSeats[p.name] || 0) - (nationalSeatsByParty[p.name] || 0),
+                        nationalSeatsCount: nationalSeatsByParty[p.name] || 0,
+                    })).sort((a, b) => b.seats - a.seats);
+                    renderParliament(results, nationalSeats);
+                }
+            });
+        })();
 
         // ── Language change ──
         window.addEventListener('langchange', () => {
@@ -1829,5 +1969,6 @@
         }
     })();
     </script>
+    <script>i18n.renderNav('regional'); i18n.renderBMC();</script>
 </body>
 </html>

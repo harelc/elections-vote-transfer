@@ -993,16 +993,22 @@
     document.getElementById('info-btn').onclick = () => {
         document.getElementById('sheet-content').innerHTML = `
             <div class="about-sheet">
-                <h3 data-i18n="about_site">${i18n.t('about_site')}</h3>
-                <p data-i18n-html="about_description">${i18n.t('about_description')}</p>
-                <h3 data-i18n="methodology_short">${i18n.t('methodology_short')}</h3>
-                <p data-i18n-html="methodology_text">${i18n.t('methodology_text')}</p>
-                <h3 data-i18n="license">${i18n.t('license')}</h3>
-                <p>CC BY-NC-SA 4.0 &nbsp;|&nbsp; <span data-i18n="credits_line">${i18n.t('credits_line')}</span></p>
-                <p><a href="https://github.com/harelkain/elections-vote-transfer" target="_blank" data-i18n="source_code">${i18n.t('source_code')}</a></p>
+                <h3>${i18n.t('about_this_view')}</h3>
+                <p>${i18n.t('dhondt_info')}</p>
+
+                <h3>${i18n.t('about_site')}</h3>
+                <p>${i18n.t('about_description')}</p>
+
+                <h3>${i18n.t('license')}</h3>
+                <p>CC BY-NC-SA 4.0 &nbsp;|&nbsp; ${i18n.t('credits_line')}</p>
+                <p><a href="https://github.com/harelkain/elections-vote-transfer" target="_blank">${i18n.t('source_code')}</a></p>
                 <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-inline">
                     <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="">
-                    <span data-i18n="bmc_title">${i18n.t('bmc_title')}</span>
+                    <span>${i18n.t('bmc_title')}</span>
+                </a>
+                <br>
+                <a href="discussions.html" class="discussions-link">
+                    ${i18n.t('feedback_question')}
                 </a>
             </div>
         `;

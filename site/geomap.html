@@ -56,16 +56,16 @@
         /* Header */
         .main-header {
             text-align: center;
-            padding: 1.5rem 1rem;
+            padding: 1.2rem 1.5rem 0.8rem;
             background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
             border-bottom: 1px solid var(--border-color);
         }
 
         .main-header h1 {
-            font-size: 2rem;
+            font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.2rem;
             background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -80,7 +80,7 @@
 
         .main-header .subtitle {
             color: var(--text-secondary);
-            font-size: 1rem;
+            font-size: 1.1rem;
             font-weight: 400;
         }
 
@@ -89,17 +89,17 @@
             justify-content: center;
             align-items: center;
             gap: 0.25rem;
-            margin-top: 0.75rem;
+            margin-top: 0.6rem;
             flex-wrap: wrap;
         }
 
         .view-btn {
-            padding: 0.4rem 1rem;
+            padding: 0.5rem 1.5rem;
             background: var(--bg-tertiary);
             color: var(--text-secondary);
             text-decoration: none;
             border-radius: 8px;
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             border: 1px solid var(--border-color);
             transition: var(--transition-fast);
             cursor: pointer;
@@ -1660,6 +1660,7 @@
                 const stations = this.tsneData.stations;
                 let markerCount = 0;
                 const totalCount = stations.length;
+                const batch = [];
 
                 stations.forEach(station => {
                     const settlement = station.n || station.settlement_name;
@@ -1699,10 +1700,11 @@
                     marker.on('mouseover', (e) => this.showMarkerTooltip(e, station, coordData));
                     marker.on('mouseout', () => this.hideClusterTooltip());
 
-                    this.markers.addLayer(marker);
+                    batch.push(marker);
                     markerCount++;
                 });
 
+                this.markers.addLayers(batch);
                 document.getElementById('station-count').textContent = i18n.fmtNum(markerCount);
                 document.getElementById('total-count').textContent = i18n.fmtNum(totalCount);
             }
@@ -1903,6 +1905,6 @@
             }
         });
     </script>
-    <script>i18n.injectLangToggle('.view-switcher');</script>
+    <script>i18n.renderNav('geomap'); i18n.renderBMC();</script>
 </body>
 </html>

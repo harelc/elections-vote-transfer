@@ -153,6 +153,72 @@
     margin-left: 8px;
 }
 
+/* ── Shared nav: discussions link + separator ── */
+.nav-sep {
+    color: var(--text-muted, #64748b);
+    font-size: 0.85rem;
+    margin: 0 0.1rem;
+    align-self: center;
+}
+
+.view-btn.nav-discuss {
+    opacity: 0.65;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.8rem;
+    border: none;
+    background: transparent;
+}
+
+.view-btn.nav-discuss:hover {
+    opacity: 1;
+    background: var(--bg-tertiary, #1a1a25);
+}
+
+.view-btn.nav-discuss.active {
+    opacity: 1;
+    background: var(--accent-primary, #6366f1);
+    border: none;
+}
+
+/* ── Shared BMC button ── */
+.bmc-button {
+    position: fixed;
+    bottom: 18px;
+    left: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    width: 90px;
+    padding: 12px 8px;
+    background: #FFDD00;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #000;
+    font-family: 'Heebo', sans-serif;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    z-index: 9999;
+}
+
+.bmc-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+}
+
+.bmc-button img {
+    width: 28px;
+    height: 28px;
+}
+
+.bmc-button span {
+    font-size: 0.7rem;
+    line-height: 1.3;
+    text-align: center;
+}
+
 /* BMC button – flip position */
 [dir="ltr"] .bmc-button {
     left: auto;

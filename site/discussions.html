@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/discussions.html'+(lp?'?lang='+lp:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>דיונים - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .main-header {
+            text-align: center;
+            padding: 1.2rem 1rem 0.8rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.25rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.6rem;
+            flex-wrap: wrap;
+        }
+
+        .view-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.15s ease;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .view-btn:hover { background: #252535; color: var(--text-primary); }
+        .view-btn.active { background: var(--accent-primary); color: white; border-color: var(--accent-primary); font-weight: 600; }
+
+        .page-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1.2rem 0 0.3rem;
+        }
+
+        .page-subtitle {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 0 0 0.5rem;
+        }
+
+        .main-content {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 1.5rem;
+        }
+
+        .forum-tabs {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .forum-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: inherit;
+        }
+
+        .forum-tab:hover { color: var(--text-primary); border-color: var(--text-muted); }
+        .forum-tab.active { background: var(--accent-primary); color: white; border-color: var(--accent-primary); }
+
+        .giscus-container {
+            min-height: 300px;
+        }
+
+        .main-footer {
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            text-align: center;
+        }
+
+        .main-footer .credits {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .main-footer a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <p class="subtitle" data-i18n="site_subtitle">ניתוח מעבר קולות בין בחירות לכנסת ישראל</p>
+            <nav class="view-switcher"></nav>
+        </header>
+
+        <h2 class="page-title" data-i18n="discussions_title">דיונים</h2>
+        <p class="page-subtitle" data-i18n="discussions_subtitle">שאלות, רעיונות ודיונים על האתר ועל בחירות</p>
+
+        <div class="main-content">
+            <div class="forum-tabs" id="forum-tabs">
+                <button class="forum-tab active" data-term="Site Feedback" data-i18n="forum_feedback">משוב על האתר</button>
+                <button class="forum-tab" data-term="Feature Ideas" data-i18n="forum_features">הצעות לפיצ'רים</button>
+                <button class="forum-tab" data-term="Elections Theory" data-i18n="forum_elections">תאוריית בחירות</button>
+                <button class="forum-tab" data-term="Data and Methodology" data-i18n="forum_data">נתונים ומתודולוגיה</button>
+                <button class="forum-tab" data-term="General" data-i18n="forum_general">שיחה חופשית</button>
+            </div>
+
+            <div class="giscus-container" id="giscus-container"></div>
+        </div>
+
+        <footer class="main-footer">
+            <p class="credits">
+                <span data-i18n="credits_line">© הראל קין</span> |
+                <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+                <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
+            </p>
+        </footer>
+    </div>
+
+    <script>
+    (function() {
+        'use strict';
+
+        const container = document.getElementById('giscus-container');
+        let currentTerm = 'Site Feedback';
+
+        function loadGiscus(term) {
+            container.innerHTML = '';
+            const script = document.createElement('script');
+            script.src = 'https://giscus.app/client.js';
+            script.setAttribute('data-repo', 'harelc/elections-vote-transfer');
+            script.setAttribute('data-repo-id', 'MDEwOlJlcG9zaXRvcnkyMDk3NjMzMTg=');
+            script.setAttribute('data-category', 'General');
+            script.setAttribute('data-category-id', 'DIC_kwDODIC79s4C2KaY');
+            script.setAttribute('data-mapping', 'specific');
+            script.setAttribute('data-term', term);
+            script.setAttribute('data-strict', '0');
+            script.setAttribute('data-reactions-enabled', '0');
+            script.setAttribute('data-emit-metadata', '0');
+            script.setAttribute('data-input-position', 'top');
+            script.setAttribute('data-theme', 'dark');
+            script.setAttribute('data-lang', i18n.getLang());
+            script.setAttribute('crossorigin', 'anonymous');
+            script.async = true;
+            container.appendChild(script);
+            currentTerm = term;
+        }
+
+        document.getElementById('forum-tabs').addEventListener('click', e => {
+            const tab = e.target.closest('.forum-tab');
+            if (!tab || tab.classList.contains('active')) return;
+            document.querySelectorAll('.forum-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            loadGiscus(tab.dataset.term);
+        });
+
+        window.addEventListener('langchange', () => {
+            const iframe = document.querySelector('iframe.giscus-frame');
+            if (iframe) {
+                iframe.contentWindow.postMessage(
+                    { giscus: { setConfig: { lang: i18n.getLang() } } },
+                    'https://giscus.app'
+                );
+            }
+        });
+
+        loadGiscus(currentTerm);
+    })();
+    </script>
+    <script>i18n.renderNav('discussions'); i18n.renderBMC();</script>
+</body>
+</html>

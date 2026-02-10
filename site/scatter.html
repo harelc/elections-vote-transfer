@@ -111,7 +111,7 @@
         /* Header */
         .main-header {
             text-align: center;
-            padding: 2rem 1.5rem;
+            padding: 1.2rem 1.5rem 0.8rem;
             background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
             border-bottom: 1px solid var(--border-color);
         }
@@ -120,7 +120,7 @@
             font-size: 2.5rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
             background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -144,7 +144,7 @@
             justify-content: center;
             align-items: center;
             gap: 0.25rem;
-            margin-top: 1rem;
+            margin-top: 0.6rem;
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
@@ -379,6 +379,21 @@
             opacity: 1 !important;
         }
 
+        /* Settlement hover highlighting */
+        .station-dot.settlement-highlight {
+            opacity: 0.95 !important;
+            stroke: #fff;
+            stroke-width: 1.5;
+        }
+
+        .station-dot.settlement-dim {
+            opacity: 0.08 !important;
+        }
+
+        .station-dot-bg.settlement-dim {
+            opacity: 0.05 !important;
+        }
+
         .axis-label-text {
             fill: var(--text-secondary);
             font-size: 0.85rem;
@@ -513,6 +528,75 @@
             text-decoration: underline;
         }
 
+        /* Swap axes button */
+        .swap-axes-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.4rem;
+            margin: -0.5rem 0 0.5rem;
+            background: transparent;
+            border: 1px dashed var(--border-color);
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            gap: 0.4rem;
+        }
+
+        .swap-axes-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        .swap-axes-btn .swap-icon {
+            font-size: 1rem;
+            display: inline-block;
+            transition: transform 0.3s ease;
+        }
+
+        .swap-axes-btn:hover .swap-icon {
+            transform: rotate(180deg);
+        }
+
+        /* Zoom */
+        .zoom-rect {
+            cursor: grab;
+        }
+
+        .zoom-rect:active {
+            cursor: grabbing;
+        }
+
+        .reset-zoom {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: none;
+            align-items: center;
+            gap: 4px;
+            padding: 6px 12px;
+            background: rgba(10, 10, 15, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.75rem;
+            cursor: pointer;
+            z-index: 10;
+            transition: var(--transition-fast);
+        }
+
+        .reset-zoom:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
         /* Settlement search */
         .search-container {
             position: relative;
@@ -643,6 +727,11 @@
                     </select>
                 </div>
 
+                <button class="swap-axes-btn" id="swap-axes" title="Swap X ↔ Y">
+                    <span class="swap-icon">⇅</span>
+                    <span data-i18n="swap_axes">החלף צירים</span>
+                </button>
+
                 <div class="control-section">
                     <h3 class="control-title" data-i18n="y_axis_vertical">ציר Y (אנכי)</h3>
                     <select id="election-y" class="control-select">
@@ -712,6 +801,7 @@
                 <div class="loading" id="loading" data-i18n="loading">טוען נתונים...</div>
                 <svg id="scatter-chart"></svg>
                 <div class="tooltip" id="tooltip"></div>
+                <button class="reset-zoom" id="reset-zoom" data-i18n="reset_zoom">איפוס תקריב</button>
             </div>
         </main>
 
@@ -818,6 +908,12 @@
 
                 // Export PNG button
                 document.getElementById('export-png').addEventListener('click', () => this.exportPNG());
+
+                // Swap axes button
+                document.getElementById('swap-axes').addEventListener('click', () => this.swapAxes());
+
+                // Reset zoom button
+                document.getElementById('reset-zoom').addEventListener('click', () => this.resetZoom());
 
                 // Settlement search
                 const searchInput = document.getElementById('settlement-search');
@@ -988,6 +1084,50 @@
                 this.selectedSettlements = this.selectedSettlements.filter(s => s !== name);
                 this.updateSelectedSettlementsUI();
                 this.updateChart();
+            }
+
+            swapAxes() {
+                // Swap elections
+                const tmpElection = this.currentElectionX;
+                this.currentElectionX = this.currentElectionY;
+                this.currentElectionY = tmpElection;
+
+                // Swap parties
+                const tmpParty = this.currentPartyX;
+                this.currentPartyX = this.currentPartyY;
+                this.currentPartyY = tmpParty;
+
+                // Update dropdowns
+                document.getElementById('election-x').value = this.currentElectionX;
+                document.getElementById('election-y').value = this.currentElectionY;
+
+                // Rebuild party dropdowns for possibly different elections, then set values
+                const dataX = this.electionsData[this.currentElectionX];
+                const dataY = this.electionsData[this.currentElectionY];
+                if (dataX) {
+                    const selectX = document.getElementById('party-x');
+                    selectX.innerHTML = dataX.parties.map(p =>
+                        `<option value="${p.name}">${i18n.partyName(p)}</option>`
+                    ).join('');
+                    selectX.value = this.currentPartyX;
+                }
+                if (dataY) {
+                    const selectY = document.getElementById('party-y');
+                    selectY.innerHTML = dataY.parties.map(p =>
+                        `<option value="${p.name}">${i18n.partyName(p)}</option>`
+                    ).join('');
+                    selectY.value = this.currentPartyY;
+                }
+
+                this.settlements = [];
+                this.updateChart();
+            }
+
+            resetZoom() {
+                if (this._zoom && this._zoomG) {
+                    this._zoomG.transition().duration(300)
+                        .call(this._zoom.transform, d3.zoomIdentity);
+                }
             }
 
             updateSelectedSettlementsUI() {
@@ -1190,113 +1330,144 @@
                 const innerHeight = height - margin.top - margin.bottom;
 
                 document.getElementById('loading').style.display = 'none';
+                document.getElementById('reset-zoom').style.display = 'none';
 
                 // Clear and setup SVG
-                d3.select('#scatter-chart').selectAll('*').remove();
+                const svg = d3.select('#scatter-chart');
+                svg.selectAll('*').remove();
+                svg.attr('width', width).attr('height', height);
 
-                const svg = d3.select('#scatter-chart')
-                    .attr('width', width)
-                    .attr('height', height);
+                // Clip path for plot area
+                svg.append('defs').append('clipPath')
+                    .attr('id', 'plot-clip')
+                    .append('rect')
+                    .attr('width', innerWidth)
+                    .attr('height', innerHeight);
 
                 const g = svg.append('g')
                     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-                // Scales - use allData if available to keep scale consistent when filtering
+                // Base scales
                 const scaleData = backgroundData || data;
                 const maxX = Math.max(d3.max(scaleData, d => d.x) || 50, 10);
                 const maxY = Math.max(d3.max(scaleData, d => d.y) || 50, 10);
                 const maxVal = Math.max(maxX, maxY);
 
-                let xScale, yScale;
-
+                let xScale0, yScale0;
                 if (this.scaleType === 'symlog') {
-                    // Symlog: behaves linearly near zero, logarithmically for larger values
-                    const symlogConstant = 1;
-                    xScale = d3.scaleSymlog()
-                        .domain([0, maxVal * 1.05])
-                        .range([0, innerWidth])
-                        .constant(symlogConstant);
-
-                    yScale = d3.scaleSymlog()
-                        .domain([0, maxVal * 1.05])
-                        .range([innerHeight, 0])
-                        .constant(symlogConstant);
+                    xScale0 = d3.scaleSymlog().domain([0, maxVal * 1.05]).range([0, innerWidth]).constant(1);
+                    yScale0 = d3.scaleSymlog().domain([0, maxVal * 1.05]).range([innerHeight, 0]).constant(1);
                 } else {
-                    // Linear scale (default)
-                    xScale = d3.scaleLinear()
-                        .domain([0, maxVal * 1.05])
-                        .range([0, innerWidth]);
-
-                    yScale = d3.scaleLinear()
-                        .domain([0, maxVal * 1.05])
-                        .range([innerHeight, 0]);
+                    xScale0 = d3.scaleLinear().domain([0, maxVal * 1.05]).range([0, innerWidth]);
+                    yScale0 = d3.scaleLinear().domain([0, maxVal * 1.05]).range([innerHeight, 0]);
                 }
 
-                // Grid
-                g.append('g')
-                    .attr('class', 'grid')
-                    .selectAll('line')
-                    .data(xScale.ticks(10))
-                    .join('line')
-                    .attr('x1', d => xScale(d))
-                    .attr('x2', d => xScale(d))
-                    .attr('y1', 0)
-                    .attr('y2', innerHeight);
+                let xScale = xScale0.copy();
+                let yScale = yScale0.copy();
 
-                g.append('g')
-                    .attr('class', 'grid')
-                    .selectAll('line')
-                    .data(yScale.ticks(10))
-                    .join('line')
-                    .attr('x1', 0)
-                    .attr('x2', innerWidth)
-                    .attr('y1', d => yScale(d))
-                    .attr('y2', d => yScale(d));
-
-                // Diagonal line (y = x) - always show for reference
-                if (this.scaleType === 'symlog') {
-                    // Draw as path for proper symlog rendering
-                    const diagPoints = [];
-                    const numPoints = 100;
-                    for (let i = 0; i <= numPoints; i++) {
-                        const v = (maxVal * i) / numPoints;
-                        diagPoints.push([v, v]);
-                    }
-
-                    const diagGenerator = d3.line()
-                        .x(d => xScale(d[0]))
-                        .y(d => yScale(d[1]));
-
-                    g.append('path')
-                        .attr('class', 'diagonal-line')
-                        .attr('d', diagGenerator(diagPoints));
-                } else {
-                    // Simple line for linear scale
-                    g.append('line')
-                        .attr('class', 'diagonal-line')
-                        .attr('x1', xScale(0))
-                        .attr('y1', yScale(0))
-                        .attr('x2', xScale(maxVal))
-                        .attr('y2', yScale(maxVal));
-                }
-
-                // Axes
                 const formatTick = this.unitsMode === 'absolute'
                     ? d => d >= 1000 ? (d / 1000).toFixed(0) + 'K' : d
                     : d => d + '%';
-                const xAxis = d3.axisBottom(xScale).tickFormat(formatTick);
-                const yAxis = d3.axisLeft(yScale).tickFormat(formatTick);
 
-                g.append('g')
-                    .attr('class', 'axis')
-                    .attr('transform', `translate(0, ${innerHeight})`)
-                    .call(xAxis);
+                // Layer groups
+                const gridG = g.append('g').attr('class', 'grid-layer');
+                const clipG = g.append('g').attr('clip-path', 'url(#plot-clip)');
+                const xAxisG = g.append('g').attr('class', 'axis').attr('transform', `translate(0, ${innerHeight})`);
+                const yAxisG = g.append('g').attr('class', 'axis');
 
-                g.append('g')
-                    .attr('class', 'axis')
-                    .call(yAxis);
+                const regression = this.calculateRegression(data);
+                const self = this;
 
-                // Axis labels
+                // Create dot elements (positions set in updatePositions)
+                if (backgroundData) {
+                    clipG.selectAll('.station-dot-bg')
+                        .data(backgroundData)
+                        .join('circle')
+                        .attr('class', 'station-dot-bg')
+                        .attr('r', 2)
+                        .attr('fill', '#374151')
+                        .attr('opacity', 0.3);
+                }
+
+                clipG.selectAll('.station-dot')
+                    .data(data)
+                    .join('circle')
+                    .attr('class', 'station-dot')
+                    .attr('r', hasFilter ? 4 : 3)
+                    .attr('fill', d => {
+                        const t = d.x + d.y > 0 ? d.x / (d.x + d.y) : 0.5;
+                        return d3.interpolateRgb(partyY.color, partyX.color)(t);
+                    })
+                    .attr('opacity', hasFilter ? 0.8 : 0.5)
+                    .on('mouseenter', (event, d) => {
+                        self.showTooltip(event, d, partyX, partyY);
+                        self.highlightSettlement(d.settlement, clipG);
+                    })
+                    .on('mousemove', (event) => self.moveTooltip(event))
+                    .on('mouseleave', () => {
+                        self.hideTooltip();
+                        self.clearHighlight(clipG);
+                    });
+
+                // Positions update function (called on zoom and initial draw)
+                const updatePositions = () => {
+                    // Grid
+                    gridG.selectAll('*').remove();
+                    gridG.selectAll('.gx').data(xScale.ticks(10)).join('line').attr('class', 'gx')
+                        .attr('x1', d => xScale(d)).attr('x2', d => xScale(d))
+                        .attr('y1', 0).attr('y2', innerHeight);
+                    gridG.selectAll('.gy').data(yScale.ticks(10)).join('line').attr('class', 'gy')
+                        .attr('x1', 0).attr('x2', innerWidth)
+                        .attr('y1', d => yScale(d)).attr('y2', d => yScale(d));
+
+                    // Axes
+                    xAxisG.call(d3.axisBottom(xScale).tickFormat(formatTick));
+                    yAxisG.call(d3.axisLeft(yScale).tickFormat(formatTick));
+
+                    // Diagonal
+                    clipG.selectAll('.diagonal-line').remove();
+                    if (self.scaleType === 'symlog') {
+                        const pts = [];
+                        for (let i = 0; i <= 100; i++) { const v = maxVal * i / 100; pts.push([v, v]); }
+                        clipG.append('path').attr('class', 'diagonal-line')
+                            .attr('d', d3.line().x(d => xScale(d[0])).y(d => yScale(d[1]))(pts));
+                    } else {
+                        clipG.append('line').attr('class', 'diagonal-line')
+                            .attr('x1', xScale(0)).attr('y1', yScale(0))
+                            .attr('x2', xScale(maxVal)).attr('y2', yScale(maxVal));
+                    }
+
+                    // Regression
+                    clipG.selectAll('.regression-line').remove();
+                    if (regression) {
+                        if (self.scaleType === 'symlog') {
+                            const pts = [];
+                            for (let i = 0; i <= 100; i++) {
+                                const x = maxVal * i / 100;
+                                const y = regression.intercept + regression.slope * x;
+                                if (y >= 0 && y <= maxVal * 1.05) pts.push([x, y]);
+                            }
+                            clipG.append('path').attr('class', 'regression-line')
+                                .attr('d', d3.line().x(d => xScale(d[0])).y(d => yScale(d[1]))(pts));
+                        } else {
+                            const x1 = 0, x2 = maxVal;
+                            clipG.append('line').attr('class', 'regression-line')
+                                .attr('x1', xScale(x1)).attr('y1', yScale(Math.max(0, regression.intercept + regression.slope * x1)))
+                                .attr('x2', xScale(x2)).attr('y2', yScale(Math.max(0, regression.intercept + regression.slope * x2)));
+                        }
+                    }
+
+                    // Dot positions
+                    clipG.selectAll('.station-dot-bg')
+                        .attr('cx', d => xScale(d.x)).attr('cy', d => yScale(d.y));
+                    clipG.selectAll('.station-dot')
+                        .attr('cx', d => xScale(d.x)).attr('cy', d => yScale(d.y));
+                };
+
+                // Initial draw
+                updatePositions();
+
+                // Axis labels (outside clip, static)
                 svg.append('text')
                     .attr('class', 'axis-label-text')
                     .attr('x', margin.left + innerWidth / 2)
@@ -1312,71 +1483,29 @@
                     .attr('text-anchor', 'middle')
                     .text(`${i18n.partyName(this.currentPartyY)} (${this.electionShort(this.currentElectionY)})`);
 
-                // Calculate regression line
-                const regression = this.calculateRegression(data);
+                // Zoom behavior
+                const zoom = d3.zoom()
+                    .scaleExtent([1, 20])
+                    .translateExtent([[0, 0], [innerWidth, innerHeight]])
+                    .extent([[0, 0], [innerWidth, innerHeight]])
+                    .on('zoom', (event) => {
+                        xScale = event.transform.rescaleX(xScale0);
+                        yScale = event.transform.rescaleY(yScale0);
+                        updatePositions();
+                        const isZoomed = event.transform.k !== 1;
+                        document.getElementById('reset-zoom').style.display = isZoomed ? 'flex' : 'none';
+                    });
 
-                if (regression) {
-                    if (this.scaleType === 'symlog') {
-                        // Draw as path with multiple points for proper symlog rendering
-                        const linePoints = [];
-                        const numPoints = 100;
-                        for (let i = 0; i <= numPoints; i++) {
-                            const x = (maxVal * i) / numPoints;
-                            const y = regression.intercept + regression.slope * x;
-                            if (y >= 0 && y <= maxVal * 1.05) {
-                                linePoints.push([x, y]);
-                            }
-                        }
+                // Transparent rect for zoom hit area (behind content but zoom attached to g)
+                g.insert('rect', ':first-child')
+                    .attr('class', 'zoom-rect')
+                    .attr('width', innerWidth)
+                    .attr('height', innerHeight)
+                    .attr('fill', 'transparent');
 
-                        const lineGenerator = d3.line()
-                            .x(d => xScale(d[0]))
-                            .y(d => yScale(d[1]));
-
-                        g.append('path')
-                            .attr('class', 'regression-line')
-                            .attr('d', lineGenerator(linePoints));
-                    } else {
-                        // Simple line for linear scale
-                        const x1 = 0;
-                        const x2 = maxVal;
-                        const y1 = regression.intercept + regression.slope * x1;
-                        const y2 = regression.intercept + regression.slope * x2;
-
-                        g.append('line')
-                            .attr('class', 'regression-line')
-                            .attr('x1', xScale(x1))
-                            .attr('y1', yScale(Math.max(0, y1)))
-                            .attr('x2', xScale(x2))
-                            .attr('y2', yScale(Math.max(0, y2)));
-                    }
-                }
-
-                // Background dots (when filtering)
-                if (backgroundData) {
-                    g.selectAll('.station-dot-bg')
-                        .data(backgroundData)
-                        .join('circle')
-                        .attr('class', 'station-dot-bg')
-                        .attr('cx', d => xScale(d.x))
-                        .attr('cy', d => yScale(d.y))
-                        .attr('r', 2)
-                        .attr('fill', '#374151')
-                        .attr('opacity', 0.3);
-                }
-
-                // Dots
-                g.selectAll('.station-dot')
-                    .data(data)
-                    .join('circle')
-                    .attr('class', 'station-dot')
-                    .attr('cx', d => xScale(d.x))
-                    .attr('cy', d => yScale(d.y))
-                    .attr('r', hasFilter ? 4 : 3)
-                    .attr('fill', partyX.color)
-                    .attr('opacity', hasFilter ? 0.8 : 0.5)
-                    .on('mouseenter', (event, d) => this.showTooltip(event, d, partyX, partyY))
-                    .on('mousemove', (event) => this.moveTooltip(event))
-                    .on('mouseleave', () => this.hideTooltip());
+                g.call(zoom);
+                this._zoom = zoom;
+                this._zoomG = g;
 
                 // Update stats
                 this.updateStats(data, regression);
@@ -1437,9 +1566,10 @@
                 const partyYName = i18n.partyName(partyY);
                 const elXShort = this.electionShort(this.currentElectionX);
                 const elYShort = this.electionShort(this.currentElectionY);
+                const votersLabel = i18n.getLang() === 'en' ? 'Voters' : 'מצביעים';
                 const html = `
                     <div class="tooltip-title">${i18n.settlementName(d.settlement)}</div>
-                    <div class="tooltip-subtitle">${i18n.t('ballot')} ${d.ballot}</div>
+                    <div class="tooltip-subtitle">${i18n.t('ballot')} ${d.ballot} · ${votersLabel}: ${i18n.fmtNum(d.voters)}</div>
                     ${locationHtml}
                     <div class="tooltip-values">
                         <div class="tooltip-party">
@@ -1476,6 +1606,28 @@
 
             hideTooltip() {
                 this.tooltip.classed('visible', false);
+            }
+
+            highlightSettlement(settlement, g) {
+                g.selectAll('.station-dot')
+                    .each(function(d) {
+                        const el = d3.select(this);
+                        if (d.settlement === settlement) {
+                            el.classed('settlement-highlight', true).classed('settlement-dim', false);
+                        } else {
+                            el.classed('settlement-dim', true).classed('settlement-highlight', false);
+                        }
+                    });
+                g.selectAll('.station-dot-bg')
+                    .classed('settlement-dim', true);
+            }
+
+            clearHighlight(g) {
+                g.selectAll('.station-dot')
+                    .classed('settlement-highlight', false)
+                    .classed('settlement-dim', false);
+                g.selectAll('.station-dot-bg')
+                    .classed('settlement-dim', false);
             }
 
             generateQRCodeDataURL() {
@@ -1717,49 +1869,6 @@
         // Initialize
         new ScatterVisualization();
     </script>
-
-    <!-- Buy Me a Coffee button -->
-    <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-button" data-i18n-title="bmc_title" title="קנו לי כוס קפה ☕">
-        <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">
-        <span data-i18n="bmc_text">אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה</span>
-    </a>
-    <style>
-        .bmc-button {
-            position: fixed;
-            bottom: 18px;
-            left: 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 12px;
-            background: #FFDD00;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #000;
-            font-family: 'Heebo', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            z-index: 9999;
-        }
-        .bmc-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
-        }
-        .bmc-button img {
-            width: 24px;
-            height: 24px;
-        }
-        .bmc-button span {
-            display: none;
-            max-width: 200px;
-            line-height: 1.4;
-        }
-        .bmc-button:hover span {
-            display: inline-block;
-        }
-    </style>
-    <script>i18n.injectLangToggle('.view-switcher');</script>
+    <script>i18n.renderNav('scatter'); i18n.renderBMC();</script>
 </body>
 </html>

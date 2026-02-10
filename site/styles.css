@@ -15,7 +15,7 @@
     --text-secondary: #a0a0b0;
     --text-muted: #606075;
 
-    --accent-primary: #6366f1;
+    --accent-primary: #3b82f6;
     --accent-secondary: #8b5cf6;
     --accent-glow: rgba(99, 102, 241, 0.3);
 
@@ -140,7 +140,7 @@ body {
 
 /* Header */
 .main-header {
-    padding: var(--spacing-xl) var(--spacing-lg);
+    padding: 1.2rem var(--spacing-lg) 0.8rem;
     text-align: center;
     border-bottom: 1px solid var(--border-color);
     background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
@@ -155,7 +155,7 @@ body {
     font-size: 2.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: 0.2rem;
     background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -179,7 +179,7 @@ body {
     justify-content: center;
     align-items: center;
     gap: var(--spacing-xs);
-    margin-top: var(--spacing-md);
+    margin-top: 0.6rem;
     position: relative;
     padding-left: 120px;
     padding-right: 120px;
