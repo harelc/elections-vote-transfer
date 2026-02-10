@@ -285,7 +285,7 @@
             const alreadyCounted = sessionStorage.getItem(STORAGE_KEY);
             const endpoint = alreadyCounted
                 ? 'https://api.counterapi.dev/v1/' + API_NS + '/' + API_KEY + '/'
-                : 'https://api.counterapi.dev/v1/' + API_NS + '/' + API_KEY + '/up/';
+                : 'https://api.counterapi.dev/v1/' + API_NS + '/' + API_KEY + '/up';
 
             fetch(endpoint)
                 .then(r => r.json())

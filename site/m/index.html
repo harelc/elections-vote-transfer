@@ -229,7 +229,7 @@
             const counted = sessionStorage.getItem(KEY);
             const url = counted
                 ? 'https://api.counterapi.dev/v1/' + ns + '/' + k + '/'
-                : 'https://api.counterapi.dev/v1/' + ns + '/' + k + '/up/';
+                : 'https://api.counterapi.dev/v1/' + ns + '/' + k + '/up';
             fetch(url).then(r => r.json()).then(d => {
                 const n = d.count || d.value || 0;
                 if (n > 0) {
