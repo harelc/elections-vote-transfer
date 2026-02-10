@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — ניתוח נתוני בחירות לכנסת">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>קולות נודדים - ניתוח נתוני בחירות לכנסת ישראל</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
+    <style>
+        html, body {
+            overflow: auto;
+            height: auto;
+            min-height: 100%;
+        }
+        .m-dashboard {
+            padding: 1.5rem 1rem calc(70px + var(--safe-bottom));
+            text-align: center;
+        }
+        .m-hero-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.3rem;
+        }
+        .m-hero-title .icon { font-size: 1.5rem; margin-inline-end: 0.3rem; }
+        .m-hero-subtitle {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.2rem;
+            line-height: 1.4;
+        }
+        .m-hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        .m-stat-value {
+            display: block;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+        .m-stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .m-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .m-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.9rem;
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.15s;
+            text-align: start;
+        }
+        .m-card:active { border-color: var(--accent); }
+        .m-card-icon { font-size: 1.5rem; flex-shrink: 0; }
+        .m-card-text { min-width: 0; }
+        .m-card-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .m-card-desc {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            line-height: 1.3;
+            margin-top: 0.15rem;
+        }
+        .m-lang-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        [dir="ltr"] .m-lang-btn { left: auto; right: 10px; }
+        .m-discuss-link {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="m-lang-btn" id="lang-container">
+        <a href="discussions.html" class="m-discuss-link" data-i18n="nav_discussions">דיונים</a>
+    </div>
+
+    <div class="m-dashboard">
+        <h1 class="m-hero-title">
+            <span class="icon">🗳️</span>
+            <span data-i18n="dashboard_title">קולות נודדים</span>
+        </h1>
+        <p class="m-hero-subtitle" data-i18n="dashboard_subtitle">ניתוח אינטראקטיבי של נתוני בחירות לכנסת ישראל</p>
+
+        <div class="m-hero-stats">
+            <div>
+                <span class="m-stat-value" id="stat-elections">25</span>
+                <span class="m-stat-label" data-i18n="dashboard_stat_elections">בחירות</span>
+            </div>
+            <div>
+                <span class="m-stat-value" id="stat-lists">—</span>
+                <span class="m-stat-label" data-i18n="dashboard_stat_lists">רשימות</span>
+            </div>
+            <div>
+                <span class="m-stat-value" id="stat-settlements">—</span>
+                <span class="m-stat-label" data-i18n="dashboard_stat_settlements">יישובים</span>
+            </div>
+            <div>
+                <span class="m-stat-value" id="stat-ballots">—</span>
+                <span class="m-stat-label" data-i18n="dashboard_stat_ballots">קלפיות</span>
+            </div>
+        </div>
+        <div class="m-hero-stats" style="margin-top:0">
+            <div>
+                <span class="m-stat-value" id="stat-eligible">—</span>
+                <span class="m-stat-label" data-i18n="eligible_voters">בעלי זכות</span>
+            </div>
+            <div>
+                <span class="m-stat-value" id="stat-voted">—</span>
+                <span class="m-stat-label" data-i18n="voted">הצביעו</span>
+            </div>
+            <div>
+                <span class="m-stat-value" id="stat-visitors">—</span>
+                <span class="m-stat-label" data-i18n="dashboard_stat_visitors">מבקרים</span>
+            </div>
+        </div>
+
+        <div class="m-cards" id="cards"></div>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <nav class="tab-bar">
+        <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
+        <a href="regional.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_regional">אזורי</span></a>
+    </nav>
+
+    <script>
+    (function() {
+        i18n.injectLangToggle('#lang-container');
+
+        const cards = [
+            { icon: '🗺️', i18n_title: 'nav_geomap',    i18n_desc: 'card_geomap_desc',    href: 'geomap.html' },
+            { icon: '🔵', i18n_title: 'nav_tsne',      i18n_desc: 'card_tsne_desc',      href: 'tsne.html' },
+            { icon: '📊', i18n_title: 'nav_sankey',    i18n_desc: 'card_sankey_desc',    href: 'sankey.html' },
+            { icon: '📈', i18n_title: 'nav_scatter',    i18n_desc: 'card_scatter_desc',   href: 'scatter.html' },
+            { icon: '🏘️', i18n_title: 'settlement_profile', i18n_desc: 'card_settlement_desc', href: 'settlement.html' },
+            { icon: '🏛️', i18n_title: 'nav_dhondt',    i18n_desc: 'card_dhondt_desc',    href: 'dhondt.html' },
+            { icon: '🗺️', i18n_title: 'nav_regional',  i18n_desc: 'card_regional_desc',  href: 'regional.html' },
+            { icon: '🔍', i18n_title: 'nav_irregular',  i18n_desc: 'card_irregular_desc', href: 'irregular.html' },
+        ];
+
+        const container = document.getElementById('cards');
+        cards.forEach(c => {
+            const a = document.createElement('a');
+            a.className = 'm-card';
+            a.href = c.href;
+            a.innerHTML =
+                '<span class="m-card-icon">' + c.icon + '</span>' +
+                '<div class="m-card-text">' +
+                '<div class="m-card-title" data-i18n="' + c.i18n_title + '">' + i18n.t(c.i18n_title) + '</div>' +
+                '<div class="m-card-desc" data-i18n="' + c.i18n_desc + '">' + i18n.t(c.i18n_desc) + '</div>' +
+                '</div>';
+            container.appendChild(a);
+        });
+
+        // Animate a number from 0 to target with rolling digits
+        function animateNumber(el, target, duration) {
+            if (!el || !target) return;
+            const start = performance.now();
+            const fmt = v => i18n.fmtNum(Math.round(v));
+            el.textContent = fmt(0);
+            function step(now) {
+                const t = Math.min((now - start) / duration, 1);
+                const ease = 1 - Math.pow(1 - t, 3);
+                el.textContent = fmt(ease * target);
+                if (t < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Load stats from map data
+        Promise.all(
+            ['21','22','23','24','25'].map(e =>
+                fetch('../data/map_' + e + '.json').then(r => r.json())
+            )
+        ).then(maps => {
+            const maxBallots = Math.max(...maps.map(m => m.stats.totalBallots));
+            const latest = maps[maps.length - 1];
+            animateNumber(document.getElementById('stat-ballots'), maxBallots, 1200);
+            animateNumber(document.getElementById('stat-settlements'), latest.stats.totalSettlements, 1200);
+            animateNumber(document.getElementById('stat-eligible'), latest.stats.totalEligible, 1500);
+            animateNumber(document.getElementById('stat-voted'), latest.stats.totalVoters, 1500);
+            animateNumber(document.getElementById('stat-lists'), latest.stats.totalLists, 800);
+        }).catch(() => {});
+
+        // Visitor counter
+        (function() {
+            const KEY = 'kolot_visit_counted';
+            const ns = 'kolot-nodedim', k = 'page-visits';
+            const counted = sessionStorage.getItem(KEY);
+            const url = counted
+                ? 'https://api.counterapi.dev/v1/' + ns + '/' + k + '/'
+                : 'https://api.counterapi.dev/v1/' + ns + '/' + k + '/up/';
+            fetch(url).then(r => r.json()).then(d => {
+                const n = d.count || d.value || 0;
+                if (n > 0) {
+                    animateNumber(document.getElementById('stat-visitors'), n, 1200);
+                    if (!counted) sessionStorage.setItem(KEY, '1');
+                }
+            }).catch(() => {});
+        })();
+
+        window.addEventListener('langchange', () => i18n.applyTranslations());
+    })();
+    </script>
+</body>
+</html>

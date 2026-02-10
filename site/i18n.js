@@ -5,6 +5,9 @@
 (function () {
     'use strict';
 
+    /* ── Election 26 feature flag ── */
+    const SHOW_E26 = new URLSearchParams(location.search).has('e26');
+
     /* ── Translation dictionary ─────────────────────────────────── */
     const dict = {
         /* ── Site-wide ── */
@@ -209,6 +212,46 @@
         method_lim_causal: { he: '<strong>קורלציה ≠ סיבתיות:</strong> המודל מוצא קשרים סטטיסטיים, לא מוכיח שמצביעים באמת עברו. יכולים להיות גורמים נסתרים שמסבירים את הקורלציות.', en: '<strong>Correlation ≠ causation:</strong> The model finds statistical associations, not proof that voters actually switched. Hidden factors may explain the correlations.' },
         method_lim_uncertainty: { he: '<strong>אי-ודאות:</strong> התוצאות הן אומדנים סטטיסטיים עם שולי שגיאה. מעברים קטנים (פחות מ-5%) עשויים להיות רעש סטטיסטי ולא מגמה אמיתית.', en: '<strong>Uncertainty:</strong> Results are statistical estimates with margins of error. Small transfers (<5%) may be noise rather than genuine trends.' },
         method_code_link: { he: 'הקוד המלא זמין ב', en: 'Full source code available on ' },
+
+        /* ── Election labels ── */
+        election_21:               { he: 'כנסת 21', en: 'Knesset 21' },
+        election_22:               { he: 'כנסת 22', en: 'Knesset 22' },
+        election_23:               { he: 'כנסת 23', en: 'Knesset 23' },
+        election_24:               { he: 'כנסת 24', en: 'Knesset 24' },
+        election_25:               { he: 'כנסת 25', en: 'Knesset 25' },
+        election_26:               { he: 'כנסת 26', en: 'Knesset 26' },
+
+        /* ── Dashboard ── */
+        nav_home:                  { he: 'ראשי', en: 'Home' },
+        dashboard_title:           { he: 'קולות נודדים', en: 'Migrating Votes' },
+        dashboard_subtitle:        { he: 'ניתוח אינטראקטיבי של נתוני בחירות לכנסת ישראל', en: 'Interactive analysis of Israeli Knesset election data' },
+        dashboard_stat_elections:  { he: 'בחירות', en: 'Elections' },
+        dashboard_stat_ballots:    { he: 'קלפיות', en: 'Ballot boxes' },
+        dashboard_stat_settlements:{ he: 'יישובים', en: 'Settlements' },
+        dashboard_stat_visitors:   { he: 'מבקרים באתר קולות נודדים', en: 'Visitors to Kolot Nodedim' },
+        dashboard_stat_lists:      { he: 'רשימות התמודדו', en: 'Lists ran' },
+        card_sankey_desc:          { he: 'תרשים נדידת קולות בין בחירות עוקבות', en: 'Vote flow diagram between consecutive elections' },
+        card_tsne_desc:            { he: 'מיפוי קלפיות לפי דמיון דפוסי הצבעה', en: 'Ballot box mapping by voting pattern similarity' },
+        card_geomap_desc:          { he: 'מפה גיאוגרפית של קלפיות הצבעה', en: 'Geographic map of polling stations' },
+        card_scatter_desc:         { he: 'השוואת תמיכה בין מפלגות לפי קלפיות', en: 'Compare party support across ballot boxes' },
+        card_dhondt_desc:          { he: 'חלוקת מנדטים בשיטת באדר-עופר', en: 'Seat allocation using the D\'Hondt method' },
+        card_irregular_desc:       { he: 'זיהוי קלפיות עם דפוסי הצבעה חריגים', en: 'Identifying ballot boxes with irregular voting patterns' },
+        card_regional_desc:        { he: 'סימולציית בחירות אזוריות לכנסת', en: 'Simulating regional elections for the Knesset' },
+        card_settlement_desc:      { he: 'פרופיל הצבעה מפורט לכל יישוב', en: 'Detailed voting profile for each settlement' },
+
+        /* ── Settlement profile ── */
+        settlement_profile:        { he: 'פרופיל יישוב', en: 'Settlement Profile' },
+        voting_trends:             { he: 'מגמות הצבעה', en: 'Voting Trends' },
+        latest_breakdown:          { he: 'פירוט בחירות אחרונות', en: 'Latest Election Breakdown' },
+        ballot_table:              { he: 'טבלת קלפיות', en: 'Ballot Table' },
+        population:                { he: 'אוכלוסייה', en: 'Population' },
+        district:                  { he: 'מחוז', en: 'District' },
+        settlement_type:           { he: 'סוג יישוב', en: 'Settlement type' },
+        wiki_source:               { he: 'מקור: ויקיפדיה', en: 'Source: Wikipedia' },
+        go_to_profile:             { he: 'פרופיל יישוב', en: 'Settlement profile' },
+        venue:                     { he: 'מקום', en: 'Venue' },
+        winning_party:             { he: 'מפלגה מנצחת', en: 'Winning party' },
+        search_settlement_profile: { he: 'חיפוש יישוב...', en: 'Search settlement...' },
 
         /* ── Mobile about ── */
         about:                 { he: 'אודות', en: 'About' },
@@ -525,13 +568,14 @@
 
     /** Render shared navigation into .view-switcher element. */
     const navViews = [
-        { id: 'sankey',    href: 'index.html',     i18n: 'nav_sankey',    text: 'נדידת קולות' },
-        { id: 'tsne',      href: 'tsne.html',      i18n: 'nav_tsne',     text: 'התפלגות קלפיות' },
+        { id: 'home',      href: 'index.html',     i18n: 'nav_home',      text: 'ראשי' },
         { id: 'geomap',    href: 'geomap.html',    i18n: 'nav_geomap',   text: 'מפה גיאוגרפית' },
+        { id: 'tsne',      href: 'tsne.html',      i18n: 'nav_tsne',     text: 'התפלגות קלפיות' },
+        { id: 'sankey',    href: 'sankey.html',     i18n: 'nav_sankey',    text: 'נדידת קולות' },
         { id: 'scatter',   href: 'scatter.html',   i18n: 'nav_scatter',  text: 'השוואת מפלגות' },
         { id: 'dhondt',    href: 'dhondt.html',    i18n: 'nav_dhondt',   text: 'מחשבון באדר-עופר' },
-        { id: 'irregular', href: 'irregular.html',  i18n: 'nav_irregular', text: 'קלפיות חריגות' },
         { id: 'regional',  href: 'regional.html',  i18n: 'nav_regional', text: 'בחירות אזוריות' },
+        { id: 'irregular', href: 'irregular.html',  i18n: 'nav_irregular', text: 'קלפיות חריגות' },
     ];
 
     function renderNav(activeId) {
@@ -541,17 +585,23 @@
         // Preserve export button if present
         const exportBtn = nav.querySelector('.header-export');
 
+        // Propagate e26 flag across nav links
+        function addE26(href) {
+            if (!SHOW_E26) return href;
+            return href + (href.includes('?') ? '&' : '?') + 'e26=1';
+        }
+
         const isDiscussions = activeId === 'discussions';
         nav.innerHTML = navViews.map(v => {
             if (v.id === activeId) {
                 return '<span class="view-btn active" data-i18n="' + v.i18n + '">' + v.text + '</span>';
             }
-            return '<a href="' + v.href + '" class="view-btn" data-i18n="' + v.i18n + '">' + v.text + '</a>';
+            return '<a href="' + addE26(v.href) + '" class="view-btn" data-i18n="' + v.i18n + '">' + v.text + '</a>';
         }).join('\n') +
             '\n<span class="nav-sep">\u00b7</span>' +
             (isDiscussions
                 ? '\n<span class="view-btn nav-discuss active" data-i18n="nav_discussions">דיונים</span>'
-                : '\n<a href="discussions.html" class="view-btn nav-discuss" data-i18n="nav_discussions">דיונים</a>');
+                : '\n<a href="' + addE26('discussions.html') + '" class="view-btn nav-discuss" data-i18n="nav_discussions">דיונים</a>');
 
         if (exportBtn) nav.appendChild(exportBtn);
         injectLangToggle('.view-switcher');
@@ -621,5 +671,6 @@
         renderBMC,
         dict,
         partyNameMap,
+        SHOW_E26,
     };
 })();

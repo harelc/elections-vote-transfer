@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/settlement.html'+(qs?'?'+qs:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — פרופיל יישוב">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>פרופיל יישוב - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+    <style>
+        .profile-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        /* Hero */
+        .profile-hero {
+            display: flex;
+            gap: 1.5rem;
+            align-items: flex-start;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+        }
+        .hero-thumb {
+            width: 120px;
+            height: 120px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+            flex-shrink: 0;
+            background: var(--bg-tertiary);
+        }
+        .hero-info { flex: 1; min-width: 0; }
+        .hero-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        .hero-name-en {
+            font-size: 1rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+        .hero-meta {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.5rem;
+        }
+        .hero-meta-item {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .hero-meta-item strong {
+            color: var(--text-primary);
+        }
+        .hero-extract {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-top: 0.5rem;
+        }
+        .hero-extract a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+
+        /* Section */
+        .profile-section {
+            margin-bottom: 2.5rem;
+        }
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        /* Trends chart */
+        .trends-chart-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            height: 350px;
+            position: relative;
+        }
+
+        /* Latest breakdown layout */
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .breakdown-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        .party-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.88rem;
+        }
+        .party-table th {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 0.75rem;
+            text-align: start;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .party-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .party-table tr:last-child td { border-bottom: none; }
+        .party-table .color-dot {
+            display: inline-block;
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            margin-inline-end: 0.4rem;
+            vertical-align: middle;
+        }
+        .party-table .pct-bar {
+            display: inline-block;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--accent-primary);
+            vertical-align: middle;
+            margin-inline-start: 0.5rem;
+        }
+
+        /* Mini map */
+        .mini-map-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+        #mini-map { height: 100%; min-height: 300px; }
+
+        /* Ballot table */
+        .ballot-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow-x: auto;
+        }
+        .ballot-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+        .ballot-table th {
+            background: var(--bg-tertiary);
+            padding: 0.6rem 0.75rem;
+            text-align: start;
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+        }
+        .ballot-table th:hover { color: var(--text-primary); }
+        .ballot-table th .sort-arrow { margin-inline-start: 0.25rem; opacity: 0.5; }
+        .ballot-table th.sorted .sort-arrow { opacity: 1; color: var(--accent-primary); }
+        .ballot-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        .ballot-table tr:hover { background: var(--bg-hover); }
+
+        /* Settlement search */
+        .settlement-search {
+            margin-bottom: 2rem;
+            position: relative;
+        }
+        .settlement-search input {
+            width: 100%;
+            max-width: 400px;
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 0.9rem;
+            outline: none;
+        }
+        .settlement-search input:focus { border-color: var(--accent-primary); }
+        .search-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            width: 100%;
+            max-width: 400px;
+            max-height: 250px;
+            overflow-y: auto;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-top: 4px;
+            z-index: 100;
+            display: none;
+        }
+        .search-dropdown.visible { display: block; }
+        .search-dropdown a {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 0.88rem;
+        }
+        .search-dropdown a:hover { background: var(--bg-hover); }
+
+        /* Loading */
+        .loading-msg {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        @media (max-width: 768px) {
+            .breakdown-grid { grid-template-columns: 1fr; }
+            .profile-hero { flex-direction: column; align-items: center; text-align: center; }
+            .hero-meta { justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="site-title">
+                    <span class="title-icon">🗳️</span>
+                    <span data-i18n="site_title">קולות נודדים</span>
+                </h1>
+                <p class="site-subtitle" data-i18n="settlement_profile">פרופיל יישוב</p>
+            </div>
+            <nav class="view-switcher"></nav>
+        </header>
+
+        <div class="profile-container" id="profile-container">
+            <div class="loading-msg" id="loading" data-i18n="loading">טוען נתונים...</div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        i18n.renderNav('settlement');
+
+        const params = new URLSearchParams(location.search);
+        const settlementName = params.get('name');
+
+        const ELECTIONS = ['21', '22', '23', '24', '25'];
+        const ELECTION_LABELS = {
+            '21': { he: 'כנסת 21', en: 'Knesset 21' },
+            '22': { he: 'כנסת 22', en: 'Knesset 22' },
+            '23': { he: 'כנסת 23', en: 'Knesset 23' },
+            '24': { he: 'כנסת 24', en: 'Knesset 24' },
+            '25': { he: 'כנסת 25', en: 'Knesset 25' },
+        };
+
+        let allMapData = {};
+        let wikiData = {};
+        let socioData = [];
+        let coordsData = {};
+
+        if (!settlementName) {
+            showSearch();
+            return;
+        }
+
+        // Update page title
+        document.title = settlementName + ' - קולות נודדים';
+
+        // Load all data in parallel
+        Promise.all([
+            ...ELECTIONS.map(e => fetch('data/map_' + e + '.json').then(r => r.json()).then(d => { allMapData[e] = d; })),
+            fetch('data/settlement_wiki.json').then(r => r.json()).then(d => { wikiData = d; }).catch(() => {}),
+            fetch('data/socioeconomic_clusters.json').then(r => r.json()).then(d => { socioData = d; }).catch(() => {}),
+            fetch('data/station_coordinates.json').then(r => r.json()).then(d => { coordsData = d; }).catch(() => {}),
+        ]).then(() => {
+            renderProfile();
+        }).catch(err => {
+            document.getElementById('loading').textContent = i18n.t('error_loading');
+        });
+
+        function renderProfile() {
+            const container = document.getElementById('profile-container');
+            const lang = i18n.getLang();
+
+            // Get settlement data from each election
+            const settlementByElection = {};
+            ELECTIONS.forEach(e => {
+                const mapData = allMapData[e];
+                if (mapData && mapData.settlements) {
+                    const s = mapData.settlements.find(s => s.name === settlementName);
+                    if (s) settlementByElection[e] = s;
+                }
+            });
+
+            if (Object.keys(settlementByElection).length === 0) {
+                container.innerHTML = '<div class="loading-msg">' + i18n.t('no_data') + '</div>';
+                return;
+            }
+
+            const latest = settlementByElection['25'] || settlementByElection[Object.keys(settlementByElection).pop()];
+            const wiki = wikiData[settlementName] || null;
+            const socio = socioData.find(s => s.name === settlementName);
+            const enName = i18n.settlementName(settlementName);
+
+            let html = '';
+
+            // Search bar for navigation
+            html += '<div class="settlement-search">';
+            html += '<input type="text" id="search-input" placeholder="' + i18n.t('search_settlement_profile') + '">';
+            html += '<div class="search-dropdown" id="search-dropdown"></div>';
+            html += '</div>';
+
+            // Hero section
+            html += '<section class="profile-hero">';
+            if (wiki && wiki.thumbnail) {
+                html += '<img class="hero-thumb" src="' + wiki.thumbnail + '" alt="' + settlementName + '">';
+            }
+            html += '<div class="hero-info">';
+            html += '<h2 class="hero-name">' + settlementName + '</h2>';
+            if (enName !== settlementName) {
+                html += '<div class="hero-name-en">' + enName + '</div>';
+            }
+            html += '<div class="hero-meta">';
+            if (latest.ballotCount) {
+                html += '<span class="hero-meta-item"><strong>' + latest.ballotCount + '</strong> ' + i18n.t('dashboard_stat_ballots') + '</span>';
+            }
+            if (latest.eligible) {
+                html += '<span class="hero-meta-item"><strong>' + i18n.fmtNum(latest.eligible) + '</strong> ' + i18n.t('eligible_voters') + '</span>';
+            }
+            if (latest.turnout) {
+                html += '<span class="hero-meta-item"><strong>' + latest.turnout.toFixed(1) + '%</strong> ' + i18n.t('turnout') + '</span>';
+            }
+            if (socio) {
+                html += '<span class="hero-meta-item"><strong>' + socio.cluster + '/10</strong> ' + i18n.t('socioeconomic') + '</span>';
+            }
+            html += '</div>';
+            if (wiki && wiki.extract) {
+                html += '<p class="hero-extract">' + wiki.extract;
+                if (wiki.wiki_url) {
+                    html += ' <a href="' + wiki.wiki_url + '" target="_blank">' + i18n.t('wiki_source') + ' →</a>';
+                }
+                html += '</p>';
+            }
+            html += '</div></section>';
+
+            // Voting trends chart
+            html += '<section class="profile-section">';
+            html += '<h3 class="section-title" data-i18n="voting_trends">' + i18n.t('voting_trends') + '</h3>';
+            html += '<div class="trends-chart-container"><canvas id="trends-chart"></canvas></div>';
+            html += '</section>';
+
+            // Latest election breakdown
+            html += '<section class="profile-section">';
+            html += '<h3 class="section-title" data-i18n="latest_breakdown">' + i18n.t('latest_breakdown') + '</h3>';
+            html += '<div class="breakdown-grid">';
+
+            // Party table
+            html += '<div class="breakdown-table-container">';
+            html += '<table class="party-table">';
+            html += '<thead><tr><th>' + i18n.t('party') + '</th><th>%</th><th>' + i18n.t('votes') + '</th></tr></thead>';
+            html += '<tbody>';
+            if (latest.proportions) {
+                const sorted = Object.entries(latest.proportions).sort((a, b) => b[1] - a[1]);
+                // Build merged color lookup from ALL elections
+                const tableColors = {};
+                ELECTIONS.forEach(e => {
+                    if (allMapData[e] && allMapData[e].parties) {
+                        allMapData[e].parties.forEach(p => { if (!tableColors[p.name]) tableColors[p.name] = p.color; });
+                    }
+                });
+                sorted.forEach(([name, pct]) => {
+                    if (pct < 0.1) return;
+                    const color = tableColors[name] || '#666';
+                    const votes = latest.voters ? Math.round(pct / 100 * latest.voters) : '—';
+                    const displayName = i18n.partyName(name);
+                    html += '<tr>';
+                    html += '<td><span class="color-dot" style="background:' + color + '"></span>' + displayName + '</td>';
+                    html += '<td>' + pct.toFixed(1) + '%<span class="pct-bar" style="width:' + Math.min(pct, 100) + 'px;background:' + color + '"></span></td>';
+                    html += '<td>' + i18n.fmtNum(votes) + '</td>';
+                    html += '</tr>';
+                });
+            }
+            html += '</tbody></table></div>';
+
+            // Mini map
+            html += '<div class="mini-map-container"><div id="mini-map"></div></div>';
+            html += '</div></section>';
+
+            // Ballot table - get individual ballots from settlement data
+            const ballots = latest.ballots || [];
+
+            if (ballots.length > 0) {
+                html += '<section class="profile-section">';
+                html += '<h3 class="section-title" data-i18n="ballot_table">' + i18n.t('ballot_table') + '</h3>';
+                html += '<div class="ballot-table-container">';
+                html += '<table class="ballot-table" id="ballot-table">';
+                html += '<thead><tr>';
+                html += '<th data-col="ballot">' + i18n.t('ballot') + ' <span class="sort-arrow">↕</span></th>';
+                html += '<th data-col="venue">' + i18n.t('venue') + ' <span class="sort-arrow">↕</span></th>';
+                html += '<th data-col="voters">' + i18n.t('voters') + ' <span class="sort-arrow">↕</span></th>';
+                html += '<th data-col="turnout">' + i18n.t('turnout') + ' <span class="sort-arrow">↕</span></th>';
+                html += '<th data-col="winner">' + i18n.t('winning_party') + ' <span class="sort-arrow">↕</span></th>';
+                html += '</tr></thead><tbody>';
+                ballots.forEach(b => {
+                    // Find winning party from proportions
+                    let winner = '—';
+                    if (b.p) {
+                        const sorted = Object.entries(b.p).sort((a, c) => c[1] - a[1]);
+                        if (sorted.length > 0) winner = sorted[0][0];
+                    }
+                    const turnout = b.t ? b.t.toFixed(1) + '%' : '—';
+                    html += '<tr>';
+                    html += '<td>' + (b.b || '—') + '</td>';
+                    html += '<td>' + (b.l || '—') + '</td>';
+                    html += '<td>' + i18n.fmtNum(b.v || 0) + '</td>';
+                    html += '<td>' + turnout + '</td>';
+                    html += '<td>' + i18n.partyName(winner) + '</td>';
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div></section>';
+            }
+
+            container.innerHTML = html;
+
+            // Initialize after DOM update
+            setTimeout(() => {
+                initTrendsChart(settlementByElection);
+                initMiniMap(latest);
+                initSearch();
+                initTableSort();
+            }, 50);
+        }
+
+        function initTrendsChart(settlementByElection) {
+            const canvas = document.getElementById('trends-chart');
+            if (!canvas) return;
+
+            // Collect all parties across elections
+            const partyVotes = {};
+            ELECTIONS.forEach(e => {
+                const s = settlementByElection[e];
+                if (!s || !s.proportions) return;
+                Object.entries(s.proportions).forEach(([name, pct]) => {
+                    if (!partyVotes[name]) partyVotes[name] = {};
+                    partyVotes[name][e] = pct;
+                });
+            });
+
+            // Get top 6 parties by average support
+            const partyAvg = Object.entries(partyVotes).map(([name, votes]) => {
+                const vals = Object.values(votes);
+                return { name, avg: vals.reduce((a, b) => a + b, 0) / vals.length };
+            }).sort((a, b) => b.avg - a.avg).slice(0, 6);
+
+            // Build merged color lookup from ALL elections' party lists
+            const allPartyColors = {};
+            ELECTIONS.forEach(e => {
+                if (allMapData[e] && allMapData[e].parties) {
+                    allMapData[e].parties.forEach(p => {
+                        if (!allPartyColors[p.name]) allPartyColors[p.name] = p.color;
+                    });
+                }
+            });
+
+            const datasets = partyAvg.map(p => {
+                const color = allPartyColors[p.name] || '#888';
+                return {
+                    label: i18n.partyName(p.name),
+                    data: ELECTIONS.map(e => partyVotes[p.name][e] || null),
+                    borderColor: color,
+                    backgroundColor: color + '33',
+                    tension: 0.3,
+                    pointRadius: 4,
+                    spanGaps: true,
+                };
+            });
+
+            // Add turnout line
+            datasets.push({
+                label: i18n.t('turnout'),
+                data: ELECTIONS.map(e => {
+                    const s = settlementByElection[e];
+                    return s ? s.turnout : null;
+                }),
+                borderColor: '#94a3b8',
+                borderDash: [5, 5],
+                tension: 0.3,
+                pointRadius: 3,
+                spanGaps: true,
+                yAxisID: 'y1',
+            });
+
+            const lang = i18n.getLang();
+            new Chart(canvas, {
+                type: 'line',
+                data: {
+                    labels: ELECTIONS.map(e => ELECTION_LABELS[e][lang]),
+                    datasets,
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { color: '#a0a0b0', font: { family: 'Heebo' }, padding: 12 }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#a0a0b0', font: { family: 'Heebo' } },
+                            grid: { color: '#2a2a3a' }
+                        },
+                        y: {
+                            position: lang === 'en' ? 'left' : 'right',
+                            ticks: { color: '#a0a0b0', callback: v => v + '%' },
+                            grid: { color: '#2a2a3a' },
+                            min: 0,
+                        },
+                        y1: {
+                            position: lang === 'en' ? 'right' : 'left',
+                            ticks: { color: '#94a3b8', callback: v => v + '%' },
+                            grid: { display: false },
+                            min: 0, max: 100,
+                        }
+                    }
+                }
+            });
+        }
+
+        function initMiniMap(settlement) {
+            const mapEl = document.getElementById('mini-map');
+            if (!mapEl || !settlement.lat) return;
+
+            // Build party color lookup from all elections
+            const partyColors = {};
+            ELECTIONS.forEach(e => {
+                if (allMapData[e] && allMapData[e].parties) {
+                    allMapData[e].parties.forEach(p => { if (!partyColors[p.name]) partyColors[p.name] = p.color; });
+                }
+            });
+
+            // Build ballot info from settlement data (latest election only)
+            const ballotInfo = {};
+            if (settlement.ballots) {
+                settlement.ballots.forEach(b => {
+                    if (!b.b) return;
+                    const winner = b.p ? Object.entries(b.p).sort((a, c) => c[1] - a[1])[0] : null;
+                    ballotInfo[String(b.b)] = {
+                        color: winner ? (partyColors[winner[0]] || '#888') : '#888',
+                        location: b.l || '',
+                    };
+                });
+            }
+
+            const map = L.map('mini-map', {
+                center: [settlement.lat, settlement.lng],
+                zoom: 14,
+                zoomControl: false,
+            });
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; OSM &copy; CARTO',
+                maxZoom: 19,
+            }).addTo(map);
+
+            // Add markers only for ballots in this election, colored by winning party
+            const stations = (coordsData && coordsData.stations) || {};
+            const markers = [];
+            Object.keys(ballotInfo).forEach(ballotNum => {
+                const key = settlementName + '|' + ballotNum;
+                const info = stations[key];
+                if (info && info.lat) {
+                    const bi = ballotInfo[ballotNum];
+                    const m = L.circleMarker([info.lat, info.lng], {
+                        radius: 6,
+                        fillColor: bi.color,
+                        color: '#fff',
+                        weight: 1,
+                        fillOpacity: 0.85,
+                    }).addTo(map).bindPopup(i18n.t('ballot') + ' ' + ballotNum + (bi.location ? '<br>' + bi.location : ''));
+                    markers.push(m);
+                }
+            });
+            // Fit bounds if we have markers
+            if (markers.length > 1) {
+                const group = L.featureGroup(markers);
+                map.fitBounds(group.getBounds().pad(0.15));
+            }
+        }
+
+        function initSearch() {
+            const input = document.getElementById('search-input');
+            const dropdown = document.getElementById('search-dropdown');
+            if (!input || !dropdown) return;
+
+            // Collect all settlement names
+            const allNames = [];
+            const mapData = allMapData['25'];
+            if (mapData && mapData.settlements) {
+                mapData.settlements.forEach(s => {
+                    if (s.name) allNames.push(s.name);
+                });
+            }
+            allNames.sort();
+
+            input.addEventListener('input', () => {
+                const q = input.value.trim();
+                if (q.length < 1) { dropdown.classList.remove('visible'); return; }
+
+                const matches = allNames.filter(n => i18n.settlementMatches(n, q)).slice(0, 15);
+                if (matches.length === 0) {
+                    dropdown.classList.remove('visible');
+                    return;
+                }
+
+                dropdown.innerHTML = matches.map(n => {
+                    const display = i18n.getLang() === 'en' ? i18n.settlementName(n) : n;
+                    return '<a href="settlement.html?name=' + encodeURIComponent(n) + '">' + display + '</a>';
+                }).join('');
+                dropdown.classList.add('visible');
+            });
+
+            input.addEventListener('blur', () => {
+                setTimeout(() => dropdown.classList.remove('visible'), 200);
+            });
+        }
+
+        function initTableSort() {
+            const table = document.getElementById('ballot-table');
+            if (!table) return;
+            const headers = table.querySelectorAll('th');
+            let sortCol = null, sortAsc = true;
+
+            headers.forEach(th => {
+                th.addEventListener('click', () => {
+                    const col = th.dataset.col;
+                    if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+
+                    headers.forEach(h => h.classList.remove('sorted'));
+                    th.classList.add('sorted');
+
+                    const tbody = table.querySelector('tbody');
+                    const rows = Array.from(tbody.querySelectorAll('tr'));
+                    const colIdx = Array.from(headers).indexOf(th);
+
+                    rows.sort((a, b) => {
+                        let va = a.cells[colIdx].textContent.replace(/[,%]/g, '');
+                        let vb = b.cells[colIdx].textContent.replace(/[,%]/g, '');
+                        const na = parseFloat(va), nb = parseFloat(vb);
+                        if (!isNaN(na) && !isNaN(nb)) return sortAsc ? na - nb : nb - na;
+                        return sortAsc ? va.localeCompare(vb, 'he') : vb.localeCompare(va, 'he');
+                    });
+                    rows.forEach(r => tbody.appendChild(r));
+                });
+            });
+        }
+
+        function showSearch() {
+            const container = document.getElementById('profile-container');
+            container.innerHTML = `
+                <div style="max-width:500px;margin:3rem auto;text-align:center">
+                    <h2 data-i18n="settlement_profile">${i18n.t('settlement_profile')}</h2>
+                    <div class="settlement-search" style="margin-top:1.5rem">
+                        <input type="text" id="search-input" placeholder="${i18n.t('search_settlement_profile')}" autofocus>
+                        <div class="search-dropdown" id="search-dropdown"></div>
+                    </div>
+                </div>`;
+
+            // Load map data for search
+            fetch('data/map_25.json').then(r => r.json()).then(data => {
+                allMapData['25'] = data;
+                initSearch();
+            });
+        }
+    })();
+    </script>
+</body>
+</html>
