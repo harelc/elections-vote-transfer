@@ -763,8 +763,9 @@
         .cluster-legend-explain {
             font-size: 0.65rem;
             color: var(--text-muted);
-            margin-bottom: 5px;
+            margin-top: 5px;
             line-height: 1.4;
+            font-style: italic;
         }
 
         /* Stats badge */
@@ -981,7 +982,10 @@
                         <span id="legend-max"></span>
                     </div>
                     <div class="cluster-legend" id="cluster-legend">
-                        <div class="cluster-legend-explain" data-i18n="legend_pie_explain">צבעי העוגה: חלוקת המפלגה המנצחת בכל קלפי באשכול</div>
+                        <div class="cluster-legend-row">
+                            <span class="cluster-legend-icon" style="background: #2563eb; border: 2px solid rgba(255,255,255,0.3); width:14px; height:14px;"></span>
+                            <span data-i18n="legend_single_ballot">קלפי בודדת — הצבע מייצג את המפלגה המנצחת</span>
+                        </div>
                         <div class="cluster-legend-row">
                             <span class="cluster-legend-icon" style="background: conic-gradient(#2563eb 0% 60%, #06b6d4 60% 100%); border: 2px solid rgba(255,255,255,0.3);">5</span>
                             <span data-i18n="legend_spread_cluster">מקבץ של אתרי הצבעה שונים — לחץ כדי להתקרב</span>
@@ -990,6 +994,7 @@
                             <span class="cluster-legend-icon" style="background: conic-gradient(#2563eb 0% 70%, #dc2626 70% 100%); border: 2.5px dashed rgba(255,255,255,0.6);">3</span>
                             <span data-i18n="legend_colocated_cluster">מקבץ קלפיות באותו מקום</span>
                         </div>
+                        <div class="cluster-legend-explain" data-i18n="legend_pie_explain">צבעי העוגה במקבצים: חלוקת המפלגה המנצחת בכל קלפי</div>
                     </div>
                 </div>
             </div>

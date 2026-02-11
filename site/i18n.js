@@ -275,9 +275,10 @@
         go_to_profile:             { he: 'פרופיל יישוב', en: 'Settlement profile' },
         venue:                     { he: 'מקום', en: 'Venue' },
         winning_party:             { he: 'מפלגה מנצחת', en: 'Winning party' },
-        legend_pie_explain:        { he: 'צבעי העוגה: חלוקת המפלגה המנצחת בכל קלפי באשכול', en: 'Pie colors: winning party share per ballot in cluster' },
+        legend_single_ballot:      { he: 'קלפי בודדת — הצבע מייצג את המפלגה המנצחת', en: 'Single ballot — color is the winning party' },
         legend_spread_cluster:     { he: 'מקבץ של אתרי הצבעה שונים — לחץ כדי להתקרב', en: 'Multiple voting sites — click to zoom in' },
         legend_colocated_cluster:  { he: 'מקבץ קלפיות באותו מקום', en: 'Ballots at same location' },
+        legend_pie_explain:        { he: 'צבעי העוגה במקבצים: חלוקת המפלגה המנצחת בכל קלפי', en: 'Cluster pie colors: winning party share per ballot' },
         search_settlement_profile: { he: 'חיפוש יישוב...', en: 'Search settlement...' },
 
         /* ── Mobile about ── */
