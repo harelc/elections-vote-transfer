@@ -763,8 +763,8 @@
                     <div class="scale-toggle" style="margin-top: 0.75rem;">
                         <label class="toggle-label" data-i18n="scale_type">סוג סקאלה:</label>
                         <div class="toggle-buttons">
-                            <button class="toggle-btn active" data-scale="linear">לינארי</button>
-                            <button class="toggle-btn" data-scale="symlog">לוגריתמי</button>
+                            <button class="toggle-btn active" data-scale="linear" data-i18n="scale_linear">לינארי</button>
+                            <button class="toggle-btn" data-scale="symlog" data-i18n="scale_log">לוגריתמי</button>
                         </div>
                     </div>
                 </div>
@@ -782,19 +782,19 @@
                     <h3 class="control-title" data-i18n="statistics">סטטיסטיקות</h3>
                     <div class="stats-box">
                         <div class="stat-row">
-                            <span class="stat-label">מתאם (Correlation):</span>
+                            <span class="stat-label" data-i18n="correlation_label">מתאם:</span>
                             <span class="stat-value correlation-value" id="correlation">-</span>
                         </div>
                         <div class="stat-row">
-                            <span class="stat-label">קלפיות משותפות:</span>
+                            <span class="stat-label" data-i18n="common_precincts">קלפיות משותפות:</span>
                             <span class="stat-value" id="station-count">-</span>
                         </div>
                         <div class="stat-row">
-                            <span class="stat-label">R²:</span>
+                            <span class="stat-label" data-i18n="r_squared">R²:</span>
                             <span class="stat-value" id="r-squared">-</span>
                         </div>
                         <div class="stat-row">
-                            <span class="stat-label">משוואת רגרסיה:</span>
+                            <span class="stat-label" data-i18n="regression_label">משוואת רגרסיה:</span>
                             <span class="stat-value" id="regression-equation" style="font-family: monospace; direction: ltr;">-</span>
                         </div>
                     </div>
