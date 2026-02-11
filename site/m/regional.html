@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — בחירות אזוריות">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
     <title>בחירות אזוריות - קולות נודדים</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -328,6 +333,7 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
+        <a href="index.html" class="home-link">🏠</a>
         <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="tab_regional">אזורי</span></span>
         <button class="info-toggle" id="info-btn" title="About">ℹ</button>
     </div>
@@ -430,11 +436,12 @@
     <!-- Bottom Tabs -->
     <nav class="tab-bar">
         <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
-        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="sankey.html"><span class="tab-icon">🔀</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
         <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
-        <a href="regional.html" class="active"><span class="tab-icon">🗺️</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="regional.html" class="active"><span class="tab-icon">🧩</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="discussions.html"><span class="tab-icon">💬</span><span data-i18n="nav_discussions">דיונים</span></a>
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1224,6 +1231,6 @@
         }
     })();
     </script>
-    <script>i18n.injectLangToggle('.top-bar');</script>
+    <script>i18n.injectLangToggle('.top-bar');i18n.renderMobileBMC();</script>
 </body>
 </html>

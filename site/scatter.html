@@ -5,6 +5,11 @@
     <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/scatter.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — השוואת מפלגות">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
     <title>השוואת תמיכה במפלגות - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -700,7 +705,7 @@
             <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="scatter_subtitle">השוואת תמיכה במפלגות לפי קלפיות</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="sankey.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
                 <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
                 <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
                 <span class="view-btn active" data-i18n="nav_scatter">השוואת מפלגות</span>
@@ -844,6 +849,7 @@
                     '24': { he: 'כנסת 24 (מרץ 2021)',       en: 'Knesset 24 (March 2021)' },
                     '25': { he: 'כנסת 25 (נובמבר 2022)',    en: 'Knesset 25 (November 2022)' },
                 };
+                if (i18n.SHOW_E26) this.electionMeta['26'] = { he: 'כנסת 26 (2026)', en: 'Knesset 26 (2026)' };
 
                 this.init();
             }
@@ -1582,6 +1588,9 @@
                             ${partyYName} (${elYShort}):
                         </div>
                         <span class="tooltip-pct">${formatValue(d.y)}</span>
+                    </div>
+                    <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color)">
+                        <a href="settlement.html?name=${encodeURIComponent(d.settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
                     </div>
                 `;
                 this.tooltip.html(html).classed('visible', true);

@@ -45,6 +45,14 @@
             flex-shrink: 0;
             align-self: stretch;
         }
+        .hero-leader-img {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 3px solid var(--border-color);
+        }
         .hero-info { flex: 1; min-width: 0; }
         .hero-name {
             font-size: 2rem;
@@ -538,6 +546,7 @@
         let allMapData = {};
         let allTransfers = {};
         let coordsData = {};
+        let wikiResults = {};
 
         if (!partyParam) {
             showLanding();
@@ -615,6 +624,7 @@
                 ...ELECTIONS.map(e => fetch('data/map_' + e + '.json').then(r => r.json()).then(d => { allMapData[e] = d; })),
                 fetch('data/all_transfers.json').then(r => r.json()).then(d => { allTransfers = d; }).catch(() => {}),
                 fetch('data/station_coordinates.json').then(r => r.json()).then(d => { coordsData = d; }).catch(() => {}),
+                fetch('data/wiki_official_results.json').then(r => r.json()).then(d => { wikiResults = d; }).catch(() => {}),
             ]).then(() => {
                 renderProfile(family);
             }).catch(() => {
@@ -649,6 +659,9 @@
             // Hero
             html += '<section class="profile-hero">';
             html += '<div class="hero-color-bar" style="background:' + family.color + '"></div>';
+            if (latestInfo && latestInfo.leader_image) {
+                html += '<img class="hero-leader-img" src="' + latestInfo.leader_image + '" alt="" onerror="this.style.display=\'none\'">';
+            }
             html += '<div class="hero-info">';
             html += '<h2 class="hero-name">' + displayName + '</h2>';
             if (lang === 'he' && family.name_en) {
@@ -729,6 +742,7 @@
             html += '<th>' + i18n.t('party') + '</th>';
             html += '<th>' + i18n.t('symbol_label') + '</th>';
             html += '<th>' + i18n.t('seats') + '</th>';
+            html += '<th>' + i18n.t('votes') + '</th>';
             html += '<th>' + i18n.t('national_support') + '</th>';
             html += '<th>' + i18n.t('leader_col') + '</th>';
             html += '</tr></thead><tbody>';
@@ -741,30 +755,24 @@
                     const note = family.notes && family.notes[e];
                     html += '<tr><td>' + label + '</td>';
                     if (note) {
-                        html += '<td colspan="5" class="merged-note">' + i18n.t('merged_into') + ' ' + note + '</td>';
+                        html += '<td colspan="6" class="merged-note">' + i18n.t('merged_into') + ' ' + note + '</td>';
                     } else {
-                        html += '<td colspan="5" class="merged-note">' + i18n.t('did_not_run') + '</td>';
+                        html += '<td colspan="6" class="merged-note">' + i18n.t('did_not_run') + '</td>';
                     }
                     html += '</tr>';
                     return;
                 }
 
-                // Get national support % from map data
+                // Get official vote count from wiki results
                 let supportPct = '—';
-                const mapData = allMapData[e];
-                if (mapData && mapData.stats) {
-                    // Calculate national support: sum of party votes / total voters
-                    let partyVotes = 0, totalVoters = 0;
-                    if (mapData.settlements) {
-                        mapData.settlements.forEach(s => {
-                            if (s.proportions && s.proportions[data.partyName] != null) {
-                                partyVotes += (s.proportions[data.partyName] / 100) * (s.voters || 0);
-                            }
-                            totalVoters += s.voters || 0;
-                        });
-                    }
-                    if (totalVoters > 0) {
-                        supportPct = (partyVotes / totalVoters * 100).toFixed(1) + '%';
+                let votesDisplay = '—';
+                const wikiEntry = (wikiResults[e] || []).find(p => p.name === data.partyName);
+                if (wikiEntry && wikiEntry.votes) {
+                    votesDisplay = i18n.fmtNum(wikiEntry.votes);
+                    // Calculate % from official votes / total valid votes
+                    const totalValid = (wikiResults[e] || []).reduce((sum, p) => sum + (p.votes || 0), 0);
+                    if (totalValid > 0) {
+                        supportPct = (wikiEntry.votes / totalValid * 100).toFixed(1) + '%';
                     }
                 }
 
@@ -783,6 +791,7 @@
                 html += '<td><span class="color-dot" style="background:' + family.color + '"></span>' + partyDisplayName + '</td>';
                 html += '<td>' + data.symbol + '</td>';
                 html += '<td>' + data.seats + '</td>';
+                html += '<td>' + votesDisplay + '</td>';
                 html += '<td>' + supportPct + '</td>';
                 html += '<td>' + leader + '</td>';
                 html += '</tr>';
@@ -809,16 +818,10 @@
                 }
                 seatsData.push(data.seats);
 
-                const mapData = allMapData[e];
-                if (mapData && mapData.settlements) {
-                    let pv = 0, tv = 0;
-                    mapData.settlements.forEach(s => {
-                        if (s.proportions && s.proportions[data.partyName] != null) {
-                            pv += (s.proportions[data.partyName] / 100) * (s.voters || 0);
-                        }
-                        tv += s.voters || 0;
-                    });
-                    supportData.push(tv > 0 ? +(pv / tv * 100).toFixed(2) : null);
+                const wikiEntry = (wikiResults[e] || []).find(p => p.name === data.partyName);
+                if (wikiEntry && wikiEntry.votes) {
+                    const totalValid = (wikiResults[e] || []).reduce((sum, p) => sum + (p.votes || 0), 0);
+                    supportData.push(totalValid > 0 ? +(wikiEntry.votes / totalValid * 100).toFixed(2) : null);
                 } else {
                     supportData.push(null);
                 }
@@ -932,7 +935,7 @@
                 return html;
             }
 
-            grid.innerHTML = buildList(top10, 'top_strongholds') + buildList(bottom10, 'bottom_strongholds');
+            grid.innerHTML = buildList(top10, 'top_strongholds');
 
             // Mini map
             const mapEl = document.getElementById('strongholds-map');

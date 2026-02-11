@@ -48,10 +48,25 @@ html, body {
     height: 44px;
 }
 
+.home-link {
+    text-decoration: none;
+    font-size: 1.1rem;
+    line-height: 1;
+    flex-shrink: 0;
+    padding: 4px;
+    border-radius: 6px;
+    transition: background 0.15s;
+}
+.home-link:active { background: var(--bg-hover); }
+
 .top-bar .title {
+    flex: 1;
+    min-width: 0;
     font-size: 0.95rem;
     font-weight: 600;
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     background: linear-gradient(135deg, var(--text-primary), var(--accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -82,7 +97,7 @@ html, body {
     color: white;
 }
 
-/* ---- Bottom Tabs ---- */
+/* ---- Bottom Tabs (scrollable pill bar) ---- */
 .tab-bar {
     position: fixed;
     bottom: 0;
@@ -92,30 +107,46 @@ html, body {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border);
     display: flex;
-    padding-bottom: var(--safe-bottom);
-    height: calc(56px + var(--safe-bottom));
+    gap: 6px;
+    padding: 6px 10px calc(6px + var(--safe-bottom));
+    height: calc(48px + var(--safe-bottom));
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
 }
+.tab-bar::-webkit-scrollbar { display: none; }
 
 .tab-bar a {
-    flex: 1;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    gap: 4px;
     text-decoration: none;
     color: var(--text-muted);
-    font-size: 0.65rem;
-    gap: 2px;
-    padding: 6px 0;
-    transition: color 0.15s;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 18px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+    flex-shrink: 0;
+    scroll-snap-align: start;
+    transition: all 0.15s;
 }
 
 .tab-bar a.active {
-    color: var(--accent);
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+}
+
+.tab-bar a:active:not(.active) {
+    background: var(--bg-hover);
 }
 
 .tab-bar a .tab-icon {
-    font-size: 1.2rem;
+    font-size: 0.85rem;
     line-height: 1;
 }
 
@@ -125,7 +156,7 @@ html, body {
     top: 44px;
     left: 0;
     right: 0;
-    bottom: calc(56px + var(--safe-bottom));
+    bottom: calc(48px + var(--safe-bottom));
     overflow: hidden;
 }
 
@@ -393,3 +424,63 @@ html, body {
     background: var(--bg-hover);
     text-decoration: none;
 }
+
+/* ---- Floating BMC Banner ---- */
+.bmc-float {
+    position: fixed;
+    bottom: calc(48px + var(--safe-bottom) + 6px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: fit-content;
+    max-width: calc(100% - 20px);
+    z-index: 490;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #FFDD00;
+    color: #000;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+    text-decoration: none;
+    animation: bmc-slide-up 0.3s ease-out;
+}
+.bmc-float img { width: 18px; height: 18px; flex-shrink: 0; }
+.bmc-float-text { flex: 1; min-width: 0; }
+.bmc-float-close {
+    background: none;
+    border: none;
+    color: #000;
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 4px;
+    cursor: pointer;
+    opacity: 0.6;
+    flex-shrink: 0;
+}
+.bmc-float-close:active { opacity: 1; }
+
+@keyframes bmc-slide-up {
+    from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+    to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+/* ---- Info toggle button (shared) ---- */
+.info-toggle {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 0.15s;
+}
+.info-toggle:active { border-color: var(--accent); }

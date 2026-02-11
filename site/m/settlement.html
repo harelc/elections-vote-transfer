@@ -19,7 +19,7 @@
     <style>
         html, body { overflow: auto; height: auto; min-height: 100%; }
         .m-profile {
-            padding: 0.75rem 0.75rem calc(70px + var(--safe-bottom));
+            padding: calc(44px + 0.75rem) 0.75rem calc(54px + var(--safe-bottom));
         }
         .m-back { color: var(--accent); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 0.5rem; }
         .m-hero { display: flex; gap: 0.75rem; margin-bottom: 1rem; }
@@ -90,15 +90,20 @@
     </style>
 </head>
 <body>
+    <div class="top-bar">
+        <a href="index.html" class="home-link">🏠</a>
+        <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="settlement_profile">פרופיל יישוב</span></span>
+    </div>
     <div class="m-profile" id="profile"></div>
 
     <nav class="tab-bar">
         <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
-        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="sankey.html"><span class="tab-icon">🔀</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
         <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
-        <a href="regional.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="regional.html"><span class="tab-icon">🧩</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="discussions.html"><span class="tab-icon">💬</span><span data-i18n="nav_discussions">דיונים</span></a>
     </nav>
 
     <script>
@@ -139,8 +144,7 @@
             const wiki = wikiData[name] || null;
             const socio = socioData.find(s=>s.name===name);
             const enName = i18n.settlementName(name);
-
-            let h = '<a class="m-back" href="index.html">← ' + i18n.t('nav_home') + '</a>';
+            let h = '';
 
             // Search bar for navigation
             h += '<div class="m-search"><input type="text" id="search-input" placeholder="'+i18n.t('search_settlement_profile')+'">';
@@ -192,7 +196,65 @@
             }
             h += '</tbody></table></div>';
 
+            // Ballot table
+            if (latest.ballots && latest.ballots.length > 0) {
+                const allColors = {};
+                ELECTIONS.forEach(e => {
+                    if (allMap[e] && allMap[e].parties) allMap[e].parties.forEach(p => { if (!allColors[p.name]) allColors[p.name] = p.color; });
+                });
+                h += '<div class="m-section">';
+                h += '<div class="m-section-title" data-i18n="ballot_table">'+i18n.t('ballot_table')+'</div>';
+                h += '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">';
+                h += '<table class="m-party-table" id="ballot-table"><thead><tr>';
+                h += '<th data-col="b" style="cursor:pointer">'+i18n.t('ballot')+' ↕</th>';
+                h += '<th data-col="l">'+i18n.t('venue')+'</th>';
+                h += '<th data-col="v" style="cursor:pointer">'+i18n.t('voters')+' ↕</th>';
+                h += '<th data-col="t" style="cursor:pointer">'+i18n.t('turnout')+' ↕</th>';
+                h += '<th data-col="w">'+i18n.t('winning_party')+'</th>';
+                h += '</tr></thead><tbody>';
+                latest.ballots.sort((a,b) => {
+                    const an = parseFloat(a.b), bn = parseFloat(b.b);
+                    return an - bn;
+                }).forEach(bl => {
+                    const topP = bl.p ? Object.entries(bl.p).sort((a,b)=>b[1]-a[1])[0] : null;
+                    const wColor = topP ? (allColors[topP[0]] || '#666') : '#666';
+                    const wName = topP ? i18n.partyName(topP[0]) : '—';
+                    const wPct = topP ? topP[1].toFixed(1)+'%' : '';
+                    h += '<tr>';
+                    h += '<td>'+bl.b+'</td>';
+                    h += '<td style="font-size:0.72rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+(bl.l||'')+'</td>';
+                    h += '<td>'+i18n.fmtNum(bl.v||0)+'</td>';
+                    h += '<td>'+(bl.t||0)+'%</td>';
+                    h += '<td><span class="dot" style="background:'+wColor+'"></span>'+wName+' '+wPct+'</td>';
+                    h += '</tr>';
+                });
+                h += '</tbody></table></div></div>';
+            }
+
             container.innerHTML = h;
+
+            // Ballot table sort
+            setTimeout(() => {
+                const table = document.getElementById('ballot-table');
+                if (table) {
+                    table.querySelectorAll('th[data-col]').forEach(th => {
+                        if (!th.style.cursor) return;
+                        let asc = true;
+                        th.addEventListener('click', () => {
+                            const col = th.dataset.col;
+                            const tbody = table.querySelector('tbody');
+                            const rows = Array.from(tbody.rows);
+                            rows.sort((a, b) => {
+                                const ai = col === 'b' ? parseFloat(a.cells[0].textContent) : col === 'v' ? parseInt(a.cells[2].textContent.replace(/[,\s]/g,'')) : parseFloat(a.cells[3].textContent);
+                                const bi = col === 'b' ? parseFloat(b.cells[0].textContent) : col === 'v' ? parseInt(b.cells[2].textContent.replace(/[,\s]/g,'')) : parseFloat(b.cells[3].textContent);
+                                return asc ? ai - bi : bi - ai;
+                            });
+                            asc = !asc;
+                            rows.forEach(r => tbody.appendChild(r));
+                        });
+                    });
+                }
+            }, 100);
 
             // Chart
             setTimeout(() => {
@@ -278,5 +340,6 @@
         }
     })();
     </script>
+    <script>i18n.injectLangToggle('.top-bar');i18n.renderMobileBMC();</script>
 </body>
 </html>

@@ -3,6 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — מפה גיאוגרפית">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <title>מפה - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -150,7 +155,7 @@
         /* Color scale legend */
         .color-scale {
             position: fixed;
-            bottom: calc(62px + var(--safe-bottom));
+            bottom: calc(54px + var(--safe-bottom));
             left: 8px;
             background: var(--bg-card);
             border: 1px solid var(--border);
@@ -200,6 +205,7 @@
 <body>
     <!-- Top Bar -->
     <div class="top-bar">
+        <a href="index.html" class="home-link">🏠</a>
         <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="tab_map">מפה</span></span>
         <div class="election-pills" id="election-pills"></div>
         <button class="info-toggle" id="info-btn" title="About">ℹ</button>
@@ -261,11 +267,12 @@
     <!-- Bottom Tabs -->
     <nav class="tab-bar">
         <a href="geomap.html" class="active"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
-        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="sankey.html"><span class="tab-icon">🔀</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
         <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
-        <a href="regional.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="regional.html"><span class="tab-icon">🧩</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="discussions.html"><span class="tab-icon">💬</span><span data-i18n="nav_discussions">דיונים</span></a>
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -299,7 +306,9 @@
 
         initElectionPills() {
             const pills = document.getElementById('election-pills');
-            ['21','22','23','24','25'].forEach(id => {
+            const electionIds = ['21','22','23','24','25'];
+            if (i18n.SHOW_E26) electionIds.push('26');
+            electionIds.forEach(id => {
                 const btn = document.createElement('button');
                 btn.className = 'election-pill' + (id === this.currentElection ? ' active' : '');
                 btn.textContent = id;
@@ -669,6 +678,7 @@
                     <span class="label">${i18n.t('turnout')}</span><span class="value">${turnout}%</span>
                 </div>
                 ${partyHtml}
+                <a href="settlement.html?name=${encodeURIComponent(name)}" style="display:block;margin-top:10px;color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
             `;
             this.showSheet();
         }
@@ -938,6 +948,6 @@
         };
     });
     </script>
-    <script>i18n.injectLangToggle('.top-bar');</script>
+    <script>i18n.injectLangToggle('.top-bar');i18n.renderMobileBMC();</script>
 </body>
 </html>

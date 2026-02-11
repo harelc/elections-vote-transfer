@@ -5,6 +5,11 @@
     <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/regional.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — בחירות אזוריות">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
     <title>בחירות אזוריות - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -505,7 +510,7 @@
             <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="regional_subtitle">סימולציית בחירות אזוריות לכנסת ישראל</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="sankey.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
                 <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
                 <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
                 <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>

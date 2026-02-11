@@ -5,6 +5,11 @@
     <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/tsne.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — התפלגות קלפיות">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
     <title>התפלגות קלפיות - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -865,7 +870,7 @@
             <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="tsne_subtitle">מיפוי T-SNE של קלפיות לפי התפלגות ההצבעה</p>
             <nav class="view-switcher">
-                <a href="index.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
+                <a href="sankey.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
                 <span class="view-btn active" data-i18n="nav_tsne">התפלגות קלפיות</span>
                 <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
                 <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
@@ -883,6 +888,7 @@
             <button class="nav-btn" data-election="24">כנסת 24</button>
             <button class="nav-btn active" data-election="25">כנסת 25</button>
         </nav>
+        <script>if(i18n.SHOW_E26){var n=document.querySelector('.election-nav'),b=document.createElement('button');b.className='nav-btn';b.dataset.election='26';b.textContent='כנסת 26';n.appendChild(b)}</script>
 
         <main class="main-content">
             <aside class="legend-panel">
@@ -1581,11 +1587,16 @@
                     .attr('width', width)
                     .attr('height', height);
 
-                // Add zoom behavior
+                // Add zoom behavior – shrink dot radii by scale so dots separate
                 const zoom = d3.zoom()
                     .scaleExtent([0.5, 20])
                     .on('zoom', (event) => {
                         this.svg.attr('transform', event.transform);
+                        const k = event.transform.k;
+                        this.svg.selectAll('.station-dot')
+                            .attr('r', function() { return +this.dataset.baseR / k; });
+                        this.svg.selectAll('.station-dot-bg')
+                            .attr('r', function() { return +this.dataset.baseR / k; });
                     });
 
                 svg.call(zoom);
@@ -1631,7 +1642,8 @@
                         .attr('cy', d => yScale(d.y))
                         .attr('r', 2)
                         .attr('fill', '#374151')
-                        .attr('opacity', 0.3);
+                        .attr('opacity', 0.3)
+                        .each(function() { this.dataset.baseR = '2'; });
                 }
 
                 this.svg.selectAll('.station-dot')
@@ -1647,6 +1659,7 @@
                         if (color === null) return 0.15; // Non-covered in socioeconomic mode
                         return hasFilter ? 1 : 0.7;
                     })
+                    .each(function() { this.dataset.baseR = d3.select(this).attr('r'); })
                     .on('mouseenter', (event, d) => this.showTooltip(event, d))
                     .on('mousemove', (event, d) => this.moveTooltip(event))
                     .on('mouseleave', () => this.hideTooltip());
@@ -1800,6 +1813,9 @@
                     </div>
                     <div class="tooltip-votes">
                         ${partyRows}
+                    </div>
+                    <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color)">
+                        <a href="settlement.html?name=${encodeURIComponent(settlementName)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
                     </div>
                 `);
 

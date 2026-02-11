@@ -19,7 +19,7 @@
     <style>
         html, body { overflow: auto; height: auto; min-height: 100%; }
         .m-profile {
-            padding: 0.75rem 0.75rem calc(70px + var(--safe-bottom));
+            padding: calc(44px + 0.75rem) 0.75rem calc(54px + var(--safe-bottom));
         }
         .m-back { color: var(--accent); text-decoration: none; font-size: 0.85rem; display: inline-block; margin-bottom: 0.5rem; }
 
@@ -27,6 +27,11 @@
         .m-hero { display: flex; gap: 0.75rem; margin-bottom: 1rem; align-items: flex-start; }
         .m-hero-bar {
             width: 6px; min-height: 60px; border-radius: 3px; flex-shrink: 0; align-self: stretch;
+        }
+        .m-hero-leader-img {
+            width: 52px; height: 52px; border-radius: 50%;
+            object-fit: cover; flex-shrink: 0;
+            border: 2px solid var(--border);
         }
         .m-hero-info { min-width: 0; }
         .m-hero-name { font-size: 1.3rem; font-weight: 700; }
@@ -152,15 +157,20 @@
     </style>
 </head>
 <body>
+    <div class="top-bar">
+        <a href="index.html" class="home-link">🏠</a>
+        <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="party_profile">פרופיל מפלגה</span></span>
+    </div>
     <div class="m-profile" id="profile"></div>
 
     <nav class="tab-bar">
         <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
-        <a href="sankey.html"><span class="tab-icon">📊</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="sankey.html"><span class="tab-icon">🔀</span><span data-i18n="tab_sankey">נדידה</span></a>
         <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
         <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
-        <a href="regional.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="regional.html"><span class="tab-icon">🧩</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="discussions.html"><span class="tab-icon">💬</span><span data-i18n="nav_discussions">דיונים</span></a>
     </nav>
 
     <script>
@@ -311,6 +321,7 @@
         const partyParam = params.get('name');
         const container = document.getElementById('profile');
         let allMap = {};
+        let wikiResults = {};
 
         if (!partyParam) { showLanding(); return; }
 
@@ -333,8 +344,7 @@
         function showLanding() {
             const lang = i18n.getLang();
             const sorted = [...PARTY_FAMILIES].sort((a, b) => getLatestSeats(b) - getLatestSeats(a));
-
-            let h = '<a class="m-back" href="index.html">\u2190 ' + i18n.t('nav_home') + '</a>';
+            let h = '';
             h += '<div class="m-search"><input type="text" id="search-input" placeholder="' + i18n.t('search_party') + '">';
             h += '<div class="m-dropdown" id="search-dropdown"></div></div>';
             h += '<div class="m-party-grid">';
@@ -362,9 +372,10 @@
             document.title = family.name + ' - קולות נודדים';
             container.innerHTML = '<div class="m-loading" data-i18n="loading">' + i18n.t('loading') + '</div>';
 
-            Promise.all(
-                ELECTIONS.map(e => fetch('../data/map_' + e + '.json').then(r => r.json()).then(d => { allMap[e] = d; }))
-            ).then(() => renderProfile(family))
+            Promise.all([
+                ...ELECTIONS.map(e => fetch('../data/map_' + e + '.json').then(r => r.json()).then(d => { allMap[e] = d; })),
+                fetch('../data/wiki_official_results.json').then(r => r.json()).then(d => { wikiResults = d; }).catch(() => {}),
+            ]).then(() => renderProfile(family))
              .catch(() => { container.innerHTML = '<div class="m-loading">' + i18n.t('error_loading') + '</div>'; });
         }
 
@@ -393,6 +404,9 @@
             // Hero
             h += '<div class="m-hero">';
             h += '<div class="m-hero-bar" style="background:' + family.color + '"></div>';
+            if (latestInfo && latestInfo.leader_image) {
+                h += '<img class="m-hero-leader-img" src="../' + latestInfo.leader_image + '" alt="" onerror="this.style.display=\'none\'">';
+            }
             h += '<div class="m-hero-info">';
             h += '<div class="m-hero-name">' + displayName + '</div>';
             if (lang === 'he' && family.name_en) {
@@ -433,6 +447,7 @@
             h += '<th>' + i18n.t('election') + '</th>';
             h += '<th>' + i18n.t('party') + '</th>';
             h += '<th>' + i18n.t('seats') + '</th>';
+            h += '<th>' + i18n.t('votes') + '</th>';
             h += '<th>%</th>';
             h += '</tr></thead><tbody>';
 
@@ -443,31 +458,30 @@
                     const note = family.notes && family.notes[e];
                     h += '<tr><td>' + label + '</td>';
                     if (note) {
-                        h += '<td colspan="3" class="merged-note">' + note + '</td>';
+                        h += '<td colspan="4" class="merged-note">' + note + '</td>';
                     } else {
-                        h += '<td colspan="3" class="merged-note">' + i18n.t('did_not_run') + '</td>';
+                        h += '<td colspan="4" class="merged-note">' + i18n.t('did_not_run') + '</td>';
                     }
                     h += '</tr>';
                     return;
                 }
 
                 let supportPct = '\u2014';
-                const mapData = allMap[e];
-                if (mapData && mapData.settlements) {
-                    let pv = 0, tv = 0;
-                    mapData.settlements.forEach(s => {
-                        if (s.proportions && s.proportions[data.partyName] != null) {
-                            pv += (s.proportions[data.partyName] / 100) * (s.voters || 0);
-                        }
-                        tv += s.voters || 0;
-                    });
-                    if (tv > 0) supportPct = (pv / tv * 100).toFixed(1) + '%';
+                let votesDisplay = '\u2014';
+                const wikiEntry = (wikiResults[e] || []).find(p => p.name === data.partyName);
+                if (wikiEntry && wikiEntry.votes) {
+                    votesDisplay = i18n.fmtNum(wikiEntry.votes);
+                    const totalValid = (wikiResults[e] || []).reduce((sum, p) => sum + (p.votes || 0), 0);
+                    if (totalValid > 0) {
+                        supportPct = (wikiEntry.votes / totalValid * 100).toFixed(1) + '%';
+                    }
                 }
 
                 h += '<tr>';
                 h += '<td>' + label + '</td>';
                 h += '<td><span class="dot" style="background:' + family.color + '"></span>' + i18n.partyName(data.partyName) + '</td>';
                 h += '<td>' + data.seats + '</td>';
+                h += '<td>' + votesDisplay + '</td>';
                 h += '<td>' + supportPct + '</td>';
                 h += '</tr>';
             });
@@ -502,7 +516,9 @@
                         h += '<span class="m-stronghold-pct">' + s.pct.toFixed(1) + '%</span>';
                         h += '</div>';
                     });
-                    h += '</div></div>';
+                    h += '</div>';
+
+                    h += '</div>';
                 }
             }
 
@@ -526,16 +542,10 @@
                 const data = family.elections[e];
                 if (!data) { supportData.push(null); seatsData.push(null); return; }
                 seatsData.push(data.seats);
-                const mapData = allMap[e];
-                if (mapData && mapData.settlements) {
-                    let pv = 0, tv = 0;
-                    mapData.settlements.forEach(s => {
-                        if (s.proportions && s.proportions[data.partyName] != null) {
-                            pv += (s.proportions[data.partyName] / 100) * (s.voters || 0);
-                        }
-                        tv += s.voters || 0;
-                    });
-                    supportData.push(tv > 0 ? +(pv / tv * 100).toFixed(2) : null);
+                const wikiEntry = (wikiResults[e] || []).find(p => p.name === data.partyName);
+                if (wikiEntry && wikiEntry.votes) {
+                    const totalValid = (wikiResults[e] || []).reduce((sum, p) => sum + (p.votes || 0), 0);
+                    supportData.push(totalValid > 0 ? +(wikiEntry.votes / totalValid * 100).toFixed(2) : null);
                 } else {
                     supportData.push(null);
                 }
@@ -618,5 +628,6 @@
         }
     })();
     </script>
+    <script>i18n.injectLangToggle('.top-bar');i18n.renderMobileBMC();</script>
 </body>
 </html>

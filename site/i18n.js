@@ -33,7 +33,7 @@
         /* ── Sankey page ── */
         from_election:         { he: 'מבחירות', en: 'From election' },
         to_election:           { he: 'לבחירות', en: 'To election' },
-        eligible_voters:       { he: 'בעלי זכות', en: 'Eligible voters' },
+        eligible_voters:       { he: 'בעלי זכות בחירה', en: 'Eligible voters' },
         voted:                 { he: 'הצביעו', en: 'Voted' },
         turnout_pct:           { he: 'אחוז הצבעה', en: 'Turnout' },
         common_precincts:      { he: 'קלפיות משותפות', en: 'Common precincts' },
@@ -184,6 +184,8 @@
         source_code:           { he: 'קוד מקור', en: 'Source code' },
         bmc_text:              { he: 'אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה', en: 'Like it? Help support the site\'s development – buy me a coffee' },
         bmc_title:             { he: 'קנו לי כוס קפה ☕', en: 'Buy me a coffee ☕' },
+        bmc_line1:             { he: 'אהבתם? רוצים לתמוך בפיתוח האתר?', en: 'Enjoying this? Want to support development?' },
+        bmc_line2:             { he: 'קנו לי כוס קפה ☕', en: 'Buy me a coffee ☕' },
 
         /* ── Methodology modal ── */
         about_methodology:     { he: 'על המתודולוגיה', en: 'About the Methodology' },
@@ -225,11 +227,11 @@
         nav_home:                  { he: 'ראשי', en: 'Home' },
         dashboard_title:           { he: 'קולות נודדים', en: 'Migrating Votes' },
         dashboard_subtitle:        { he: 'ניתוח אינטראקטיבי של נתוני בחירות לכנסת ישראל', en: 'Interactive analysis of Israeli Knesset election data' },
-        dashboard_stat_elections:  { he: 'בחירות', en: 'Elections' },
+        dashboard_stat_elections:  { he: 'כנסות', en: 'Elections' },
         dashboard_stat_ballots:    { he: 'קלפיות', en: 'Ballot boxes' },
         dashboard_stat_settlements:{ he: 'יישובים', en: 'Settlements' },
-        dashboard_stat_visitors:   { he: 'מבקרים באתר קולות נודדים', en: 'Visitors to Kolot Nodedim' },
-        dashboard_stat_lists:      { he: 'רשימות התמודדו', en: 'Lists ran' },
+        dashboard_stat_visitors:   { he: 'מבקרים באתר', en: 'Site visitors' },
+        dashboard_stat_lists:      { he: 'רשימות', en: 'Lists' },
         card_sankey_desc:          { he: 'תרשים נדידת קולות בין בחירות עוקבות', en: 'Vote flow diagram between consecutive elections' },
         card_tsne_desc:            { he: 'מיפוי קלפיות לפי דמיון דפוסי הצבעה', en: 'Ballot box mapping by voting pattern similarity' },
         card_geomap_desc:          { he: 'מפה גיאוגרפית של קלפיות הצבעה', en: 'Geographic map of polling stations' },
@@ -638,6 +640,30 @@
         applyTranslations();
     }
 
+    /** Floating mobile BMC banner — shows once per session after 3s delay. */
+    function renderMobileBMC() {
+        if (sessionStorage.getItem('bmc_dismissed')) return;
+        setTimeout(() => {
+            if (sessionStorage.getItem('bmc_dismissed')) return;
+            const bar = document.createElement('div');
+            bar.className = 'bmc-float';
+            bar.innerHTML =
+                '<img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="">' +
+                '<a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-float-text" style="color:inherit;text-decoration:none;line-height:1.3;">' +
+                    '<span style="display:block;font-size:0.7rem;font-weight:400;">' + t('bmc_line1') + '</span>' +
+                    '<span style="display:block;font-size:0.75rem;font-weight:600;">' + t('bmc_line2') + '</span>' +
+                '</a>' +
+                '<button class="bmc-float-close" aria-label="Close">\u2715</button>';
+            bar.querySelector('.bmc-float-close').addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                sessionStorage.setItem('bmc_dismissed', '1');
+                bar.remove();
+            });
+            document.body.appendChild(bar);
+        }, 3000);
+    }
+
     /** Inject the Buy Me a Coffee button. */
     function renderBMC() {
         if (document.querySelector('.bmc-button')) return;
@@ -699,6 +725,7 @@
         injectLangToggle,
         renderNav,
         renderBMC,
+        renderMobileBMC,
         dict,
         partyNameMap,
         SHOW_E26,
