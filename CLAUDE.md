@@ -43,6 +43,10 @@ Live site: https://kolot-nodedim.netlify.app/
 │   ├── i18n.css                   # RTL/LTR + language toggle styles
 │   ├── og-image.png               # Social preview image (1200x630)
 │   ├── favicon.svg                # Site favicon
+│   ├── images/                    # Archive election photos (NLI Dan Hadani collection)
+│   │   ├── archive_poster_1.jpg   # Election poster
+│   │   ├── archive_poster_2.jpg   # Election poster
+│   │   └── archive_photo_3-12.jpg # Historical election photos (voting, rallies, results)
 │   ├── m/                         # Mobile-optimized pages
 │   │   ├── index.html             # Mobile dashboard
 │   │   ├── sankey.html            # Mobile Sankey
@@ -271,6 +275,9 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 - Stats: elections (25), lists, settlements, ballots, eligible voters, voted, visitors — all with rolling number animation
 - Stats loaded from all 5 map_*.json files (max ballots across elections, latest for rest)
 - Visitor counter integrated as regular stat (counterapi.dev)
+- Archive photos: 12 historical NLI images in `site/images/`, 2 randomly chosen per page load, flanking the 9 view cards
+- Credit: Dan Hadani Archive, Pritzker Family National Photography Collection, National Library of Israel
+- Photos hidden on screens < 1200px
 - Discussions link next to language toggle
 - No nav bar (uses `injectLangToggle()` only)
 
