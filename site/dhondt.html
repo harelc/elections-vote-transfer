@@ -820,7 +820,7 @@
             <div class="footer-content">
                 <p class="methodology">
                     <strong data-i18n="methodology_short">מתודולוגיה:</strong>
-                    <span data-i18n="dhondt_methodology_text">שיטת באדר-עופר (D'Hondt) היא שיטה לחלוקת מנדטים יחסית המיושמת בישראל. בכל סיבוב, מחלקים את מספר הקולות של כל מפלגה במספר המנדטים שכבר קיבלה + 1. המפלגה עם התוצאה הגבוהה ביותר מקבלת את המנדט הבא. התהליך חוזר עד לחלוקת כל 120 המנדטים. מפלגות שעברו את אחוז החסימה יכולות לחתום על הסכם עודפים — קולותיהן מצורפות יחד לחישוב המנה, אך המנדט ניתן למפלגה עם המנה הגבוהה ביותר בתוך ההסכם.</span>
+                    <span data-i18n="dhondt_methodology_text">שיטת באדר-עופר (d'Hondt) היא שיטה לחלוקת מנדטים יחסית המיושמת בישראל. בכל סיבוב, מחלקים את מספר הקולות של כל מפלגה במספר המנדטים שכבר קיבלה + 1. המפלגה עם התוצאה הגבוהה ביותר מקבלת את המנדט הבא. התהליך חוזר עד לחלוקת כל 120 המנדטים. מפלגות שעברו את אחוז החסימה יכולות לחתום על הסכם עודפים — קולותיהן מצורפות יחד לחישוב המנה, אך המנדט ניתן למפלגה עם המנה הגבוהה ביותר בתוך ההסכם.</span>
                 </p>
                 <p class="credits">
                     <span data-i18n="credits_line">© הראל קין</span> |
@@ -1142,7 +1142,7 @@
                     }
                 });
 
-                // D'Hondt calculation with surplus agreements
+                // d'Hondt calculation with surplus agreements
                 const seats = {};
                 eligibleParties.forEach(p => seats[p.name] = 0);
 
@@ -1308,7 +1308,7 @@
                 return results;
             }
 
-            // Simulate D'Hondt seat allocation for given parties array
+            // Simulate d'Hondt seat allocation for given parties array
             simulateSeats(parties) {
                 const totalVotes = parties.reduce((sum, p) => sum + p.votes, 0);
                 const thresholdVotes = totalVotes * (this.threshold / 100);

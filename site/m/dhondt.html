@@ -700,7 +700,7 @@
             };
         }
 
-        // ---- D'Hondt calculation ----
+        // ---- d'Hondt calculation ----
         calculate() {
             const totalVotes = this.parties.reduce((s, p) => s + p.votes, 0);
             const thresholdVotes = totalVotes * (this.threshold / 100);

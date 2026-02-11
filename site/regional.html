@@ -1015,7 +1015,7 @@
             return regs;
         }
 
-        // ── Seat Allocation (D'Hondt divisor method for consistent eligible/seats ratio) ──
+        // ── Seat Allocation (d'Hondt divisor method for consistent eligible/seats ratio) ──
         function allocateSeatsToRegions(regs, totalSeats) {
             const eligibles = regs.map(r => r.reduce((s, st) => s + st.eligible, 0));
             const seats = new Array(regs.length).fill(0);
@@ -1038,7 +1038,7 @@
             return seats;
         }
 
-        // ── D'Hondt per region ──
+        // ── d'Hondt per region ──
         function dhondtForRegion(stationList, seatCount, thresholdPct) {
             if (seatCount <= 0) return {};
 
@@ -1062,7 +1062,7 @@
                 }
             }
 
-            // D'Hondt
+            // d'Hondt
             const seats = {};
             for (const party of Object.keys(eligible)) seats[party] = 0;
 

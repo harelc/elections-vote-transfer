@@ -129,7 +129,7 @@
 
         scatter_methodology_text: { he: 'כל נקודה מייצגת קלפי אחת. מיקום הנקודה נקבע לפי אחוז התמיכה במפלגה הנבחרת בציר X (אופקי) ובציר Y (אנכי). ניתן להשוות מפלגות מאותן בחירות או מבחירות שונות - במקרה של בחירות שונות, מוצגות רק קלפיות שקיימות בשתי הבחירות. קו המגמה (מקווקו) מציג את קו הרגרסיה הליניארית.', en: 'Each dot represents one ballot box. Its position is determined by support percentage for the selected party on the X axis (horizontal) and Y axis (vertical). You can compare parties from the same or different elections — when comparing different elections, only ballot boxes that exist in both are shown. The dashed trend line shows the linear regression.' },
 
-        /* ── D'Hondt page ── */
+        /* ── d'Hondt page ── */
         dhondt_title:          { he: 'מחשבון באדר-עופר', en: 'D\'Hondt Calculator' },
         dhondt_subtitle:       { he: 'מחשבון חלוקת מנדטים בשיטת באדר-עופר', en: 'Seat allocation calculator using the D\'Hondt method' },
         threshold:             { he: 'אחוז חסימה', en: 'Electoral threshold' },
@@ -294,7 +294,7 @@
         /* ── Watermark (PNG export) ── */
         watermark_created:     { he: 'נוצר באתר קולות נודדים, כל הזכויות שמורות', en: 'Created with Migrating Votes – all rights reserved' },
 
-        /* ── D'Hondt party names (for hardcoded lists) ── */
+        /* ── d'Hondt party names (for hardcoded lists) ── */
         party_likud:           { he: 'הליכוד', en: 'Likud' },
         party_yesh_atid:       { he: 'יש עתיד', en: 'Yesh Atid' },
         party_rz:              { he: 'הציונות הדתית', en: 'Religious Zionism' },
@@ -334,7 +334,7 @@
         no_coords_note:        { he: '{n} קלפיות ללא קואורדינטות (לא נכללו באזורים)', en: '{n} stations without coordinates (excluded from regions)' },
         regional_seats_label:  { he: 'מנדטים אזוריים:', en: 'Regional seats:' },
         district_method_label: { he: 'שיטת חלוקה:', en: 'District method:' },
-        method_dhondt:         { he: 'באדר-עופר', en: "D'Hondt" },
+        method_dhondt:         { he: 'באדר-עופר', en: "d'Hondt" },
         method_fptp:           { he: 'זוכה-לוקח-הכל', en: 'Winner takes all' },
 
         /* ── Mobile per-page info texts ── */
