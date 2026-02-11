@@ -517,6 +517,10 @@
             border-width: 2.5px;
             border-color: rgba(255,255,255,0.6);
         }
+        .cluster-colocated .cluster-count,
+        .cluster-colocated .cluster-info {
+            text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);
+        }
 
         .cluster-count {
             font-size: 14px;
@@ -1658,6 +1662,32 @@
                     return ll.lat === firstLL.lat && ll.lng === firstLL.lng;
                 });
 
+                // Pie chart background for colocated clusters in winner mode
+                let bgStyle = `background: ${bgColor}`;
+                if (colocated && this.colorMode === 'winner' && count > 1) {
+                    const winnerCounts = {};
+                    childMarkers.forEach(m => {
+                        const s = m.options.stationData;
+                        if (!s) return;
+                        const p = s.p || s.proportions || {};
+                        const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
+                        if (w) winnerCounts[w[0]] = (winnerCounts[w[0]] || 0) + 1;
+                    });
+                    const slices = Object.entries(winnerCounts).sort((a, b) => b[1] - a[1]);
+                    if (slices.length > 1) {
+                        let angle = 0;
+                        const stops = [];
+                        slices.forEach(([party, n]) => {
+                            const p = this.parties.find(pp => pp.name === party);
+                            const color = p ? p.color : '#6b7280';
+                            const pct = n / count * 100;
+                            stops.push(`${color} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
+                            angle += pct;
+                        });
+                        bgStyle = `background: conic-gradient(${stops.join(', ')})`;
+                    }
+                }
+
                 // Size based on count — colocated clusters slightly smaller
                 let size = 44;
                 if (count > 100) size = 56;
@@ -1668,7 +1698,7 @@
 
                 return L.divIcon({
                     html: `
-                        <div class="cluster-inner" style="background: ${bgColor}">
+                        <div class="cluster-inner" style="${bgStyle}">
                             <div class="cluster-count">${count}</div>
                             <div class="cluster-info">${infoText}</div>
                         </div>
