@@ -275,6 +275,7 @@
         go_to_profile:             { he: 'פרופיל יישוב', en: 'Settlement profile' },
         venue:                     { he: 'מקום', en: 'Venue' },
         winning_party:             { he: 'מפלגה מנצחת', en: 'Winning party' },
+        legend_pie_explain:        { he: 'צבעי העוגה: חלוקת המפלגה המנצחת בכל קלפי באשכול', en: 'Pie colors: winning party share per ballot in cluster' },
         legend_spread_cluster:     { he: 'אשכול — לחיצה מתקרבת', en: 'Cluster — click to zoom in' },
         legend_colocated_cluster:  { he: 'קלפיות באותו מתחם', en: 'Ballots at same venue' },
         search_settlement_profile: { he: 'חיפוש יישוב...', en: 'Search settlement...' },

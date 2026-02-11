@@ -697,13 +697,15 @@
         /* Color scale legend */
         .color-scale-legend {
             position: absolute;
-            bottom: 30px;
+            bottom: 10px;
             right: 10px;
             background: var(--bg-secondary);
             border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 0.75rem;
             z-index: 1000;
+            max-height: calc(100% - 60px);
+            overflow-y: auto;
         }
 
         .color-scale-title {
@@ -756,6 +758,12 @@
             font-weight: 700;
             color: white;
             text-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
+        .cluster-legend-explain {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+            line-height: 1.4;
         }
 
         /* Stats badge */
@@ -972,6 +980,7 @@
                         <span id="legend-max"></span>
                     </div>
                     <div class="cluster-legend" id="cluster-legend">
+                        <div class="cluster-legend-explain" data-i18n="legend_pie_explain">צבעי העוגה: חלוקת המפלגה המנצחת בכל קלפי באשכול</div>
                         <div class="cluster-legend-row">
                             <span class="cluster-legend-icon" style="background: conic-gradient(#2563eb 0% 60%, #06b6d4 60% 100%); border: 2px solid rgba(255,255,255,0.3);">5</span>
                             <span data-i18n="legend_spread_cluster">אשכול — לחיצה מתקרבת</span>
