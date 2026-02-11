@@ -55,7 +55,8 @@
         .app-container {
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
         /* Header */
@@ -434,7 +435,7 @@
 
         #map {
             width: 100%;
-            height: calc(100vh - 180px);
+            height: 100%;
             background: var(--bg-primary);
         }
 
@@ -861,7 +862,7 @@
             }
 
             #map {
-                height: calc(100vh - 160px);
+                height: 100%;
             }
 
             .toggle-panel-btn {
