@@ -184,6 +184,35 @@
             color: var(--text-muted);
             font-size: 0.65rem;
         }
+        .cluster-legend {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid var(--border);
+            display: none;
+        }
+        .cluster-legend.visible { display: block; }
+        .cluster-legend-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 3px;
+            font-size: 0.62rem;
+            color: var(--text-secondary);
+        }
+        .cluster-legend-row:last-child { margin-bottom: 0; }
+        .cluster-legend-icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.5rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 0 3px rgba(0,0,0,0.8);
+        }
 
         /* Party list in sheet */
         .party-list-grid {
@@ -261,6 +290,16 @@
         <div class="color-scale-labels">
             <span id="scale-min"></span>
             <span id="scale-max"></span>
+        </div>
+        <div class="cluster-legend" id="cluster-legend">
+            <div class="cluster-legend-row">
+                <span class="cluster-legend-icon" style="background: conic-gradient(#2563eb 0% 60%, #06b6d4 60% 100%); border: 2px solid rgba(255,255,255,0.3);">5</span>
+                <span data-i18n="legend_spread_cluster">אשכול — לחיצה מתקרבת</span>
+            </div>
+            <div class="cluster-legend-row">
+                <span class="cluster-legend-icon" style="background: conic-gradient(#2563eb 0% 70%, #dc2626 70% 100%); border: 2.5px dashed rgba(255,255,255,0.6);">3</span>
+                <span data-i18n="legend_colocated_cluster">קלפיות באותו מתחם</span>
+            </div>
         </div>
     </div>
 
@@ -488,26 +527,38 @@
             const title = document.getElementById('scale-title');
             const min = document.getElementById('scale-min');
             const max = document.getElementById('scale-max');
+            const clusterLegend = document.getElementById('cluster-legend');
+            clusterLegend.classList.remove('visible');
 
             if (this.colorMode === 'turnout') {
                 el.style.display = 'block';
                 title.textContent = i18n.t('turnout');
+                bar.style.display = '';
                 bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
                 min.textContent = '40%';
                 max.textContent = '90%';
             } else if (this.colorMode === 'socioeconomic') {
                 el.style.display = 'block';
                 title.textContent = i18n.t('socioeconomic');
+                bar.style.display = '';
                 bar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
                 min.textContent = '1';
                 max.textContent = '10';
             } else if (this.colorMode === 'party' && this.selectedParty) {
                 el.style.display = 'block';
                 title.textContent = i18n.partyName(this.selectedParty.name);
+                bar.style.display = '';
                 const c = this.selectedParty.color;
                 bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
                 min.textContent = '0%';
                 max.textContent = '50%';
+            } else if (this.colorMode === 'winner') {
+                el.style.display = 'block';
+                title.textContent = i18n.t('winner');
+                bar.style.display = 'none';
+                min.textContent = '';
+                max.textContent = '';
+                clusterLegend.classList.add('visible');
             } else {
                 el.style.display = 'none';
             }
