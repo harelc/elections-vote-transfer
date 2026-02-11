@@ -46,18 +46,14 @@
             border: 2px solid rgba(255,255,255,0.3);
             box-shadow: 0 2px 8px rgba(0,0,0,0.4);
         }
-        .cluster-count { font-size: 0.8rem; line-height: 1; }
-        .cluster-info { font-size: 0.6rem; opacity: 0.8; line-height: 1; }
+        .cluster-count { font-size: 0.8rem; line-height: 1; text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9); }
+        .cluster-info { font-size: 0.6rem; opacity: 0.8; line-height: 1; text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9); }
 
         /* Colocated cluster: all ballots at same venue */
         .cluster-colocated .cluster-inner {
             border-style: dashed;
             border-width: 2.5px;
             border-color: rgba(255,255,255,0.6);
-        }
-        .cluster-colocated .cluster-count,
-        .cluster-colocated .cluster-info {
-            text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9);
         }
 
         /* Color mode FABs */
@@ -620,9 +616,9 @@
                 return ll.lat === firstLL.lat && ll.lng === firstLL.lng;
             });
 
-            // Pie chart background for colocated clusters in winner mode
+            // Pie chart background for clusters in winner mode
             let bgStyle = `background:${bgColor}`;
-            if (colocated && this.colorMode === 'winner' && count > 1) {
+            if (this.colorMode === 'winner' && count > 1) {
                 const winnerCounts = {};
                 children.forEach(m => {
                     const s = m.options.stationData;
@@ -631,8 +627,13 @@
                     const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
                     if (w) winnerCounts[w[0]] = (winnerCounts[w[0]] || 0) + 1;
                 });
-                const slices = Object.entries(winnerCounts).sort((a, b) => b[1] - a[1]);
+                let slices = Object.entries(winnerCounts).sort((a, b) => b[1] - a[1]);
                 if (slices.length > 1) {
+                    let otherCount = 0;
+                    if (slices.length > 5) {
+                        otherCount = slices.slice(5).reduce((s, e) => s + e[1], 0);
+                        slices = slices.slice(0, 5);
+                    }
                     let angle = 0;
                     const stops = [];
                     slices.forEach(([party, n]) => {
@@ -642,6 +643,10 @@
                         stops.push(`${color} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
                         angle += pct;
                     });
+                    if (otherCount > 0) {
+                        const pct = otherCount / count * 100;
+                        stops.push(`#4b5563 ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
+                    }
                     bgStyle = `background:conic-gradient(${stops.join(', ')})`;
                 }
             }
