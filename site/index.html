@@ -67,14 +67,64 @@
         }
 
 
+        /* Views + archive layout */
+        .views-with-archive {
+            display: flex;
+            gap: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto 2rem;
+            padding: 0 1.5rem;
+            align-items: stretch;
+            justify-content: center;
+        }
+        .archive-side {
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            align-items: center;
+            justify-content: center;
+        }
+        .archive-side img {
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            opacity: 0.75;
+            transition: opacity 0.3s, transform 0.3s;
+            cursor: pointer;
+            height: 420px;
+            width: auto;
+            object-fit: contain;
+        }
+        .archive-side img:hover {
+            opacity: 1;
+            transform: scale(1.02);
+        }
+        .archive-credit {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            max-width: 240px;
+            text-align: center;
+            line-height: 1.4;
+        }
+        /* Hide side images on narrow screens */
+        @media (max-width: 1200px) {
+            .views-with-archive { justify-content: center; }
+            .archive-side { display: none; }
+        }
+
         /* View cards grid */
         .views-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-template-columns: repeat(3, minmax(240px, 1fr));
             gap: 1.25rem;
-            max-width: 1100px;
-            margin: 0 auto 3rem;
-            padding: 0 1.5rem;
+            max-width: 900px;
+        }
+        @media (max-width: 1200px) {
+            .views-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                max-width: 1100px;
+                padding: 0;
+            }
         }
         .view-card {
             background: var(--bg-card);
@@ -263,7 +313,17 @@
             </div>
         </section>
 
-        <section class="views-grid" id="views-grid"></section>
+        <div class="views-with-archive">
+            <div class="archive-side">
+                <img src="images/archive_poster_1.jpg" alt="כרזת בחירות היסטורית" loading="lazy">
+                <div class="archive-credit" data-i18n="archive_credit">ארכיון דן הדני, האוסף הלאומי לתצלומים ע״ש משפחת פריצקר, הספרייה הלאומית</div>
+            </div>
+            <section class="views-grid" id="views-grid"></section>
+            <div class="archive-side">
+                <img src="images/archive_poster_2.jpg" alt="כרזת בחירות היסטורית" loading="lazy">
+                <div class="archive-credit" data-i18n="archive_credit">ארכיון דן הדני, האוסף הלאומי לתצלומים ע״ש משפחת פריצקר, הספרייה הלאומית</div>
+            </div>
+        </div>
 
         <footer class="dashboard-footer">
             <p>

@@ -243,6 +243,29 @@
             width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0;
         }
         .party-list-item .name { font-size: 0.8rem; }
+
+        /* Colocated sheet: individual ballot rows */
+        .colocated-ballot-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+        .colocated-ballot-row:active { background: var(--bg-hover); }
+        .colocated-ballot-num {
+            min-width: 32px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--accent);
+        }
+        .colocated-ballot-info {
+            flex: 1;
+            font-size: 0.75rem;
+        }
     </style>
 </head>
 <body>
@@ -396,15 +419,33 @@
                 chunkedLoading: true,
                 maxClusterRadius: 50,
                 showCoverageOnHover: false,
-                zoomToBoundsOnClick: true,
+                zoomToBoundsOnClick: false,
+                spiderfyOnMaxZoom: false,
                 iconCreateFunction: c => this.createClusterIcon(c)
             });
             this.map.addLayer(this.markers);
 
-            // Tap on cluster → bottom sheet
+            // Tap on cluster → smart handling
             this.markers.on('clusterclick', e => {
-                if (this.map.getZoom() >= this.map.getMaxZoom() - 1) {
-                    this.showClusterSheet(e.layer);
+                const cluster = e.layer;
+                const children = cluster.getAllChildMarkers();
+                const firstLL = children[0].getLatLng();
+                const colocated = children.every(m => {
+                    const ll = m.getLatLng();
+                    return ll.lat === firstLL.lat && ll.lng === firstLL.lng;
+                });
+
+                if (colocated) {
+                    // Colocated: show bottom sheet with individual ballot list (no spiderfy)
+                    this.showColocatedSheet(cluster);
+                } else {
+                    // Spread: zoom in, or spiderfy if can't zoom further
+                    const boundsZoom = this.map.getBoundsZoom(cluster.getBounds());
+                    if (boundsZoom <= this.map.getZoom()) {
+                        cluster.spiderfy();
+                    } else {
+                        cluster.zoomToBounds({padding: [20, 20]});
+                    }
                 }
             });
         }
@@ -855,6 +896,65 @@
                 </div>
                 ${partyHtml}
             `;
+            this.showSheet();
+        }
+
+        showColocatedSheet(cluster) {
+            const children = cluster.getAllChildMarkers();
+            const count = children.length;
+
+            const sorted = children
+                .map(m => m.options.stationData)
+                .filter(Boolean)
+                .sort((a, b) => (parseFloat(a.b) || 0) - (parseFloat(b.b) || 0));
+
+            const settlement = sorted[0]?.n || '';
+            const location = sorted[0]?.l || '';
+
+            let totalVoters = 0, totalEligible = 0;
+            sorted.forEach(s => { totalVoters += s.v || 0; totalEligible += s.e || 0; });
+            const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
+
+            const ballotRows = sorted.map(s => {
+                const topParties = Object.entries(s.p || {}).sort((a, b) => b[1] - a[1]).slice(0, 3);
+                const topHtml = topParties.map(([pn, pct]) => {
+                    const party = this.parties.find(p => p.name === pn);
+                    return `<span style="display:inline-flex;align-items:center;gap:2px;">
+                        <span style="width:8px;height:8px;border-radius:50%;background:${party?.color || '#64748b'};display:inline-block;"></span>
+                        ${Math.round(pct)}%
+                    </span>`;
+                }).join(' ');
+
+                return `<div class="colocated-ballot-row" data-ballot="${s.b}">
+                    <div class="colocated-ballot-num">${s.b}</div>
+                    <div class="colocated-ballot-info">
+                        <div>${i18n.fmtNum(s.v || 0)} ${i18n.t('voted')} · ${s.t || 0}%</div>
+                        <div style="color:var(--text-muted);margin-top:2px;">${topHtml}</div>
+                    </div>
+                </div>`;
+            }).join('');
+
+            document.getElementById('sheet-content').innerHTML = `
+                <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${i18n.settlementName(settlement)}</div>
+                ${location ? `<div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;margin-bottom:4px;">${location}</div>` : ''}
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">${count} ${i18n.t('stations')} · ${i18n.fmtNum(totalVoters)} ${i18n.t('voted')} · ${avgTurnout}%</div>
+                <div style="display:flex;flex-direction:column;gap:4px;">${ballotRows}</div>
+                <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="display:block;margin-top:10px;color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
+            `;
+
+            // Tap individual ballot → show its detail sheet
+            document.querySelectorAll('.colocated-ballot-row').forEach(row => {
+                row.onclick = () => {
+                    const b = row.dataset.ballot;
+                    const station = sorted.find(s => s.b === b);
+                    if (station) {
+                        const key = `${station.n}|${station.b}`;
+                        const coord = this.coordinates?.stations?.[key];
+                        this.showStationSheet(station, coord || {});
+                    }
+                };
+            });
+
             this.showSheet();
         }
 

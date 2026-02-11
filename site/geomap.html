@@ -545,7 +545,7 @@
             line-height: 1.4;
             max-width: 250px;
             z-index: 10000;
-            pointer-events: none;
+            pointer-events: auto;
             box-shadow: var(--shadow-lg);
             direction: rtl;
         }
@@ -1118,10 +1118,16 @@
 
                 // Cluster hover events
                 this.markers.on('clustermouseover', (e) => this.showClusterTooltip(e));
-                this.markers.on('clustermouseout', () => this.hideClusterTooltip());
+                this.markers.on('clustermouseout', () => this.scheduleHideTooltip());
+
+                // Keep tooltip visible when mouse enters it
+                const tooltipEl = document.getElementById('cluster-tooltip');
+                tooltipEl.addEventListener('mouseenter', () => this.cancelHideTooltip());
+                tooltipEl.addEventListener('mouseleave', () => this.hideClusterTooltip());
             }
 
             showClusterTooltip(e) {
+                this.cancelHideTooltip();
                 const cluster = e.layer;
                 const childMarkers = cluster.getAllChildMarkers();
                 const count = childMarkers.length;
@@ -1221,6 +1227,7 @@
                     <div class="cluster-tooltip-parties">
                         ${partyRows}
                     </div>
+                    ${settlementList.length === 1 ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);"><a href="settlement.html?name=${encodeURIComponent(settlementList[0])}" style="color:#3b82f6;text-decoration:none;font-size:0.8em;">${i18n.t('go_to_profile')} \u2192</a></div>` : ''}
                 `;
 
                 // Position tooltip near cluster
@@ -1231,6 +1238,7 @@
             }
 
             showMarkerTooltip(e, station, coordData) {
+                this.cancelHideTooltip();
                 const settlement = station.n || station.settlement_name;
                 const ballot = station.b || station.ballot_number;
                 const location = station.l || coordData.location || '';
@@ -1280,6 +1288,7 @@
                     <div class="cluster-tooltip-parties">
                         ${partyRows}
                     </div>
+                    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);"><a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.8em;">${i18n.t('go_to_profile')} \u2192</a></div>
                 `;
 
                 const pos = this.map.latLngToContainerPoint(e.latlng);
@@ -1288,7 +1297,19 @@
                 tooltip.style.display = 'block';
             }
 
+            scheduleHideTooltip() {
+                this._tooltipHideTimer = setTimeout(() => this.hideClusterTooltip(), 200);
+            }
+
+            cancelHideTooltip() {
+                if (this._tooltipHideTimer) {
+                    clearTimeout(this._tooltipHideTimer);
+                    this._tooltipHideTimer = null;
+                }
+            }
+
             hideClusterTooltip() {
+                this.cancelHideTooltip();
                 document.getElementById('cluster-tooltip').style.display = 'none';
             }
 
@@ -1816,7 +1837,7 @@
 
                     // Hover tooltip for single markers
                     marker.on('mouseover', (e) => this.showMarkerTooltip(e, station, coordData));
-                    marker.on('mouseout', () => this.hideClusterTooltip());
+                    marker.on('mouseout', () => this.scheduleHideTooltip());
 
                     batch.push(marker);
                     markerCount++;

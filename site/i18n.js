@@ -246,6 +246,25 @@
         card_settlement_desc:      { he: 'פרופיל הצבעה מפורט לכל יישוב', en: 'Detailed voting profile for each settlement' },
         card_party_desc:           { he: 'מעקב אחרי מפלגות לאורך הבחירות', en: 'Track parties across elections' },
 
+        /* ── Data stories & archive ── */
+        stories_title:             { he: 'הידעתם?', en: 'Did you know?' },
+        story_1_title:             { he: 'נאמנות ברזל: כמעט כל מצביע יש עתיד נשאר', en: 'Iron loyalty: nearly every Yesh Atid voter stayed' },
+        story_1_body:              { he: 'בין בחירות 24 ל-25, יש עתיד שמרה על 99.7% מהמצביעים. ש״ס הגיעה ל-100.1%. לעומתן, כחול לבן שמרה על 21.5% בלבד בחירה קודמת.', en: 'Between elections 24→25, Yesh Atid retained 99.7% of voters. Shas hit 100.1%. Meanwhile Blue and White kept just 21.5% one election earlier.' },
+        story_2_title:             { he: '60 נקודות מפרידות בין העיירות המשתתפות ביותר לפחות', en: '60 points separate the highest and lowest turnout towns' },
+        story_2_body:              { he: 'תפרח מצביעה ב-86.8%. סאגור ב-27.9%. לשתיהן מעל 500 מצביעים. הפער ממפה כמעט בדיוק את השסע האתנו-דתי.', en: 'Tifrah votes at 86.8%. Saghur at 27.9%. Both have 500+ voters. The gap maps almost perfectly onto the ethno-religious divide.' },
+        story_3_title:             { he: 'נדנוד ההצבעה הערבית: תנודה של 22 נקודות ב-4 שנים', en: 'Arab vote swing: 22 points in 4 years' },
+        story_3_body:              { he: 'מ-66.1% (בחירות 23, עידן הרשימה המשותפת) לשפל של 44.2% (בחירות 24, אחרי הפיצול). בנגב, לקייה הכפילה את ההשתתפות מ-22% ל-47%.', en: 'From 66.1% (election 23, Joint List era) to a 44.2% low (election 24, post-split). In the Negev, Laqye doubled its turnout from 22% to 47%.' },
+        story_4_title:             { he: 'יישובים שבהם התוצאה נגמרה בפער של 0.1%', en: 'Settlements where the result came down to 0.1%' },
+        story_4_body:              { he: 'בבסמה, רע״ם מנצחת את בל״ד ב-0.1%. בגבעת שמואל (13,476 מצביעים), הציונות הדתית עוקפת את הליכוד ב-0.1%.', en: 'In Basma, Ra\'am beats Balad by 0.1%. In Givat Shmuel (13,476 voters), Religious Zionism edges Likud by 0.1%.' },
+        story_5_title:             { he: 'יש עתיד ניצחה ב-45% מהיישובים — אבל פחות מנדטים מהליכוד', en: 'Yesh Atid won 45% of settlements — but fewer seats than Likud' },
+        story_5_body:              { he: 'בבחירות 25, יש עתיד ניצחה ב-504 מתוך 1,120 יישובים. הליכוד ניצח ב-305 בלבד, אך זכה ביותר מנדטים. רוחב מול עומק.', en: 'In election 25, Yesh Atid won 504 of 1,120 settlements. Likud won only 305, yet got more seats. Breadth vs. depth.' },
+        story_cta_sankey:          { he: 'גלו בתרשים הנדידה', en: 'Explore in vote flow' },
+        story_cta_geomap:          { he: 'גלו במפה', en: 'Explore on map' },
+        story_cta_scatter:         { he: 'גלו בהשוואה', en: 'Explore in comparison' },
+        story_cta_dhondt:          { he: 'גלו בחישוב המנדטים', en: 'Explore seat calculator' },
+        archive_title:             { he: 'מהארכיון: כרזות בחירות', en: 'From the archive: Election posters' },
+        archive_credit:            { he: 'ארכיון דן הדני, האוסף הלאומי לתצלומים ע״ש משפחת פריצקר, הספרייה הלאומית', en: 'Dan Hadani Archive, Pritsker Family National Photography Collection, National Library of Israel' },
+
         /* ── Party profile ── */
         party_profile:             { he: 'פרופיל מפלגה', en: 'Party Profile' },
         nav_party:                 { he: 'פרופיל מפלגה', en: 'Party Profile' },
