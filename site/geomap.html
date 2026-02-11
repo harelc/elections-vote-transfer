@@ -511,6 +511,13 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
+        /* Colocated cluster: all ballots at same venue — won't split further */
+        .cluster-colocated .cluster-inner {
+            border-style: dashed;
+            border-width: 2.5px;
+            border-color: rgba(255,255,255,0.6);
+        }
+
         .cluster-count {
             font-size: 14px;
             font-weight: 700;
@@ -1644,10 +1651,20 @@
                     infoText = `${partyPct}%`;
                 }
 
-                // Size based on count
+                // Detect colocated cluster (all children at same coordinates)
+                const firstLL = childMarkers[0].getLatLng();
+                const colocated = childMarkers.every(m => {
+                    const ll = m.getLatLng();
+                    return ll.lat === firstLL.lat && ll.lng === firstLL.lng;
+                });
+
+                // Size based on count — colocated clusters slightly smaller
                 let size = 44;
                 if (count > 100) size = 56;
                 else if (count > 30) size = 50;
+                if (colocated) size = Math.round(size * 0.85);
+
+                const cls = colocated ? 'custom-cluster cluster-colocated' : 'custom-cluster';
 
                 return L.divIcon({
                     html: `
@@ -1656,7 +1673,7 @@
                             <div class="cluster-info">${infoText}</div>
                         </div>
                     `,
-                    className: 'custom-cluster',
+                    className: cls,
                     iconSize: L.point(size, size)
                 });
             }
