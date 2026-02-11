@@ -620,6 +620,24 @@ ELECTIONS = {
                      'יהדות התורה', 'ישראל ביתנו', 'רע״ם', 'חד״ש-תע״ל', 'העבודה', 'מרצ', 'בל״ד'],
             'seats': [32, 24, 14, 12, 11, 7, 6, 5, 5, 4, 0, 0]
         }
+    },
+    '26': {
+        'name': 'הכנסת ה-26',
+        'name_en': '26th Knesset',
+        'date': '2026-??-??',
+        'file': 'ballot26.csv',
+        'encoding': 'utf-8-sig',
+        'ballot_field': 'קלפי',
+        # TBD - placeholder values until official data available
+        'eligible_voters': 0,
+        'votes_cast': 0,
+        'valid_votes': 0,
+        'turnout_percent': 0,
+        'major_parties': {
+            'symbols': [],
+            'names': [],
+            'seats': []
+        }
     }
 }
 

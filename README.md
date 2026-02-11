@@ -12,10 +12,17 @@ This project provides a suite of interactive tools to explore Israeli election d
 - How do voting patterns cluster geographically and demographically?
 - Which polling stations show unusual voting patterns?
 - How would seat allocation change with different vote counts?
+- What are the voting trends in a specific settlement across elections?
+
+All pages are fully bilingual (Hebrew/English) and have both desktop and mobile-optimized versions.
 
 ## Features
 
-### 1. Vote Transfer Sankey Diagram (Main Page)
+### 1. Dashboard (Landing Page)
+
+A central hub with key stats and card navigation to all visualizations. Shows live visitor count.
+
+### 2. Vote Transfer Sankey Diagram
 
 Visualizes the flow of votes between consecutive elections using a Sankey diagram.
 
@@ -25,7 +32,7 @@ Visualizes the flow of votes between consecutive elections using a Sankey diagra
 
 The transfer matrix is computed using convex optimization to find the best-fit stochastic matrix M where `Votes_before × M ≈ Votes_after`.
 
-### 2. T-SNE Ballot Clustering
+### 3. T-SNE Ballot Clustering
 
 A 2D visualization of all polling stations, positioned by similarity of voting patterns.
 
@@ -36,7 +43,16 @@ A 2D visualization of all polling stations, positioned by similarity of voting p
   - **Socioeconomic cluster**: Color by CBS socioeconomic index (1-10 scale)
 - **Interactions**: Hover for details, zoom and pan, search for specific settlements
 
-### 3. Party Support Scatter Plot
+### 4. Geographic Map
+
+Interactive Leaflet map showing all ballot stations across Israel.
+
+- **Clustered markers**: Zoom in to see individual stations, zoom out to see aggregated clusters
+- **Color modes**: Color by party support, turnout, or socioeconomic cluster
+- **Settlement search**: Find and zoom to specific settlements
+- **Station popups**: Click for detailed voting breakdown with link to settlement profile
+
+### 5. Party Support Scatter Plot
 
 Compare support for two parties (or the same party across elections) at the ballot-box level.
 
@@ -45,20 +61,37 @@ Compare support for two parties (or the same party across elections) at the ball
 - **Filters**: Filter by settlement name to focus on specific areas
 - **Units**: Toggle between percentage and absolute vote counts
 
-### 4. D'Hondt Seat Calculator
+### 6. Bader-Ofer Seat Calculator
 
-Interactive calculator showing how Knesset seats are allocated using the D'Hondt method.
+Interactive calculator showing how Knesset seats are allocated using the Bader-Ofer (modified D'Hondt) method.
 
 - **Adjust votes**: Modify party vote counts to see how seat allocation changes
 - **Threshold visualization**: See which parties pass/fail the electoral threshold
 - **Surplus agreements**: View the effect of surplus vote agreements between parties
 
-### 5. Irregular Ballot Analysis
+### 7. Irregular Ballot Analysis
 
 Identifies polling stations with unusual voting patterns compared to their surroundings.
 
 - **Detection method**: Compares each station to nearby stations in the same settlement
 - **Metrics**: Highlights stations with statistically unusual party support levels
+
+### 8. Regional Elections Simulator
+
+Simulates a hypothetical regional election system for Israel using Voronoi district mapping and D'Hondt seat allocation.
+
+### 9. Settlement Profile
+
+Deep-dive page for individual settlements showing:
+
+- **Wikipedia info**: Thumbnail image, description, and extract from Hebrew Wikipedia
+- **Voting trends**: Chart showing top party support across all 5 elections
+- **Latest election breakdown**: Party table with percentages and votes
+- **Mini map**: Leaflet map zoomed to the settlement's ballot stations
+- **Ballot table**: Sortable list of individual ballot boxes with turnout and winner
+- **Navigation**: Autocomplete search to jump between settlements
+
+Accessible via `settlement.html?name=<settlement_name>` or by clicking settlement links in the map, T-SNE, and scatter views.
 
 ## Methodology
 
@@ -96,6 +129,9 @@ Polling stations are embedded in 2D using t-SNE on the vector of party vote prop
 - **Socioeconomic data**: [Central Bureau of Statistics (CBS)](https://www.cbs.gov.il/)
   - Settlement socioeconomic cluster ratings (1-10 scale)
   - Regional council assignments for small localities
+- **Settlement info**: [Hebrew Wikipedia](https://he.wikipedia.org/) REST API
+  - Descriptions, thumbnails, and extracts for ~1,100 settlements
+- **Geocoding**: OpenStreetMap Nominatim + Google Places API for ballot station coordinates
 
 ## Elections Covered
 
@@ -112,7 +148,6 @@ Polling stations are embedded in 2D using t-SNE on the vector of party vote prop
 ### Prerequisites
 
 - Python 3.8+
-- Node.js (optional, for alternative dev server)
 
 ### Setup
 
@@ -126,7 +161,7 @@ python3 -m venv venv
 source venv/bin/activate
 
 # Install dependencies
-pip install pandas numpy cvxpy
+pip install -r requirements.txt
 
 # Start local server
 cd site
@@ -135,39 +170,60 @@ python3 -m http.server 8888
 
 Then open http://localhost:8888 in your browser.
 
-### Regenerating Transfer Data
-
-If you modify the transfer calculation logic:
+### Regenerating Data
 
 ```bash
 source venv/bin/activate
+
+# Vote transfer matrices
 python generate_transfer_data.py
 cp data/transfer_*.json site/data/
+
+# T-SNE clustering
+python generate_tsne_data.py
+python add_locations_to_tsne.py
+cp data/tsne_*.json site/data/
+
+# Geographic map data (writes directly to site/data/)
+python generate_map_data.py
+
+# Wikipedia enrichment for settlement profiles (writes to site/data/)
+python enrich_settlements_wikipedia.py
 ```
 
 ## Project Structure
 
 ```
-├── site/                    # Static website files
-│   ├── index.html           # Sankey diagram (main page)
-│   ├── sankey.js            # Sankey visualization logic
-│   ├── tsne.html            # T-SNE clustering view
-│   ├── scatter.html         # Party scatter plot
-│   ├── dhondt.html          # Seat calculator
-│   ├── irregular.html       # Irregular ballot analysis
-│   └── data/                # JSON data files for frontend
-├── data/                    # Source and processed data
-│   ├── ballot*.csv          # Raw election results
-│   └── transfer_*.json      # Computed transfer matrices
-├── generate_transfer_data.py # Transfer matrix computation
-└── CLAUDE.md                # Technical notes for AI assistants
+├── site/                          # Static website files
+│   ├── index.html                 # Dashboard landing page
+│   ├── sankey.html                # Sankey vote transfer diagram
+│   ├── tsne.html                  # T-SNE ballot clustering
+│   ├── geomap.html                # Geographic map
+│   ├── scatter.html               # Party scatter plot
+│   ├── dhondt.html                # Bader-Ofer seat calculator
+│   ├── irregular.html             # Irregular ballot analysis
+│   ├── regional.html              # Regional elections simulator
+│   ├── settlement.html            # Settlement profile page
+│   ├── discussions.html           # Community discussions (Giscus)
+│   ├── i18n.js                    # Internationalization & navigation
+│   ├── og-image.png               # Social preview image
+│   ├── m/                         # Mobile-optimized versions of all pages
+│   └── data/                      # JSON data files for frontend
+├── data/                          # Source and intermediate data
+├── party_config.py                # Election metadata & party config
+├── generate_transfer_data.py      # Transfer matrix computation
+├── generate_tsne_data.py          # T-SNE embedding computation
+├── generate_map_data.py           # Geographic data generation
+├── enrich_settlements_wikipedia.py # Wikipedia data enrichment
+├── prepare_election_26.py         # Election 26 data workflow
+└── ballot*.csv                    # Raw election results per election
 ```
 
 ## Credits
 
 - **Concept and original implementation**: Harel Cain (September 2019)
 - **Inspiration**: [Itamar Mushkin's analysis](https://www.themarker.com/techblogs/ormigoldstein/BLOG-1.6567019)
-- **Libraries**: D3.js, CVXPY, scikit-learn (t-SNE)
+- **Libraries**: D3.js, Chart.js, Leaflet, CVXPY, scikit-learn (t-SNE)
 
 ## License
 
@@ -178,9 +234,3 @@ You are free to share and adapt this work for non-commercial purposes, with attr
 ## Contributing
 
 Contributions are welcome! Please feel free to submit issues or pull requests.
-
-Areas for potential improvement:
-- Adding more elections as they occur
-- Improving the irregular ballot detection algorithm
-- Mobile responsiveness improvements
-- Additional visualization types

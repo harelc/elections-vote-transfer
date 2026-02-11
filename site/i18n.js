@@ -667,15 +667,29 @@
     /** Inject the Buy Me a Coffee button. */
     function renderBMC() {
         if (document.querySelector('.bmc-button')) return;
+        if (sessionStorage.getItem('bmc_dismissed')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'bmc-button';
         const a = document.createElement('a');
         a.href = 'https://www.buymeacoffee.com/harelc';
         a.target = '_blank';
-        a.className = 'bmc-button';
+        a.className = 'bmc-link';
         a.setAttribute('data-i18n-title', 'bmc_title');
         a.title = t('bmc_title');
         a.innerHTML = '<img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="Buy me a coffee">' +
             '<span data-i18n="bmc_text">' + t('bmc_text') + '</span>';
-        document.body.appendChild(a);
+        wrap.appendChild(a);
+        const close = document.createElement('button');
+        close.className = 'bmc-close';
+        close.innerHTML = '\u2715';
+        close.title = 'Dismiss';
+        close.onclick = function(e) {
+            e.stopPropagation();
+            wrap.remove();
+            sessionStorage.setItem('bmc_dismissed', '1');
+        };
+        wrap.appendChild(close);
+        document.body.appendChild(wrap);
     }
 
     /* ── Initialization ── */

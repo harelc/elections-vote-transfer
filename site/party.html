@@ -390,7 +390,7 @@
 
     <script>
     (function() {
-        i18n.renderNav('party');
+        i18n.renderNav('party'); i18n.renderBMC();
 
         /* ── Party Families ── */
         const PARTY_FAMILIES = [
@@ -778,6 +778,7 @@
 
                 // Get leader from party info
                 let leader = '—';
+                const mapData = allMapData[e];
                 if (mapData && mapData.parties) {
                     const p = mapData.parties.find(p => p.name === data.partyName);
                     if (p && p.info) {

@@ -194,7 +194,6 @@
     padding: 12px 8px;
     background: #FFDD00;
     border-radius: 12px;
-    text-decoration: none;
     color: #000;
     font-family: 'Heebo', sans-serif;
     font-weight: 600;
@@ -208,6 +207,15 @@
     box-shadow: 0 6px 16px rgba(0,0,0,0.4);
 }
 
+.bmc-button .bmc-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    color: inherit;
+}
+
 .bmc-button img {
     width: 28px;
     height: 28px;
@@ -219,10 +227,44 @@
     text-align: center;
 }
 
+.bmc-close {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: none;
+    background: #333;
+    color: #fff;
+    font-size: 0.6rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+}
+
+.bmc-button:hover .bmc-close {
+    opacity: 0.8;
+}
+
+.bmc-close:hover {
+    opacity: 1 !important;
+    background: #555;
+}
+
 /* BMC button – flip position */
 [dir="ltr"] .bmc-button {
     left: auto;
     right: 18px;
+}
+
+[dir="ltr"] .bmc-close {
+    right: auto;
+    left: -6px;
 }
 
 /* Desktop legend – flip alignment */
