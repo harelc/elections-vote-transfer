@@ -298,17 +298,41 @@
             font-size: 0.78rem;
             color: var(--text-muted);
         }
+        .sim-row {
+            display: flex;
+            align-items: center;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+        .sim-row:last-child { border-bottom: none; }
+        .sim-label {
+            width: 130px;
+            flex-shrink: 0;
+            color: var(--text-secondary);
+        }
         .sim-bar-track {
             flex: 1;
-            height: 6px;
-            background: var(--bg-tertiary);
-            border-radius: 3px;
-            margin: 0 0.5rem;
-            max-width: 120px;
+            height: 12px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 6px;
+            margin: 0 0.6rem;
+            overflow: hidden;
+            direction: ltr;
         }
         .sim-bar-fill {
             height: 100%;
-            border-radius: 3px;
+            border-radius: 5px;
+            opacity: 0.75;
+        }
+        .sim-value {
+            width: 40px;
+            flex-shrink: 0;
+            text-align: left;
+            color: var(--text-primary);
+            font-weight: 600;
+            font-size: 0.8rem;
         }
         .metric-explainer {
             font-size: 0.75rem;
@@ -798,6 +822,7 @@
                 initStrongholds(family);
                 initMigration(family);
                 initPartySearch();
+                drawConcentrationCDF(family);
             }, 50);
         }
 
@@ -824,23 +849,17 @@
             html += '<h3 class="section-title" data-i18n="party_analytics">' + i18n.t('party_analytics') + '</h3>';
             html += '<div class="metrics-grid">';
 
-            // Geographic concentration card
+            // Geographic concentration card with CDF chart
             if (hhi && conc) {
                 html += '<div class="metrics-card">';
                 html += '<h4 data-i18n="geographic_concentration">' + i18n.t('geographic_concentration') + '</h4>';
                 html += '<div class="metric-explainer">' + i18n.t('hhi_explainer') + '</div>';
-                html += '<div style="margin-top:0.5rem"><div class="metric-big">' + hhi.effective_settlements + '</div>';
-                html += '<div class="metric-sub">' + i18n.t('effective_settlements') + ' (HHI: ' + hhi.hhi.toFixed(4) + ')</div></div>';
-                html += '<div style="margin-top:0.75rem">';
+                html += '<canvas id="concentration-cdf" style="width:100%;height:210px;margin:0.75rem 0"></canvas>';
+                html += '<div style="margin-top:0.5rem">';
                 html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_half') + '</span><span class="metric-value">' + conc.settlements_for_50pct + '</span></div>';
                 html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_90') + '</span><span class="metric-value">' + conc.settlements_for_90pct + '</span></div>';
-                html += '<div class="metric-explainer" style="margin-top:0.5rem">' + i18n.t('settlements_50_explainer') + '</div>';
-                // top 5 settlements
-                if (conc.top5) {
-                    conc.top5.forEach(function(s) {
-                        html += '<div class="metric-row"><span class="metric-label"><a href="settlement.html?name=' + encodeURIComponent(s.name) + '" style="color:var(--text-secondary);text-decoration:none">' + (lang === 'en' ? i18n.settlementName(s.name) : s.name) + '</a></span><span class="metric-value">' + s.share + '%</span></div>';
-                    });
-                }
+                html += '<div class="metric-row"><span class="metric-label">' + i18n.t('effective_settlements') + '</span><span class="metric-value">' + hhi.effective_settlements + '</span></div>';
+                html += '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:-0.1rem;padding-bottom:0.3rem">' + i18n.t('effective_settlements_tip') + '</div>';
                 html += '</div></div>';
             }
 
@@ -856,10 +875,10 @@
                 cosSorted.forEach(function(pair) {
                     var pName = pair[0], sim = pair[1];
                     var pctW = Math.round(sim * 100);
-                    html += '<div class="metric-row">';
-                    html += '<span class="metric-label">' + i18n.partyName(pName) + '</span>';
+                    html += '<div class="sim-row">';
+                    html += '<span class="sim-label">' + i18n.partyName(pName) + '</span>';
                     html += '<div class="sim-bar-track"><div class="sim-bar-fill" style="width:' + pctW + '%;background:' + family.color + '"></div></div>';
-                    html += '<span class="metric-value">' + sim.toFixed(2) + '</span>';
+                    html += '<span class="sim-value">' + sim.toFixed(2) + '</span>';
                     html += '</div>';
                 });
                 html += '</div>';
@@ -1051,6 +1070,177 @@
                     }
                 }
             });
+        }
+
+        function drawConcentrationCDF(family) {
+            const canvas = document.getElementById('concentration-cdf');
+            if (!canvas) return;
+
+            // Find latest election with data
+            let latestE = null, latestPartyName = null;
+            for (let i = ELECTIONS.length - 1; i >= 0; i--) {
+                if (family.elections[ELECTIONS[i]]) {
+                    latestE = ELECTIONS[i];
+                    latestPartyName = family.elections[latestE].partyName;
+                    break;
+                }
+            }
+            if (!latestE || !allMapData[latestE]) return;
+
+            // Compute absolute votes per settlement for this party
+            const settlements = allMapData[latestE].settlements || [];
+            const partyVotes = settlements
+                .filter(s => s.proportions && s.proportions[latestPartyName] != null && s.voters > 0)
+                .map(s => ({
+                    name: s.name,
+                    votes: s.proportions[latestPartyName] / 100 * s.voters
+                }))
+                .filter(s => s.votes > 0)
+                .sort((a, b) => b.votes - a.votes);
+
+            if (partyVotes.length === 0) return;
+
+            const totalVotes = partyVotes.reduce((sum, s) => sum + s.votes, 0);
+
+            // Build cumulative data
+            const cumData = [];
+            let cumSum = 0;
+            for (let i = 0; i < partyVotes.length; i++) {
+                cumSum += partyVotes[i].votes;
+                cumData.push({ n: i + 1, pct: cumSum / totalVotes * 100, name: partyVotes[i].name });
+            }
+
+            // Find 50% and 90% crossings
+            const n50 = cumData.find(d => d.pct >= 50);
+            const n90 = cumData.find(d => d.pct >= 90);
+
+            // Draw on canvas
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+
+            const W = rect.width, H = rect.height;
+            const pad = { top: 15, right: 15, bottom: 45, left: 45 };
+            const plotW = W - pad.left - pad.right;
+            const plotH = H - pad.top - pad.bottom;
+            const maxN = partyVotes.length;
+
+            function xScale(n) { return pad.left + (n / maxN) * plotW; }
+            function yScale(pct) { return pad.top + plotH - (pct / 100) * plotH; }
+
+            // Background
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#1a1a2e';
+            ctx.fillRect(0, 0, W, H);
+
+            // Grid lines
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 0.5;
+            for (const pct of [25, 50, 75, 100]) {
+                ctx.beginPath();
+                ctx.moveTo(pad.left, yScale(pct));
+                ctx.lineTo(W - pad.right, yScale(pct));
+                ctx.stroke();
+            }
+
+            // 50% fill area
+            if (n50) {
+                ctx.fillStyle = family.color + '18';
+                ctx.beginPath();
+                ctx.moveTo(xScale(0), yScale(0));
+                for (let i = 0; i < cumData.length && cumData[i].n <= n50.n; i++) {
+                    ctx.lineTo(xScale(cumData[i].n), yScale(cumData[i].pct));
+                }
+                ctx.lineTo(xScale(n50.n), yScale(0));
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // CDF curve
+            ctx.strokeStyle = family.color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(xScale(0), yScale(0));
+            for (const d of cumData) {
+                ctx.lineTo(xScale(d.n), yScale(d.pct));
+            }
+            ctx.stroke();
+
+            // 50% reference line + marker
+            ctx.setLineDash([4, 3]);
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.lineWidth = 1;
+            if (n50) {
+                ctx.beginPath();
+                ctx.moveTo(xScale(n50.n), yScale(50));
+                ctx.lineTo(xScale(n50.n), yScale(0));
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(pad.left, yScale(50));
+                ctx.lineTo(xScale(n50.n), yScale(50));
+                ctx.stroke();
+            }
+            // 90% reference line
+            if (n90) {
+                ctx.beginPath();
+                ctx.moveTo(xScale(n90.n), yScale(90));
+                ctx.lineTo(xScale(n90.n), yScale(0));
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(pad.left, yScale(90));
+                ctx.lineTo(xScale(n90.n), yScale(90));
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+
+            // Dot at 50% crossing
+            if (n50) {
+                ctx.beginPath();
+                ctx.arc(xScale(n50.n), yScale(50), 4, 0, Math.PI * 2);
+                ctx.fillStyle = family.color;
+                ctx.fill();
+                ctx.strokeStyle = '#fff';
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+            }
+
+            // Y-axis labels
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = '10px system-ui, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            for (const pct of [0, 25, 50, 75, 100]) {
+                ctx.fillText(pct + '%', pad.left - 5, yScale(pct));
+            }
+
+            // X-axis labels
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            const xTicks = [1];
+            if (n50) xTicks.push(n50.n);
+            if (n90 && n90.n !== n50?.n) xTicks.push(n90.n);
+            if (maxN > 10) xTicks.push(maxN);
+            for (const n of xTicks) {
+                ctx.fillText(n, xScale(n), H - pad.bottom + 5);
+            }
+
+            // X-axis title
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '10px system-ui, sans-serif';
+            ctx.textAlign = 'center';
+            const xTitle = i18n.getLang() === 'en' ? 'Settlements (sorted by votes)' : 'יישובים (לפי מספר קולות)';
+            ctx.fillText(xTitle, pad.left + plotW / 2, H - 3);
+
+            // 50% label on chart
+            if (n50) {
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = 'bold 10px system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                const label50 = i18n.getLang() === 'en' ? '50% ← ' + n50.n + ' towns' : n50.n + ' יישובים → 50%';
+                ctx.fillText(label50, xScale(n50.n) + 6, yScale(50) - 2);
+            }
         }
 
         function initStrongholds(family) {

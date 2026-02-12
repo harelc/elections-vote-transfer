@@ -179,11 +179,22 @@
         .m-metric-value { color: var(--text-primary); font-weight: 600; }
         .m-metric-big { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 0.2rem; }
         .m-metric-sub { font-size: 0.72rem; color: var(--text-muted); }
-        .m-sim-bar {
-            flex: 1; height: 4px; background: var(--bg-tertiary);
-            border-radius: 2px; margin: 0 0.4rem; max-width: 80px;
+        .m-sim-row {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border);
         }
-        .m-sim-fill { height: 100%; border-radius: 2px; }
+        .m-sim-row:last-child { border-bottom: none; }
+        .m-sim-label { width: 100px; flex-shrink: 0; color: var(--text-secondary); }
+        .m-sim-bar {
+            flex: 1; height: 10px; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 5px; margin: 0 0.4rem; overflow: hidden; direction: ltr;
+        }
+        .m-sim-fill { height: 100%; border-radius: 4px; opacity: 0.75; }
+        .m-sim-value { width: 36px; flex-shrink: 0; text-align: left; color: var(--text-primary); font-weight: 600; font-size: 0.75rem; }
     </style>
 </head>
 <body>
@@ -562,7 +573,113 @@
             setTimeout(() => {
                 initChart(family);
                 initSearch();
+                drawConcentrationCDF(family);
             }, 50);
+        }
+
+        function drawConcentrationCDF(family) {
+            var canvas = document.getElementById('concentration-cdf');
+            if (!canvas) return;
+            var latestE = null, latestPartyName = null;
+            for (var i = ELECTIONS.length - 1; i >= 0; i--) {
+                if (family.elections[ELECTIONS[i]]) {
+                    latestE = ELECTIONS[i];
+                    latestPartyName = family.elections[latestE].partyName;
+                    break;
+                }
+            }
+            if (!latestE || !allMapData[latestE]) return;
+            var settlements = allMapData[latestE].settlements || [];
+            var partyVotes = settlements
+                .filter(function(s) { return s.proportions && s.proportions[latestPartyName] != null && s.voters > 0; })
+                .map(function(s) { return { name: s.name, votes: s.proportions[latestPartyName] / 100 * s.voters }; })
+                .filter(function(s) { return s.votes > 0; })
+                .sort(function(a, b) { return b.votes - a.votes; });
+            if (partyVotes.length === 0) return;
+            var totalVotes = partyVotes.reduce(function(sum, s) { return sum + s.votes; }, 0);
+            var cumData = [];
+            var cumSum = 0;
+            for (var j = 0; j < partyVotes.length; j++) {
+                cumSum += partyVotes[j].votes;
+                cumData.push({ n: j + 1, pct: cumSum / totalVotes * 100 });
+            }
+            var n50 = cumData.find(function(d) { return d.pct >= 50; });
+            var n90 = cumData.find(function(d) { return d.pct >= 90; });
+            var dpr = window.devicePixelRatio || 1;
+            var rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            var ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+            var W = rect.width, H = rect.height;
+            var pad = { top: 12, right: 12, bottom: 40, left: 38 };
+            var plotW = W - pad.left - pad.right;
+            var plotH = H - pad.top - pad.bottom;
+            var maxN = partyVotes.length;
+            function xScale(n) { return pad.left + (n / maxN) * plotW; }
+            function yScale(pct) { return pad.top + plotH - (pct / 100) * plotH; }
+            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--bg-card').trim() || '#1a1a2e';
+            ctx.fillRect(0, 0, W, H);
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 0.5;
+            [25, 50, 75, 100].forEach(function(pct) {
+                ctx.beginPath(); ctx.moveTo(pad.left, yScale(pct)); ctx.lineTo(W - pad.right, yScale(pct)); ctx.stroke();
+            });
+            if (n50) {
+                ctx.fillStyle = family.color + '18';
+                ctx.beginPath();
+                ctx.moveTo(xScale(0), yScale(0));
+                for (var k = 0; k < cumData.length && cumData[k].n <= n50.n; k++) {
+                    ctx.lineTo(xScale(cumData[k].n), yScale(cumData[k].pct));
+                }
+                ctx.lineTo(xScale(n50.n), yScale(0));
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.strokeStyle = family.color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(xScale(0), yScale(0));
+            cumData.forEach(function(d) { ctx.lineTo(xScale(d.n), yScale(d.pct)); });
+            ctx.stroke();
+            ctx.setLineDash([4, 3]);
+            ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+            ctx.lineWidth = 1;
+            if (n50) {
+                ctx.beginPath(); ctx.moveTo(xScale(n50.n), yScale(50)); ctx.lineTo(xScale(n50.n), yScale(0)); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(pad.left, yScale(50)); ctx.lineTo(xScale(n50.n), yScale(50)); ctx.stroke();
+            }
+            if (n90) {
+                ctx.beginPath(); ctx.moveTo(xScale(n90.n), yScale(90)); ctx.lineTo(xScale(n90.n), yScale(0)); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(pad.left, yScale(90)); ctx.lineTo(xScale(n90.n), yScale(90)); ctx.stroke();
+            }
+            ctx.setLineDash([]);
+            if (n50) {
+                ctx.beginPath(); ctx.arc(xScale(n50.n), yScale(50), 3.5, 0, Math.PI * 2);
+                ctx.fillStyle = family.color; ctx.fill();
+                ctx.strokeStyle = '#fff'; ctx.lineWidth = 1.5; ctx.stroke();
+            }
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.font = '9px system-ui, sans-serif';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            [0, 50, 100].forEach(function(pct) { ctx.fillText(pct + '%', pad.left - 4, yScale(pct)); });
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            [1, n50 ? n50.n : null, n90 ? n90.n : null, maxN > 10 ? maxN : null].forEach(function(n) {
+                if (n) ctx.fillText(n, xScale(n), H - pad.bottom + 4);
+            });
+            ctx.fillStyle = 'rgba(255,255,255,0.4)';
+            ctx.font = '9px system-ui, sans-serif';
+            var xTitle = i18n.getLang() === 'en' ? 'Settlements (sorted by votes)' : 'יישובים (לפי מספר קולות)';
+            ctx.fillText(xTitle, pad.left + plotW / 2, H - 3);
+            if (n50) {
+                ctx.fillStyle = 'rgba(255,255,255,0.7)';
+                ctx.font = 'bold 9px system-ui, sans-serif';
+                ctx.textAlign = 'left';
+                var label50 = i18n.getLang() === 'en' ? '50% ← ' + n50.n + ' towns' : n50.n + ' יישובים → 50%';
+                ctx.fillText(label50, xScale(n50.n) + 5, yScale(50) - 2);
+            }
         }
 
         function buildMobileMetrics(family) {
@@ -587,11 +704,12 @@
                 h += '<div class="m-metrics-card">';
                 h += '<h4 data-i18n="geographic_concentration">' + i18n.t('geographic_concentration') + '</h4>';
                 h += '<p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:0.4rem;line-height:1.3">' + i18n.t('hhi_explainer') + '</p>';
-                h += '<div class="m-metric-big">' + hhi.effective_settlements + '</div>';
-                h += '<div class="m-metric-sub">' + i18n.t('effective_settlements') + ' (HHI: ' + hhi.hhi.toFixed(4) + ')</div>';
+                h += '<canvas id="concentration-cdf" style="width:100%;height:180px;margin:0.5rem 0"></canvas>';
                 h += '<div style="margin-top:0.5rem">';
                 h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_half') + '</span><span class="m-metric-value">' + conc.settlements_for_50pct + '</span></div>';
                 h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_90') + '</span><span class="m-metric-value">' + conc.settlements_for_90pct + '</span></div>';
+                h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('effective_settlements') + '</span><span class="m-metric-value">' + hhi.effective_settlements + '</span></div>';
+                h += '<div style="font-size:0.65rem;color:var(--text-muted);margin-top:-0.1rem;padding-bottom:0.2rem">' + i18n.t('effective_settlements_tip') + '</div>';
                 h += '</div></div>';
             }
 
@@ -603,10 +721,10 @@
                 var sorted = Object.entries(cosine).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
                 sorted.forEach(function(pair) {
                     var pctW = Math.round(pair[1] * 100);
-                    h += '<div class="m-metric-row">';
-                    h += '<span class="m-metric-label">' + i18n.partyName(pair[0]) + '</span>';
+                    h += '<div class="m-sim-row">';
+                    h += '<span class="m-sim-label">' + i18n.partyName(pair[0]) + '</span>';
                     h += '<div class="m-sim-bar"><div class="m-sim-fill" style="width:' + pctW + '%;background:' + family.color + '"></div></div>';
-                    h += '<span class="m-metric-value">' + pair[1].toFixed(2) + '</span>';
+                    h += '<span class="m-sim-value">' + pair[1].toFixed(2) + '</span>';
                     h += '</div>';
                 });
                 h += '</div>';
