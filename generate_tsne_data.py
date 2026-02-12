@@ -14,6 +14,11 @@ import numpy as np
 import pandas as pd
 from sklearn.manifold import TSNE
 from sklearn.preprocessing import StandardScaler
+try:
+    import umap
+    HAS_UMAP = True
+except ImportError:
+    HAS_UMAP = False
 
 from party_config import ELECTIONS, get_party_info
 
@@ -103,6 +108,22 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
     coords = tsne.fit_transform(vote_scaled)
     logger.info("T-SNE computation complete")
 
+    # Compute UMAP
+    umap_coords = None
+    if HAS_UMAP:
+        logger.info("Computing UMAP...")
+        reducer = umap.UMAP(
+            n_components=2,
+            n_neighbors=30,
+            min_dist=0.3,
+            metric='euclidean',
+            random_state=random_state,
+        )
+        umap_coords = reducer.fit_transform(vote_scaled)
+        logger.info("UMAP computation complete")
+    else:
+        logger.warning("umap-learn not installed, skipping UMAP")
+
     # Build result data
     result = []
     ballot_field = config.get('ballot_field', 'קלפי')
@@ -125,6 +146,9 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
             'eligible_voters': eligible,
             'turnout': turnout,
         }
+        if umap_coords is not None:
+            station_data['ux'] = float(umap_coords[i, 0])
+            station_data['uy'] = float(umap_coords[i, 1])
 
         # Add committee symbol if available
         if 'סמל ועדה' in row:
@@ -182,7 +206,7 @@ def generate_tsne_json(election_id, compact=True):
     if compact:
         compact_stations = []
         for s in stations:
-            compact_stations.append({
+            cs = {
                 'x': round(s['x'], 2),
                 'y': round(s['y'], 2),
                 'n': s['settlement_name'],  # shortened key
@@ -191,7 +215,11 @@ def generate_tsne_json(election_id, compact=True):
                 'e': s['eligible_voters'],   # eligible voters
                 't': s['turnout'],           # turnout percentage
                 'p': s['proportions'],       # keep proportions for coloring
-            })
+            }
+            if 'ux' in s:
+                cs['ux'] = round(s['ux'], 2)
+                cs['uy'] = round(s['uy'], 2)
+            compact_stations.append(cs)
         stations = compact_stations
 
     # Create output structure

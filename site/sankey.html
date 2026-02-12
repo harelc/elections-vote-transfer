@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/sankey.html'+(lp?'?lang='+lp:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — נדידת קולות בין בחירות לכנסת">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>קולות נודדים - ניתוח מעבר קולות בבחירות לכנסת</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+</head>
+<body>
+    <!-- Animated sand dunes - חולות נודדים -->
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="site-title">
+                    <span class="title-icon">🗳️</span>
+                    <span data-i18n="site_title">קולות נודדים</span>
+                </h1>
+                <p class="site-subtitle" data-i18n="site_subtitle">ניתוח מעבר קולות בין בחירות לכנסת ישראל</p>
+            </div>
+            <nav class="view-switcher">
+                <span class="view-btn active" data-i18n="nav_sankey">נדידת קולות</span>
+                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
+                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
+                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
+                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
+                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
+                <a href="regional.html" class="view-btn" data-i18n="nav_regional">בחירות אזוריות</a>
+                <button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button>
+            </nav>
+        </header>
+
+        <nav class="election-nav">
+            <div class="nav-container">
+                <button class="nav-btn" data-transition="21_to_22">
+                    <span class="nav-from">21</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">22</span>
+                </button>
+                <button class="nav-btn" data-transition="22_to_23">
+                    <span class="nav-from">22</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">23</span>
+                </button>
+                <button class="nav-btn" data-transition="23_to_24">
+                    <span class="nav-from">23</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">24</span>
+                </button>
+                <button class="nav-btn active" data-transition="24_to_25">
+                    <span class="nav-from">24</span>
+                    <span class="nav-arrow">←</span>
+                    <span class="nav-to">25</span>
+                </button>
+            </div>
+        </nav>
+        <script>if(i18n.SHOW_E26){var c=document.querySelector('.nav-container'),b=document.createElement('button');b.className='nav-btn';b.dataset.transition='25_to_26';b.innerHTML='<span class="nav-from">25</span><span class="nav-arrow">←</span><span class="nav-to">26</span>';c.appendChild(b)}</script>
+
+        <main class="main-content">
+            <div class="info-panel">
+                <div class="election-info">
+                    <div class="election-card from-election">
+                        <span class="election-label" data-i18n="from_election">מבחירות</span>
+                        <h3 class="election-name" id="from-election-name">הכנסת ה-24</h3>
+                        <span class="election-date" id="from-election-date">23.03.2021</span>
+                        <div class="election-stats">
+                            <span class="election-stat"><span id="from-eligible">6,578,084</span> <span data-i18n="eligible_voters">בעלי זכות</span></span>
+                            <span class="election-stat"><span id="from-votes">4,436,365</span> <span data-i18n="voted">הצביעו</span></span>
+                            <span class="election-stat"><span id="from-turnout">67.4%</span> <span data-i18n="turnout_pct">אחוז הצבעה</span></span>
+                        </div>
+                    </div>
+                    <div class="arrow-container">
+                        <svg class="flow-arrow" viewBox="0 0 50 24">
+                            <path d="M50 12 L10 12 M20 4 L8 12 L20 20" stroke="currentColor" stroke-width="2" fill="none"/>
+                        </svg>
+                    </div>
+                    <div class="election-card to-election">
+                        <span class="election-label" data-i18n="to_election">לבחירות</span>
+                        <h3 class="election-name" id="to-election-name">הכנסת ה-25</h3>
+                        <span class="election-date" id="to-election-date">01.11.2022</span>
+                        <div class="election-stats">
+                            <span class="election-stat"><span id="to-eligible">6,788,804</span> <span data-i18n="eligible_voters">בעלי זכות</span></span>
+                            <span class="election-stat"><span id="to-votes">4,794,593</span> <span data-i18n="voted">הצביעו</span></span>
+                            <span class="election-stat"><span id="to-turnout">70.6%</span> <span data-i18n="turnout_pct">אחוז הצבעה</span></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-precincts">6,857</span>
+                        <span class="stat-label" data-i18n="common_precincts">קלפיות משותפות</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-value" id="stat-r2">0.896</span>
+                        <span class="stat-label" data-i18n="r_squared">R² (מידת התאמה)</span>
+                    </div>
+                    <div class="stat-item toggle-item">
+                        <button class="percent-toggle" id="percent-toggle">
+                            <span class="toggle-label" data-i18n="pct_display">תצוגת אחוזים:</span>
+                            <span class="toggle-value" id="toggle-value" data-i18n="pct_from_prev">מהבחירות הקודמות</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visualization-container">
+                <div class="legend-container legend-from">
+                    <h4 id="legend-from-title" data-i18n="source_parties">מפלגות מקור</h4>
+                    <div id="legend-from" class="legend-grid"></div>
+                </div>
+                <div class="sankey-wrapper">
+                    <div id="sankey-chart"></div>
+                </div>
+                <div class="legend-container legend-to">
+                    <h4 id="legend-to-title" data-i18n="target_parties">מפלגות יעד</h4>
+                    <div id="legend-to" class="legend-grid"></div>
+                </div>
+            </div>
+
+            <div class="tooltip" id="tooltip"></div>
+
+            <!-- Mobile bottom sheet -->
+            <div class="bottom-sheet" id="bottom-sheet">
+                <div class="bottom-sheet-handle"></div>
+                <div class="bottom-sheet-content" id="bottom-sheet-content"></div>
+            </div>
+
+            <!-- Mobile legends overlay -->
+            <div class="legends-overlay" id="legends-overlay">
+                <div class="legends-overlay-content">
+                    <div class="legends-overlay-header">
+                        <span class="legends-overlay-title" data-i18n="parties_label">מפלגות</span>
+                        <button class="legends-overlay-close" id="close-legends">×</button>
+                    </div>
+                    <div class="legends-section">
+                        <div class="legends-section-title" id="overlay-from-title" data-i18n="prev_election">בחירות קודמות</div>
+                        <div class="legends-list" id="overlay-from-list"></div>
+                    </div>
+                    <div class="legends-section">
+                        <div class="legends-section-title" id="overlay-to-title" data-i18n="new_election">בחירות חדשות</div>
+                        <div class="legends-list" id="overlay-to-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile controls -->
+            <div class="mobile-controls">
+                <button class="mobile-btn" id="show-legends-btn">
+                    <span data-i18n="parties_label">מפלגות</span>
+                </button>
+                <button class="mobile-btn" id="mobile-percent-toggle">
+                    <span id="mobile-toggle-value" data-i18n="pct_prev_short">% מהקודמות</span>
+                </button>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="methodology">
+                    <strong data-i18n="methodology_short">מתודולוגיה:</strong>
+                    <span data-i18n="methodology_text">כל קלפי מהווה תצפית רועשת (noisy observation) של דפוס מעבר הקולות הארצי. המצביעים בכל קלפי נוהגים באופן דומה לאוכלוסייה הכללית, אך גודל המדגם הקטן (מאות בוחרים) יוצר רעש סטטיסטי. על ידי רגרסיה על אלפי קלפיות ברחבי הארץ, ניתן לשחזר את מטריצת המעבר הארצית האמיתית.</span>
+                    <a href="#" class="methodology-link" id="open-methodology" data-i18n="read_more_methodology">קראו עוד על המתודולוגיה...</a>
+                </p>
+                <p class="credits">
+                    <span data-i18n="credits_line">© הראל קין</span> |
+                    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
+                </p>
+            </div>
+        </footer>
+
+        <!-- Methodology Modal -->
+        <div class="modal-overlay" id="methodology-modal">
+            <div class="modal-content">
+                <button class="modal-close" id="close-methodology">&times;</button>
+                <h2 data-i18n="about_methodology">על המתודולוגיה</h2>
+
+                <section class="methodology-section">
+                    <h3 data-i18n="method_basic_idea">🎯 הרעיון הבסיסי</h3>
+                    <p data-i18n-html="method_p1"></p>
+                    <p data-i18n-html="method_p2"></p>
+                    <p data-i18n-html="method_p3"></p>
+                </section>
+
+                <section class="methodology-section">
+                    <h3 data-i18n="method_math_model">📊 המודל המתמטי</h3>
+                    <p data-i18n-html="method_p4"></p>
+                    <p data-i18n-html="method_p5"></p>
+                    <div class="formula">
+                        V<sub>before</sub> × M ≈ V<sub>after</sub>
+                    </div>
+                </section>
+
+                <section class="methodology-section">
+                    <h3 data-i18n="method_optimization">⚙️ האופטימיזציה</h3>
+                    <p data-i18n-html="method_p6"></p>
+                    <div class="formula">
+                        minimize Σ<sub>box</sub> ||V<sub>before</sub> × M - V<sub>after</sub>||²
+                    </div>
+                    <p data-i18n="method_constraints">תחת האילוצים הבאים:</p>
+                    <ul>
+                        <li data-i18n-html="method_nonneg"></li>
+                        <li data-i18n-html="method_stochastic"></li>
+                    </ul>
+                    <p data-i18n="method_solver">הפתרון מתקבל באמצעות הספרייה CVXPY עם הפותר SCS.</p>
+                </section>
+
+                <section class="methodology-section">
+                    <h3 data-i18n="method_r_squared">📈 מדד איכות: R²</h3>
+                    <p data-i18n="method_r2_desc"></p>
+                    <p data-i18n="method_r2_range"></p>
+                </section>
+
+                <section class="methodology-section">
+                    <h3 data-i18n="method_limitations">⚠️ מגבלות ואזהרות</h3>
+                    <ul class="limitations-list">
+                        <li data-i18n-html="method_lim_uniform"></li>
+                        <li data-i18n-html="method_lim_new"></li>
+                        <li data-i18n-html="method_lim_changes"></li>
+                        <li data-i18n-html="method_lim_causal"></li>
+                        <li data-i18n-html="method_lim_uncertainty"></li>
+                    </ul>
+                </section>
+
+                <section class="methodology-section">
+                    <h3 data-i18n="method_further">📚 קריאה נוספת</h3>
+                    <p>
+                        <span data-i18n="method_code_link">הקוד המלא זמין ב</span><a href="https://github.com/harelc/elections-vote-transfer/" target="_blank">GitHub</a>.
+                    </p>
+                </section>
+            </div>
+        </div>
+
+        <style>
+            .methodology-link {
+                color: var(--accent-primary);
+                text-decoration: none;
+                font-weight: 500;
+                margin-right: 8px;
+            }
+            .methodology-link:hover {
+                text-decoration: underline;
+                color: var(--accent-secondary);
+            }
+            .modal-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.85);
+                z-index: 10000;
+                justify-content: center;
+                align-items: center;
+                padding: 20px;
+                box-sizing: border-box;
+            }
+            .modal-overlay.visible {
+                display: flex;
+            }
+            .modal-content {
+                background: var(--bg-card);
+                border-radius: var(--radius-lg);
+                max-width: 800px;
+                max-height: 90vh;
+                overflow-y: auto;
+                padding: 32px;
+                position: relative;
+                box-shadow: var(--shadow-lg), 0 0 40px rgba(99, 102, 241, 0.15);
+                direction: inherit;
+                border: 1px solid var(--border-color);
+            }
+            .modal-close {
+                position: absolute;
+                top: 16px;
+                left: 16px;
+                background: var(--bg-hover);
+                border: 1px solid var(--border-color);
+                font-size: 24px;
+                cursor: pointer;
+                color: var(--text-secondary);
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: var(--transition-fast);
+            }
+            .modal-close:hover {
+                background: var(--bg-tertiary);
+                color: var(--text-primary);
+                border-color: var(--accent-primary);
+            }
+            .modal-content h2 {
+                margin: 0 0 24px 0;
+                color: var(--text-primary);
+                font-size: 1.8em;
+            }
+            .methodology-section {
+                margin-bottom: 28px;
+            }
+            .methodology-section h3 {
+                color: var(--accent-primary);
+                margin: 0 0 12px 0;
+                font-size: 1.2em;
+            }
+            .methodology-section p {
+                line-height: 1.8;
+                color: var(--text-secondary);
+                margin: 0 0 12px 0;
+            }
+            .methodology-section ul {
+                line-height: 1.8;
+                color: var(--text-secondary);
+                padding-right: 24px;
+            }
+            .methodology-section li {
+                margin-bottom: 8px;
+            }
+            .formula {
+                background: var(--bg-tertiary);
+                padding: 16px 24px;
+                border-radius: var(--radius-md);
+                font-family: 'Courier New', monospace;
+                font-size: 1.1em;
+                text-align: center;
+                margin: 16px 0;
+                border: 1px solid var(--border-color);
+                direction: ltr;
+                color: var(--text-primary);
+            }
+            .limitations-list li {
+                margin-bottom: 16px;
+            }
+            .limitations-list strong {
+                color: var(--warning);
+            }
+            .methodology-section a {
+                color: var(--accent-primary);
+            }
+            .methodology-section a:hover {
+                color: var(--accent-secondary);
+            }
+            @media (max-width: 600px) {
+                .modal-content {
+                    padding: 20px;
+                    margin: 10px;
+                }
+                .modal-content h2 {
+                    font-size: 1.4em;
+                    padding-left: 40px;
+                }
+            }
+        </style>
+
+        <script>
+            document.getElementById('open-methodology').addEventListener('click', (e) => {
+                e.preventDefault();
+                document.getElementById('methodology-modal').classList.add('visible');
+                document.body.style.overflow = 'hidden';
+            });
+            document.getElementById('close-methodology').addEventListener('click', () => {
+                document.getElementById('methodology-modal').classList.remove('visible');
+                document.body.style.overflow = '';
+            });
+            document.getElementById('methodology-modal').addEventListener('click', (e) => {
+                if (e.target === e.currentTarget) {
+                    document.getElementById('methodology-modal').classList.remove('visible');
+                    document.body.style.overflow = '';
+                }
+            });
+        </script>
+    </div>
+
+    <script src="sankey.js"></script>
+    <script>i18n.renderNav('sankey'); i18n.renderBMC();</script>
+</body>
+</html>

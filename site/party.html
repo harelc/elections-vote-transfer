@@ -258,6 +258,68 @@
             font-size: 0.78rem;
         }
 
+        /* Metrics */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+        .metrics-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 1.25rem;
+        }
+        .metrics-card h4 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 0 0 0.75rem;
+        }
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.35rem 0;
+            font-size: 0.85rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .metric-row:last-child { border-bottom: none; }
+        .metric-label { color: var(--text-secondary); }
+        .metric-value { color: var(--text-primary); font-weight: 600; }
+        .metric-big {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1;
+            margin-bottom: 0.25rem;
+        }
+        .metric-sub {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+        .sim-bar-track {
+            flex: 1;
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            margin: 0 0.5rem;
+            max-width: 120px;
+        }
+        .sim-bar-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+        .metric-explainer {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-top: 0.25rem;
+            padding: 0.4rem 0.5rem;
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-sm);
+        }
+
         /* Search */
         .party-search {
             margin-bottom: 2rem;
@@ -547,6 +609,7 @@
         let allTransfers = {};
         let coordsData = {};
         let wikiResults = {};
+        let metricsData = null;
 
         if (!partyParam) {
             showLanding();
@@ -625,6 +688,7 @@
                 fetch('data/all_transfers.json').then(r => r.json()).then(d => { allTransfers = d; }).catch(() => {}),
                 fetch('data/station_coordinates.json').then(r => r.json()).then(d => { coordsData = d; }).catch(() => {}),
                 fetch('data/wiki_official_results.json').then(r => r.json()).then(d => { wikiResults = d; }).catch(() => {}),
+                fetch('data/metrics.json').then(r => r.json()).then(d => { metricsData = d; }).catch(() => {}),
             ]).then(() => {
                 renderProfile(family);
             }).catch(() => {
@@ -710,6 +774,9 @@
             html += '<div class="strongholds-map-container"><div id="strongholds-map"></div></div>';
             html += '</section>';
 
+            // Statistical metrics
+            html += buildMetricsSection(family, metricsData);
+
             // Voter migration
             html += '<section class="profile-section">';
             html += '<h3 class="section-title" data-i18n="voter_migration">' + i18n.t('voter_migration') + '</h3>';
@@ -732,6 +799,93 @@
                 initMigration(family);
                 initPartySearch();
             }, 50);
+        }
+
+        function buildMetricsSection(family, metricsData) {
+            if (!metricsData) return '';
+            const lang = i18n.getLang();
+
+            // Find the party name in metrics (use latest election's partyName)
+            let partyName = null;
+            for (let i = ELECTIONS.length - 1; i >= 0; i--) {
+                const e = family.elections[ELECTIONS[i]];
+                if (e) { partyName = e.partyName; break; }
+            }
+            if (!partyName) return '';
+
+            const hhi = metricsData.party_hhi[partyName];
+            const cosine = metricsData.party_cosine_similarity[partyName];
+            const corr = metricsData.party_ballot_correlations[partyName];
+            const conc = metricsData.party_concentration[partyName];
+
+            if (!hhi && !cosine && !conc) return '';
+
+            let html = '<section class="profile-section">';
+            html += '<h3 class="section-title" data-i18n="party_analytics">' + i18n.t('party_analytics') + '</h3>';
+            html += '<div class="metrics-grid">';
+
+            // Geographic concentration card
+            if (hhi && conc) {
+                html += '<div class="metrics-card">';
+                html += '<h4 data-i18n="geographic_concentration">' + i18n.t('geographic_concentration') + '</h4>';
+                html += '<div class="metric-explainer">' + i18n.t('hhi_explainer') + '</div>';
+                html += '<div style="margin-top:0.5rem"><div class="metric-big">' + hhi.effective_settlements + '</div>';
+                html += '<div class="metric-sub">' + i18n.t('effective_settlements') + ' (HHI: ' + hhi.hhi.toFixed(4) + ')</div></div>';
+                html += '<div style="margin-top:0.75rem">';
+                html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_half') + '</span><span class="metric-value">' + conc.settlements_for_50pct + '</span></div>';
+                html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_90') + '</span><span class="metric-value">' + conc.settlements_for_90pct + '</span></div>';
+                html += '<div class="metric-explainer" style="margin-top:0.5rem">' + i18n.t('settlements_50_explainer') + '</div>';
+                // top 5 settlements
+                if (conc.top5) {
+                    conc.top5.forEach(function(s) {
+                        html += '<div class="metric-row"><span class="metric-label"><a href="settlement.html?name=' + encodeURIComponent(s.name) + '" style="color:var(--text-secondary);text-decoration:none">' + (lang === 'en' ? i18n.settlementName(s.name) : s.name) + '</a></span><span class="metric-value">' + s.share + '%</span></div>';
+                    });
+                }
+                html += '</div></div>';
+            }
+
+            // Similar parties card (cosine + correlation)
+            if (cosine) {
+                html += '<div class="metrics-card">';
+                html += '<h4 data-i18n="similar_parties">' + i18n.t('similar_parties') + '</h4>';
+                html += '<div class="metric-explainer">' + i18n.t('cosine_explainer') + '</div>';
+
+                // Top 5 by cosine similarity
+                html += '<div style="margin-top:0.5rem">';
+                var cosSorted = Object.entries(cosine).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+                cosSorted.forEach(function(pair) {
+                    var pName = pair[0], sim = pair[1];
+                    var pctW = Math.round(sim * 100);
+                    html += '<div class="metric-row">';
+                    html += '<span class="metric-label">' + i18n.partyName(pName) + '</span>';
+                    html += '<div class="sim-bar-track"><div class="sim-bar-fill" style="width:' + pctW + '%;background:' + family.color + '"></div></div>';
+                    html += '<span class="metric-value">' + sim.toFixed(2) + '</span>';
+                    html += '</div>';
+                });
+                html += '</div>';
+
+                // Show ballot-level correlations if available
+                if (corr) {
+                    html += '<div style="margin-top:0.75rem;padding-top:0.5rem;border-top:1px solid var(--border-color)">';
+                    html += '<div class="metric-sub" style="margin-bottom:0.25rem">' + i18n.t('ballot_correlation') + '</div>';
+                    html += '<div class="metric-explainer" style="margin-bottom:0.5rem">' + i18n.t('ballot_corr_explainer') + '</div>';
+                    var corrSorted = Object.entries(corr).sort(function(a, b) { return b[1] - a[1]; });
+                    // Top 3 positive
+                    corrSorted.slice(0, 3).forEach(function(pair) {
+                        html += '<div class="metric-row"><span class="metric-label">' + i18n.partyName(pair[0]) + '</span><span class="metric-value" style="color:#4ade80">+' + pair[1].toFixed(2) + '</span></div>';
+                    });
+                    // Top 3 negative
+                    corrSorted.slice(-3).reverse().forEach(function(pair) {
+                        html += '<div class="metric-row"><span class="metric-label">' + i18n.partyName(pair[0]) + '</span><span class="metric-value" style="color:#f87171">' + pair[1].toFixed(2) + '</span></div>';
+                    });
+                    html += '</div>';
+                }
+
+                html += '</div>';
+            }
+
+            html += '</div></section>';
+            return html;
         }
 
         function buildHistoryTable(family) {

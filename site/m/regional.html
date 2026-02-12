@@ -363,7 +363,19 @@
                 <button class="m-pill-btn" data-value="60">60</button>
                 <button class="m-pill-btn" data-value="90">90</button>
                 <button class="m-pill-btn" data-value="120">120</button>
+                <button class="m-pill-btn" data-value="180">180</button>
+                <button class="m-pill-btn" data-value="240">240</button>
             </div>
+            <label data-i18n="knesset_size_label">כנסת:</label>
+            <select class="m-threshold-select" id="knesset-size-select">
+                <option value="120" selected>120</option>
+                <option value="150">150</option>
+                <option value="180">180</option>
+                <option value="240">240</option>
+                <option value="360">360</option>
+                <option value="480">480</option>
+                <option value="600">600</option>
+            </select>
             <label data-i18n="threshold_label">חסימה:</label>
             <select class="m-threshold-select" id="threshold-select">
                 <option value="0">0%</option>
@@ -607,6 +619,7 @@
         let map = null;
         let numRegions = 12, nationalSeats = 0, threshold = 3.25;
         let regionalMethod = 'dhondt';
+        let knessetSize = 120;
         let regionResults = [];
 
         // ── Data loading ──
@@ -762,15 +775,15 @@
 
         // ── Simulation ──
         function runSimulation() {
-            const regSeatCount = 120 - nationalSeats;
+            const regSeatCount = knessetSize - nationalSeats;
             const totalSeats = {};
             const nationalSeatsByParty = {};
 
             if (regSeatCount === 0) {
                 regions = [geoStations];
-                const natResult = dhondtForRegion(stations, 120, threshold);
+                const natResult = dhondtForRegion(stations, knessetSize, threshold);
                 for (const [p, s] of Object.entries(natResult)) { totalSeats[p] = s; nationalSeatsByParty[p] = s; }
-                regionResults = [{ stations: geoStations, seatCount: 120, seats: { ...natResult }, eligible: geoStations.reduce((s, st) => s + st.eligible, 0) }];
+                regionResults = [{ stations: geoStations, seatCount: knessetSize, seats: { ...natResult }, eligible: geoStations.reduce((s, st) => s + st.eligible, 0) }];
             } else {
                 regions = partitionRegions(geoStations, numRegions);
                 const regSeats = allocateSeatsToRegions(regions, regSeatCount);
@@ -964,8 +977,9 @@
             const leftEl = document.getElementById('m-left-seats');
             rightEl.textContent = right;
             leftEl.textContent = left + arab;
-            rightEl.className = 'bloc-pill ' + (right >= 61 ? 'majority' : 'minority');
-            leftEl.className = 'bloc-pill ' + ((left + arab) >= 61 ? 'majority' : 'minority');
+            const majority = Math.floor(knessetSize / 2) + 1;
+            rightEl.className = 'bloc-pill ' + (right >= majority ? 'majority' : 'minority');
+            leftEl.className = 'bloc-pill ' + ((left + arab) >= majority ? 'majority' : 'minority');
 
             // Parliament
             renderMParliament(results);
@@ -1002,7 +1016,7 @@
                 .sort((a, b) => (politicalOrder[a.name] || 50) - (politicalOrder[b.name] || 50));
 
             const nNational = nationalSeats;
-            const nRegional = 120 - nNational;
+            const nRegional = knessetSize - nNational;
 
             const allSeats = [];
             sortedParties.forEach(p => {
@@ -1014,8 +1028,9 @@
             });
 
             const centerX = width / 2, centerY = height - 12;
-            const rows = 6;
-            const minR = 28, maxR = Math.min(width / 2 - 8, height - 20);
+            const rows = knessetSize <= 150 ? 6 : knessetSize <= 300 ? 8 : 10;
+            const minR = knessetSize <= 150 ? 28 : knessetSize <= 300 ? 18 : 12;
+            const maxR = Math.min(width / 2 - 8, height - 20);
 
             function layoutArc(seatCount) {
                 if (seatCount === 0) return [];
@@ -1051,19 +1066,21 @@
                 .join('g')
                 .attr('class', 'seat-g');
 
+            const mDotR = knessetSize <= 150 ? 4 : knessetSize <= 300 ? 2.5 : 1.5;
+
             // Regional = filled circle
             seatGroups.filter(d => d.type === 'regional')
                 .append('circle')
                 .attr('cx', d => d.x).attr('cy', d => d.y)
-                .attr('r', 4).attr('fill', d => d.color)
+                .attr('r', mDotR).attr('fill', d => d.color)
                 .attr('stroke', '#000').attr('stroke-width', 0.3);
 
             // National = hollow ring
             seatGroups.filter(d => d.type === 'national')
                 .append('circle')
                 .attr('cx', d => d.x).attr('cy', d => d.y)
-                .attr('r', 3.5).attr('fill', 'none')
-                .attr('stroke', d => d.color).attr('stroke-width', 1.5);
+                .attr('r', mDotR * 0.85).attr('fill', 'none')
+                .attr('stroke', d => d.color).attr('stroke-width', mDotR > 3 ? 1.5 : 1);
 
             // Legend
             const legendEl = document.getElementById('m-parliament-legend');
@@ -1101,7 +1118,7 @@
 
         // ── Controls ──
         function updateRegionPillStates() {
-            const regionalSeats = 120 - nationalSeats;
+            const regionalSeats = knessetSize - nationalSeats;
             const pills = [...document.querySelectorAll('#region-pills .m-pill-btn')];
             pills.forEach(btn => {
                 const val = parseInt(btn.dataset.value);
@@ -1139,6 +1156,32 @@
 
             document.getElementById('threshold-select').addEventListener('change', e => {
                 threshold = parseFloat(e.target.value);
+                runSimulation();
+            });
+
+            // Knesset size select
+            document.getElementById('knesset-size-select').addEventListener('change', e => {
+                knessetSize = parseInt(e.target.value);
+                // Rebuild national pills
+                const natContainer = document.getElementById('national-pills');
+                const step = Math.round(knessetSize / 4 / 10) * 10 || 30;
+                const values = [0];
+                for (let v = step; v < knessetSize; v += step) values.push(v);
+                values.push(knessetSize);
+                natContainer.innerHTML = values.map(v =>
+                    `<button class="m-pill-btn${v === nationalSeats ? ' active' : ''}" data-value="${v}">${v}</button>`
+                ).join('');
+                natContainer.querySelectorAll('.m-pill-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        natContainer.querySelectorAll('.m-pill-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        nationalSeats = parseInt(btn.dataset.value);
+                        updateRegionPillStates();
+                        runSimulation();
+                    });
+                });
+                if (nationalSeats > knessetSize) nationalSeats = 0;
+                updateRegionPillStates();
                 runSimulation();
             });
 

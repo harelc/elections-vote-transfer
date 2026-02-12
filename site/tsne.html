@@ -153,7 +153,7 @@
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
 
         .view-btn {
@@ -269,6 +269,41 @@
             height: 1px;
             background: var(--border-color);
             margin: 0.75rem 0;
+        }
+
+        .projection-toggle {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.25rem;
+        }
+
+        .proj-btn {
+            flex: 1;
+            padding: 0.4rem 0.5rem;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: 'Heebo', sans-serif;
+            transition: var(--transition-fast);
+        }
+
+        .proj-btn:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+        }
+
+        .proj-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .proj-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
         }
 
         .legend-section-title {
@@ -918,6 +953,12 @@
                     <span class="legend-name" data-i18n="socioeconomic">אשכול חברתי-כלכלי</span>
                 </div>
                 <div class="legend-divider"></div>
+                <h3 class="legend-title" data-i18n="projection_method">שיטת הטלה</h3>
+                <div class="projection-toggle" id="projection-toggle">
+                    <button class="proj-btn active" data-proj="tsne">t-SNE</button>
+                    <button class="proj-btn" data-proj="umap">UMAP</button>
+                </div>
+                <div class="legend-divider"></div>
                 <div id="legend-items"></div>
 
             </aside>
@@ -970,9 +1011,15 @@
                 this.svg = null;
                 this.tooltip = d3.select('#tooltip');
                 this.colorScale = d3.select('#color-scale');
+                this.projectionMode = 'tsne'; // 'tsne' or 'umap'
 
                 this.init();
             }
+
+            // Coordinate accessors based on projection mode
+            getX(d) { return this.projectionMode === 'umap' && d.ux != null ? d.ux : d.x; }
+            getY(d) { return this.projectionMode === 'umap' && d.uy != null ? d.uy : d.y; }
+            hasUMAP() { return this.data && this.data.stations.length > 0 && this.data.stations[0].ux != null; }
 
             init() {
                 // Navigation buttons
@@ -1000,6 +1047,17 @@
                     if (this.selectedParty) {
                         this.selectParty(this.selectedParty);
                     }
+                });
+
+                // Projection toggle (t-SNE / UMAP)
+                document.querySelectorAll('.proj-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        if (btn.disabled) return;
+                        this.projectionMode = btn.dataset.proj;
+                        document.querySelectorAll('.proj-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.render();
+                    });
                 });
 
                 // Settlement search
@@ -1238,8 +1296,8 @@
             zoomToStation(station) {
                 // Zoom and pan to the selected station
                 const svg = d3.select('#tsne-chart');
-                const x = this.xScale(station.x);
-                const y = this.yScale(station.y);
+                const x = this.xScale(this.getX(station));
+                const y = this.yScale(this.getY(station));
 
                 const width = svg.node().clientWidth;
                 const height = svg.node().clientHeight;
@@ -1431,6 +1489,23 @@
                     // Build settlements list for search
                     this.buildSettlementsList();
 
+                    // Update projection toggle availability
+                    const umapBtn = document.querySelector('.proj-btn[data-proj="umap"]');
+                    if (umapBtn) {
+                        if (this.hasUMAP()) {
+                            umapBtn.disabled = false;
+                            umapBtn.title = '';
+                        } else {
+                            umapBtn.disabled = true;
+                            umapBtn.title = 'UMAP data not available for this election';
+                            if (this.projectionMode === 'umap') {
+                                this.projectionMode = 'tsne';
+                                document.querySelectorAll('.proj-btn').forEach(b => b.classList.remove('active'));
+                                document.querySelector('.proj-btn[data-proj="tsne"]').classList.add('active');
+                            }
+                        }
+                    }
+
                     this.updateLegend();
                     this.render();
 
@@ -1605,8 +1680,8 @@
                     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
                 // Compute scales
-                const xExtent = d3.extent(this.data.stations, d => d.x);
-                const yExtent = d3.extent(this.data.stations, d => d.y);
+                const xExtent = d3.extent(this.data.stations, d => this.getX(d));
+                const yExtent = d3.extent(this.data.stations, d => this.getY(d));
 
                 const xScale = d3.scaleLinear()
                     .domain([xExtent[0] - 5, xExtent[1] + 5])
@@ -1638,8 +1713,8 @@
                         .data(this.data.stations)
                         .join('circle')
                         .attr('class', 'station-dot-bg')
-                        .attr('cx', d => xScale(d.x))
-                        .attr('cy', d => yScale(d.y))
+                        .attr('cx', d => xScale(this.getX(d)))
+                        .attr('cy', d => yScale(this.getY(d)))
                         .attr('r', 2)
                         .attr('fill', '#374151')
                         .attr('opacity', 0.3)
@@ -1650,8 +1725,8 @@
                     .data(stations)
                     .join('circle')
                     .attr('class', 'station-dot')
-                    .attr('cx', d => xScale(d.x))
-                    .attr('cy', d => yScale(d.y))
+                    .attr('cx', d => xScale(this.getX(d)))
+                    .attr('cy', d => yScale(this.getY(d)))
                     .attr('r', d => hasFilter ? radiusScale(d.v || d.total_voters) * 1.5 : radiusScale(d.v || d.total_voters))
                     .attr('fill', d => this.getDotColor(d) || '#374151')
                     .attr('opacity', d => {
@@ -1672,15 +1747,15 @@
                     // Pulsing outer ring
                     this.svg.append('circle')
                         .attr('class', 'station-highlight-pulse')
-                        .attr('cx', xScale(s.x))
-                        .attr('cy', yScale(s.y))
+                        .attr('cx', xScale(this.getX(s)))
+                        .attr('cy', yScale(this.getY(s)))
                         .attr('r', r + 8);
 
                     // Solid highlight ring
                     this.svg.append('circle')
                         .attr('class', 'station-highlight')
-                        .attr('cx', xScale(s.x))
-                        .attr('cy', yScale(s.y))
+                        .attr('cx', xScale(this.getX(s)))
+                        .attr('cy', yScale(this.getY(s)))
                         .attr('r', r + 5);
                 }
 

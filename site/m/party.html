@@ -154,6 +154,36 @@
         .m-party-card-seats { font-size: 0.78rem; color: var(--text-muted); }
 
         .m-loading { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+
+        /* Metrics */
+        .m-metrics-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+        .m-metrics-card h4 {
+            font-size: 0.82rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--text-secondary);
+        }
+        .m-metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.25rem 0;
+            font-size: 0.8rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .m-metric-row:last-child { border-bottom: none; }
+        .m-metric-label { color: var(--text-secondary); }
+        .m-metric-value { color: var(--text-primary); font-weight: 600; }
+        .m-metric-big { font-size: 1.5rem; font-weight: 700; line-height: 1; margin-bottom: 0.2rem; }
+        .m-metric-sub { font-size: 0.72rem; color: var(--text-muted); }
+        .m-sim-bar {
+            flex: 1; height: 4px; background: var(--bg-tertiary);
+            border-radius: 2px; margin: 0 0.4rem; max-width: 80px;
+        }
+        .m-sim-fill { height: 100%; border-radius: 2px; }
     </style>
 </head>
 <body>
@@ -322,6 +352,7 @@
         const container = document.getElementById('profile');
         let allMap = {};
         let wikiResults = {};
+        let metricsData = null;
 
         if (!partyParam) { showLanding(); return; }
 
@@ -375,6 +406,7 @@
             Promise.all([
                 ...ELECTIONS.map(e => fetch('../data/map_' + e + '.json').then(r => r.json()).then(d => { allMap[e] = d; })),
                 fetch('../data/wiki_official_results.json').then(r => r.json()).then(d => { wikiResults = d; }).catch(() => {}),
+                fetch('../data/metrics.json').then(r => r.json()).then(d => { metricsData = d; }).catch(() => {}),
             ]).then(() => renderProfile(family))
              .catch(() => { container.innerHTML = '<div class="m-loading">' + i18n.t('error_loading') + '</div>'; });
         }
@@ -522,12 +554,66 @@
                 }
             }
 
+            // Statistical metrics
+            h += buildMobileMetrics(family);
+
             container.innerHTML = h;
 
             setTimeout(() => {
                 initChart(family);
                 initSearch();
             }, 50);
+        }
+
+        function buildMobileMetrics(family) {
+            if (!metricsData) return '';
+            var partyName = null;
+            for (var i = ELECTIONS.length - 1; i >= 0; i--) {
+                var e = family.elections[ELECTIONS[i]];
+                if (e) { partyName = e.partyName; break; }
+            }
+            if (!partyName) return '';
+
+            var hhi = metricsData.party_hhi[partyName];
+            var cosine = metricsData.party_cosine_similarity[partyName];
+            var conc = metricsData.party_concentration[partyName];
+            if (!hhi && !cosine) return '';
+
+            var h = '<div class="m-section">';
+            h += '<div class="m-section-title" data-i18n="party_analytics">' + i18n.t('party_analytics') + '</div>';
+
+            // Concentration
+            if (hhi && conc) {
+                h += '<div class="m-metrics-card">';
+                h += '<h4 data-i18n="geographic_concentration">' + i18n.t('geographic_concentration') + '</h4>';
+                h += '<p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:0.4rem;line-height:1.3">' + i18n.t('hhi_explainer') + '</p>';
+                h += '<div class="m-metric-big">' + hhi.effective_settlements + '</div>';
+                h += '<div class="m-metric-sub">' + i18n.t('effective_settlements') + ' (HHI: ' + hhi.hhi.toFixed(4) + ')</div>';
+                h += '<div style="margin-top:0.5rem">';
+                h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_half') + '</span><span class="m-metric-value">' + conc.settlements_for_50pct + '</span></div>';
+                h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_90') + '</span><span class="m-metric-value">' + conc.settlements_for_90pct + '</span></div>';
+                h += '</div></div>';
+            }
+
+            // Similar parties
+            if (cosine) {
+                h += '<div class="m-metrics-card">';
+                h += '<h4 data-i18n="similar_parties">' + i18n.t('similar_parties') + '</h4>';
+                h += '<p style="font-size:0.7rem;color:var(--text-muted);margin-bottom:0.4rem;line-height:1.3">' + i18n.t('cosine_explainer') + '</p>';
+                var sorted = Object.entries(cosine).sort(function(a, b) { return b[1] - a[1]; }).slice(0, 5);
+                sorted.forEach(function(pair) {
+                    var pctW = Math.round(pair[1] * 100);
+                    h += '<div class="m-metric-row">';
+                    h += '<span class="m-metric-label">' + i18n.partyName(pair[0]) + '</span>';
+                    h += '<div class="m-sim-bar"><div class="m-sim-fill" style="width:' + pctW + '%;background:' + family.color + '"></div></div>';
+                    h += '<span class="m-metric-value">' + pair[1].toFixed(2) + '</span>';
+                    h += '</div>';
+                });
+                h += '</div>';
+            }
+
+            h += '</div>';
+            return h;
         }
 
         function initChart(family) {

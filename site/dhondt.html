@@ -153,7 +153,7 @@
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
 
         .view-btn {
@@ -262,11 +262,17 @@
             border-bottom: 1px solid var(--border-color);
         }
 
+        .threshold-row {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
         .threshold-control {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 1rem;
         }
 
         .threshold-control label {
@@ -757,10 +763,17 @@
                 <div class="control-panel-scrollable">
                     <div class="control-section">
                         <h3 class="control-title" data-i18n="settings">הגדרות</h3>
-                        <div class="threshold-control">
-                            <label data-i18n="threshold_pct">אחוז חסימה:</label>
-                            <input type="number" id="threshold" class="threshold-input" value="3.25" min="0" max="10" step="0.25">
-                            <span>%</span>
+                        <div class="threshold-row">
+                            <div class="threshold-control">
+                                <label data-i18n="threshold_pct">אחוז חסימה:</label>
+                                <input type="number" id="threshold" class="threshold-input" value="3.25" min="0" max="10" step="0.25">
+                                <span>%</span>
+                            </div>
+                            <div class="threshold-control">
+                                <label data-i18n="knesset_size_label">גודל הכנסת:</label>
+                                <input type="number" id="total-seats" class="threshold-input" value="120" min="10" max="600" step="10">
+                                <span data-i18n="seats_mandatim">מנדטים</span>
+                            </div>
                         </div>
                     </div>
 
@@ -1001,7 +1014,15 @@
             setupEventListeners() {
                 // Threshold change
                 document.getElementById('threshold').addEventListener('change', (e) => {
-                    this.threshold = parseFloat(e.target.value) || 3.25;
+                    const val = parseFloat(e.target.value);
+                    this.threshold = isNaN(val) ? 3.25 : val;
+                    this.calculate();
+                });
+
+                // Total seats change
+                document.getElementById('total-seats').addEventListener('change', (e) => {
+                    const val = parseInt(e.target.value);
+                    this.totalSeats = (isNaN(val) || val < 1) ? 120 : val;
                     this.calculate();
                 });
 
@@ -1063,8 +1084,10 @@
                 document.getElementById('reset-btn').addEventListener('click', () => {
                     this.parties = JSON.parse(JSON.stringify(defaultParties));
                     this.threshold = 3.25;
+                    this.totalSeats = 120;
                     this.agreements = JSON.parse(JSON.stringify(defaultAgreements));
                     document.getElementById('threshold').value = '3.25';
+                    document.getElementById('total-seats').value = '120';
                     this.renderPartyInputs();
                     this.renderAgreementSelects();
                     this.renderAgreementsList();
@@ -1421,8 +1444,17 @@
                 rightEl.textContent = i18n.fmtNum(rightSeats);
                 leftEl.textContent = i18n.fmtNum(leftSeats + arabSeats);
 
-                rightEl.className = 'coalition-seats ' + (rightSeats >= 61 ? 'majority' : 'minority');
-                leftEl.className = 'coalition-seats ' + ((leftSeats + arabSeats) >= 61 ? 'majority' : 'minority');
+                const majority = Math.floor(this.totalSeats / 2) + 1;
+                rightEl.className = 'coalition-seats ' + (rightSeats >= majority ? 'majority' : 'minority');
+                leftEl.className = 'coalition-seats ' + ((leftSeats + arabSeats) >= majority ? 'majority' : 'minority');
+
+                // Update parliament title with dynamic seat count
+                const titleEl = document.querySelector('.parliament-title');
+                if (titleEl) {
+                    titleEl.textContent = i18n.getLang() === 'en'
+                        ? `Knesset Composition (${this.totalSeats} seats)`
+                        : `הרכב הכנסת (${this.totalSeats} מושבים)`;
+                }
             }
 
             renderParliament(results) {
@@ -1471,11 +1503,13 @@
                     }
                 });
 
-                // Arrange in semicircle rows
-                const rows = 5;
+                // Arrange in semicircle rows - adaptive for larger Knesset sizes
+                const seatSpacing = this.totalSeats <= 150 ? 14 : this.totalSeats <= 300 ? 10 : this.totalSeats <= 450 ? 7 : 5;
+                const seatRadius = this.totalSeats <= 150 ? 6 : this.totalSeats <= 300 ? 4 : this.totalSeats <= 450 ? 3 : 2;
+                const rows = this.totalSeats <= 150 ? 5 : this.totalSeats <= 300 ? 7 : this.totalSeats <= 450 ? 9 : 11;
                 const centerX = width / 2;
                 const centerY = height - 30;
-                const minRadius = 80;
+                const minRadius = this.totalSeats <= 150 ? 80 : this.totalSeats <= 300 ? 50 : 35;
                 const maxRadius = Math.min(width / 2 - 20, height - 60);
                 const radiusStep = (maxRadius - minRadius) / (rows - 1);
 
@@ -1485,7 +1519,7 @@
                 for (let r = 0; r < rows; r++) {
                     const radius = minRadius + r * radiusStep;
                     const circumference = Math.PI * radius;
-                    const maxSeats = Math.floor(circumference / 14); // ~14px per seat
+                    const maxSeats = Math.floor(circumference / seatSpacing);
                     const rowSeats = Math.min(maxSeats, remaining);
                     seatsPerRow.push(rowSeats);
                     remaining -= rowSeats;
@@ -1522,10 +1556,10 @@
                     .attr('class', 'seat')
                     .attr('cx', d => d.x)
                     .attr('cy', d => d.y)
-                    .attr('r', 6)
+                    .attr('r', seatRadius)
                     .attr('fill', d => d.color)
                     .attr('stroke', '#000')
-                    .attr('stroke-width', 0.5)
+                    .attr('stroke-width', seatRadius > 3 ? 0.5 : 0.3)
                     .style('cursor', 'pointer')
                     .on('mouseenter', (event, d) => {
                         this.tooltip.html(i18n.partyName(d.party))
@@ -1538,13 +1572,14 @@
                     });
 
                 // Add center text
+                const seatLabel = i18n.getLang() === 'en' ? `${this.totalSeats} seats` : `${this.totalSeats} מושבים`;
                 svg.append('text')
                     .attr('x', centerX)
                     .attr('y', centerY + 15)
                     .attr('text-anchor', 'middle')
                     .attr('fill', 'var(--text-muted)')
                     .attr('font-size', '0.9rem')
-                    .text(i18n.t('seats_120'));
+                    .text(seatLabel);
             }
         }
 
@@ -1675,7 +1710,10 @@
                 ctx.fillStyle = '#f8fafc';
                 ctx.font = 'bold 18px Heebo, sans-serif';
                 ctx.textAlign = 'center';
-                ctx.fillText(i18n.t('knesset_composition'), width / 2, 35);
+                const pngTitle = i18n.getLang() === 'en'
+                    ? `Knesset Composition (${calculator.totalSeats} seats)`
+                    : `הרכב הכנסת (${calculator.totalSeats} מושבים)`;
+                ctx.fillText(pngTitle, width / 2, 35);
 
                 // Center the parliament chart
                 const parliamentX = (width - svgWidth) / 2;
@@ -1820,8 +1858,11 @@
         // Export button listener
         document.getElementById('export-png').addEventListener('click', exportPNG);
 
+        // Make calculator accessible for export
+        let calculator;
+
         // Initialize
-        const calculator = new DHondtCalculator();
+        calculator = new DHondtCalculator();
 
         // Re-render all dynamic content when language changes
         window.addEventListener('langchange', () => {

@@ -96,7 +96,7 @@
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
-            flex-wrap: nowrap;
+            flex-wrap: wrap;
         }
 
         .view-btn {
@@ -533,6 +533,8 @@
                     <button class="pill-btn" data-value="60">60</button>
                     <button class="pill-btn" data-value="90">90</button>
                     <button class="pill-btn" data-value="120">120</button>
+                    <button class="pill-btn" data-value="180">180</button>
+                    <button class="pill-btn" data-value="240">240</button>
                 </div>
             </div>
             <div class="control-group">
@@ -544,6 +546,18 @@
                     <button class="pill-btn" data-value="90">90</button>
                     <button class="pill-btn" data-value="120">120</button>
                 </div>
+            </div>
+            <div class="control-group">
+                <label data-i18n="knesset_size_label">גודל הכנסת:</label>
+                <select class="threshold-select" id="knesset-size-select">
+                    <option value="120" selected>120</option>
+                    <option value="150">150</option>
+                    <option value="180">180</option>
+                    <option value="240">240</option>
+                    <option value="360">360</option>
+                    <option value="480">480</option>
+                    <option value="600">600</option>
+                </select>
             </div>
             <div class="control-group">
                 <label data-i18n="threshold_label">אחוז חסימה:</label>
@@ -566,7 +580,7 @@
             <aside class="results-panel">
                 <!-- Parliament hemicycle -->
                 <div class="panel-section">
-                    <div class="section-title" data-i18n="knesset_composition">הרכב הכנסת (120 מושבים)</div>
+                    <div class="section-title" id="parliament-title">הרכב הכנסת (120 מושבים)</div>
                     <div class="parliament-wrapper">
                         <svg id="parliament-chart"></svg>
                         <div id="parliament-legend" class="parliament-legend" style="display:none"></div>
@@ -915,6 +929,7 @@
         let nationalSeats = 0;
         let threshold = 3.25;
         let regionalMethod = 'dhondt'; // 'dhondt' or 'fptp'
+        let knessetSize = 120;
 
         // ── Data loading ──
         async function loadData() {
@@ -1101,7 +1116,7 @@
 
         // ── Run simulation ──
         function runSimulation() {
-            const regionalSeatCount = 120 - nationalSeats;
+            const regionalSeatCount = knessetSize - nationalSeats;
 
             const totalSeats = {};
             const nationalSeatsByParty = {};
@@ -1110,14 +1125,14 @@
             if (regionalSeatCount === 0) {
                 // Pure national: one region covering all stations, 0 regional seats
                 regions = [geoStations];
-                const nationalSeatResult = dhondtForRegion(stations, 120, threshold);
+                const nationalSeatResult = dhondtForRegion(stations, knessetSize, threshold);
                 for (const [party, s] of Object.entries(nationalSeatResult)) {
                     totalSeats[party] = s;
                     nationalSeatsByParty[party] = s;
                 }
                 regionResults = [{
                     stations: geoStations,
-                    seatCount: 120,
+                    seatCount: knessetSize,
                     seats: { ...nationalSeatResult },
                     eligible: geoStations.reduce((s, st) => s + st.eligible, 0),
                 }];
@@ -1156,9 +1171,9 @@
                 }
             }
 
-            // Verify total seats = 120
+            // Verify total seats
             const totalAllocated = Object.values(totalSeats).reduce((a, b) => a + b, 0);
-            console.assert(totalAllocated === 120, `Total seats should be 120, got ${totalAllocated}`);
+            console.assert(totalAllocated === knessetSize, `Total seats should be ${knessetSize}, got ${totalAllocated}`);
 
             // Build results
             const results = partyConfig.map(p => ({
@@ -1174,6 +1189,12 @@
 
             // Name regions
             regionNames = nameAllRegions(regionResults);
+
+            // Update parliament title
+            const ptEl = document.getElementById('parliament-title');
+            if (ptEl) ptEl.textContent = i18n.getLang() === 'en'
+                ? `Knesset Composition (${knessetSize} seats)`
+                : `הרכב הכנסת (${knessetSize} מושבים)`;
 
             // Render
             renderParliament(results, nationalSeats);
@@ -1205,12 +1226,18 @@
             );
 
             nNational = nNational || 0;
-            const nRegional = 120 - nNational;
+            const nRegional = knessetSize - nNational;
+
+            // Adaptive parameters for larger Knesset sizes
+            const arcRows = knessetSize <= 150 ? 6 : knessetSize <= 300 ? 8 : knessetSize <= 450 ? 10 : 12;
+            const dotR = knessetSize <= 150 ? 10 : knessetSize <= 300 ? 7 : knessetSize <= 450 ? 5 : 3.5;
+            const ringR = dotR * 0.85;
+            const ringWidth = knessetSize <= 300 ? 3 : 2;
 
             // Layout helper: distribute N seats into arc rows
             function layoutArc(seatCount, minR, maxR) {
                 if (seatCount === 0) return [];
-                const rows = 6;
+                const rows = arcRows;
                 const range = maxR - minR;
 
                 // Distribute seats across 6 rows proportionally to circumference
@@ -1259,7 +1286,8 @@
             });
 
             const maxR = Math.min(width / 2 - 10, height - 35);
-            const positions = layoutArc(allSeats.length, 55, maxR);
+            const minArcR = knessetSize <= 150 ? 55 : knessetSize <= 300 ? 35 : 20;
+            const positions = layoutArc(allSeats.length, minArcR, maxR);
             const allPositions = positions.map((p, i) => ({ ...p, ...allSeats[i] }));
 
             // Draw seats — use two circles for national (donut effect)
@@ -1284,19 +1312,19 @@
                 .append('circle')
                 .attr('cx', d => d.x)
                 .attr('cy', d => d.y)
-                .attr('r', 10)
+                .attr('r', dotR)
                 .attr('fill', d => d.color)
                 .attr('stroke', '#000')
-                .attr('stroke-width', 0.5);
+                .attr('stroke-width', dotR > 5 ? 0.5 : 0.3);
 
             seatGroups.filter(d => d.type === 'national')
                 .append('circle')
                 .attr('cx', d => d.x)
                 .attr('cy', d => d.y)
-                .attr('r', 8.5)
+                .attr('r', ringR)
                 .attr('fill', 'none')
                 .attr('stroke', d => d.color)
-                .attr('stroke-width', 3);
+                .attr('stroke-width', ringWidth);
 
             const legendEl = document.getElementById('parliament-legend');
             legendEl.style.display = '';
@@ -1325,8 +1353,9 @@
             const leftEl = document.getElementById('left-seats');
             rightEl.textContent = rightSeats;
             leftEl.textContent = leftSeats + arabSeats;
-            rightEl.className = 'coalition-seats ' + (rightSeats >= 61 ? 'majority' : 'minority');
-            leftEl.className = 'coalition-seats ' + ((leftSeats + arabSeats) >= 61 ? 'majority' : 'minority');
+            const majority = Math.floor(knessetSize / 2) + 1;
+            rightEl.className = 'coalition-seats ' + (rightSeats >= majority ? 'majority' : 'minority');
+            leftEl.className = 'coalition-seats ' + ((leftSeats + arabSeats) >= majority ? 'majority' : 'minority');
         }
 
         // ── Comparison table ──
@@ -1779,7 +1808,7 @@
 
         // ── Controls ──
         function updateRegionPillStates() {
-            const regionalSeats = 120 - nationalSeats;
+            const regionalSeats = knessetSize - nationalSeats;
             const pills = [...document.querySelectorAll('#region-pills .pill-btn')];
             pills.forEach(btn => {
                 const val = parseInt(btn.dataset.value);
@@ -1795,6 +1824,33 @@
             }
             // Always update visual active state to match numRegions
             pills.forEach(b => b.classList.toggle('active', parseInt(b.dataset.value) === numRegions));
+        }
+
+        function rebuildNationalPills() {
+            const container = document.getElementById('national-pills');
+            // Generate pill values: 0, then steps of knessetSize/4 up to knessetSize
+            const step = Math.round(knessetSize / 4 / 10) * 10 || 30;
+            const values = [0];
+            for (let v = step; v < knessetSize; v += step) values.push(v);
+            values.push(knessetSize);
+            container.innerHTML = values.map(v =>
+                `<button class="pill-btn${v === nationalSeats ? ' active' : ''}" data-value="${v}">${v}</button>`
+            ).join('');
+            // Re-attach listeners
+            container.querySelectorAll('.pill-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    container.querySelectorAll('.pill-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    nationalSeats = parseInt(btn.dataset.value);
+                    updateRegionPillStates();
+                    runSimulation();
+                });
+            });
+            // Ensure nationalSeats is valid
+            if (nationalSeats > knessetSize) {
+                nationalSeats = 0;
+                container.querySelector('[data-value="0"]').classList.add('active');
+            }
         }
 
         function setupControls() {
@@ -1817,6 +1873,14 @@
                     updateRegionPillStates();
                     runSimulation();
                 });
+            });
+
+            // Knesset size select
+            document.getElementById('knesset-size-select').addEventListener('change', (e) => {
+                knessetSize = parseInt(e.target.value);
+                rebuildNationalPills();
+                updateRegionPillStates();
+                runSimulation();
             });
 
             // Threshold select

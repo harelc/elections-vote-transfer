@@ -26,6 +26,37 @@
         .station-dot { transition: opacity 0.2s; }
 
         /* Color FABs */
+        .proj-toggle-mobile {
+            position: fixed;
+            top: 52px;
+            right: 8px;
+            z-index: 400;
+            display: flex;
+            gap: 2px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 2px;
+        }
+        .proj-pill {
+            padding: 4px 10px;
+            border: none;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        .proj-pill.active {
+            background: var(--accent);
+            color: white;
+        }
+        .proj-pill:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
         .color-fabs {
             position: fixed;
             top: 52px;
@@ -166,6 +197,12 @@
         <div class="loading-overlay" id="loading"><div class="spinner"></div></div>
     </div>
 
+    <!-- Projection Toggle -->
+    <div class="proj-toggle-mobile" id="proj-toggle">
+        <button class="proj-pill active" data-proj="tsne">t-SNE</button>
+        <button class="proj-pill" data-proj="umap">UMAP</button>
+    </div>
+
     <!-- Color FABs -->
     <div class="color-fabs" id="color-fabs"></div>
 
@@ -232,11 +269,17 @@
             this.selectedSettlements = [];
             this.partyScaleMax = 50;
             this.svgGroup = null;
+            this.projectionMode = 'tsne'; // 'tsne' or 'umap'
 
             this.initPills();
             this.initEvents();
             this.loadData();
         }
+
+        // Coordinate accessors based on projection mode
+        getX(d) { return this.projectionMode === 'umap' && d.ux != null ? d.ux : d.x; }
+        getY(d) { return this.projectionMode === 'umap' && d.uy != null ? d.uy : d.y; }
+        hasUMAP() { return this.data && this.data.stations.length > 0 && this.data.stations[0].ux != null; }
 
         initPills() {
             const pills = document.getElementById('election-pills');
@@ -263,6 +306,17 @@
             document.getElementById('station-search').oninput = e =>
                 this.handleStationSearch(e.target.value);
 
+            // Projection toggle
+            document.querySelectorAll('.proj-pill').forEach(btn => {
+                btn.onclick = () => {
+                    if (btn.disabled) return;
+                    this.projectionMode = btn.dataset.proj;
+                    document.querySelectorAll('.proj-pill').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.render();
+                };
+            });
+
             let timer;
             window.addEventListener('resize', () => {
                 clearTimeout(timer);
@@ -287,9 +341,22 @@
 
                 this.buildSettlements();
                 this.buildColorFabs();
+                this.updateProjToggle();
                 this.render();
             } catch (err) { console.error(err); }
             document.getElementById('loading').style.display = 'none';
+        }
+
+        updateProjToggle() {
+            const umapBtn = document.querySelector('.proj-pill[data-proj="umap"]');
+            if (umapBtn) {
+                umapBtn.disabled = !this.hasUMAP();
+                if (!this.hasUMAP() && this.projectionMode === 'umap') {
+                    this.projectionMode = 'tsne';
+                    document.querySelectorAll('.proj-pill').forEach(b => b.classList.remove('active'));
+                    document.querySelector('.proj-pill[data-proj="tsne"]').classList.add('active');
+                }
+            }
         }
 
         async switchElection(id) {
@@ -305,6 +372,7 @@
                 this.data = await res.json();
                 this.buildSettlements();
                 this.buildColorFabs();
+                this.updateProjToggle();
                 this.render();
             } catch (err) { console.error(err); }
             document.getElementById('loading').style.display = 'none';
@@ -419,8 +487,8 @@
             this.svgGroup = svg.append('g');
 
             const stations = this.data.stations;
-            const xExt = d3.extent(stations, d => d.x);
-            const yExt = d3.extent(stations, d => d.y);
+            const xExt = d3.extent(stations, d => this.getX(d));
+            const yExt = d3.extent(stations, d => this.getY(d));
 
             this.xScale = d3.scaleLinear()
                 .domain([xExt[0] - 5, xExt[1] + 5])
@@ -443,8 +511,8 @@
                     .data(stations)
                     .join('circle')
                     .attr('class', 'bg-dot')
-                    .attr('cx', d => this.xScale(d.x))
-                    .attr('cy', d => this.yScale(d.y))
+                    .attr('cx', d => this.xScale(this.getX(d)))
+                    .attr('cy', d => this.yScale(this.getY(d)))
                     .attr('r', 1.5)
                     .attr('fill', '#374151')
                     .attr('opacity', 0.25)
@@ -456,8 +524,8 @@
                 .data(filtered)
                 .join('circle')
                 .attr('class', 'station-dot')
-                .attr('cx', d => this.xScale(d.x))
-                .attr('cy', d => this.yScale(d.y))
+                .attr('cx', d => this.xScale(this.getX(d)))
+                .attr('cy', d => this.yScale(this.getY(d)))
                 .attr('r', d => this.radiusScale(d.v || 0) * (hasFilter ? 1.5 : 1))
                 .attr('fill', d => this.getColor(d) || '#374151')
                 .attr('opacity', d => {
@@ -634,7 +702,7 @@
                     this.showStationSheet(s);
                     // Zoom to station
                     const svg = d3.select('#tsne-chart');
-                    const x = this.xScale(s.x), y = this.yScale(s.y);
+                    const x = this.xScale(this.getX(s)), y = this.yScale(this.getY(s));
                     const w = svg.node().clientWidth, h = svg.node().clientHeight;
                     const scale = 4;
                     svg.transition().duration(500).call(

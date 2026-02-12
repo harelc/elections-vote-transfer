@@ -405,7 +405,7 @@
                 </div>
             </div>
             <svg id="parliament-svg"></svg>
-            <div class="parliament-center-text" data-i18n="seats_120">120 מושבים</div>
+            <div class="parliament-center-text" id="seats-label">120 מושבים</div>
         </div>
         <div class="results-area" id="results-list"></div>
     </div>
@@ -444,6 +444,11 @@
             <label data-i18n="threshold_pct">אחוז חסימה:</label>
             <input type="number" class="threshold-input" id="threshold-input" value="3.25" min="0" max="10" step="0.25">
             <span>%</span>
+        </div>
+        <div class="threshold-row">
+            <label data-i18n="knesset_size_label">גודל הכנסת:</label>
+            <input type="number" class="threshold-input" id="knesset-size-input" value="120" min="10" max="600" step="10">
+            <span data-i18n="seats_mandatim">מנדטים</span>
         </div>
 
         <div class="edit-section-title" data-i18n="surplus_agreements">הסכמי עודפים</div>
@@ -567,9 +572,19 @@
         // ---- Threshold ----
         setupThreshold() {
             document.getElementById('threshold-input').addEventListener('change', (e) => {
-                this.threshold = parseFloat(e.target.value) || 3.25;
+                const val = parseFloat(e.target.value);
+                this.threshold = isNaN(val) ? 3.25 : val;
                 this.calculate();
             });
+            // Knesset size
+            const sizeEl = document.getElementById('knesset-size-input');
+            if (sizeEl) {
+                sizeEl.addEventListener('change', (e) => {
+                    const val = parseInt(e.target.value);
+                    this.totalSeats = (isNaN(val) || val < 1) ? 120 : Math.min(val, 600);
+                    this.calculate();
+                });
+            }
         }
 
         // ---- Reset ----
@@ -578,7 +593,10 @@
                 this.parties = JSON.parse(JSON.stringify(defaultParties));
                 this.agreements = JSON.parse(JSON.stringify(defaultAgreements));
                 this.threshold = 3.25;
+                this.totalSeats = 120;
                 document.getElementById('threshold-input').value = '3.25';
+                const sizeEl = document.getElementById('knesset-size-input');
+                if (sizeEl) sizeEl.value = '120';
                 this.closeSheets();
                 this.calculate();
             });
@@ -772,6 +790,10 @@
 
             this.renderResults(results);
             this.renderParliament(results);
+
+            // Update seats label
+            const seatsLabel = document.getElementById('seats-label');
+            if (seatsLabel) seatsLabel.textContent = i18n.getLang() === 'en' ? `${this.totalSeats} seats` : `${this.totalSeats} מושבים`;
         }
 
         calcMarginals(thresholdVotes) {
@@ -925,8 +947,9 @@
             const lEl = document.getElementById('left-seats');
             rEl.textContent = rightSeats;
             lEl.textContent = leftArabSeats;
-            rEl.className = 'bloc-seats ' + (rightSeats >= 61 ? 'majority' : 'minority');
-            lEl.className = 'bloc-seats ' + (leftArabSeats >= 61 ? 'majority' : 'minority');
+            const majority = Math.floor(this.totalSeats / 2) + 1;
+            rEl.className = 'bloc-seats ' + (rightSeats >= majority ? 'majority' : 'minority');
+            lEl.className = 'bloc-seats ' + (leftArabSeats >= majority ? 'majority' : 'minority');
         }
 
         // ---- Parliament semicircle ----
@@ -947,19 +970,20 @@
                 for (let i = 0; i < p.seats; i++) seatArr.push({ party: p.name, color: p.color });
             });
 
-            const rows = 5;
+            const rows = this.totalSeats <= 150 ? 5 : this.totalSeats <= 300 ? 7 : this.totalSeats <= 450 ? 9 : 11;
             const centerX = width / 2;
             const centerY = height - 10;
-            const minR = Math.min(60, height * 0.2);
+            const minR = this.totalSeats <= 150 ? Math.min(60, height * 0.2) : this.totalSeats <= 300 ? Math.min(35, height * 0.15) : 20;
             const maxR = Math.min(width / 2 - 10, height - 30);
             const rStep = (maxR - minR) / (rows - 1);
 
+            const seatSpacing = this.totalSeats <= 150 ? null : this.totalSeats <= 300 ? 8 : this.totalSeats <= 450 ? 6 : 4;
             const seatsPerRow = [];
             let remaining = this.totalSeats;
             for (let r = 0; r < rows; r++) {
                 const radius = minR + r * rStep;
                 const circ = Math.PI * radius;
-                const dotSize = Math.max(8, Math.min(14, width / 35));
+                const dotSize = seatSpacing || Math.max(8, Math.min(14, width / 35));
                 const max = Math.floor(circ / (dotSize + 2));
                 const n = Math.min(max, remaining);
                 seatsPerRow.push(n);
@@ -979,7 +1003,8 @@
 
             allPos.sort((a, b) => b.angle - a.angle);
 
-            const dotR = Math.max(3, Math.min(6, width / 80));
+            const dotR = this.totalSeats <= 150 ? Math.max(3, Math.min(6, width / 80))
+                : this.totalSeats <= 300 ? 2.5 : this.totalSeats <= 450 ? 2 : 1.5;
             const positions = allPos.slice(0, seatArr.length).map((pos, i) => ({ ...pos, ...seatArr[i] }));
 
             d3.select(svg).selectAll('circle')
