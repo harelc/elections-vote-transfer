@@ -17,6 +17,7 @@ class VoteTransferSankey {
         this.svg = null;
         this.g = null;
         this.percentMode = 'source'; // 'source' or 'target'
+        this.abstentionMode = false;
 
         this.margin = { top: 20, right: 100, bottom: 20, left: 100 };
 
@@ -70,6 +71,12 @@ class VoteTransferSankey {
         const toggleBtn = document.getElementById('percent-toggle');
         if (toggleBtn) {
             toggleBtn.addEventListener('click', () => this.togglePercentMode());
+        }
+
+        // Abstention toggle (desktop)
+        const abstentionBtn = document.getElementById('abstention-toggle');
+        if (abstentionBtn) {
+            abstentionBtn.addEventListener('click', () => this.toggleAbstention());
         }
 
         // Export PNG button
@@ -260,6 +267,12 @@ class VoteTransferSankey {
             mobileToggle.addEventListener('click', () => this.togglePercentMode());
         }
 
+        // Mobile abstention toggle
+        const mobileAbstentionBtn = document.getElementById('abstention-btn');
+        if (mobileAbstentionBtn) {
+            mobileAbstentionBtn.addEventListener('click', () => this.toggleAbstention());
+        }
+
         // Show legends button
         const showLegendsBtn = document.getElementById('show-legends-btn');
         if (showLegendsBtn) {
@@ -317,6 +330,25 @@ class VoteTransferSankey {
         if (mobileToggleValue) {
             mobileToggleValue.textContent = i18n.t(isSource ? 'pct_prev_short' : 'pct_next_short');
         }
+    }
+
+    toggleAbstention() {
+        this.abstentionMode = !this.abstentionMode;
+
+        // Update desktop toggle
+        const abstentionValue = document.getElementById('abstention-value');
+        if (abstentionValue) {
+            abstentionValue.textContent = i18n.t(this.abstentionMode ? 'abstention_on' : 'abstention_off');
+        }
+
+        // Update mobile toggle
+        const mobileAbstentionBtn = document.getElementById('abstention-btn');
+        if (mobileAbstentionBtn) {
+            mobileAbstentionBtn.textContent = i18n.t(this.abstentionMode ? 'abstention_on_short' : 'abstention_off_short');
+        }
+
+        // Reload data with the appropriate file
+        this.loadTransition(this.currentTransition);
     }
 
     showBottomSheet(link) {
@@ -476,7 +508,8 @@ class VoteTransferSankey {
         this.container.innerHTML = `<div class="loading">${i18n.t('loading')}</div>`;
 
         try {
-            const url = `/data/transfer_${transitionId}.json`;
+            const suffix = this.abstentionMode ? '_abstention' : '';
+            const url = `/data/transfer_${transitionId}${suffix}.json`;
             console.log('Fetching:', url);
 
             const response = await fetch(url);

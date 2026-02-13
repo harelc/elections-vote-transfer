@@ -318,6 +318,22 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 - Per-settlement deep dive with Wikipedia info, voting trends, party breakdown
 - URL parameter: `?name=<settlement_name>`
 
+## Paper
+
+The `paper/` directory contains an academic paper (LaTeX) describing the methodology and findings.
+
+```bash
+# Compile the paper (uses tectonic, NOT pdflatex/latexmk)
+cd paper && tectonic paper.tex
+
+# Key files:
+# paper/paper.tex         — Main paper source
+# paper/references.bib    — Bibliography
+# paper/figures/           — Generated figures (PDF)
+# paper/generate_figures.py — Script to regenerate figures
+# paper/bootstrap_analysis.py — Bootstrap confidence interval analysis
+```
+
 ## Common Issues
 
 1. **Browser cache**: After regenerating data, hard refresh (Cmd+Shift+R) or use incognito

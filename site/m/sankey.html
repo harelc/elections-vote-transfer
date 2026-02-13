@@ -111,6 +111,8 @@
             bottom: calc(54px + var(--safe-bottom));
             right: 8px;
             z-index: 400;
+            display: flex;
+            gap: 6px;
         }
 
         .pct-toggle button {
@@ -165,6 +167,7 @@
     <!-- Percent Toggle -->
     <div class="pct-toggle">
         <button id="pct-btn" data-i18n="pct_prev_short">% מהקודמות</button>
+        <button id="abstention-btn" data-i18n="abstention_off_short">ללא נעדרים</button>
     </div>
 
     <!-- Legend FAB -->
@@ -195,6 +198,7 @@
             this.data = null;
             this.officialResults = null;
             this.percentMode = 'source';
+            this.abstentionMode = false;
             this.nodes = null;
             this.links = null;
 
@@ -237,6 +241,14 @@
                     i18n.t(this.percentMode === 'source' ? 'pct_prev_short' : 'pct_next_short');
             };
 
+            // Abstention toggle
+            document.getElementById('abstention-btn').onclick = () => {
+                this.abstentionMode = !this.abstentionMode;
+                document.getElementById('abstention-btn').textContent =
+                    i18n.t(this.abstentionMode ? 'abstention_on_short' : 'abstention_off_short');
+                this.loadTransition(this.currentTransition);
+            };
+
             // Legend button
             document.getElementById('legend-btn').onclick = () => this.showLegendSheet();
 
@@ -258,7 +270,8 @@
         async loadTransition(id) {
             document.getElementById('loading').style.display = 'flex';
             try {
-                const res = await fetch(`../data/transfer_${id}.json`);
+                const suffix = this.abstentionMode ? '_abstention' : '';
+                const res = await fetch(`../data/transfer_${id}${suffix}.json`);
                 this.data = await res.json();
                 this.updateElectionStrip();
                 this.render();

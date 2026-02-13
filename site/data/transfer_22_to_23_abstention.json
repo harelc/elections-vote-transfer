@@ -190,6 +190,18 @@
         "founded": 2019,
         "description": "ברית מרצ, ישראל דמוקרטית (אהוד ברק) והירוקים בהנהגת ניצן הורוביץ"
       }
+    },
+    {
+      "name": "לא הצביעו",
+      "symbol": "abstain",
+      "votes": 2204587,
+      "seats": null,
+      "color": "#9ca3af",
+      "info": {
+        "name": "לא הצביעו",
+        "name_en": "Did not vote",
+        "color": "#9ca3af"
+      }
     }
   ],
   "nodes_to": [
@@ -344,6 +356,18 @@
         "founded": 2019,
         "description": "ברית מפלגות הימין הדתי-לאומי בהנהגת נפתלי בנט"
       }
+    },
+    {
+      "name": "לא הצביעו",
+      "symbol": "abstain",
+      "votes": 2168329,
+      "seats": null,
+      "color": "#9ca3af",
+      "info": {
+        "name": "לא הצביעו",
+        "name_en": "Did not vote",
+        "color": "#9ca3af"
+      }
     }
   ],
   "transfers": [
@@ -352,159 +376,215 @@
       "source_symbol": "פה",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 29414,
-      "percentage": 2.8
+      "votes": 21956,
+      "percentage": 2.1
     },
     {
       "source": "כחול לבן",
       "source_symbol": "פה",
       "target": "כחול לבן",
       "target_symbol": "פה",
-      "votes": 1047564,
-      "percentage": 98.4
+      "votes": 1043907,
+      "percentage": 98.0
+    },
+    {
+      "source": "כחול לבן",
+      "source_symbol": "פה",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 27402,
+      "percentage": 2.6
     },
     {
       "source": "הליכוד",
       "source_symbol": "מחל",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 1037457,
-      "percentage": 100.3
+      "votes": 1020887,
+      "percentage": 98.7
     },
     {
       "source": "הליכוד",
       "source_symbol": "מחל",
       "target": "ש״ס",
       "target_symbol": "שס",
-      "votes": 15843,
-      "percentage": 1.5
+      "votes": 8907,
+      "percentage": 0.9
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 41753,
+      "percentage": 4.0
     },
     {
       "source": "הרשימה המשותפת",
       "source_symbol": "ודעם",
       "target": "הרשימה המשותפת",
       "target_symbol": "ודעם",
-      "votes": 457846,
-      "percentage": 99.8
+      "votes": 456168,
+      "percentage": 99.4
     },
     {
       "source": "ש״ס",
       "source_symbol": "שס",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 22766,
-      "percentage": 7.3
+      "votes": 15879,
+      "percentage": 5.1
     },
     {
       "source": "ש״ס",
       "source_symbol": "שס",
       "target": "ש״ס",
       "target_symbol": "שס",
-      "votes": 289781,
-      "percentage": 92.8
+      "votes": 297932,
+      "percentage": 95.4
     },
     {
       "source": "ישראל ביתנו",
       "source_symbol": "ל",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 46080,
-      "percentage": 15.6
+      "votes": 26505,
+      "percentage": 9.0
     },
     {
       "source": "ישראל ביתנו",
       "source_symbol": "ל",
       "target": "ישראל ביתנו",
       "target_symbol": "ל",
-      "votes": 248483,
-      "percentage": 84.0
+      "votes": 244877,
+      "percentage": 82.8
     },
     {
-      "source": "יהדות התורה",
-      "source_symbol": "ג",
-      "target": "ש״ס",
-      "target_symbol": "שס",
-      "votes": 7505,
-      "percentage": 2.9
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 25390,
+      "percentage": 8.6
     },
     {
       "source": "יהדות התורה",
       "source_symbol": "ג",
       "target": "יהדות התורה",
       "target_symbol": "ג",
-      "votes": 249868,
-      "percentage": 97.2
+      "votes": 246777,
+      "percentage": 96.0
+    },
+    {
+      "source": "יהדות התורה",
+      "source_symbol": "ג",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 7350,
+      "percentage": 2.9
     },
     {
       "source": "ימינה",
       "source_symbol": "טב",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 31480,
-      "percentage": 13.4
+      "votes": 30745,
+      "percentage": 13.0
     },
     {
       "source": "ימינה",
       "source_symbol": "טב",
       "target": "ימינה",
       "target_symbol": "טב",
-      "votes": 203786,
-      "percentage": 86.4
+      "votes": 204493,
+      "percentage": 86.7
     },
     {
       "source": "העבודה-גשר",
       "source_symbol": "אמת",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 30045,
-      "percentage": 15.1
+      "votes": 17984,
+      "percentage": 9.0
     },
     {
       "source": "העבודה-גשר",
       "source_symbol": "אמת",
       "target": "כחול לבן",
       "target_symbol": "פה",
-      "votes": 39990,
-      "percentage": 20.0
+      "votes": 41112,
+      "percentage": 20.6
     },
     {
       "source": "העבודה-גשר",
       "source_symbol": "אמת",
       "target": "עבודה-גשר-מרצ",
       "target_symbol": "אמת",
-      "votes": 129705,
-      "percentage": 65.0
+      "votes": 125345,
+      "percentage": 62.8
+    },
+    {
+      "source": "העבודה-גשר",
+      "source_symbol": "אמת",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 16951,
+      "percentage": 8.5
     },
     {
       "source": "המחנה הדמוקרטי",
       "source_symbol": "מרצ",
       "target": "כחול לבן",
       "target_symbol": "פה",
-      "votes": 38971,
-      "percentage": 21.8
+      "votes": 45656,
+      "percentage": 25.6
     },
     {
       "source": "המחנה הדמוקרטי",
       "source_symbol": "מרצ",
+      "target": "עבודה-גשר-מרצ",
+      "target_symbol": "אמת",
+      "votes": 120876,
+      "percentage": 67.7
+    },
+    {
+      "source": "המחנה הדמוקרטי",
+      "source_symbol": "מרצ",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 12458,
+      "percentage": 7.0
+    },
+    {
+      "source": "לא הצביעו",
+      "source_symbol": "abstain",
+      "target": "הליכוד",
+      "target_symbol": "מחל",
+      "votes": 75062,
+      "percentage": 3.4
+    },
+    {
+      "source": "לא הצביעו",
+      "source_symbol": "abstain",
       "target": "הרשימה המשותפת",
       "target_symbol": "ודעם",
-      "votes": 26216,
-      "percentage": 14.7
+      "votes": 130146,
+      "percentage": 5.9
     },
     {
-      "source": "המחנה הדמוקרטי",
-      "source_symbol": "מרצ",
-      "target": "עבודה-גשר-מרצ",
-      "target_symbol": "אמת",
-      "votes": 113956,
-      "percentage": 63.8
+      "source": "לא הצביעו",
+      "source_symbol": "abstain",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 1998430,
+      "percentage": 90.6
     }
   ],
   "stats": {
     "common_precincts": 9745,
-    "r_squared": 0.9637,
-    "total_votes_from": 4037361,
-    "total_votes_to": 4229247,
-    "generated_at": "2026-02-13 13:51:37"
+    "r_squared": 0.9599,
+    "total_votes_from": 6241948,
+    "total_votes_to": 6397576,
+    "generated_at": "2026-02-13 13:53:08"
   }
 }

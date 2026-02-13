@@ -71,6 +71,12 @@
         in_new_election:       { he: 'בבחירות החדשות', en: 'In new election' },
         official_results:      { he: 'תוצאות רשמיות - כנסת ה-{n}', en: 'Official results – Knesset {n}' },
         below_threshold:       { he: 'לא עברה', en: 'Below threshold' },
+        abstention_label:      { he: 'הצג לא מצביעים', en: 'Show non-voters' },
+        abstention_off:        { he: 'ללא', en: 'Hidden' },
+        abstention_on:         { he: 'מוצג', en: 'Shown' },
+        abstention_off_short:  { he: 'ללא לא מצביעים', en: 'No non-voters' },
+        abstention_on_short:   { he: 'עם לא מצביעים', en: 'With non-voters' },
+        did_not_vote:          { he: 'לא הצביעו', en: 'Did not vote' },
 
         /* ── T-SNE page ── */
         tsne_title:            { he: 'התפלגות קלפיות', en: 'Ballot Distribution' },

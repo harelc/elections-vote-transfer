@@ -446,13 +446,13 @@ body {
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     padding: var(--spacing-lg);
-    min-height: 600px;
+    min-height: 800px;
     overflow: hidden;
 }
 
 #sankey-chart {
     width: 100%;
-    height: 600px;
+    height: 800px;
 }
 
 /* Legend */
@@ -981,8 +981,8 @@ body {
 
     #sankey-chart {
         height: calc(100vh - 280px);
-        min-height: 300px;
-        max-height: 500px;
+        min-height: 400px;
+        max-height: 700px;
     }
 
     /* Mobile controls - fixed bottom bar */

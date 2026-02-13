@@ -32,7 +32,7 @@ pd.options.mode.chained_assignment = None
 class VoteTransferAnalyzer:
     """Analyzes vote transfers between consecutive elections."""
 
-    def __init__(self, method='convex', min_flow_threshold=5000, verbose=False):
+    def __init__(self, method='convex', min_flow_threshold=5000, verbose=False, include_abstention=False):
         """
         Initialize the analyzer.
 
@@ -40,10 +40,12 @@ class VoteTransferAnalyzer:
             method: Optimization method ('convex', 'nnls', or 'closed_form')
             min_flow_threshold: Minimum vote flow to include in output
             verbose: Whether to print detailed output
+            include_abstention: Whether to include "did not vote" pseudo-party
         """
         self.method = method
         self.min_flow_threshold = min_flow_threshold
         self.verbose = verbose
+        self.include_abstention = include_abstention
 
     def load_election_data(self, election_id):
         """Load and prepare election data from CSV."""
@@ -212,6 +214,23 @@ class VoteTransferAnalyzer:
         X = votes_from.loc[from_matched_ids].values.astype(float)
         Y = votes_to.loc[to_matched_ids].values.astype(float)
 
+        # Optionally add "did not vote" pseudo-party column
+        if self.include_abstention:
+            dnv_from = (df_from['בזב'] - df_from['מצביעים']).clip(lower=0)
+            dnv_to = (df_to['בזב'] - df_to['מצביעים']).clip(lower=0)
+
+            dnv_from_matched = dnv_from.loc[from_matched_ids].values.astype(float).reshape(-1, 1)
+            dnv_to_matched = dnv_to.loc[to_matched_ids].values.astype(float).reshape(-1, 1)
+
+            X = np.hstack([X, dnv_from_matched])
+            Y = np.hstack([Y, dnv_to_matched])
+
+            abstention_name = 'לא הצביעו'
+            names_from = list(names_from) + [abstention_name]
+            names_to = list(names_to) + [abstention_name]
+            symbols_from = list(symbols_from) + ['abstain']
+            symbols_to = list(symbols_to) + ['abstain']
+
         # Compute transfer matrix
         logger.info(f"Computing transfer matrix using {self.method} method...")
 
@@ -230,7 +249,11 @@ class VoteTransferAnalyzer:
         logger.info(f"R² = {r_squared:.4f}")
 
         # Compute vote movements
+        # Use national totals (all precincts, not just matched)
         total_votes_from = votes_from.sum().values
+        if self.include_abstention:
+            national_dnv_from = (df_from['בזב'] - df_from['מצביעים']).clip(lower=0).sum()
+            total_votes_from = np.append(total_votes_from, national_dnv_from)
         vote_movements = M * total_votes_from[:, np.newaxis]
 
         # Build transfer data for JSON
@@ -254,33 +277,61 @@ class VoteTransferAnalyzer:
 
         # Build node data
         seats_from = parties_from.get('seats', [None] * len(names_from))
+        abstention_info = {
+            'name': 'לא הצביעו',
+            'name_en': 'Did not vote',
+            'color': '#9ca3af'
+        }
         nodes_from = []
         for i, name in enumerate(names_from):
             symbol = symbols_from[i]
-            info = get_party_info(symbol, election_from)
-            nodes_from.append({
-                'name': name,
-                'symbol': symbol,
-                'votes': int(total_votes_from[i]),
-                'seats': seats_from[i] if i < len(seats_from) else None,
-                'color': info['color'],
-                'info': info
-            })
+            if symbol == 'abstain':
+                nodes_from.append({
+                    'name': name,
+                    'symbol': symbol,
+                    'votes': int(total_votes_from[i]),
+                    'seats': None,
+                    'color': '#9ca3af',
+                    'info': abstention_info
+                })
+            else:
+                info = get_party_info(symbol, election_from)
+                nodes_from.append({
+                    'name': name,
+                    'symbol': symbol,
+                    'votes': int(total_votes_from[i]),
+                    'seats': seats_from[i] if i < len(seats_from) else None,
+                    'color': info['color'],
+                    'info': info
+                })
 
         total_votes_to = votes_to.sum().values
+        if self.include_abstention:
+            national_dnv_to = (df_to['בזב'] - df_to['מצביעים']).clip(lower=0).sum()
+            total_votes_to = np.append(total_votes_to, national_dnv_to)
         seats_to = parties_to.get('seats', [None] * len(names_to))
         nodes_to = []
         for i, name in enumerate(names_to):
             symbol = symbols_to[i]
-            info = get_party_info(symbol, election_to)
-            nodes_to.append({
-                'name': name,
-                'symbol': symbol,
-                'votes': int(total_votes_to[i]),
-                'seats': seats_to[i] if i < len(seats_to) else None,
-                'color': info['color'],
-                'info': info
-            })
+            if symbol == 'abstain':
+                nodes_to.append({
+                    'name': name,
+                    'symbol': symbol,
+                    'votes': int(total_votes_to[i]),
+                    'seats': None,
+                    'color': '#9ca3af',
+                    'info': abstention_info
+                })
+            else:
+                info = get_party_info(symbol, election_to)
+                nodes_to.append({
+                    'name': name,
+                    'symbol': symbol,
+                    'votes': int(total_votes_to[i]),
+                    'seats': seats_to[i] if i < len(seats_to) else None,
+                    'color': info['color'],
+                    'info': info
+                })
 
         return {
             'from_election': {
@@ -316,12 +367,20 @@ class VoteTransferAnalyzer:
         }
 
 
-def main():
-    """Generate transfer data for all consecutive election pairs."""
+def run_analysis(include_abstention=False):
+    """Run transfer analysis for all election pairs.
+
+    Args:
+        include_abstention: Whether to include "did not vote" pseudo-party
+    """
+    suffix = '_abstention' if include_abstention else ''
+    label = ' (with abstention)' if include_abstention else ''
+
     analyzer = VoteTransferAnalyzer(
         method='convex',
         min_flow_threshold=5000,
-        verbose=False
+        verbose=False,
+        include_abstention=include_abstention
     )
 
     # Election pairs to analyze
@@ -339,7 +398,7 @@ def main():
 
     for from_id, to_id in pairs:
         logger.info(f"\n{'='*60}")
-        logger.info(f"Analyzing {from_id} → {to_id}")
+        logger.info(f"Analyzing {from_id} → {to_id}{label}")
         logger.info('='*60)
 
         try:
@@ -348,20 +407,32 @@ def main():
             all_data['transitions'][key] = data
 
             # Save individual file
-            output_file = f"data/transfer_{from_id}_to_{to_id}.json"
+            output_file = f"data/transfer_{from_id}_to_{to_id}{suffix}.json"
             Path('data').mkdir(exist_ok=True)
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             logger.info(f"Saved {output_file}")
 
         except Exception as e:
-            logger.error(f"Failed to analyze {from_id} → {to_id}: {e}")
+            logger.error(f"Failed to analyze {from_id} → {to_id}{label}: {e}")
             raise
 
     # Save combined file
-    with open('data/all_transfers.json', 'w', encoding='utf-8') as f:
+    combined_file = f'data/all_transfers{suffix}.json'
+    with open(combined_file, 'w', encoding='utf-8') as f:
         json.dump(all_data, f, ensure_ascii=False, indent=2)
-    logger.info("\nSaved data/all_transfers.json")
+    logger.info(f"\nSaved {combined_file}")
+
+
+def main():
+    """Generate transfer data for all consecutive election pairs."""
+    # Regular analysis
+    logger.info("=== Regular transfer analysis ===")
+    run_analysis(include_abstention=False)
+
+    # Abstention analysis
+    logger.info("\n=== Abstention transfer analysis ===")
+    run_analysis(include_abstention=True)
 
     logger.info("\nDone!")
 
