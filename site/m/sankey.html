@@ -199,6 +199,7 @@
             this.officialResults = null;
             this.percentMode = 'source';
             this.abstentionMode = false;
+            this.noAbstentionTransitions = ['16_to_17', '17_to_18'];
             this.nodes = null;
             this.links = null;
 
@@ -210,6 +211,11 @@
         initPills() {
             const pills = document.getElementById('transition-pills');
             const transitions = [
+                { id: '16_to_17', from: '16', to: '17' },
+                { id: '17_to_18', from: '17', to: '18' },
+                { id: '18_to_19', from: '18', to: '19' },
+                { id: '19_to_20', from: '19', to: '20' },
+                { id: '20_to_21', from: '20', to: '21' },
                 { id: '21_to_22', from: '21', to: '22' },
                 { id: '22_to_23', from: '22', to: '23' },
                 { id: '23_to_24', from: '23', to: '24' },
@@ -269,6 +275,17 @@
 
         async loadTransition(id) {
             document.getElementById('loading').style.display = 'flex';
+            // Disable abstention for transitions with unreliable data
+            const abstentionDisabled = this.noAbstentionTransitions.includes(id);
+            const abBtn = document.getElementById('abstention-btn');
+            if (abstentionDisabled && this.abstentionMode) {
+                this.abstentionMode = false;
+                if (abBtn) abBtn.textContent = i18n.t('abstention_off_short');
+            }
+            if (abBtn) {
+                abBtn.disabled = abstentionDisabled;
+                abBtn.style.opacity = abstentionDisabled ? '0.4' : '';
+            }
             try {
                 const suffix = this.abstentionMode ? '_abstention' : '';
                 const res = await fetch(`../data/transfer_${id}${suffix}.json`);

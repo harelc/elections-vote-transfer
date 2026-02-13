@@ -18,6 +18,8 @@ class VoteTransferSankey {
         this.g = null;
         this.percentMode = 'source'; // 'source' or 'target'
         this.abstentionMode = false;
+        // Transitions where abstention data is unreliable (K17 has no per-ballot eligible voter data)
+        this.noAbstentionTransitions = ['16_to_17', '17_to_18'];
 
         this.margin = { top: 20, right: 100, bottom: 20, left: 100 };
 
@@ -506,6 +508,28 @@ class VoteTransferSankey {
     async loadTransition(transitionId) {
         this.currentTransition = transitionId;
         this.container.innerHTML = `<div class="loading">${i18n.t('loading')}</div>`;
+
+        // Disable abstention for transitions with unreliable data
+        const abstentionDisabled = this.noAbstentionTransitions.includes(transitionId);
+        if (abstentionDisabled && this.abstentionMode) {
+            this.abstentionMode = false;
+            const av = document.getElementById('abstention-value');
+            if (av) av.textContent = i18n.t('abstention_off');
+            const mab = document.getElementById('abstention-btn');
+            if (mab) mab.textContent = i18n.t('abstention_off_short');
+        }
+        // Toggle button disabled state
+        const abstentionToggle = document.getElementById('abstention-toggle');
+        if (abstentionToggle) {
+            abstentionToggle.disabled = abstentionDisabled;
+            abstentionToggle.style.opacity = abstentionDisabled ? '0.4' : '';
+            abstentionToggle.title = abstentionDisabled ? 'No per-ballot eligible voter data for K17' : '';
+        }
+        const abstentionBtn = document.getElementById('abstention-btn');
+        if (abstentionBtn) {
+            abstentionBtn.disabled = abstentionDisabled;
+            abstentionBtn.style.opacity = abstentionDisabled ? '0.4' : '';
+        }
 
         try {
             const suffix = this.abstentionMode ? '_abstention' : '';

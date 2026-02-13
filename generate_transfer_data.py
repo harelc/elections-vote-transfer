@@ -62,16 +62,31 @@ class VoteTransferAnalyzer:
 
         # Create unique ballot ID
         ballot_field = config.get('ballot_field', 'קלפי')
+        divisor = config.get('ballot_number_divisor', 1)
         def normalize_ballot(b):
             b = str(b)
             if b.endswith('.0'):
                 b = b[:-2]
+            if divisor > 1:
+                try:
+                    n = int(b)
+                    if n % divisor == 0:
+                        b = str(n // divisor)
+                except ValueError:
+                    pass
             return b
         df['ballot_id'] = df['סמל ישוב'].astype(str) + '__' + df[ballot_field].apply(normalize_ballot)
 
         # Filter out city 9999 (aggregated/invalid data)
         df = df[df['סמל ישוב'] != 9999]
         df = df.set_index('ballot_id')
+
+        # Remove duplicate ballot IDs (can happen with historical data from CKAN API)
+        dupes = df.index.duplicated(keep='first')
+        if dupes.any():
+            logger.warning(f"Removing {dupes.sum()} duplicate ballot IDs")
+            df = df[~dupes]
+
         logger.info(f"{len(df)} precincts after filtering")
 
         return df, config
@@ -140,6 +155,23 @@ class VoteTransferAnalyzer:
     def solve_transfer_matrix_closed(self, X, Y):
         """Solve using closed-form least squares (may have negative values)."""
         return X.T @ Y @ np.linalg.pinv(Y.T @ Y)
+
+    def _compute_dnv(self, df, config):
+        """Compute 'did not vote' per ballot, handling missing בזב data."""
+        bzv = df['בזב']
+        voters = df['מצביעים']
+        if bzv.sum() > 0:
+            return (bzv - voters).clip(lower=0)
+        # בזב column is empty (e.g. K17) — estimate from national eligible_voters
+        national_eligible = config.get('eligible_voters', 0)
+        if national_eligible > 0:
+            total_voters = voters.sum()
+            # Distribute eligible voters proportionally to voter count per ballot
+            estimated_bzv = (voters / total_voters * national_eligible).round().astype(int)
+            logger.warning(f"בזב column empty, estimating from national eligible={national_eligible:,}")
+            return (estimated_bzv - voters).clip(lower=0)
+        logger.warning("No eligible voter data available, abstention will be 0")
+        return pd.Series(0, index=df.index)
 
     def compute_transfer(self, election_from, election_to):
         """
@@ -216,8 +248,8 @@ class VoteTransferAnalyzer:
 
         # Optionally add "did not vote" pseudo-party column
         if self.include_abstention:
-            dnv_from = (df_from['בזב'] - df_from['מצביעים']).clip(lower=0)
-            dnv_to = (df_to['בזב'] - df_to['מצביעים']).clip(lower=0)
+            dnv_from = self._compute_dnv(df_from, config_from)
+            dnv_to = self._compute_dnv(df_to, config_to)
 
             dnv_from_matched = dnv_from.loc[from_matched_ids].values.astype(float).reshape(-1, 1)
             dnv_to_matched = dnv_to.loc[to_matched_ids].values.astype(float).reshape(-1, 1)
@@ -252,7 +284,7 @@ class VoteTransferAnalyzer:
         # Use national totals (all precincts, not just matched)
         total_votes_from = votes_from.sum().values
         if self.include_abstention:
-            national_dnv_from = (df_from['בזב'] - df_from['מצביעים']).clip(lower=0).sum()
+            national_dnv_from = self._compute_dnv(df_from, config_from).sum()
             total_votes_from = np.append(total_votes_from, national_dnv_from)
         vote_movements = M * total_votes_from[:, np.newaxis]
 
@@ -307,7 +339,7 @@ class VoteTransferAnalyzer:
 
         total_votes_to = votes_to.sum().values
         if self.include_abstention:
-            national_dnv_to = (df_to['בזב'] - df_to['מצביעים']).clip(lower=0).sum()
+            national_dnv_to = self._compute_dnv(df_to, config_to).sum()
             total_votes_to = np.append(total_votes_to, national_dnv_to)
         seats_to = parties_to.get('seats', [None] * len(names_to))
         nodes_to = []
@@ -385,6 +417,11 @@ def run_analysis(include_abstention=False):
 
     # Election pairs to analyze
     pairs = [
+        ('16', '17'),
+        ('17', '18'),
+        ('18', '19'),
+        ('19', '20'),
+        ('20', '21'),
         ('21', '22'),
         ('22', '23'),
         ('23', '24'),

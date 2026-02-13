@@ -1,6 +1,6 @@
 # Israeli Elections Vote Transfer Analysis
 
-Interactive visualizations for analyzing voting patterns and vote transfers between Israeli Knesset elections (2019-2022).
+Interactive visualizations for analyzing voting patterns and vote transfers between Israeli Knesset elections (2003-2022, Knesset 16-25).
 
 **[קולות נודדים - Visit the Website](https://kolot-nodedim.netlify.app/)**
 
@@ -28,7 +28,8 @@ Visualizes the flow of votes between consecutive elections using a Sankey diagra
 
 - **What it shows**: Estimated proportion of voters who switched from one party to another
 - **How to read it**: Left side shows parties from the earlier election, right side shows parties from the later election. The width of each flow represents the estimated number of voters who made that transition.
-- **Elections covered**: 21→22, 22→23, 23→24, 24→25
+- **Elections covered**: 16→17, 17→18, 18→19, 19→20, 20→21, 21→22, 22→23, 23→24, 24→25
+- **Abstention toggle**: Optionally shows a "Did not vote" pseudo-party to visualize turnout changes
 
 The transfer matrix is computed using convex optimization to find the best-fit stochastic matrix M where `Votes_before × M ≈ Votes_after`.
 
@@ -40,7 +41,7 @@ A 2D visualization of all polling stations, positioned by similarity of voting p
 - **Color modes**:
   - **Turnout**: Color by voter turnout percentage
   - **Party support**: Color by support level for any selected party
-  - **Socioeconomic cluster**: Color by CBS socioeconomic index (1-10 scale)
+  - **Socioeconomic cluster**: Color by CBS 2021 socioeconomic index (1-10 scale), per statistical area within cities
 - **Interactions**: Hover for details, zoom and pan, search for specific settlements
 
 ### 4. Geographic Map
@@ -80,12 +81,24 @@ Identifies polling stations with unusual voting patterns compared to their surro
 
 Simulates a hypothetical regional election system for Israel using Voronoi district mapping and D'Hondt seat allocation.
 
-### 9. Settlement Profile
+### 9. Party Profile
+
+Deep-dive page for party families showing their evolution across elections:
+
+- **Leader photo and party color**: Hero section with the party's identifying visuals
+- **Election history table**: Seats, votes, percentage, and leader per election
+- **Voting trends chart**: Support trajectory across all elections
+- **Strongholds**: Top settlements by party support with mini-map
+- **Vote migration**: Incoming/outgoing vote flows from Sankey transfer data
+
+Accessible via `party.html?name=<party_family_name>`.
+
+### 10. Settlement Profile
 
 Deep-dive page for individual settlements showing:
 
 - **Wikipedia info**: Thumbnail image, description, and extract from Hebrew Wikipedia
-- **Voting trends**: Chart showing top party support across all 5 elections
+- **Voting trends**: Chart showing top party support across all 10 elections
 - **Latest election breakdown**: Party table with percentages and votes
 - **Mini map**: Leaflet map zoomed to the settlement's ballot stations
 - **Ballot table**: Sortable list of individual ballot boxes with turnout and winner
@@ -125,10 +138,11 @@ Polling stations are embedded in 2D using t-SNE on the vector of party vote prop
 ## Data Sources
 
 - **Election results**: [Central Elections Committee](https://votes.bechirot.gov.il/)
-  - Ballot-level results (expb.csv files) for Knesset elections 21-25
+  - Ballot-level results for Knesset elections 16-25 (K16-K20 from CKAN API, K21-K25 from expb.csv files)
 - **Socioeconomic data**: [Central Bureau of Statistics (CBS)](https://www.cbs.gov.il/)
-  - Settlement socioeconomic cluster ratings (1-10 scale)
-  - Regional council assignments for small localities
+  - CBS 2021 socioeconomic index (publication 1955) per statistical area
+  - CBS 2011 Census statistical area boundaries (geodatabase)
+  - Settlement and regional council level fallbacks for small localities
 - **Settlement info**: [Hebrew Wikipedia](https://he.wikipedia.org/) REST API
   - Descriptions, thumbnails, and extracts for ~1,100 settlements
 - **Geocoding**: OpenStreetMap Nominatim + Google Places API for ballot station coordinates
@@ -137,6 +151,11 @@ Polling stations are embedded in 2D using t-SNE on the vector of party vote prop
 
 | Election | Knesset | Date | Turnout |
 |----------|---------|------|---------|
+| 16 | 16th Knesset | January 2003 | 67.8% |
+| 17 | 17th Knesset | March 2006 | 63.6% |
+| 18 | 18th Knesset | February 2009 | 64.7% |
+| 19 | 19th Knesset | January 2013 | 67.8% |
+| 20 | 20th Knesset | March 2015 | 72.3% |
 | 21 | 21st Knesset | April 2019 | 68.5% |
 | 22 | 22nd Knesset | September 2019 | 69.8% |
 | 23 | 23rd Knesset | March 2020 | 71.5% |
@@ -210,13 +229,16 @@ python enrich_settlements_wikipedia.py
 │   ├── m/                         # Mobile-optimized versions of all pages
 │   └── data/                      # JSON data files for frontend
 ├── data/                          # Source and intermediate data
-├── party_config.py                # Election metadata & party config
+├── party_config.py                # Election metadata & party config (K16-K25)
 ├── generate_transfer_data.py      # Transfer matrix computation
 ├── generate_tsne_data.py          # T-SNE embedding computation
 ├── generate_map_data.py           # Geographic data generation
+├── download_statistical_zones.py  # CBS 2011 zone matching pipeline
+├── process_statistical_zones.py   # CBS socioeconomic data processing
+├── download_historical_ballots.py # K16-K20 ballot data from CEC CKAN API
 ├── enrich_settlements_wikipedia.py # Wikipedia data enrichment
 ├── prepare_election_26.py         # Election 26 data workflow
-└── ballot*.csv                    # Raw election results per election
+└── ballot*.csv                    # Raw election results per election (16-25)
 ```
 
 ## Credits

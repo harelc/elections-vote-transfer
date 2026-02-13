@@ -127,12 +127,25 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
     # Build result data
     result = []
     ballot_field = config.get('ballot_field', 'קלפי')
+    divisor = config.get('ballot_number_divisor', 1)
 
     for i, (idx, row) in enumerate(df_filtered.iterrows()):
         # Calculate turnout
         eligible = int(row.get('בזב', 0))
         actual_voters = int(row.get('מצביעים', 0))
         turnout = round((actual_voters / eligible * 100), 1) if eligible > 0 else 0
+
+        # Normalize ballot number (K16-K17 use x10 numbering)
+        raw_ballot = str(row.get(ballot_field, ''))
+        if raw_ballot.endswith('.0'):
+            raw_ballot = raw_ballot[:-2]
+        if divisor > 1:
+            try:
+                n = int(raw_ballot)
+                if n % divisor == 0:
+                    raw_ballot = str(n // divisor)
+            except ValueError:
+                pass
 
         # Get station metadata
         station_data = {
@@ -141,7 +154,7 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
             'id': int(idx),
             'settlement_name': str(row.get('שם ישוב', '')),
             'settlement_id': int(row.get('סמל ישוב', 0)),
-            'ballot_number': str(row.get(ballot_field, '')),
+            'ballot_number': raw_ballot,
             'total_voters': int(total_votes_filtered.iloc[i]),
             'eligible_voters': eligible,
             'turnout': turnout,
@@ -243,7 +256,7 @@ def generate_tsne_json(election_id, compact=True):
 
 def main():
     """Generate T-SNE data for all elections."""
-    elections = ['21', '22', '23', '24', '25']
+    elections = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
 
     for election_id in elections:
         logger.info(f"\n{'='*60}")

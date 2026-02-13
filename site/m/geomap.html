@@ -387,7 +387,7 @@
 
         initElectionPills() {
             const pills = document.getElementById('election-pills');
-            const electionIds = ['21','22','23','24','25'];
+            const electionIds = ['16','17','18','19','20','21','22','23','24','25'];
             if (i18n.SHOW_E26) electionIds.push('26');
             electionIds.forEach(id => {
                 const btn = document.createElement('button');
@@ -476,10 +476,11 @@
         async loadData() {
             document.getElementById('loading').style.display = 'flex';
             try {
-                const [tsneRes, coordRes, seRes] = await Promise.all([
+                const [tsneRes, coordRes, seRes, stRes] = await Promise.all([
                     fetch(`../data/tsne_${this.currentElection}.json`),
                     fetch(`../data/station_coordinates.json`),
-                    fetch(`../data/socioeconomic_clusters.json`)
+                    fetch(`../data/socioeconomic_clusters.json`),
+                    fetch(`../data/station_socioeconomic.json`)
                 ]);
                 this.tsneData = await tsneRes.json();
                 this.coordinates = await coordRes.json();
@@ -490,6 +491,13 @@
                     this.socioeconomicData[item.name] = item.cluster;
                     this.socioeconomicData[this.normalizeName(item.name)] = item.cluster;
                 });
+                this.stationSocioeconomic = {};
+                if (stRes.ok) {
+                    const stData = await stRes.json();
+                    for (const [key, val] of Object.entries(stData)) {
+                        if (val.cluster) this.stationSocioeconomic[key] = { cluster: val.cluster, statArea: val.zone };
+                    }
+                }
 
                 this.parties = this.tsneData.parties || [];
                 this.buildSettlements();
@@ -672,8 +680,8 @@
                 totalVoters += s.v || 0;
                 totalEligible += s.e || 0;
                 const name = s.n || '';
-                const se = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
-                if (se) clusterCounts[se] = (clusterCounts[se] || 0) + 1;
+                const seInfo = this.getStationCluster(s);
+                if (seInfo) clusterCounts[seInfo.cluster] = (clusterCounts[seInfo.cluster] || 0) + 1;
                 const p = s.p || {};
                 Object.entries(p).forEach(([party, pct]) => {
                     partyVotes[party] = (partyVotes[party] || 0) + ((s.v || 0) * pct / 100);
@@ -773,11 +781,10 @@
                 return this.getTurnoutColor(station.t || 0);
             }
             if (this.colorMode === 'socioeconomic') {
-                const name = station.n || '';
-                const c = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
-                if (!c) return '#374151';
+                const se = this.getStationCluster(station);
+                if (!se) return '#374151';
                 const colors = ['#9e0142','#d53e4f','#f46d43','#fdae61','#fee08b','#e6f598','#abdda4','#66c2a5','#3288bd','#5e4fa2'];
-                return colors[Math.min(Math.max(c, 1), 10) - 1];
+                return colors[Math.min(Math.max(se.cluster, 1), 10) - 1];
             }
             if (this.colorMode === 'winner') {
                 const p = station.p || {};
@@ -807,7 +814,7 @@
             const voters = station.v || 0;
             const eligible = station.e || 0;
             const turnout = station.t || 0;
-            const se = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+            const se = this.getStationCluster(station);
 
             const topParties = Object.entries(station.p || {})
                 .sort((a, b) => b[1] - a[1]).slice(0, 7);
@@ -826,7 +833,7 @@
             document.getElementById('sheet-content').innerHTML = `
                 <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${i18n.settlementName(name)}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
-                    ${i18n.t('ballot')} ${ballot}${location ? ' · ' + location : ''}${se ? ' · ' + i18n.t('socioeconomic') + ' ' + se : ''}
+                    ${i18n.t('ballot')} ${ballot}${location ? ' · ' + location : ''}${se ? ' · ' + i18n.t('socioeconomic') + ' ' + se.cluster + (se.statArea ? ', ' + (i18n.getLang() === 'en' ? 'area' : 'אזור') + ' ' + se.statArea : '') : ''}
                 </div>
                 <div class="stat-grid">
                     <span class="label">${i18n.t('eligible_voters')}</span><span class="value">${i18n.fmtNum(eligible)}</span>
@@ -1123,6 +1130,17 @@
         hexToRgba(color, alpha) {
             const { r, g, b } = this.parseHex(color);
             return `rgba(${r},${g},${b},${alpha})`;
+        }
+
+        getStationCluster(station) {
+            const name = station.n || '';
+            const ballot = station.b || '';
+            if (this.stationSocioeconomic) {
+                const entry = this.stationSocioeconomic[`${name}|${ballot}`];
+                if (entry) return entry; // {cluster, statArea}
+            }
+            const c = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
+            return c ? { cluster: c, statArea: null } : null;
         }
 
         normalizeName(name) {

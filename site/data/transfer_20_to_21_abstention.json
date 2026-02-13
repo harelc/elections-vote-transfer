@@ -1,0 +1,756 @@
+{
+  "from_election": {
+    "id": "20",
+    "name": "הכנסת ה-20",
+    "name_en": "20th Knesset",
+    "date": "2015-03-17",
+    "eligible_voters": 5881696,
+    "votes_cast": 4254738,
+    "valid_votes": 4210884,
+    "turnout_percent": 72.34
+  },
+  "to_election": {
+    "id": "21",
+    "name": "הכנסת ה-21",
+    "name_en": "21st Knesset",
+    "date": "2019-04-09",
+    "eligible_voters": 6339279,
+    "votes_cast": 4340253,
+    "valid_votes": 4268929,
+    "turnout_percent": 68.46
+  },
+  "nodes_from": [
+    {
+      "name": "הליכוד",
+      "symbol": "מחל",
+      "votes": 983366,
+      "seats": 30,
+      "color": "#2563eb",
+      "info": {
+        "name": "הליכוד",
+        "name_en": "Likud",
+        "color": "#2563eb",
+        "leader": "בנימין נתניהו",
+        "leader_en": "Benjamin Netanyahu",
+        "leader_image": "images/leaders/netanyahu.jpg",
+        "logo": "images/logos/likud.png",
+        "ideology": "ימין, לאומנות, ליברליזם כלכלי",
+        "founded": 1973,
+        "description": "מפלגת הימין הגדולה בישראל, שולטת בפוליטיקה הישראלית מאז 1977"
+      }
+    },
+    {
+      "name": "המחנה הציוני",
+      "symbol": "אמת",
+      "votes": 784343,
+      "seats": 24,
+      "color": "#dc2626",
+      "info": {
+        "name": "המחנה הציוני",
+        "name_en": "Zionist Union",
+        "color": "#dc2626",
+        "leader": "יצחק הרצוג",
+        "leader_en": "Isaac Herzog",
+        "leader_image": "images/leaders/herzog.jpg",
+        "logo": "images/logos/labor.png",
+        "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה, ציונות",
+        "founded": 1968,
+        "description": "מפלגת השמאל הציוני ההיסטורית, הקימה את המדינה והובילה אותה עד 1977"
+      }
+    },
+    {
+      "name": "הרשימה המשותפת",
+      "symbol": "ודעם",
+      "votes": 446452,
+      "seats": 13,
+      "color": "#059669",
+      "info": {
+        "name": "הרשימה המשותפת",
+        "name_en": "Joint List",
+        "color": "#059669",
+        "leader": "איימן עודה",
+        "leader_en": "Ayman Odeh",
+        "leader_image": "images/leaders/odeh.jpg",
+        "logo": "images/logos/joint_list.png",
+        "ideology": "שמאל ערבי, סוציאליזם, זכויות מיעוטים",
+        "founded": 2015,
+        "description": "ברית מפלגות ערביות - חד״ש, תע״ל, בל״ד ורע״ם (עד 2021)"
+      }
+    },
+    {
+      "name": "יש עתיד",
+      "symbol": "פה",
+      "votes": 370831,
+      "seats": 11,
+      "color": "#06b6d4",
+      "info": {
+        "name": "יש עתיד",
+        "name_en": "Yesh Atid",
+        "color": "#06b6d4",
+        "leader": "יאיר לפיד",
+        "leader_en": "Yair Lapid",
+        "leader_image": "images/leaders/lapid.jpg",
+        "logo": "images/logos/yesh_atid.png",
+        "ideology": "מרכז, ליברליזם, חילוניות",
+        "founded": 2012,
+        "description": "מפלגת מרכז ליברלית, התמקדה בנושאי מעמד הביניים והפרדת דת ומדינה"
+      }
+    },
+    {
+      "name": "כולנו",
+      "symbol": "כ",
+      "votes": 314825,
+      "seats": 10,
+      "color": "#eab308",
+      "info": {
+        "name": "כולנו",
+        "name_en": "Kulanu",
+        "color": "#eab308",
+        "leader": "משה כחלון",
+        "leader_en": "Moshe Kahlon",
+        "leader_image": "images/leaders/kahlon.jpg",
+        "logo": "images/logos/kulanu.png",
+        "ideology": "מרכז, כלכלה חברתית",
+        "founded": 2014,
+        "description": "מפלגת מרכז שהתמקדה ברפורמות כלכליות, התמזגה לליכוד ב-2019"
+      }
+    },
+    {
+      "name": "הבית היהודי",
+      "symbol": "טב",
+      "votes": 283048,
+      "seats": 8,
+      "color": "#ea580c",
+      "info": {
+        "name": "ימינה",
+        "name_en": "Yamina",
+        "color": "#ea580c",
+        "leader": "נפתלי בנט",
+        "leader_en": "Naftali Bennett",
+        "leader_image": "images/leaders/bennett.jpg",
+        "logo": "images/logos/yamina.png",
+        "ideology": "ימין דתי-לאומי, התנחלויות",
+        "founded": 2018,
+        "description": "מפלגת ימין דתית-לאומית, תומכת בהתנחלויות וריבונות"
+      }
+    },
+    {
+      "name": "ש״ס",
+      "symbol": "שס",
+      "votes": 240555,
+      "seats": 7,
+      "color": "#1e3a8a",
+      "info": {
+        "name": "ש״ס",
+        "name_en": "Shas",
+        "color": "#1e3a8a",
+        "leader": "אריה דרעי",
+        "leader_en": "Aryeh Deri",
+        "leader_image": "images/leaders/deri.jpg",
+        "logo": "images/logos/shas.png",
+        "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
+        "founded": 1984,
+        "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי"
+      }
+    },
+    {
+      "name": "ישראל ביתנו",
+      "symbol": "ל",
+      "votes": 214580,
+      "seats": 6,
+      "color": "#db2777",
+      "info": {
+        "name": "ישראל ביתנו",
+        "name_en": "Yisrael Beiteinu",
+        "color": "#db2777",
+        "leader": "אביגדור ליברמן",
+        "leader_en": "Avigdor Lieberman",
+        "leader_image": "images/leaders/lieberman.jpg",
+        "logo": "images/logos/yisrael_beiteinu.png",
+        "ideology": "ימין חילוני, לאומנות, חילוניות",
+        "founded": 1999,
+        "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר"
+      }
+    },
+    {
+      "name": "יהדות התורה",
+      "symbol": "ג",
+      "votes": 207538,
+      "seats": 6,
+      "color": "#4b5563",
+      "info": {
+        "name": "יהדות התורה",
+        "name_en": "United Torah Judaism",
+        "color": "#4b5563",
+        "leader": "יעקב ליצמן",
+        "leader_en": "Yaakov Litzman",
+        "leader_image": "images/leaders/litzman.jpg",
+        "logo": "images/logos/utj.png",
+        "ideology": "חרדית אשכנזית, שמרנות דתית",
+        "founded": 1992,
+        "description": "ברית של אגודת ישראל ודגל התורה, מייצגת את הציבור החרדי האשכנזי"
+      }
+    },
+    {
+      "name": "מרצ",
+      "symbol": "מרצ",
+      "votes": 164935,
+      "seats": 5,
+      "color": "#16a34a",
+      "info": {
+        "name": "מרצ",
+        "name_en": "Meretz",
+        "color": "#16a34a",
+        "leader": "זהבה גלאון",
+        "leader_en": "Zahava Galon",
+        "leader_image": "images/leaders/galon.jpg",
+        "logo": "images/logos/meretz.png",
+        "ideology": "שמאל, סוציאל-דמוקרטיה, ליברליזם חברתי",
+        "founded": 1992,
+        "description": "מפלגת שמאל ליברלית, תומכת בשלום ובזכויות אדם"
+      }
+    },
+    {
+      "name": "לא הצביעו",
+      "symbol": "abstain",
+      "votes": 1855105,
+      "seats": null,
+      "color": "#9ca3af",
+      "info": {
+        "name": "לא הצביעו",
+        "name_en": "Did not vote",
+        "color": "#9ca3af"
+      }
+    }
+  ],
+  "nodes_to": [
+    {
+      "name": "הליכוד",
+      "symbol": "מחל",
+      "votes": 1140370,
+      "seats": 35,
+      "color": "#2563eb",
+      "info": {
+        "name": "הליכוד",
+        "name_en": "Likud",
+        "color": "#2563eb",
+        "leader": "בנימין נתניהו",
+        "leader_en": "Benjamin Netanyahu",
+        "leader_image": "images/leaders/netanyahu.jpg",
+        "logo": "images/logos/likud.png",
+        "ideology": "ימין, לאומנות, ליברליזם כלכלי",
+        "founded": 1973,
+        "description": "מפלגת הימין הגדולה בישראל, שולטת בפוליטיקה הישראלית מאז 1977"
+      }
+    },
+    {
+      "name": "כחול לבן",
+      "symbol": "פה",
+      "votes": 1125881,
+      "seats": 35,
+      "color": "#8b5cf6",
+      "info": {
+        "name": "כחול לבן",
+        "name_en": "Blue and White",
+        "color": "#8b5cf6",
+        "leader": "בני גנץ",
+        "leader_en": "Benny Gantz",
+        "leader_image": "images/leaders/gantz.jpg",
+        "logo": "images/logos/blue_white.png",
+        "ideology": "מרכז, ביטחוניות, ממלכתיות",
+        "founded": 2019,
+        "description": "ברית בין יש עתיד, חוסן לישראל ותלם בהנהגת בני גנץ"
+      }
+    },
+    {
+      "name": "ש״ס",
+      "symbol": "שס",
+      "votes": 258275,
+      "seats": 8,
+      "color": "#1e3a8a",
+      "info": {
+        "name": "ש״ס",
+        "name_en": "Shas",
+        "color": "#1e3a8a",
+        "leader": "אריה דרעי",
+        "leader_en": "Aryeh Deri",
+        "leader_image": "images/leaders/deri.jpg",
+        "logo": "images/logos/shas.png",
+        "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
+        "founded": 1984,
+        "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי"
+      }
+    },
+    {
+      "name": "יהדות התורה",
+      "symbol": "ג",
+      "votes": 249049,
+      "seats": 8,
+      "color": "#4b5563",
+      "info": {
+        "name": "יהדות התורה",
+        "name_en": "United Torah Judaism",
+        "color": "#4b5563",
+        "leader": "יעקב ליצמן",
+        "leader_en": "Yaakov Litzman",
+        "leader_image": "images/leaders/litzman.jpg",
+        "logo": "images/logos/utj.png",
+        "ideology": "חרדית אשכנזית, שמרנות דתית",
+        "founded": 1992,
+        "description": "יהדות התורה בהנהגת יעקב ליצמן"
+      }
+    },
+    {
+      "name": "חד״ש-תע״ל",
+      "symbol": "ום",
+      "votes": 193442,
+      "seats": 6,
+      "color": "#f43f5e",
+      "info": {
+        "name": "חד״ש-תע״ל",
+        "name_en": "Hadash-Taal",
+        "color": "#f43f5e",
+        "leader": "איימן עודה",
+        "leader_en": "Ayman Odeh",
+        "leader_image": "images/leaders/odeh.jpg",
+        "logo": "images/logos/hadash_taal.png",
+        "ideology": "שמאל, קומוניזם, שוויון יהודי-ערבי",
+        "founded": 1977,
+        "description": "החזית הדמוקרטית לשלום ושוויון, מפלגה יהודית-ערבית משותפת"
+      }
+    },
+    {
+      "name": "העבודה",
+      "symbol": "אמת",
+      "votes": 190870,
+      "seats": 6,
+      "color": "#dc2626",
+      "info": {
+        "name": "העבודה",
+        "name_en": "Labor",
+        "color": "#dc2626",
+        "leader": "אבי גבאי",
+        "leader_en": "Avi Gabbay",
+        "leader_image": "images/leaders/gabbay.jpg",
+        "logo": "images/logos/labor.png",
+        "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה, ציונות",
+        "founded": 1968,
+        "description": "מפלגת העבודה בהנהגת אבי גבאי"
+      }
+    },
+    {
+      "name": "ישראל ביתנו",
+      "symbol": "ל",
+      "votes": 173004,
+      "seats": 5,
+      "color": "#db2777",
+      "info": {
+        "name": "ישראל ביתנו",
+        "name_en": "Yisrael Beiteinu",
+        "color": "#db2777",
+        "leader": "אביגדור ליברמן",
+        "leader_en": "Avigdor Lieberman",
+        "leader_image": "images/leaders/lieberman.jpg",
+        "logo": "images/logos/yisrael_beiteinu.png",
+        "ideology": "ימין חילוני, לאומנות, חילוניות",
+        "founded": 1999,
+        "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר"
+      }
+    },
+    {
+      "name": "הבית היהודי",
+      "symbol": "טב",
+      "votes": 159468,
+      "seats": 5,
+      "color": "#ea580c",
+      "info": {
+        "name": "הבית היהודי",
+        "name_en": "The Jewish Home",
+        "color": "#ea580c",
+        "leader": "רפי פרץ",
+        "leader_en": "Rafi Peretz",
+        "leader_image": "images/leaders/peretz_rafi.jpg",
+        "logo": "images/logos/yamina.png",
+        "ideology": "ימין דתי-לאומי, התנחלויות",
+        "founded": 2008,
+        "description": "איחוד מפלגות הימין - ברית הבית היהודי, האיחוד הלאומי ועוצמה יהודית"
+      }
+    },
+    {
+      "name": "מרצ",
+      "symbol": "מרצ",
+      "votes": 156473,
+      "seats": 4,
+      "color": "#16a34a",
+      "info": {
+        "name": "מרצ",
+        "name_en": "Meretz",
+        "color": "#16a34a",
+        "leader": "תמר זנדברג",
+        "leader_en": "Tamar Zandberg",
+        "leader_image": "images/leaders/zandberg.jpg",
+        "logo": "images/logos/meretz.png",
+        "ideology": "שמאל, סוציאל-דמוקרטיה, ליברליזם חברתי",
+        "founded": 1992,
+        "description": "מפלגת מרצ בהנהגת תמר זנדברג"
+      }
+    },
+    {
+      "name": "כולנו",
+      "symbol": "כ",
+      "votes": 152756,
+      "seats": 4,
+      "color": "#eab308",
+      "info": {
+        "name": "כולנו",
+        "name_en": "Kulanu",
+        "color": "#eab308",
+        "leader": "משה כחלון",
+        "leader_en": "Moshe Kahlon",
+        "leader_image": "images/leaders/kahlon.jpg",
+        "logo": "images/logos/kulanu.png",
+        "ideology": "מרכז, כלכלה חברתית",
+        "founded": 2014,
+        "description": "כולנו הימין השפוי בראשות משה כחלון"
+      }
+    },
+    {
+      "name": "רע״ם-בל״ד",
+      "symbol": "דעם",
+      "votes": 143666,
+      "seats": 4,
+      "color": "#84cc16",
+      "info": {
+        "name": "רע״ם-בל״ד",
+        "name_en": "Ra'am-Balad",
+        "color": "#84cc16",
+        "leader": "מנסור עבאס",
+        "leader_en": "Mansour Abbas",
+        "leader_image": "images/leaders/abbas.jpg",
+        "logo": "images/logos/raam.png",
+        "ideology": "ערבי-אסלאמי, שמרנות חברתית",
+        "founded": 2019,
+        "description": "רשימה משותפת של רע״ם ובל״ד בבחירות 2019"
+      }
+    },
+    {
+      "name": "זהות",
+      "symbol": "ז",
+      "votes": 118031,
+      "seats": null,
+      "color": "#ffde15",
+      "info": {
+        "name": "זהות",
+        "name_en": "Zehut",
+        "color": "#ffde15",
+        "leader": "משה פייגלין",
+        "ideology": "חברתי",
+        "description": "זהות - תנועה ישראלית יהודית בהנהגת משה פייגלין",
+        "leader_image": "images/leaders/feiglin.jpg",
+        "logo": "images/logos/zehut.png"
+      }
+    },
+    {
+      "name": "הימין החדש",
+      "symbol": "נ",
+      "votes": 138598,
+      "seats": null,
+      "color": "#1e40af",
+      "info": {
+        "name": "הימין החדש",
+        "name_en": "New Right",
+        "color": "#1e40af",
+        "leader": "נפתלי בנט ואיילת שקד",
+        "logo": "images/logos/new_right.png",
+        "ideology": "ימין, ליברלי-לאומי",
+        "description": "הימין החדש בראשות שקד ובנט, לא עברה את אחוז החסימה",
+        "leader_image": "images/leaders/bennett.jpg"
+      }
+    },
+    {
+      "name": "לא הצביעו",
+      "symbol": "abstain",
+      "votes": 2240259,
+      "seats": null,
+      "color": "#9ca3af",
+      "info": {
+        "name": "לא הצביעו",
+        "name_en": "Did not vote",
+        "color": "#9ca3af"
+      }
+    }
+  ],
+  "transfers": [
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "הליכוד",
+      "target_symbol": "מחל",
+      "votes": 965295,
+      "percentage": 98.2
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "זהות",
+      "target_symbol": "ז",
+      "votes": 13931,
+      "percentage": 1.4
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 8723,
+      "percentage": 0.9
+    },
+    {
+      "source": "המחנה הציוני",
+      "source_symbol": "אמת",
+      "target": "כחול לבן",
+      "target_symbol": "פה",
+      "votes": 644752,
+      "percentage": 82.2
+    },
+    {
+      "source": "המחנה הציוני",
+      "source_symbol": "אמת",
+      "target": "העבודה",
+      "target_symbol": "אמת",
+      "votes": 141093,
+      "percentage": 18.0
+    },
+    {
+      "source": "הרשימה המשותפת",
+      "source_symbol": "ודעם",
+      "target": "חד״ש-תע״ל",
+      "target_symbol": "ום",
+      "votes": 170996,
+      "percentage": 38.3
+    },
+    {
+      "source": "הרשימה המשותפת",
+      "source_symbol": "ודעם",
+      "target": "מרצ",
+      "target_symbol": "מרצ",
+      "votes": 15776,
+      "percentage": 3.5
+    },
+    {
+      "source": "הרשימה המשותפת",
+      "source_symbol": "ודעם",
+      "target": "רע״ם-בל״ד",
+      "target_symbol": "דעם",
+      "votes": 127118,
+      "percentage": 28.5
+    },
+    {
+      "source": "הרשימה המשותפת",
+      "source_symbol": "ודעם",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 131536,
+      "percentage": 29.5
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "כחול לבן",
+      "target_symbol": "פה",
+      "votes": 320823,
+      "percentage": 86.5
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "הימין החדש",
+      "target_symbol": "נ",
+      "votes": 8672,
+      "percentage": 2.3
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 41560,
+      "percentage": 11.2
+    },
+    {
+      "source": "כולנו",
+      "source_symbol": "כ",
+      "target": "הליכוד",
+      "target_symbol": "מחל",
+      "votes": 92798,
+      "percentage": 29.5
+    },
+    {
+      "source": "כולנו",
+      "source_symbol": "כ",
+      "target": "כחול לבן",
+      "target_symbol": "פה",
+      "votes": 45568,
+      "percentage": 14.5
+    },
+    {
+      "source": "כולנו",
+      "source_symbol": "כ",
+      "target": "כולנו",
+      "target_symbol": "כ",
+      "votes": 113835,
+      "percentage": 36.2
+    },
+    {
+      "source": "כולנו",
+      "source_symbol": "כ",
+      "target": "זהות",
+      "target_symbol": "ז",
+      "votes": 30256,
+      "percentage": 9.6
+    },
+    {
+      "source": "כולנו",
+      "source_symbol": "כ",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 34201,
+      "percentage": 10.9
+    },
+    {
+      "source": "הבית היהודי",
+      "source_symbol": "טב",
+      "target": "הבית היהודי",
+      "target_symbol": "טב",
+      "votes": 165609,
+      "percentage": 58.5
+    },
+    {
+      "source": "הבית היהודי",
+      "source_symbol": "טב",
+      "target": "זהות",
+      "target_symbol": "ז",
+      "votes": 14011,
+      "percentage": 5.0
+    },
+    {
+      "source": "הבית היהודי",
+      "source_symbol": "טב",
+      "target": "הימין החדש",
+      "target_symbol": "נ",
+      "votes": 103050,
+      "percentage": 36.4
+    },
+    {
+      "source": "ש״ס",
+      "source_symbol": "שס",
+      "target": "ש״ס",
+      "target_symbol": "שס",
+      "votes": 228777,
+      "percentage": 95.1
+    },
+    {
+      "source": "ש״ס",
+      "source_symbol": "שס",
+      "target": "יהדות התורה",
+      "target_symbol": "ג",
+      "votes": 7651,
+      "percentage": 3.2
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "ישראל ביתנו",
+      "target_symbol": "ל",
+      "votes": 168805,
+      "percentage": 78.7
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "כולנו",
+      "target_symbol": "כ",
+      "votes": 8726,
+      "percentage": 4.1
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "זהות",
+      "target_symbol": "ז",
+      "votes": 12640,
+      "percentage": 5.9
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 17162,
+      "percentage": 8.0
+    },
+    {
+      "source": "יהדות התורה",
+      "source_symbol": "ג",
+      "target": "יהדות התורה",
+      "target_symbol": "ג",
+      "votes": 200617,
+      "percentage": 96.7
+    },
+    {
+      "source": "יהדות התורה",
+      "source_symbol": "ג",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 5560,
+      "percentage": 2.7
+    },
+    {
+      "source": "מרצ",
+      "source_symbol": "מרצ",
+      "target": "כחול לבן",
+      "target_symbol": "פה",
+      "votes": 27560,
+      "percentage": 16.7
+    },
+    {
+      "source": "מרצ",
+      "source_symbol": "מרצ",
+      "target": "העבודה",
+      "target_symbol": "אמת",
+      "votes": 25239,
+      "percentage": 15.3
+    },
+    {
+      "source": "מרצ",
+      "source_symbol": "מרצ",
+      "target": "מרצ",
+      "target_symbol": "מרצ",
+      "votes": 109381,
+      "percentage": 66.3
+    },
+    {
+      "source": "לא הצביעו",
+      "source_symbol": "abstain",
+      "target": "מרצ",
+      "target_symbol": "מרצ",
+      "votes": 5063,
+      "percentage": 0.3
+    },
+    {
+      "source": "לא הצביעו",
+      "source_symbol": "abstain",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 1854140,
+      "percentage": 99.9
+    }
+  ],
+  "stats": {
+    "common_precincts": 8758,
+    "r_squared": 0.8292,
+    "total_votes_from": 5865578,
+    "total_votes_to": 6440142,
+    "generated_at": "2026-02-13 17:56:58"
+  }
+}

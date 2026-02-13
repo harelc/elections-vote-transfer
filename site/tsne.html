@@ -917,6 +917,11 @@
         </header>
 
         <nav class="election-nav">
+            <button class="nav-btn" data-election="16">כנסת 16</button>
+            <button class="nav-btn" data-election="17">כנסת 17</button>
+            <button class="nav-btn" data-election="18">כנסת 18</button>
+            <button class="nav-btn" data-election="19">כנסת 19</button>
+            <button class="nav-btn" data-election="20">כנסת 20</button>
             <button class="nav-btn" data-election="21">כנסת 21</button>
             <button class="nav-btn" data-election="22">כנסת 22</button>
             <button class="nav-btn" data-election="23">כנסת 23</button>
@@ -1347,6 +1352,22 @@
                 return normalized;
             }
 
+            getStationCluster(station) {
+                // Per-station CBS statistical zone cluster (intra-city variation)
+                const name = station.n || station.settlement_name || '';
+                const ballot = station.b || station.ballot_number || '';
+                if (this.stationSocioeconomic) {
+                    const entry = this.stationSocioeconomic[`${name}|${ballot}`];
+                    if (entry) return entry; // {cluster, statArea}
+                }
+                // Fallback to settlement-level (no stat area info)
+                if (this.socioeconomicData) {
+                    const c = this.socioeconomicData[name] || this.socioeconomicData[this.normalizeName(name)];
+                    if (c) return { cluster: c, statArea: null };
+                }
+                return null;
+            }
+
             async selectSocioeconomicMode() {
                 this.colorMode = 'socioeconomic';
                 this.selectedParty = null;
@@ -1354,14 +1375,25 @@
                 // Load socioeconomic data if not loaded
                 if (!this.socioeconomicData) {
                     try {
-                        const response = await fetch('data/socioeconomic_clusters.json');
-                        const data = await response.json();
+                        const [settleRes, stationRes] = await Promise.all([
+                            fetch('data/socioeconomic_clusters.json'),
+                            fetch('data/station_socioeconomic.json')
+                        ]);
+                        const data = await settleRes.json();
                         // Build lookup by settlement name (both original and normalized)
                         this.socioeconomicData = {};
                         data.forEach(item => {
                             this.socioeconomicData[item.name] = item.cluster;
                             this.socioeconomicData[this.normalizeName(item.name)] = item.cluster;
                         });
+                        // Per-station lookup: settlement|ballot -> {cluster, statArea}
+                        this.stationSocioeconomic = {};
+                        if (stationRes.ok) {
+                            const stationData = await stationRes.json();
+                            for (const [key, val] of Object.entries(stationData)) {
+                                if (val.cluster) this.stationSocioeconomic[key] = { cluster: val.cluster, statArea: val.zone };
+                            }
+                        }
                     } catch (e) {
                         console.error('Could not load socioeconomic data:', e);
                         return;
@@ -1774,33 +1806,13 @@
                 }
 
                 if (this.colorMode === 'socioeconomic') {
-                    // Socioeconomic coloring: discrete 10-color scale (spectral-like)
-                    const settlementName = station.n || station.settlement_name;
-                    // Try direct match first, then normalized match
-                    let cluster = this.socioeconomicData ? this.socioeconomicData[settlementName] : null;
-                    if (cluster === null || cluster === undefined) {
-                        cluster = this.socioeconomicData ? this.socioeconomicData[this.normalizeName(settlementName)] : null;
-                    }
-
-                    if (cluster === null || cluster === undefined) {
-                        // No data - return special marker for low opacity handling
-                        return null;
-                    }
-
-                    // Discrete 10-color scale (dark red to dark blue via yellow/green)
+                    const se = this.getStationCluster(station);
+                    if (!se) return null;
                     const discreteColors = [
-                        '#9e0142', // 1 - dark red
-                        '#d53e4f', // 2 - red
-                        '#f46d43', // 3 - orange-red
-                        '#fdae61', // 4 - orange
-                        '#fee08b', // 5 - yellow
-                        '#e6f598', // 6 - yellow-green
-                        '#abdda4', // 7 - light green
-                        '#66c2a5', // 8 - teal
-                        '#3288bd', // 9 - blue
-                        '#5e4fa2', // 10 - purple
+                        '#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b',
+                        '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2',
                     ];
-                    return discreteColors[Math.min(Math.max(cluster, 1), 10) - 1];
+                    return discreteColors[Math.min(Math.max(se.cluster, 1), 10) - 1];
                 }
 
                 if (!this.selectedParty) {
@@ -1866,13 +1878,11 @@
                 const turnout = station.t || station.turnout || 0;
                 const location = station.l || ''; // Ballot location (e.g., school name)
 
-                // Get socioeconomic cluster
-                let cluster = this.socioeconomicData ? this.socioeconomicData[settlementName] : null;
-                if (cluster === null || cluster === undefined) {
-                    cluster = this.socioeconomicData ? this.socioeconomicData[this.normalizeName(settlementName)] : null;
-                }
+                // Get socioeconomic cluster (per-station first, then settlement)
+                const seInfo = this.getStationCluster(station);
                 const clusterLabel = i18n.getLang() === 'en' ? 'cluster' : 'אשכול';
-                const clusterHtml = cluster ? ` <span class="tooltip-cluster">(${clusterLabel} ${cluster})</span>` : '';
+                const areaLabel = i18n.getLang() === 'en' ? 'area' : 'אזור';
+                const clusterHtml = seInfo ? ` <span class="tooltip-cluster">(${clusterLabel} ${seInfo.cluster}${seInfo.statArea ? `, ${areaLabel} ${seInfo.statArea}` : ''})</span>` : '';
 
                 const locationHtml = location
                     ? `<div class="tooltip-location">${location}</div>`

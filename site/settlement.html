@@ -281,8 +281,13 @@
         const params = new URLSearchParams(location.search);
         const settlementName = params.get('name');
 
-        const ELECTIONS = ['21', '22', '23', '24', '25'];
+        const ELECTIONS = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25'];
         const ELECTION_LABELS = {
+            '16': { he: 'כנסת 16', en: 'Knesset 16' },
+            '17': { he: 'כנסת 17', en: 'Knesset 17' },
+            '18': { he: 'כנסת 18', en: 'Knesset 18' },
+            '19': { he: 'כנסת 19', en: 'Knesset 19' },
+            '20': { he: 'כנסת 20', en: 'Knesset 20' },
             '21': { he: 'כנסת 21', en: 'Knesset 21' },
             '22': { he: 'כנסת 22', en: 'Knesset 22' },
             '23': { he: 'כנסת 23', en: 'Knesset 23' },
@@ -307,7 +312,7 @@
 
         // Load all data in parallel
         Promise.all([
-            ...ELECTIONS.map(e => fetch('data/map_' + e + '.json').then(r => r.json()).then(d => { allMapData[e] = d; })),
+            ...ELECTIONS.map(e => fetch('data/map_' + e + '.json').then(r => r.json()).then(d => { allMapData[e] = d; }).catch(() => {})),
             fetch('data/settlement_wiki.json').then(r => r.json()).then(d => { wikiData = d; }).catch(() => {}),
             fetch('data/socioeconomic_clusters.json').then(r => r.json()).then(d => { socioData = d; }).catch(() => {}),
             fetch('data/station_coordinates.json').then(r => r.json()).then(d => { coordsData = d; }).catch(() => {}),

@@ -525,6 +525,99 @@ DEFAULT_PARTY = {
 # Election configurations with OFFICIAL data from votes.bechirot.gov.il
 # Voter statistics from Central Elections Committee official results
 ELECTIONS = {
+    '16': {
+        'name': 'הכנסת ה-16',
+        'name_en': '16th Knesset',
+        'date': '2003-01-28',
+        'file': 'ballot16.csv',
+        'encoding': 'utf-8-sig',
+        'ballot_field': 'מספר קלפי',
+        'ballot_number_divisor': 10,  # K16 uses x10 ballot numbering (10,20,30...)
+        'eligible_voters': 4720075,
+        'votes_cast': 3200773,
+        'valid_votes': 3148364,
+        'turnout_percent': 67.81,
+        'major_parties': {
+            'symbols': ['מחל', 'אמת', 'יש', 'שס', 'ל', 'מרצ', 'ב', 'ג', 'ו', 'ם', 'ד', 'כן', 'עם'],
+            'names': ['הליכוד', 'העבודה', 'שינוי', 'ש״ס', 'האיחוד הלאומי', 'מרצ',
+                     'המפד״ל', 'יהדות התורה', 'חד״ש', 'עם אחד', 'בל״ד', 'ישראל בעלייה', 'הרשימה הערבית המאוחדת'],
+            'seats': [38, 19, 15, 11, 7, 6, 6, 5, 3, 3, 3, 2, 2]
+        }
+    },
+    '17': {
+        'name': 'הכנסת ה-17',
+        'name_en': '17th Knesset',
+        'date': '2006-03-28',
+        'file': 'ballot17.csv',
+        'encoding': 'utf-8-sig',
+        'ballot_field': 'מספר קלפי',
+        'ballot_number_divisor': 10,  # K17 uses x10 ballot numbering (10,20,30...)
+        'eligible_voters': 5014622,
+        'votes_cast': 3186739,
+        'valid_votes': 3137064,
+        'turnout_percent': 63.55,
+        'major_parties': {
+            'symbols': ['כן', 'אמת', 'שס', 'מחל', 'ל', 'טב', 'זך', 'ג', 'מרצ', 'עם', 'ו', 'ד'],
+            'names': ['קדימה', 'העבודה-מימד', 'ש״ס', 'הליכוד', 'ישראל ביתנו',
+                     'האיחוד הלאומי-מפד״ל', 'גיל', 'יהדות התורה', 'מרצ',
+                     'הרשימה הערבית המאוחדת-התחדשות ערבית', 'חד״ש', 'בל״ד'],
+            'seats': [29, 19, 12, 12, 11, 9, 7, 6, 5, 4, 3, 3]
+        }
+    },
+    '18': {
+        'name': 'הכנסת ה-18',
+        'name_en': '18th Knesset',
+        'date': '2009-02-10',
+        'file': 'ballot18.csv',
+        'encoding': 'utf-8-sig',
+        'ballot_field': 'מספר קלפי',
+        'eligible_voters': 5278985,
+        'votes_cast': 3416587,
+        'valid_votes': 3373490,
+        'turnout_percent': 64.72,
+        'major_parties': {
+            'symbols': ['כן', 'מחל', 'ל', 'אמת', 'שס', 'ג', 'עם', 'ט', 'ו', 'מרצ', 'ב', 'ד'],
+            'names': ['קדימה', 'הליכוד', 'ישראל ביתנו', 'העבודה', 'ש״ס',
+                     'יהדות התורה', 'רע״ם-תע״ל', 'האיחוד הלאומי', 'חד״ש', 'מרצ', 'הבית היהודי', 'בל״ד'],
+            'seats': [28, 27, 15, 13, 11, 5, 4, 4, 4, 3, 3, 3]
+        }
+    },
+    '19': {
+        'name': 'הכנסת ה-19',
+        'name_en': '19th Knesset',
+        'date': '2013-01-22',
+        'file': 'ballot19.csv',
+        'encoding': 'utf-8-sig',
+        'ballot_field': 'מספר קלפי',
+        'eligible_voters': 5656705,
+        'votes_cast': 3834136,
+        'valid_votes': 3792742,
+        'turnout_percent': 67.78,
+        'major_parties': {
+            'symbols': ['מחל', 'פה', 'אמת', 'טב', 'שס', 'ג', 'צפ', 'מרץ', 'עם', 'ו', 'ד', 'כן'],
+            'names': ['הליכוד ישראל ביתנו', 'יש עתיד', 'העבודה', 'הבית היהודי', 'ש״ס',
+                     'יהדות התורה', 'התנועה', 'מרצ', 'רע״ם-תע״ל', 'חד״ש', 'בל״ד', 'קדימה'],
+            'seats': [31, 19, 15, 12, 11, 7, 6, 6, 4, 4, 3, 2]
+        }
+    },
+    '20': {
+        'name': 'הכנסת ה-20',
+        'name_en': '20th Knesset',
+        'date': '2015-03-17',
+        'file': 'ballot20.csv',
+        'encoding': 'utf-8-sig',
+        'ballot_field': 'מספר קלפי',
+        'eligible_voters': 5881696,
+        'votes_cast': 4254738,
+        'valid_votes': 4210884,
+        'turnout_percent': 72.34,
+        'major_parties': {
+            'symbols': ['מחל', 'אמת', 'ודעם', 'פה', 'כ', 'טב', 'שס', 'ל', 'ג', 'מרצ'],
+            'names': ['הליכוד', 'המחנה הציוני', 'הרשימה המשותפת', 'יש עתיד', 'כולנו',
+                     'הבית היהודי', 'ש״ס', 'ישראל ביתנו', 'יהדות התורה', 'מרצ'],
+            'seats': [30, 24, 13, 11, 10, 8, 7, 6, 6, 5]
+        }
+    },
     '21': {
         'name': 'הכנסת ה-21',
         'name_en': '21st Knesset',
@@ -644,6 +737,400 @@ ELECTIONS = {
 # Election-specific party overrides (for parties that changed over time)
 # Key: (election_number, symbol) -> overrides
 PARTY_OVERRIDES = {
+    # ===== ELECTION 16 (January 2003) =====
+    ('16', 'מחל'): {
+        'leader': 'אריאל שרון',
+        'leader_en': 'Ariel Sharon',
+        'leader_image': 'images/leaders/sharon.jpg',
+    },
+    ('16', 'יש'): {
+        'name': 'שינוי',
+        'name_en': 'Shinui',
+        'color': '#f59e0b',
+        'leader': 'טומי לפיד',
+        'leader_en': 'Tommy Lapid',
+        'leader_image': 'images/leaders/tommy_lapid.jpg',
+    },
+    ('16', 'שס'): {
+        'leader': 'אלי ישי',
+        'leader_en': 'Eli Yishai',
+        'leader_image': 'images/leaders/yishai.jpg',
+    },
+    ('16', 'ל'): {
+        'name': 'האיחוד הלאומי',
+        'name_en': 'National Union',
+        'color': '#ea580c',
+        'leader': 'אביגדור ליברמן',
+        'leader_en': 'Avigdor Lieberman',
+        'leader_image': 'images/leaders/lieberman.jpg',
+    },
+    ('16', 'ב'): {
+        'name': 'המפד״ל',
+        'name_en': 'NRP (Mafdal)',
+        'color': '#92400e',
+        'leader': 'אפי איתם',
+        'leader_en': 'Effi Eitam',
+        'leader_image': 'images/leaders/eitam.jpg',
+    },
+    ('16', 'ג'): {
+        'leader': 'אברהם רביץ',
+        'leader_en': 'Avraham Ravitz',
+        'leader_image': 'images/leaders/ravitz.jpg',
+    },
+    ('16', 'ו'): {
+        'name': 'חד״ש',
+        'name_en': 'Hadash',
+        'color': '#dc2626',
+        'leader': 'מוחמד ברכה',
+        'leader_en': 'Muhammad Barakeh',
+        'leader_image': 'images/leaders/barakeh.jpg',
+    },
+    ('16', 'ם'): {
+        'name': 'עם אחד',
+        'name_en': 'Am Ehad',
+        'color': '#f97316',
+        'leader': 'עמיר פרץ',
+        'leader_en': 'Amir Peretz',
+        'leader_image': 'images/leaders/peretz_amir.jpg',
+    },
+    ('16', 'ד'): {
+        'name': 'בל״ד',
+        'name_en': 'Balad',
+        'color': '#065f46',
+        'leader': 'עזמי בשארה',
+        'leader_en': 'Azmi Bishara',
+        'leader_image': 'images/leaders/bishara.jpg',
+    },
+    ('16', 'כן'): {
+        'name': 'ישראל בעלייה',
+        'name_en': 'Yisrael BaAliyah',
+        'color': '#3b82f6',
+        'leader': 'נתן שרנסקי',
+        'leader_en': 'Natan Sharansky',
+        'leader_image': 'images/leaders/sharansky.jpg',
+    },
+    ('16', 'עם'): {
+        'name': 'הרשימה הערבית המאוחדת',
+        'name_en': 'United Arab List',
+        'color': '#84cc16',
+        'leader': 'עבד אלמאלכ דהאמשה',
+        'leader_en': 'Abdulmalik Dehamshe',
+        'leader_image': 'images/leaders/dehamshe.jpg',
+    },
+    ('16', 'אמת'): {
+        'leader': 'עמרם מצנע',
+        'leader_en': 'Amram Mitzna',
+        'leader_image': 'images/leaders/mitzna.jpg',
+    },
+    ('16', 'מרצ'): {
+        'leader': 'יוסי שריד',
+        'leader_en': 'Yossi Sarid',
+        'leader_image': 'images/leaders/sarid.jpg',
+    },
+
+    # ===== ELECTION 17 (March 2006) =====
+    ('17', 'כן'): {
+        'name': 'קדימה',
+        'name_en': 'Kadima',
+        'color': '#f59e0b',
+        'leader': 'אהוד אולמרט',
+        'leader_en': 'Ehud Olmert',
+        'leader_image': 'images/leaders/olmert.jpg',
+    },
+    ('17', 'אמת'): {
+        'name': 'העבודה-מימד',
+        'name_en': 'Labor-Meimad',
+        'leader': 'עמיר פרץ',
+        'leader_en': 'Amir Peretz',
+        'leader_image': 'images/leaders/peretz_amir.jpg',
+    },
+    ('17', 'שס'): {
+        'leader': 'אלי ישי',
+        'leader_en': 'Eli Yishai',
+        'leader_image': 'images/leaders/yishai.jpg',
+    },
+    ('17', 'ל'): {
+        'name': 'ישראל ביתנו',
+        'name_en': 'Yisrael Beiteinu',
+        'color': PARTY_COLORS['yisrael_beiteinu'],
+        'leader': 'אביגדור ליברמן',
+        'leader_en': 'Avigdor Lieberman',
+        'leader_image': 'images/leaders/lieberman.jpg',
+    },
+    ('17', 'טב'): {
+        'name': 'האיחוד הלאומי-מפד״ל',
+        'name_en': 'National Union-NRP',
+        'color': '#ea580c',
+        'leader': 'בני אלון',
+        'leader_en': 'Benny Elon',
+        'leader_image': 'images/leaders/elon.jpg',
+    },
+    ('17', 'זך'): {
+        'name': 'גיל',
+        'name_en': 'Gil (Pensioners)',
+        'color': '#a3a3a3',
+        'leader': 'רפי איתן',
+        'leader_en': 'Rafi Eitan',
+        'leader_image': 'images/leaders/rafi_eitan.jpg',
+    },
+    ('17', 'ג'): {
+        'leader': 'יעקב ליצמן',
+        'leader_en': 'Yaakov Litzman',
+        'leader_image': 'images/leaders/litzman.jpg',
+    },
+    ('17', 'עם'): {
+        'name': 'הרשימה הערבית המאוחדת-התחדשות ערבית',
+        'name_en': 'UAL-Arab Renewal',
+        'color': '#84cc16',
+        'leader': 'איברהים צרצור',
+        'leader_en': 'Ibrahim Sarsur',
+        'leader_image': 'images/leaders/sarsur.jpg',
+    },
+    ('17', 'ו'): {
+        'name': 'חד״ש',
+        'name_en': 'Hadash',
+        'color': '#dc2626',
+        'leader': 'מוחמד ברכה',
+        'leader_en': 'Muhammad Barakeh',
+        'leader_image': 'images/leaders/barakeh.jpg',
+    },
+    ('17', 'ד'): {
+        'name': 'בל״ד',
+        'name_en': 'Balad',
+        'color': '#065f46',
+        'leader': 'עזמי בשארה',
+        'leader_en': 'Azmi Bishara',
+        'leader_image': 'images/leaders/bishara.jpg',
+    },
+    ('17', 'מרצ'): {
+        'leader': 'יוסי ביילין',
+        'leader_en': 'Yossi Beilin',
+        'leader_image': 'images/leaders/beilin.jpg',
+    },
+
+    # ===== ELECTION 18 (February 2009) =====
+    ('18', 'כן'): {
+        'name': 'קדימה',
+        'name_en': 'Kadima',
+        'color': '#f59e0b',
+        'leader': 'ציפי לבני',
+        'leader_en': 'Tzipi Livni',
+        'leader_image': 'images/leaders/livni.jpg',
+    },
+    ('18', 'אמת'): {
+        'leader': 'אהוד ברק',
+        'leader_en': 'Ehud Barak',
+        'leader_image': 'images/leaders/barak.jpg',
+    },
+    ('18', 'שס'): {
+        'leader': 'אלי ישי',
+        'leader_en': 'Eli Yishai',
+        'leader_image': 'images/leaders/yishai.jpg',
+    },
+    ('18', 'ל'): {
+        'name': 'ישראל ביתנו',
+        'name_en': 'Yisrael Beiteinu',
+        'color': PARTY_COLORS['yisrael_beiteinu'],
+        'leader': 'אביגדור ליברמן',
+        'leader_en': 'Avigdor Lieberman',
+        'leader_image': 'images/leaders/lieberman.jpg',
+    },
+    ('18', 'ג'): {
+        'leader': 'יעקב ליצמן',
+        'leader_en': 'Yaakov Litzman',
+        'leader_image': 'images/leaders/litzman.jpg',
+    },
+    ('18', 'עם'): {
+        'name': 'רע״ם-תע״ל',
+        'name_en': 'Ra\'am-Ta\'al',
+        'color': '#84cc16',
+        'leader': 'איברהים צרצור',
+        'leader_en': 'Ibrahim Sarsur',
+        'leader_image': 'images/leaders/sarsur.jpg',
+    },
+    ('18', 'ט'): {
+        'name': 'האיחוד הלאומי',
+        'name_en': 'National Union',
+        'color': '#ea580c',
+        'leader': 'יעקב כץ',
+        'leader_en': "Ya'akov Katz",
+        'leader_image': '',
+    },
+    ('18', 'ו'): {
+        'name': 'חד״ש',
+        'name_en': 'Hadash',
+        'color': '#dc2626',
+        'leader': 'מוחמד ברכה',
+        'leader_en': 'Muhammad Barakeh',
+        'leader_image': 'images/leaders/barakeh.jpg',
+    },
+    ('18', 'מרצ'): {
+        'leader': 'חיים אורון',
+        'leader_en': 'Haim Oron',
+        'leader_image': 'images/leaders/oron.jpg',
+    },
+    ('18', 'ב'): {
+        'name': 'הבית היהודי',
+        'name_en': 'The Jewish Home',
+        'color': '#92400e',
+        'leader': 'דניאל הרשקוביץ',
+        'leader_en': 'Daniel Hershkowitz',
+        'leader_image': 'images/leaders/hershkowitz.jpg',
+    },
+    ('18', 'ד'): {
+        'name': 'בל״ד',
+        'name_en': 'Balad',
+        'color': '#065f46',
+        'leader': "ג'מאל זחאלקה",
+        'leader_en': 'Jamal Zahalka',
+        'leader_image': 'images/leaders/zahalka.jpg',
+    },
+
+    # ===== ELECTION 19 (January 2013) =====
+    ('19', 'מחל'): {
+        'name': 'הליכוד ישראל ביתנו',
+        'name_en': 'Likud Yisrael Beiteinu',
+        'leader_image': 'images/leaders/netanyahu.jpg',
+    },
+    ('19', 'שס'): {
+        'leader': 'אריה דרעי',
+        'leader_en': 'Aryeh Deri',
+        'leader_image': 'images/leaders/deri.jpg',
+    },
+    ('19', 'ג'): {
+        'leader': 'יעקב ליצמן',
+        'leader_en': 'Yaakov Litzman',
+        'leader_image': 'images/leaders/litzman.jpg',
+    },
+    ('19', 'צפ'): {
+        'name': 'התנועה',
+        'name_en': 'Hatnuah',
+        'color': '#a855f7',
+        'leader': 'ציפי לבני',
+        'leader_en': 'Tzipi Livni',
+        'leader_image': 'images/leaders/livni.jpg',
+    },
+    ('19', 'מרץ'): {
+        'name': 'מרצ',
+        'name_en': 'Meretz',
+        'color': PARTY_COLORS['meretz'],
+        'leader': 'זהבה גלאון',
+        'leader_en': 'Zahava Galon',
+        'leader_image': 'images/leaders/galon.jpg',
+    },
+    ('19', 'עם'): {
+        'name': 'רע״ם-תע״ל',
+        'name_en': 'Ra\'am-Ta\'al',
+        'color': '#84cc16',
+        'leader': 'איברהים צרצור',
+        'leader_en': 'Ibrahim Sarsur',
+        'leader_image': 'images/leaders/sarsur.jpg',
+    },
+    ('19', 'ו'): {
+        'name': 'חד״ש',
+        'name_en': 'Hadash',
+        'color': '#dc2626',
+        'leader': 'מוחמד ברכה',
+        'leader_en': 'Muhammad Barakeh',
+        'leader_image': 'images/leaders/barakeh.jpg',
+    },
+    ('19', 'ד'): {
+        'name': 'בל״ד',
+        'name_en': 'Balad',
+        'color': '#065f46',
+        'leader': "ג'מאל זחאלקה",
+        'leader_en': 'Jamal Zahalka',
+        'leader_image': 'images/leaders/zahalka.jpg',
+    },
+    ('19', 'כן'): {
+        'name': 'קדימה',
+        'name_en': 'Kadima',
+        'color': '#f59e0b',
+        'leader': 'שאול מופז',
+        'leader_en': 'Shaul Mofaz',
+        'leader_image': 'images/leaders/mofaz.jpg',
+    },
+    ('19', 'אמת'): {
+        'leader': 'שלי יחימוביץ',
+        'leader_en': 'Shelly Yachimovich',
+        'leader_image': 'images/leaders/yachimovich.jpg',
+    },
+    ('19', 'פה'): {
+        'name': 'יש עתיד',
+        'name_en': 'Yesh Atid',
+        'color': PARTY_COLORS['yesh_atid'],
+        'leader': 'יאיר לפיד',
+        'leader_en': 'Yair Lapid',
+        'leader_image': 'images/leaders/lapid.jpg',
+    },
+    ('19', 'טב'): {
+        'leader': 'נפתלי בנט',
+        'leader_en': 'Naftali Bennett',
+        'leader_image': 'images/leaders/bennett.jpg',
+    },
+
+    # ===== ELECTION 20 (March 2015) =====
+    ('20', 'אמת'): {
+        'name': 'המחנה הציוני',
+        'name_en': 'Zionist Union',
+        'color': '#dc2626',
+        'leader': 'יצחק הרצוג',
+        'leader_en': 'Isaac Herzog',
+        'leader_image': 'images/leaders/herzog.jpg',
+    },
+    ('20', 'ודעם'): {
+        'name': 'הרשימה המשותפת',
+        'name_en': 'Joint List',
+        'color': '#059669',
+        'leader': 'איימן עודה',
+        'leader_en': 'Ayman Odeh',
+        'leader_image': 'images/leaders/odeh.jpg',
+    },
+    ('20', 'פה'): {
+        'name': 'יש עתיד',
+        'name_en': 'Yesh Atid',
+        'color': PARTY_COLORS['yesh_atid'],
+        'leader': 'יאיר לפיד',
+        'leader_en': 'Yair Lapid',
+        'leader_image': 'images/leaders/lapid.jpg',
+    },
+    ('20', 'כ'): {
+        'name': 'כולנו',
+        'name_en': 'Kulanu',
+        'color': PARTY_COLORS['kulanu'],
+        'leader': 'משה כחלון',
+        'leader_en': 'Moshe Kahlon',
+        'leader_image': 'images/leaders/kahlon.jpg',
+    },
+    ('20', 'שס'): {
+        'leader': 'אריה דרעי',
+        'leader_en': 'Aryeh Deri',
+        'leader_image': 'images/leaders/deri.jpg',
+    },
+    ('20', 'ג'): {
+        'leader': 'יעקב ליצמן',
+        'leader_en': 'Yaakov Litzman',
+        'leader_image': 'images/leaders/litzman.jpg',
+    },
+    ('20', 'טב'): {
+        'leader': 'נפתלי בנט',
+        'leader_en': 'Naftali Bennett',
+        'leader_image': 'images/leaders/bennett.jpg',
+    },
+    ('20', 'ל'): {
+        'name': 'ישראל ביתנו',
+        'name_en': 'Yisrael Beiteinu',
+        'color': PARTY_COLORS['yisrael_beiteinu'],
+        'leader': 'אביגדור ליברמן',
+        'leader_en': 'Avigdor Lieberman',
+        'leader_image': 'images/leaders/lieberman.jpg',
+    },
+    ('20', 'מרצ'): {
+        'leader': 'זהבה גלאון',
+        'leader_en': 'Zahava Galon',
+        'leader_image': 'images/leaders/galon.jpg',
+    },
+
     # ===== ELECTION 21 (April 2019) =====
     # Blue and White (Kahol Lavan) led by Benny Gantz
     ('21', 'פה'): {

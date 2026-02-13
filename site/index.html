@@ -283,7 +283,7 @@
 
             <div class="hero-stats">
                 <div class="hero-stat">
-                    <span class="hero-stat-value" id="stat-elections">25</span>
+                    <span class="hero-stat-value" id="stat-elections">10</span>
                     <span class="hero-stat-label" data-i18n="dashboard_stat_elections">כנסות</span>
                 </div>
                 <div class="hero-stat">
@@ -406,10 +406,12 @@
 
         // Load stats from map data (all elections for max ballots, latest for rest)
         Promise.all(
-            ['21','22','23','24','25'].map(e =>
-                fetch('data/map_' + e + '.json').then(r => r.json())
+            ['16','17','18','19','20','21','22','23','24','25'].map(e =>
+                fetch('data/map_' + e + '.json').then(r => r.json()).catch(() => null)
             )
-        ).then(maps => {
+        ).then(all => {
+            const maps = all.filter(Boolean);
+            if (!maps.length) return;
             const maxBallots = Math.max(...maps.map(m => m.stats.totalBallots));
             const latest = maps[maps.length - 1];
             animateNumber(document.getElementById('stat-ballots'), maxBallots, 1200);

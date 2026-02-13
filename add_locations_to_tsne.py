@@ -64,25 +64,34 @@ def match_location(station, locations_data, election_config):
     if not settlement_name or not ballot_number:
         return None
 
-    # Try to find the settlement in the locations data
-    for settlement_id, sdata in locations_data.get('settlements', {}).items():
-        if sdata['name'] == settlement_name:
-            # Found the settlement, now find the ballot
-            for ballot in sdata.get('ballots', []):
-                # Compare both original and normalized versions
-                if ballot['ballot'] == ballot_number or ballot['ballot'] == ballot_normalized:
-                    return ballot['location']
+    settlements = locations_data.get('settlements', {})
+    b2l = locations_data.get('ballot_to_location', {})
 
-    # Try the flat mapping
-    # We need to find the settlement ID first
-    for settlement_id, sdata in locations_data.get('settlements', {}).items():
-        if sdata['name'] == settlement_name:
-            # Try both original and normalized ballot numbers
-            for bn in [ballot_number, ballot_normalized]:
-                key = f"{settlement_id}:{bn}"
-                location = locations_data.get('ballot_to_location', {}).get(key)
-                if location:
-                    return location
+    # Find settlement ID by name
+    settlement_id = None
+    for sid, sdata in settlements.items():
+        # Handle both formats: {id: {name: str, ...}} and {id: str}
+        sname = sdata['name'] if isinstance(sdata, dict) else sdata
+        if sname == settlement_name:
+            settlement_id = sid
+            break
+
+    if not settlement_id:
+        return None
+
+    # Try structured ballots list (K21-K25 format)
+    sdata = settlements.get(settlement_id)
+    if isinstance(sdata, dict):
+        for ballot in sdata.get('ballots', []):
+            if ballot['ballot'] == ballot_number or ballot['ballot'] == ballot_normalized:
+                return ballot['location']
+
+    # Try flat ballot_to_location mapping
+    for bn in [ballot_number, ballot_normalized]:
+        key = f"{settlement_id}:{bn}"
+        location = b2l.get(key)
+        if location:
+            return location
 
     return None
 
@@ -128,11 +137,12 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Add ballot locations to T-SNE data')
-    parser.add_argument('--election', '-e', choices=['21', '22', '23', '24', '25', 'all'],
+    all_elections = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
+    parser.add_argument('--election', '-e', choices=all_elections + ['all'],
                        default='all', help='Election to process (default: all)')
     args = parser.parse_args()
 
-    elections = ['21', '22', '23', '24', '25'] if args.election == 'all' else [args.election]
+    elections = all_elections if args.election == 'all' else [args.election]
 
     for election_id in elections:
         try:
