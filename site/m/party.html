@@ -707,9 +707,12 @@
                 h += '<canvas id="concentration-cdf" style="width:100%;height:180px;margin:0.5rem 0"></canvas>';
                 h += '<div style="margin-top:0.5rem">';
                 h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_half') + '</span><span class="m-metric-value">' + conc.settlements_for_50pct + '</span></div>';
+                if (conc.settlements_for_75pct) h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_75') + '</span><span class="m-metric-value">' + conc.settlements_for_75pct + '</span></div>';
                 h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_90') + '</span><span class="m-metric-value">' + conc.settlements_for_90pct + '</span></div>';
+                if (conc.settlements_for_98pct) h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('settlements_for_98') + '</span><span class="m-metric-value">' + conc.settlements_for_98pct + '</span></div>';
                 h += '<div class="m-metric-row"><span class="m-metric-label">' + i18n.t('effective_settlements') + '</span><span class="m-metric-value">' + hhi.effective_settlements + '</span></div>';
                 h += '<div style="font-size:0.65rem;color:var(--text-muted);margin-top:-0.1rem;padding-bottom:0.2rem">' + i18n.t('effective_settlements_tip') + '</div>';
+                h += '<a href="rankings.html" style="display:inline-block;margin-top:0.3rem;font-size:0.72rem;color:var(--accent);text-decoration:none">' + i18n.t('see_all_rankings') + '</a>';
                 h += '</div></div>';
             }
 

@@ -405,7 +405,7 @@
                     var key = entry[0], val = entry[1];
                     var label = transLabels[key] || key;
                     var barW = Math.min(val, 100);
-                    var barColor = val > 50 ? '#f87171' : val > 30 ? '#fbbf24' : '#4ade80';
+                    var barColor = val > 25 ? '#f87171' : val > 10 ? '#fbbf24' : '#4ade80';
                     html += '<div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.35rem;font-size:0.85rem">';
                     html += '<span style="min-width:55px;color:var(--text-secondary)">' + label + '</span>';
                     html += '<div style="flex:1;height:8px;background:var(--bg-tertiary);border-radius:4px;overflow:hidden"><div style="height:100%;width:' + barW + '%;background:' + barColor + ';border-radius:4px"></div></div>';
@@ -417,6 +417,7 @@
                 html += '<span style="font-weight:700">' + pedersen.average.toFixed(1) + '%</span>';
                 html += '</div>';
                 html += '<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem">' + i18n.t('percentile_label') + ' ' + Math.round((1 - pedersen.rank / metricsData.national_stats.total_settlements) * 100) + ' (' + (lang === 'en' ? 'national median' : 'חציון ארצי') + ': ' + metricsData.national_stats.median_pedersen + '%)</div>';
+                html += '<a href="rankings.html" style="display:inline-block;margin-top:0.5rem;font-size:0.8rem;color:var(--accent-primary);text-decoration:none">' + i18n.t('see_all_rankings') + '</a>';
                 html += '</div></section>';
             }
 

@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/rankings.html'+(lp?'?lang='+lp:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — דירוגים">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>דירוגים - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0a0a0f;
+            --bg-secondary: #12121a;
+            --bg-tertiary: #1a1a25;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #2a2a3a;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #06b6d4;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+            --vol-green: #22c55e;
+            --vol-yellow: #eab308;
+            --vol-red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Animated sand dunes background */
+        .dunes-container {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 250px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .dune {
+            position: absolute; bottom: 0; left: 0;
+            width: 200%; height: 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+        }
+        .dune-1 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23c9a66b' fill-opacity='0.15' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1440px 180px;
+            animation: dune-move-1 30s linear infinite;
+            opacity: 0.9;
+        }
+        .dune-2 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23d4a574' fill-opacity='0.12' d='M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,229.3C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1200px 150px;
+            animation: dune-move-2 25s linear infinite;
+            opacity: 0.8;
+        }
+        .dune-3 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23e6c9a8' fill-opacity='0.1' d='M0,256L60,245.3C120,235,240,213,360,218.7C480,224,600,256,720,261.3C840,267,960,245,1080,229.3C1200,213,1320,203,1380,197.3L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1600px 200px;
+            animation: dune-move-3 40s linear infinite;
+            opacity: 0.7;
+        }
+        @keyframes dune-move-1 { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes dune-move-2 { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+        @keyframes dune-move-3 { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 1.2rem 1.5rem 0.8rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.2rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.6rem;
+            position: relative;
+            padding-left: 120px;
+            padding-right: 120px;
+            flex-wrap: wrap;
+        }
+        .view-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .view-btn:hover { background: #252535; color: var(--text-primary); }
+        .view-btn.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        /* Section tabs */
+        .section-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        .section-tab {
+            padding: 0.6rem 2rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .section-tab:hover { background: #252535; color: var(--text-primary); }
+        .section-tab.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Explanation card */
+        .explanation-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+        .explanation-card strong { color: var(--text-primary); }
+        .explanation-card .katex-display { margin: 0.5rem 0; text-align: center; direction: ltr; }
+        .explanation-card .katex { font-size: 1.1em; }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            padding: 1rem;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            flex-wrap: wrap;
+        }
+        .stat-item { text-align: center; }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-primary);
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Chart container */
+        .chart-container {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+        .chart-container canvas {
+            max-height: 320px;
+        }
+
+        /* Size filter */
+        .filter-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .filter-pill {
+            padding: 0.4rem 1rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .filter-pill:hover { background: #252535; color: var(--text-primary); }
+        .filter-pill.active {
+            background: var(--accent-primary);
+            color: var(--text-primary);
+            border-color: var(--accent-primary);
+        }
+
+        /* Count label */
+        .count-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Data table */
+        .data-table-wrapper {
+            overflow-x: auto;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        .data-table th {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            text-align: right;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 2px solid var(--border-color);
+            cursor: pointer;
+            white-space: nowrap;
+            user-select: none;
+            transition: var(--transition-fast);
+        }
+        .data-table th:hover { color: var(--text-primary); }
+        .data-table th .sort-arrow {
+            margin-right: 0.25rem;
+            font-size: 0.7rem;
+            opacity: 0.4;
+        }
+        .data-table th.sorted .sort-arrow { opacity: 1; color: var(--accent-primary); }
+        .data-table td {
+            padding: 0.6rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            white-space: nowrap;
+        }
+        .data-table tbody tr:hover {
+            background: rgba(59, 130, 246, 0.05);
+        }
+        .data-table .settlement-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+        .data-table .settlement-link:hover { text-decoration: underline; }
+        .data-table .party-link {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+        .data-table .party-link:hover { text-decoration: underline; }
+
+        /* Volatility color bar */
+        .vol-bar-cell {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .vol-bar {
+            width: 60px;
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .vol-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        /* Party color dot */
+        .party-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+
+        /* Section containers */
+        .section-content { display: none; }
+        .section-content.active { display: flex; flex-direction: column; gap: 1.5rem; }
+
+        /* Footer */
+        .main-footer {
+            padding: 1.5rem;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border-color);
+        }
+        .footer-content {
+            max-width: 900px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .methodology {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+        .methodology strong { color: var(--text-primary); }
+        .credits {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        .credits a {
+            color: var(--accent-primary);
+            text-decoration: none;
+        }
+        .credits a:hover { text-decoration: underline; }
+
+        /* Tooltip */
+        .vol-tooltip {
+            position: fixed;
+            z-index: 1000;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+            font-size: 0.82rem;
+            color: var(--text-primary);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+            box-shadow: var(--shadow-lg);
+            max-width: 420px;
+            line-height: 1.5;
+        }
+        .vol-tooltip.visible { opacity: 1; }
+        .vol-tooltip .tt-title {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+        .vol-tooltip .tt-cols {
+            display: flex;
+            gap: 1.5rem;
+        }
+        .vol-tooltip .tt-col h5 {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+        .vol-tooltip .tt-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+        }
+        .vol-tooltip .tt-row .tt-pct {
+            font-weight: 600;
+            min-width: 38px;
+            text-align: left;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-muted);
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .view-switcher { padding: 0; flex-wrap: wrap; }
+            .view-btn { padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+            .main-header h1 { font-size: 1.8rem; }
+        }
+    </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+</head>
+<body>
+    <!-- Animated sand dunes -->
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <p class="subtitle" data-i18n="rankings_subtitle">דירוגי תנודתיות יישובים וריכוז גיאוגרפי</p>
+            <nav class="view-switcher"></nav>
+        </header>
+
+        <main class="main-content">
+            <div class="section-tabs">
+                <button class="section-tab active" data-section="settlements" data-i18n="tab_settlements">יישובים</button>
+                <button class="section-tab" data-section="parties" data-i18n="tab_parties">מפלגות</button>
+            </div>
+
+            <!-- ═══ Settlement Volatility Section ═══ -->
+            <div class="section-content active" id="section-settlements">
+                <div class="explanation-card" data-i18n-html="pedersen_explanation"></div>
+
+                <div class="stats-bar" id="vol-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-median">39.6%</div>
+                        <div class="stat-label" data-i18n="median_label">חציון</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-mean">38.7%</div>
+                        <div class="stat-label" data-i18n="mean_label">ממוצע</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-total-settlements">1,158</div>
+                        <div class="stat-label" data-i18n="total_settlements_label">סה״כ יישובים</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <canvas id="histogram-chart"></canvas>
+                </div>
+
+                <div class="filter-row">
+                    <span class="filter-label" data-i18n="size_filter_label">סינון לפי גודל:</span>
+                    <button class="filter-pill active" data-filter="all" data-i18n="size_all">הכל</button>
+                    <button class="filter-pill" data-filter="small" data-i18n="size_small">קטן &lt;1,000</button>
+                    <button class="filter-pill" data-filter="medium" data-i18n="size_medium">בינוני 1,000-10,000</button>
+                    <button class="filter-pill" data-filter="large" data-i18n="size_large">גדול 10,000+</button>
+                </div>
+
+                <div class="count-label" id="count-label"></div>
+
+                <div class="data-table-wrapper">
+                    <table class="data-table" id="vol-table">
+                        <thead>
+                            <tr>
+                                <th data-col="rank"><span class="sort-arrow">▼</span>#</th>
+                                <th data-col="name"><span class="sort-arrow">▼</span><span data-i18n="settlement">יישוב</span></th>
+                                <th data-col="average" class="sorted"><span class="sort-arrow">▼</span><span data-i18n="avg_volatility">ממוצע</span></th>
+                                <th data-col="21_to_22"><span class="sort-arrow">▼</span>21→22</th>
+                                <th data-col="22_to_23"><span class="sort-arrow">▼</span>22→23</th>
+                                <th data-col="23_to_24"><span class="sort-arrow">▼</span>23→24</th>
+                                <th data-col="24_to_25"><span class="sort-arrow">▼</span>24→25</th>
+                                <th data-col="voters"><span class="sort-arrow">▼</span><span data-i18n="voters">מצביעים</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="vol-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ═══ Party Concentration Section ═══ -->
+            <div class="section-content" id="section-parties">
+                <div class="explanation-card" data-i18n-html="hhi_explanation"></div>
+
+                <div class="chart-container">
+                    <canvas id="hhi-chart"></canvas>
+                </div>
+
+                <div class="data-table-wrapper">
+                    <table class="data-table" id="hhi-table">
+                        <thead>
+                            <tr>
+                                <th data-col="name"><span class="sort-arrow">▼</span><span data-i18n="party">מפלגה</span></th>
+                                <th data-col="effective" class="sorted"><span class="sort-arrow">▼</span><span data-i18n="effective_settlements">יישובים אפקטיביים</span></th>
+                                <th data-col="hhi"><span class="sort-arrow">▼</span>HHI</th>
+                                <th data-col="s50"><span class="sort-arrow">▼</span><span data-i18n="settlements_for_half">יישובים ל-50%</span></th>
+                                <th data-col="s75"><span class="sort-arrow">▼</span><span data-i18n="settlements_for_75">יישובים ל-75%</span></th>
+                                <th data-col="s90"><span class="sort-arrow">▼</span><span data-i18n="settlements_for_90">יישובים ל-90%</span></th>
+                                <th data-col="s98"><span class="sort-arrow">▼</span><span data-i18n="settlements_for_98">יישובים ל-98%</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="hhi-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="loading" id="loading-indicator">
+                <div class="loading-spinner"></div>
+                <p data-i18n="loading">טוען נתונים...</p>
+            </div>
+        </main>
+
+        <footer class="main-footer">
+            <div class="footer-content">
+                <p class="credits">
+                    <span data-i18n="credits_line">© הראל קין</span> |
+                    <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+                    <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <div class="vol-tooltip" id="vol-tooltip"></div>
+
+    <script>
+    // ═══════════════════════════════════════════════════
+    //  Rankings Page — Settlement Volatility & Party HHI
+    // ═══════════════════════════════════════════════════
+
+    let metricsData = null;
+    let mapData = null;
+    let allMapData = {};     // eid → map data (for tooltips)
+    let settlementProps = {};// settlement → { eid → proportions }
+    let voterMap = {};       // settlement → voters
+    let partyColors = {};    // party name → color (merged from all elections)
+    let histogramChart = null;
+    let hhiChart = null;
+
+    // Current state
+    let currentFilter = 'all';
+    let volSortCol = 'average';
+    let volSortAsc = false;
+    let hhiSortCol = 'effective';
+    let hhiSortAsc = false;
+
+    // ── Volatility color ──
+    function volColor(v) {
+        if (v < 10) return 'var(--vol-green)';
+        if (v < 25) return 'var(--vol-yellow)';
+        return 'var(--vol-red)';
+    }
+    function volColorHex(v) {
+        if (v < 10) return '#22c55e';
+        if (v < 25) return '#eab308';
+        return '#ef4444';
+    }
+
+    // ── Settlement name normalization (must match generate_metrics_data.py) ──
+    const SETTLEMENT_NAME_OVERRIDES = {
+        'אום אלפחם': 'אום אל פחם', 'באקה אלגרביה': 'באקה אל גרביה',
+        'בועינהנוגידאת': 'בועינה נוגידאת', 'ביר אלמכסור': 'ביר אל מכסור',
+        'בנימינהגבעת עדה': 'בנימינה גבעת עדה', 'גדידהמכר': 'גדידה מכר',
+        'גסר אזרקא': 'גסר א זרקא', 'דאלית אלכרמל': 'דאלית אל כרמל',
+        'דיר אלאסד': 'דיר אל אסד', 'חפציבה': 'חפצי בה',
+        'טובאזנגריה': 'טובא זנגריה', 'יאנוחגת': 'יאנוח גת',
+        'יהודמונוסון': 'יהוד מונוסון', 'כאוכב אבו אלהיגא': 'כאוכב אבו אל היגא',
+        'כסראסמיע': 'כסרא סמיע', 'כעביהטבאשחגאגרה': 'כעביה טבאש חגאגרה',
+        'מגד אלכרום': 'מגד אל כרום', 'מודיעיןמכביםרעות': 'מודיעין מכבים רעות',
+        'מסעודין אלעזאזמה': 'מסעודין אל עזאזמה', 'מעלותתרשיחא': 'מעלות תרשיחא',
+        'ערערהבנגב': 'ערערה בנגב', 'פרדס חנהכרכור': 'פרדס חנה כרכור',
+        'קדימהצורן': 'קדימה צורן', 'רםאון': 'רם און',
+        'שגבשלום': 'שגב שלום', 'שריגים ליאון': 'שריגים לי און',
+    };
+    function normName(n) { return SETTLEMENT_NAME_OVERRIDES[n] || n; }
+
+    // ── Load data ──
+    async function loadAllData() {
+        const eids = [21, 22, 23, 24, 25];
+        const fetches = [fetch('data/metrics.json')].concat(eids.map(e => fetch('data/map_' + e + '.json')));
+        const responses = await Promise.all(fetches);
+        metricsData = await responses[0].json();
+        for (let i = 0; i < eids.length; i++) {
+            allMapData[eids[i]] = await responses[i + 1].json();
+        }
+        mapData = allMapData[25];
+
+        // Build voter map from metrics data (canonical names)
+        Object.entries(metricsData.settlement_pedersen).forEach(([name, d]) => {
+            voterMap[name] = d.voters || 0;
+        });
+
+        // Build party color map (merge from all elections)
+        eids.forEach(eid => {
+            allMapData[eid].parties.forEach(p => {
+                if (!partyColors[p.name]) partyColors[p.name] = p.color;
+            });
+        });
+
+        // Build settlement proportions per election (for tooltips)
+        eids.forEach(eid => {
+            allMapData[eid].settlements.forEach(s => {
+                const name = normName(s.name);
+                if (!settlementProps[name]) settlementProps[name] = {};
+                settlementProps[name][eid] = s.proportions || {};
+            });
+        });
+
+        document.getElementById('loading-indicator').style.display = 'none';
+        renderSettlements();
+        renderParties();
+        renderMath();
+    }
+
+    // ── Filtered settlement list ──
+    function getFilteredSettlements() {
+        const entries = Object.entries(metricsData.settlement_pedersen);
+        return entries.filter(([name, data]) => {
+            const v = voterMap[name] || 0;
+            if (currentFilter === 'small') return v < 1000;
+            if (currentFilter === 'medium') return v >= 1000 && v < 10000;
+            if (currentFilter === 'large') return v >= 10000;
+            return true;
+        });
+    }
+
+    // ── Compute filtered stats ──
+    function computeStats(settlements) {
+        const values = settlements.map(([, d]) => d.average).sort((a, b) => a - b);
+        if (values.length === 0) return { median: 0, mean: 0, count: 0 };
+        const mid = Math.floor(values.length / 2);
+        const median = values.length % 2 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+        const mean = values.reduce((s, v) => s + v, 0) / values.length;
+        return { median, mean, count: values.length };
+    }
+
+    // ── Render settlements section ──
+    function renderSettlements() {
+        const filtered = getFilteredSettlements();
+        const stats = computeStats(filtered);
+
+        // Update stats
+        document.getElementById('stat-median').textContent = stats.median.toFixed(1) + '%';
+        document.getElementById('stat-mean').textContent = stats.mean.toFixed(1) + '%';
+        document.getElementById('stat-total-settlements').textContent = i18n.fmtNum(stats.count);
+
+        // Update count label
+        const total = Object.keys(metricsData.settlement_pedersen).length;
+        document.getElementById('count-label').textContent =
+            i18n.t('showing_count', { x: i18n.fmtNum(stats.count), y: i18n.fmtNum(total) });
+
+        renderHistogram(filtered, stats.median);
+        renderVolTable(filtered);
+    }
+
+    // ── Histogram ──
+    function renderHistogram(settlements, median) {
+        // Find max value to determine bin range
+        const maxVal = Math.max(...settlements.map(([, d]) => d.average), 10);
+        const numBins = Math.min(20, Math.ceil(maxVal / 2.5));
+        const binSize = Math.ceil(maxVal / numBins);
+
+        const bins = new Array(numBins).fill(0);
+        settlements.forEach(([, d]) => {
+            const idx = Math.min(Math.floor(d.average / binSize), numBins - 1);
+            bins[idx]++;
+        });
+
+        const labels = [];
+        const colors = [];
+        for (let i = 0; i < numBins; i++) {
+            const lo = i * binSize;
+            labels.push(lo + '-' + (lo + binSize) + '%');
+            const mid = lo + binSize / 2;
+            colors.push(volColorHex(mid));
+        }
+
+        const ctx = document.getElementById('histogram-chart').getContext('2d');
+        if (histogramChart) histogramChart.destroy();
+
+        histogramChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    data: bins,
+                    backgroundColor: colors,
+                    borderColor: colors.map(c => c + 'cc'),
+                    borderWidth: 1,
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => i18n.fmtNum(ctx.raw) + ' ' + i18n.t('settlement')
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#94a3b8', font: { size: 11 } },
+                        grid: { color: '#2a2a3a40' },
+                        title: {
+                            display: true,
+                            text: i18n.t('volatility_label') + ' (%)',
+                            color: '#94a3b8'
+                        }
+                    },
+                    y: {
+                        ticks: { color: '#94a3b8', font: { size: 11 } },
+                        grid: { color: '#2a2a3a40' },
+                        title: {
+                            display: true,
+                            text: i18n.getLang() === 'he' ? 'מספר יישובים' : 'Number of settlements',
+                            color: '#94a3b8'
+                        }
+                    }
+                }
+            },
+            plugins: [{
+                id: 'medianLine',
+                afterDraw(chart) {
+                    const xScale = chart.scales.x;
+                    const yScale = chart.scales.y;
+                    const medianBin = median / binSize;
+                    // xScale pixel position for the median
+                    const xPx = xScale.getPixelForValue(medianBin);
+                    const ctx = chart.ctx;
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = '#f8fafc';
+                    ctx.lineWidth = 2;
+                    ctx.moveTo(xPx, yScale.top);
+                    ctx.lineTo(xPx, yScale.bottom);
+                    ctx.stroke();
+                    // Label
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = '12px Heebo, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(i18n.t('median_label') + ' ' + median.toFixed(1) + '%', xPx, yScale.top - 6);
+                    ctx.restore();
+                }
+            }]
+        });
+    }
+
+    // ── Volatility table ──
+    function renderVolTable(filtered) {
+        // Sort
+        const sorted = [...filtered].sort((a, b) => {
+            let va, vb;
+            if (volSortCol === 'name') {
+                va = i18n.settlementName(a[0]);
+                vb = i18n.settlementName(b[0]);
+                return volSortAsc ? va.localeCompare(vb, 'he') : vb.localeCompare(va, 'he');
+            }
+            if (volSortCol === 'voters') {
+                va = voterMap[a[0]] || 0;
+                vb = voterMap[b[0]] || 0;
+            } else if (volSortCol === 'average') {
+                va = a[1].average;
+                vb = b[1].average;
+            } else if (volSortCol === 'rank') {
+                va = a[1].rank;
+                vb = b[1].rank;
+            } else {
+                va = a[1].transitions[volSortCol] ?? 0;
+                vb = b[1].transitions[volSortCol] ?? 0;
+            }
+            return volSortAsc ? va - vb : vb - va;
+        });
+
+        const tbody = document.getElementById('vol-tbody');
+        let html = '';
+        sorted.forEach(([name, data], idx) => {
+            const voters = voterMap[name] || 0;
+            const displayName = i18n.settlementName(name);
+            const avg = data.average;
+            const t = data.transitions;
+            html += '<tr>' +
+                '<td>' + (idx + 1) + '</td>' +
+                '<td><a class="settlement-link" href="settlement.html?name=' + encodeURIComponent(name) + '">' + displayName + '</a></td>' +
+                '<td><div class="vol-bar-cell"><div class="vol-bar"><div class="vol-bar-fill" style="width:' + Math.min(avg, 100) + '%;background:' + volColor(avg) + '"></div></div><span style="color:' + volColor(avg) + '">' + avg.toFixed(1) + '%</span></div></td>' +
+                volCell(t['21_to_22'], name, 21, 22) +
+                volCell(t['22_to_23'], name, 22, 23) +
+                volCell(t['23_to_24'], name, 23, 24) +
+                volCell(t['24_to_25'], name, 24, 25) +
+                '<td>' + i18n.fmtNum(voters) + '</td>' +
+                '</tr>';
+        });
+        tbody.innerHTML = html;
+    }
+
+    function volCell(val, settlement, e1, e2) {
+        if (val == null) return '<td>-</td>';
+        return '<td class="vol-hover-cell" data-settlement="' + settlement + '" data-e1="' + e1 + '" data-e2="' + e2 + '"><div class="vol-bar-cell"><div class="vol-bar"><div class="vol-bar-fill" style="width:' + Math.min(val, 100) + '%;background:' + volColor(val) + '"></div></div><span style="color:' + volColor(val) + ';font-size:0.85rem">' + val.toFixed(1) + '</span></div></td>';
+    }
+
+    // ── Tooltip for transition cells ──
+    const tooltip = document.getElementById('vol-tooltip');
+    function showTransitionTooltip(e, settlement, e1, e2) {
+        const props1 = settlementProps[settlement] && settlementProps[settlement][e1];
+        const props2 = settlementProps[settlement] && settlementProps[settlement][e2];
+        if (!props1 || !props2) return;
+
+        // Top 5 parties per election
+        const top1 = Object.entries(props1).sort((a, b) => b[1] - a[1]).slice(0, 5);
+        const top2 = Object.entries(props2).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+        const lang = i18n.getLang();
+        const elLabel = lang === 'en' ? 'Knesset' : 'כנסת';
+        let h = '<div class="tt-title">' + i18n.settlementName(settlement) + ' — ' + e1 + '→' + e2 + '</div>';
+        h += '<div class="tt-cols">';
+        h += '<div class="tt-col"><h5>' + elLabel + ' ' + e1 + '</h5>';
+        top1.forEach(([p, v]) => {
+            const color = partyColors[p] || '#6b7280';
+            h += '<div class="tt-row"><span><span class="party-dot" style="background:' + color + ';width:8px;height:8px;margin-left:4px;display:inline-block;border-radius:2px;vertical-align:middle"></span> ' + i18n.partyName(p) + '</span><span class="tt-pct">' + v.toFixed(1) + '%</span></div>';
+        });
+        h += '</div>';
+        h += '<div class="tt-col"><h5>' + elLabel + ' ' + e2 + '</h5>';
+        top2.forEach(([p, v]) => {
+            const color = partyColors[p] || '#6b7280';
+            h += '<div class="tt-row"><span><span class="party-dot" style="background:' + color + ';width:8px;height:8px;margin-left:4px;display:inline-block;border-radius:2px;vertical-align:middle"></span> ' + i18n.partyName(p) + '</span><span class="tt-pct">' + v.toFixed(1) + '%</span></div>';
+        });
+        h += '</div></div>';
+
+        tooltip.innerHTML = h;
+        tooltip.classList.add('visible');
+        positionTooltip(e);
+    }
+
+    function positionTooltip(e) {
+        const rect = tooltip.getBoundingClientRect();
+        let x = e.clientX + 12;
+        let y = e.clientY + 12;
+        if (x + rect.width > window.innerWidth - 10) x = e.clientX - rect.width - 12;
+        if (y + rect.height > window.innerHeight - 10) y = e.clientY - rect.height - 12;
+        tooltip.style.left = x + 'px';
+        tooltip.style.top = y + 'px';
+    }
+
+    // Event delegation for tooltip
+    document.getElementById('vol-table').addEventListener('mouseover', e => {
+        const cell = e.target.closest('.vol-hover-cell');
+        if (!cell) return;
+        showTransitionTooltip(e, cell.dataset.settlement, +cell.dataset.e1, +cell.dataset.e2);
+    });
+    document.getElementById('vol-table').addEventListener('mousemove', e => {
+        if (tooltip.classList.contains('visible')) positionTooltip(e);
+    });
+    document.getElementById('vol-table').addEventListener('mouseout', e => {
+        const cell = e.target.closest('.vol-hover-cell');
+        if (cell && !cell.contains(e.relatedTarget)) tooltip.classList.remove('visible');
+    });
+
+    // ── Render parties section ──
+    function renderParties() {
+        renderHHIChart();
+        renderHHITable();
+    }
+
+    function renderHHIChart() {
+        const hhi = metricsData.party_hhi;
+        const conc = metricsData.party_concentration;
+
+        // Build party list sorted by effective settlements (descending)
+        const parties = Object.keys(hhi)
+            .filter(name => conc[name])
+            .sort((a, b) => hhi[b].effective_settlements - hhi[a].effective_settlements);
+
+        const labels = parties.map(p => i18n.partyName(p));
+        const values = parties.map(p => hhi[p].effective_settlements);
+        const colors = parties.map(p => partyColors[p] || '#6b7280');
+
+        const ctx = document.getElementById('hhi-chart').getContext('2d');
+        if (hhiChart) hhiChart.destroy();
+
+        hhiChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors.map(c => c + 'cc'),
+                    borderColor: colors,
+                    borderWidth: 1,
+                    borderRadius: 3
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => i18n.t('effective_settlements') + ': ' + ctx.raw
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: { color: '#94a3b8', font: { size: 11 } },
+                        grid: { color: '#2a2a3a40' },
+                        title: {
+                            display: true,
+                            text: i18n.t('effective_settlements'),
+                            color: '#94a3b8'
+                        }
+                    },
+                    y: {
+                        ticks: { color: '#f8fafc', font: { size: 12 } },
+                        grid: { display: false }
+                    }
+                }
+            }
+        });
+
+        // Set chart height based on number of parties
+        document.getElementById('hhi-chart').parentElement.style.height = Math.max(400, parties.length * 32) + 'px';
+    }
+
+    function renderHHITable() {
+        const hhi = metricsData.party_hhi;
+        const conc = metricsData.party_concentration;
+        const parties = Object.keys(hhi).filter(name => conc[name]);
+
+        // Sort
+        const sorted = [...parties].sort((a, b) => {
+            let va, vb;
+            if (hhiSortCol === 'name') {
+                va = i18n.partyName(a);
+                vb = i18n.partyName(b);
+                return hhiSortAsc ? va.localeCompare(vb, 'he') : vb.localeCompare(va, 'he');
+            }
+            if (hhiSortCol === 'effective') {
+                va = hhi[a].effective_settlements;
+                vb = hhi[b].effective_settlements;
+            } else if (hhiSortCol === 'hhi') {
+                va = hhi[a].hhi;
+                vb = hhi[b].hhi;
+            } else if (hhiSortCol === 's50') {
+                va = conc[a].settlements_for_50pct;
+                vb = conc[b].settlements_for_50pct;
+            } else if (hhiSortCol === 's75') {
+                va = conc[a].settlements_for_75pct || 0;
+                vb = conc[b].settlements_for_75pct || 0;
+            } else if (hhiSortCol === 's90') {
+                va = conc[a].settlements_for_90pct;
+                vb = conc[b].settlements_for_90pct;
+            } else if (hhiSortCol === 's98') {
+                va = conc[a].settlements_for_98pct || 0;
+                vb = conc[b].settlements_for_98pct || 0;
+            }
+            return hhiSortAsc ? va - vb : vb - va;
+        });
+
+        const tbody = document.getElementById('hhi-tbody');
+        let html = '';
+        sorted.forEach(name => {
+            const color = partyColors[name] || '#6b7280';
+            const displayName = i18n.partyName(name);
+            const eff = hhi[name].effective_settlements;
+            const hhiVal = hhi[name].hhi;
+            const s50 = conc[name].settlements_for_50pct;
+            const s75 = conc[name].settlements_for_75pct;
+            const s90 = conc[name].settlements_for_90pct;
+            const s98 = conc[name].settlements_for_98pct;
+            html += '<tr>' +
+                '<td><span class="party-dot" style="background:' + color + '"></span>' +
+                '<a class="party-link" href="party.html?name=' + encodeURIComponent(name) + '">' + displayName + '</a></td>' +
+                '<td>' + eff + '</td>' +
+                '<td>' + hhiVal.toFixed(4) + '</td>' +
+                '<td>' + s50 + '</td>' +
+                '<td>' + (s75 || '-') + '</td>' +
+                '<td>' + s90 + '</td>' +
+                '<td>' + (s98 || '-') + '</td>' +
+                '</tr>';
+        });
+        tbody.innerHTML = html;
+    }
+
+    // ── Section tab switching ──
+    document.querySelector('.section-tabs').addEventListener('click', e => {
+        const tab = e.target.closest('.section-tab');
+        if (!tab) return;
+        document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const sectionId = tab.dataset.section;
+        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + sectionId).classList.add('active');
+    });
+
+    // ── Size filter ──
+    document.querySelector('.filter-row').addEventListener('click', e => {
+        const pill = e.target.closest('.filter-pill');
+        if (!pill) return;
+        document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        currentFilter = pill.dataset.filter;
+        renderSettlements();
+    });
+
+    // ── Table sorting ──
+    document.getElementById('vol-table').querySelector('thead').addEventListener('click', e => {
+        const th = e.target.closest('th');
+        if (!th) return;
+        const col = th.dataset.col;
+        if (volSortCol === col) {
+            volSortAsc = !volSortAsc;
+        } else {
+            volSortCol = col;
+            volSortAsc = col === 'name' || col === 'rank';
+        }
+        // Update sorted class
+        document.querySelectorAll('#vol-table th').forEach(h => h.classList.remove('sorted'));
+        th.classList.add('sorted');
+        th.querySelector('.sort-arrow').textContent = volSortAsc ? '▲' : '▼';
+        renderVolTable(getFilteredSettlements());
+    });
+
+    document.getElementById('hhi-table').querySelector('thead').addEventListener('click', e => {
+        const th = e.target.closest('th');
+        if (!th) return;
+        const col = th.dataset.col;
+        if (hhiSortCol === col) {
+            hhiSortAsc = !hhiSortAsc;
+        } else {
+            hhiSortCol = col;
+            hhiSortAsc = col === 'name';
+        }
+        document.querySelectorAll('#hhi-table th').forEach(h => h.classList.remove('sorted'));
+        th.classList.add('sorted');
+        th.querySelector('.sort-arrow').textContent = hhiSortAsc ? '▲' : '▼';
+        renderHHITable();
+    });
+
+    // ── KaTeX rendering helper ──
+    function renderMath() {
+        if (typeof renderMathInElement === 'function') {
+            document.querySelectorAll('.explanation-card').forEach(el => {
+                renderMathInElement(el, {
+                    delimiters: [
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '\\(', right: '\\)', display: false }
+                    ],
+                    throwOnError: false
+                });
+            });
+        }
+    }
+
+    // ── Language change ──
+    window.addEventListener('langchange', () => {
+        if (!metricsData) return;
+        renderSettlements();
+        renderParties();
+        i18n.applyTranslations();
+        renderMath();
+    });
+
+    // ── Init ──
+    // Auto-switch to parties tab if hash or sessionStorage says so
+    function checkTabFromUrl() {
+        const hash = location.hash.replace('#', '');
+        const stored = sessionStorage.getItem('rankings_tab');
+        if (stored) sessionStorage.removeItem('rankings_tab');
+        if (hash === 'parties' || stored === 'parties') {
+            document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            const tab = document.querySelector('[data-section="parties"]');
+            if (tab) tab.classList.add('active');
+            document.getElementById('section-parties').classList.add('active');
+        }
+    }
+    checkTabFromUrl();
+    loadAllData();
+    </script>
+    <script>i18n.renderNav('rankings'); i18n.renderBMC();</script>
+</body>
+</html>

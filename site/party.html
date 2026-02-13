@@ -857,9 +857,12 @@
                 html += '<canvas id="concentration-cdf" style="width:100%;height:210px;margin:0.75rem 0"></canvas>';
                 html += '<div style="margin-top:0.5rem">';
                 html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_half') + '</span><span class="metric-value">' + conc.settlements_for_50pct + '</span></div>';
+                if (conc.settlements_for_75pct) html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_75') + '</span><span class="metric-value">' + conc.settlements_for_75pct + '</span></div>';
                 html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_90') + '</span><span class="metric-value">' + conc.settlements_for_90pct + '</span></div>';
+                if (conc.settlements_for_98pct) html += '<div class="metric-row"><span class="metric-label">' + i18n.t('settlements_for_98') + '</span><span class="metric-value">' + conc.settlements_for_98pct + '</span></div>';
                 html += '<div class="metric-row"><span class="metric-label">' + i18n.t('effective_settlements') + '</span><span class="metric-value">' + hhi.effective_settlements + '</span></div>';
                 html += '<div style="font-size:0.72rem;color:var(--text-muted);margin-top:-0.1rem;padding-bottom:0.3rem">' + i18n.t('effective_settlements_tip') + '</div>';
+                html += '<a href="rankings.html#parties" style="display:inline-block;margin-top:0.3rem;font-size:0.78rem;color:var(--accent-primary);text-decoration:none" onclick="sessionStorage.setItem(\'rankings_tab\',\'parties\')">' + i18n.t('see_all_rankings') + '</a>';
                 html += '</div></div>';
             }
 
