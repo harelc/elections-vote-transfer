@@ -24,7 +24,6 @@
             height: 100%;
         }
 
-        /* Dark map tiles */
         .leaflet-tile-pane { filter: brightness(0.7) saturate(0.8); }
         .leaflet-popup-pane, .leaflet-marker-pane, .leaflet-overlay-pane { filter: none; }
 
@@ -221,6 +220,43 @@
             font-style: italic;
         }
 
+        /* Compare pills */
+        .compare-row {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px solid var(--border);
+        }
+        .compare-row-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            margin-bottom: 3px;
+        }
+        .compare-pills {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+        .compare-pill {
+            padding: 2px 6px;
+            font-size: 0.62rem;
+            border-radius: 4px;
+            border: 1px solid var(--border);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .compare-pill.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+        .compare-msg {
+            font-size: 0.6rem;
+            color: #ef4444;
+            margin-top: 3px;
+        }
+
         /* Party list in sheet */
         .party-list-grid {
             display: grid;
@@ -336,6 +372,11 @@
             </div>
             <div class="cluster-legend-explain" data-i18n="legend_pie_explain">צבעי העוגה במקבצים: חלוקת המפלגה המנצחת בכל קלפי</div>
         </div>
+        <div class="compare-row" id="compare-row" style="display:none;">
+            <div class="compare-row-label" id="compare-label">השוואה לכנסת:</div>
+            <div class="compare-pills" id="compare-pills"></div>
+            <div class="compare-msg" id="compare-msg" style="display:none;"></div>
+        </div>
     </div>
 
     <!-- Bottom Sheet (for cluster/marker details & party selection) -->
@@ -370,6 +411,10 @@
             this.parties = [];
             this.settlements = [];
             this.selectedSettlements = [];
+            this.compareElection = null;
+            this.compareData = null;
+            this.compareLookup = {};
+            this.compareCache = {};
 
             this.initElectionPills();
             this.initMap();
@@ -380,6 +425,7 @@
             window.addEventListener('langchange', () => {
                 i18n.applyTranslations();
                 this.buildColorFabs();
+                this.updateCompareRow();
                 this.updateColorScale();
                 this.renderMarkers();
             });
@@ -396,6 +442,9 @@
                 btn.onclick = () => this.switchElection(id);
                 pills.appendChild(btn);
             });
+            // Scroll active pill into view
+            const active = pills.querySelector('.active');
+            if (active) setTimeout(() => active.scrollIntoView({ inline: 'center', block: 'nearest' }), 0);
         }
 
         initMap() {
@@ -511,10 +560,22 @@
 
         async switchElection(id) {
             this.currentElection = id;
-            document.querySelectorAll('.election-pill').forEach(p =>
-                p.classList.toggle('active', p.textContent === id));
+            document.querySelectorAll('.election-pill').forEach(p => {
+                p.classList.toggle('active', p.textContent === id);
+                if (p.textContent === id) p.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+            });
             this.selectedSettlements = [];
             document.getElementById('settlement-tags').innerHTML = '';
+
+            // If compare election is same as new current, clear compare
+            if (this.compareElection === id) {
+                this.compareElection = null;
+                this.compareData = null;
+                this.compareLookup = {};
+            }
+
+            const prevSymbol = this.selectedParty ? this.selectedParty.symbol : null;
+            const prevMode = this.colorMode;
 
             document.getElementById('loading').style.display = 'flex';
             try {
@@ -523,7 +584,15 @@
                 this.parties = this.tsneData.parties || [];
                 this.buildSettlements();
                 this.buildColorFabs();
-                this.renderMarkers();
+                // Restore party selection by symbol (party family)
+                if (prevSymbol && prevMode === 'party') {
+                    const match = this.parties.find(p => p.symbol === prevSymbol);
+                    if (match) { this.setColorMode('party', match); }
+                    else { this.renderMarkers(); }
+                } else {
+                    this.updateCompareRow();
+                    this.renderMarkers();
+                }
             } catch (err) { console.error(err); }
             document.getElementById('loading').style.display = 'none';
         }
@@ -572,12 +641,27 @@
             this.colorMode = mode;
             this.selectedParty = party;
 
+            // Clear compare when switching away from party mode
+            if (mode !== 'party' || !party) {
+                this.compareElection = null;
+                this.compareData = null;
+                this.compareLookup = {};
+            } else if (this.compareElection && this.compareData) {
+                // Rebuild lookup for new party
+                if (!this.buildCompareLookup()) {
+                    this.compareElection = null;
+                    this.compareData = null;
+                    this.compareLookup = {};
+                }
+            }
+
             document.querySelectorAll('.color-fab-wrapper').forEach(w => {
                 const isActive = w.dataset.mode === mode;
                 w.classList.toggle('active', isActive);
                 w.querySelector('.color-fab').classList.toggle('active', isActive);
             });
 
+            this.updateCompareRow();
             this.updateColorScale();
             this.renderMarkers();
         }
@@ -607,12 +691,27 @@
                 max.textContent = '10';
             } else if (this.colorMode === 'party' && this.selectedParty) {
                 el.style.display = 'block';
-                title.textContent = i18n.partyName(this.selectedParty.name);
-                bar.style.display = '';
-                const c = this.selectedParty.color;
-                bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
-                min.textContent = '0%';
-                max.textContent = '50%';
+                if (this.compareElection) {
+                    const isEn = i18n.getLang() === 'en';
+                    const displayName = i18n.partyName(this.selectedParty.name);
+                    if (isEn) {
+                        title.textContent = `${displayName}: K.${this.compareElection} ← K.${this.currentElection}`;
+                    } else {
+                        const heName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
+                        title.textContent = `שינוי ב${heName}: כנסת ${this.compareElection} ← ${this.currentElection}`;
+                    }
+                    bar.style.display = '';
+                    bar.style.background = 'linear-gradient(to left, #0d9488, #f5f5f5, #d97706)';
+                    min.textContent = '-20%';
+                    max.textContent = '+20%';
+                } else {
+                    title.textContent = i18n.partyName(this.selectedParty.name);
+                    bar.style.display = '';
+                    const c = this.selectedParty.color;
+                    bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
+                    min.textContent = '0%';
+                    max.textContent = '50%';
+                }
             } else if (this.colorMode === 'winner') {
                 el.style.display = 'block';
                 title.textContent = i18n.t('winner');
@@ -712,13 +811,37 @@
                     info = dominant[0];
                 }
             } else if (this.colorMode === 'party' && this.selectedParty) {
-                const pv = partyVotes[this.selectedParty.name] || 0;
-                const pct = totalVoters > 0 ? Math.round(pv / totalVoters * 100) : 0;
-                const t = Math.min(pct / 50, 1);
-                bgColor = this.hexToRgba(this.interpolateHex(
-                    this.lightenColor(this.selectedParty.color, 0.85),
-                    this.selectedParty.color, t), 0.8);
-                info = `${pct}%`;
+                if (this.compareElection) {
+                    let totalW = 0, wDiff = 0, hasAny = false;
+                    children.forEach(m => {
+                        const s = m.options.stationData;
+                        if (!s) return;
+                        const v = s.v || 0;
+                        const cp = this.getComparePct(s);
+                        if (cp === undefined) return;
+                        const curP = (s.p || {})[this.selectedParty.name] || 0;
+                        wDiff += (curP - cp) * v;
+                        totalW += v;
+                        hasAny = true;
+                    });
+                    if (hasAny && totalW > 0) {
+                        const avgDiff = wDiff / totalW;
+                        bgColor = this.getDiffColor(avgDiff);
+                        const sign = avgDiff >= 0 ? '+' : '';
+                        info = `${sign}${avgDiff.toFixed(1)}%`;
+                    } else {
+                        bgColor = 'rgba(102,102,102,0.5)';
+                        info = '?';
+                    }
+                } else {
+                    const pv = partyVotes[this.selectedParty.name] || 0;
+                    const pct = totalVoters > 0 ? Math.round(pv / totalVoters * 100) : 0;
+                    const t = Math.min(pct / 50, 1);
+                    bgColor = this.hexToRgba(this.interpolateHex(
+                        this.lightenColor(this.selectedParty.color, 0.85),
+                        this.selectedParty.color, t), 0.8);
+                    info = `${pct}%`;
+                }
             }
 
             // Detect colocated cluster (all children at same coordinates)
@@ -776,6 +899,104 @@
             });
         }
 
+        // ---- Compare mode methods ----
+
+        async fetchCompareData(electionId) {
+            if (this.compareCache[electionId]) return this.compareCache[electionId];
+            const res = await fetch(`../data/tsne_${electionId}.json`);
+            const data = await res.json();
+            this.compareCache[electionId] = data;
+            return data;
+        }
+
+        buildCompareLookup() {
+            this.compareLookup = {};
+            if (!this.compareData || !this.selectedParty) return false;
+            const compareParty = this.compareData.parties.find(p => p.symbol === this.selectedParty.symbol);
+            if (!compareParty) return false;
+            this.compareData.stations.forEach(s => {
+                const key = `${s.n}|${s.b}`;
+                this.compareLookup[key] = (s.p || {})[compareParty.name] || 0;
+            });
+            return true;
+        }
+
+        getComparePct(station) {
+            const key = `${station.n || ''}|${station.b || ''}`;
+            let pct = this.compareLookup[key];
+            if (pct === undefined && String(station.b || '').endsWith('.1')) {
+                pct = this.compareLookup[`${station.n || ''}|${String(station.b).slice(0, -2)}`];
+            }
+            return pct;
+        }
+
+        getDiffColor(diff) {
+            const t = Math.max(-1, Math.min(1, diff / 20));
+            if (t < 0) {
+                return this.interpolateHex('#f5f5f5', '#d97706', Math.abs(t));
+            } else {
+                return this.interpolateHex('#f5f5f5', '#0d9488', t);
+            }
+        }
+
+        updateCompareRow() {
+            const row = document.getElementById('compare-row');
+            const pills = document.getElementById('compare-pills');
+            const label = document.getElementById('compare-label');
+            const msg = document.getElementById('compare-msg');
+            msg.style.display = 'none';
+
+            if (this.colorMode !== 'party' || !this.selectedParty) {
+                row.style.display = 'none';
+                return;
+            }
+
+            row.style.display = '';
+            const isEn = i18n.getLang() === 'en';
+            label.textContent = isEn ? 'Compare to:' : 'השוואה לכנסת:';
+
+            const electionIds = ['16','17','18','19','20','21','22','23','24','25'];
+            if (i18n.SHOW_E26) electionIds.push('26');
+
+            pills.innerHTML = electionIds
+                .filter(id => id !== this.currentElection)
+                .map(id => `<button class="compare-pill${this.compareElection === id ? ' active' : ''}" data-cmp="${id}">${id}</button>`)
+                .join('');
+
+            pills.querySelectorAll('.compare-pill').forEach(btn => {
+                btn.onclick = () => this.toggleCompare(btn.dataset.cmp);
+            });
+        }
+
+        async toggleCompare(electionId) {
+            const msg = document.getElementById('compare-msg');
+            msg.style.display = 'none';
+
+            if (this.compareElection === electionId) {
+                this.compareElection = null;
+                this.compareData = null;
+                this.compareLookup = {};
+            } else {
+                this.compareElection = electionId;
+                this.compareData = await this.fetchCompareData(electionId);
+                if (!this.buildCompareLookup()) {
+                    const isEn = i18n.getLang() === 'en';
+                    msg.textContent = isEn
+                        ? `Party not found in Knesset ${electionId}`
+                        : `המפלגה לא התמודדה בכנסת ${electionId}`;
+                    msg.style.display = 'block';
+                    this.compareElection = null;
+                    this.compareData = null;
+                    this.compareLookup = {};
+                    this.updateCompareRow();
+                    return;
+                }
+            }
+            this.updateCompareRow();
+            this.updateColorScale();
+            this.renderMarkers();
+        }
+
         getColor(station) {
             if (this.colorMode === 'turnout') {
                 return this.getTurnoutColor(station.t || 0);
@@ -796,8 +1017,15 @@
                 return '#374151';
             }
             if (this.colorMode === 'party' && this.selectedParty) {
-                const pct = (station.p || {})[this.selectedParty.name] || 0;
-                const t = Math.min(pct / 50, 1);
+                const currentPct = (station.p || {})[this.selectedParty.name] || 0;
+
+                if (this.compareElection) {
+                    const comparePct = this.getComparePct(station);
+                    if (comparePct === undefined) return 'rgba(102,102,102,0.5)';
+                    return this.getDiffColor(currentPct - comparePct);
+                }
+
+                const t = Math.min(currentPct / 50, 1);
                 return this.interpolateHex(
                     this.lightenColor(this.selectedParty.color, 0.85),
                     this.selectedParty.color, t);
@@ -830,6 +1058,22 @@
                 </div>`;
             }).join('');
 
+            // Compare diff
+            let diffHtml = '';
+            if (this.compareElection && this.selectedParty) {
+                const curPct = (station.p || {})[this.selectedParty.name] || 0;
+                const cmpPct = this.getComparePct(station);
+                if (cmpPct !== undefined) {
+                    const diff = curPct - cmpPct;
+                    const sign = diff >= 0 ? '+' : '';
+                    const isEn = i18n.getLang() === 'en';
+                    diffHtml = `<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border);font-size:0.85rem;">
+                        <span dir="ltr" style="color:${diff >= 0 ? '#0d9488' : '#d97706'};font-weight:600;">${sign}${diff.toFixed(1)}%</span>
+                        <span dir="ltr" style="color:var(--text-muted);margin-right:4px;display:inline-block;">${isEn ? 'K.' : 'כ.'}${this.compareElection}: ${cmpPct.toFixed(1)}% ← ${isEn ? 'K.' : 'כ.'}${this.currentElection}: ${curPct.toFixed(1)}%</span>
+                    </div>`;
+                }
+            }
+
             document.getElementById('sheet-content').innerHTML = `
                 <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${i18n.settlementName(name)}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
@@ -841,6 +1085,7 @@
                     <span class="label">${i18n.t('turnout')}</span><span class="value">${turnout}%</span>
                 </div>
                 ${partyHtml}
+                ${diffHtml}
                 <a href="settlement.html?name=${encodeURIComponent(name)}" style="display:block;margin-top:10px;color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
             `;
             this.showSheet();

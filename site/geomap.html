@@ -768,6 +768,48 @@
             font-style: italic;
         }
 
+        /* Compare pills */
+        .compare-row {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border-color);
+        }
+        .compare-row-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .compare-pills {
+            display: flex;
+            gap: 3px;
+            flex-wrap: wrap;
+        }
+        .compare-pill {
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-family: inherit;
+            transition: var(--transition-fast);
+        }
+        .compare-pill:hover {
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+        .compare-pill.active {
+            background: var(--accent-primary);
+            border-color: var(--accent-primary);
+            color: white;
+        }
+        .compare-msg {
+            font-size: 0.65rem;
+            color: #ef4444;
+            margin-top: 3px;
+        }
+
         /* Stats badge */
         .stats-badge {
             position: absolute;
@@ -1001,6 +1043,11 @@
                         </div>
                         <div class="cluster-legend-explain" data-i18n="legend_pie_explain">צבעי העוגה במקבצים: חלוקת המפלגה המנצחת בכל קלפי</div>
                     </div>
+                    <div class="compare-row" id="compare-row" style="display:none;">
+                        <div class="compare-row-label" id="compare-label">השוואה לכנסת:</div>
+                        <div class="compare-pills" id="compare-pills"></div>
+                        <div class="compare-msg" id="compare-msg" style="display:none;"></div>
+                    </div>
                 </div>
             </div>
         </main>
@@ -1035,6 +1082,10 @@
                 this.selectedParty = null;
                 this.currentElection = '25';
                 this.settlements = [];
+                this.compareElection = null;
+                this.compareData = null;
+                this.compareLookup = {};
+                this.compareCache = {};
 
                 this.init();
             }
@@ -1211,6 +1262,31 @@
                     </div>
                 `).join('');
 
+                // Compare diff row for cluster tooltip
+                let clusterDiffRow = '';
+                if (this.compareElection && this.selectedParty) {
+                    let totalW = 0, wDiff = 0;
+                    childMarkers.forEach(m => {
+                        const s = m.options.stationData;
+                        if (!s) return;
+                        const v = s.v || s.total_voters || 0;
+                        const cp = this.getComparePct(s);
+                        if (cp === undefined) return;
+                        const curP = (s.p || s.proportions || {})[this.selectedParty.name] || 0;
+                        wDiff += (curP - cp) * v;
+                        totalW += v;
+                    });
+                    if (totalW > 0) {
+                        const avg = wDiff / totalW;
+                        const sign = avg >= 0 ? '+' : '';
+                        const isEn = i18n.getLang() === 'en';
+                        clusterDiffRow = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);font-size:0.8rem;">
+                            <span dir="ltr" style="color:${avg >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${avg.toFixed(1)}%</span>
+                            <span style="color:var(--text-muted);">(${isEn ? 'avg change' : 'שינוי ממוצע'})</span>
+                        </div>`;
+                    }
+                }
+
                 // Show venue name if all stations share the same location
                 const commonVenue = locations.size === 1 ? [...locations][0] : '';
 
@@ -1232,6 +1308,7 @@
                     <div class="cluster-tooltip-parties">
                         ${partyRows}
                     </div>
+                    ${clusterDiffRow}
                     ${settlementList.length === 1 ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);"><a href="settlement.html?name=${encodeURIComponent(settlementList[0])}" style="color:#3b82f6;text-decoration:none;font-size:0.8em;">${i18n.t('go_to_profile')} \u2192</a></div>` : ''}
                 `;
 
@@ -1274,6 +1351,22 @@
                     </div>
                 `).join('');
 
+                // Compare diff row
+                let diffRow = '';
+                if (this.compareElection && this.selectedParty) {
+                    const curPct = proportions[this.selectedParty.name] || 0;
+                    const cmpPct = this.getComparePct(station);
+                    if (cmpPct !== undefined) {
+                        const diff = curPct - cmpPct;
+                        const sign = diff >= 0 ? '+' : '';
+                        const isEn = i18n.getLang() === 'en';
+                        diffRow = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);font-size:0.8rem;">
+                            <span dir="ltr" style="color:${diff >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${diff.toFixed(1)}%</span>
+                            <span dir="ltr" style="color:var(--text-muted);margin-right:6px;display:inline-block;">${isEn ? 'K.' : 'כ.'}${this.compareElection}: ${cmpPct.toFixed(1)}% ← ${isEn ? 'K.' : 'כ.'}${this.currentElection}: ${curPct.toFixed(1)}%</span>
+                        </div>`;
+                    }
+                }
+
                 const title = location ? `${i18n.settlementName(settlement)} / ${location}` : i18n.settlementName(settlement);
                 const clusterLabel = i18n.getLang() === 'en' ? 'Cluster:' : 'אשכול:';
                 const areaLabel = i18n.getLang() === 'en' ? 'Area:' : 'אזור סטטיסטי:';
@@ -1295,6 +1388,7 @@
                     <div class="cluster-tooltip-parties">
                         ${partyRows}
                     </div>
+                    ${diffRow}
                     <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);"><a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.8em;">${i18n.t('go_to_profile')} \u2192</a></div>
                 `;
 
@@ -1453,6 +1547,16 @@
                 this.currentElection = electionId;
                 document.getElementById('loading').classList.remove('hidden');
 
+                // Remember selected party symbol to restore after loading
+                const prevSymbol = this.selectedParty ? this.selectedParty.symbol : null;
+
+                // If compare election is same as new current, clear compare
+                if (this.compareElection === electionId) {
+                    this.compareElection = null;
+                    this.compareData = null;
+                    this.compareLookup = {};
+                }
+
                 try {
                     const response = await fetch(`data/tsne_${electionId}.json`);
                     this.tsneData = await response.json();
@@ -1460,8 +1564,21 @@
 
                     this.buildSettlementsList();
                     this.updatePartyList();
-                    this.updateLegend();
-                    this.renderMarkers();
+
+                    // Restore party selection by symbol (party family)
+                    if (prevSymbol && this.colorMode === 'party') {
+                        const match = this.parties.find(p => p.symbol === prevSymbol);
+                        if (match) {
+                            this.selectParty(match);
+                        } else {
+                            this.selectedParty = null;
+                            this.setColorMode('winner');
+                        }
+                    } else {
+                        this.updateCompareRow();
+                        this.updateLegend();
+                        this.renderMarkers();
+                    }
                 } catch (error) {
                     console.error('Failed to load election data:', error);
                 }
@@ -1518,6 +1635,17 @@
                     p.classList.toggle('active', p.dataset.party === party.name);
                 });
 
+                // Rebuild compare lookup for new party
+                if (this.compareElection && this.compareData) {
+                    if (!this.buildCompareLookup()) {
+                        // Party doesn't exist in compare election
+                        this.compareElection = null;
+                        this.compareData = null;
+                        this.compareLookup = {};
+                    }
+                }
+
+                this.updateCompareRow();
                 this.updateLegend();
                 this.renderMarkers();
             }
@@ -1572,6 +1700,10 @@
             setColorMode(mode) {
                 this.colorMode = mode;
                 this.selectedParty = null;
+                this.compareElection = null;
+                this.compareData = null;
+                this.compareLookup = {};
+                this.updateCompareRow();
                 this.updateLegend();
                 this.renderMarkers();
             }
@@ -1604,16 +1736,29 @@
                     document.getElementById('cluster-legend').classList.add('visible');
                 } else if (this.colorMode === 'party' && this.selectedParty) {
                     const displayName = i18n.partyName(this.selectedParty);
-                    if (isEn) {
-                        legendTitle.textContent = `${displayName} support`;
+                    if (this.compareElection) {
+                        if (isEn) {
+                            legendTitle.textContent = `${displayName}: K.${this.compareElection} ← K.${this.currentElection}`;
+                        } else {
+                            const heName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
+                            legendTitle.textContent = `שינוי ב${heName}: כנסת ${this.compareElection} ← ${this.currentElection}`;
+                        }
+                        legendBar.style.display = '';
+                        legendBar.style.background = 'linear-gradient(to left, #0d9488, #f5f5f5, #d97706)';
+                        legendMin.textContent = '-20%';
+                        legendMax.textContent = '+20%';
                     } else {
-                        const heName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
-                        legendTitle.textContent = `תמיכה ב${heName}`;
+                        if (isEn) {
+                            legendTitle.textContent = `${displayName} support`;
+                        } else {
+                            const heName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
+                            legendTitle.textContent = `תמיכה ב${heName}`;
+                        }
+                        legendBar.style.display = '';
+                        legendBar.style.background = `linear-gradient(to left, ${this.selectedParty.color}, ${this.lightenColor(this.selectedParty.color, 0.8)})`;
+                        legendMin.textContent = '0%';
+                        legendMax.textContent = '50%';
                     }
-                    legendBar.style.display = '';
-                    legendBar.style.background = `linear-gradient(to left, ${this.selectedParty.color}, ${this.lightenColor(this.selectedParty.color, 0.8)})`;
-                    legendMin.textContent = '0%';
-                    legendMax.textContent = '50%';
                 }
             }
 
@@ -1661,8 +1806,15 @@
 
                 if (this.colorMode === 'party' && this.selectedParty) {
                     const proportions = station.p || station.proportions || {};
-                    const pct = proportions[this.selectedParty.name] || 0;
-                    const t = Math.min(pct / 50, 1);
+                    const currentPct = proportions[this.selectedParty.name] || 0;
+
+                    if (this.compareElection) {
+                        const comparePct = this.getComparePct(station);
+                        if (comparePct === undefined) return 'rgba(102,102,102,0.5)';
+                        return this.getDiffColor(currentPct - comparePct);
+                    }
+
+                    const t = Math.min(currentPct / 50, 1);
                     return this.interpolateColor(this.lightenColor(this.selectedParty.color, 0.85), this.selectedParty.color, t);
                 }
 
@@ -1692,6 +1844,106 @@
                     return { r: parseInt(match[1]), g: parseInt(match[2]), b: parseInt(match[3]) };
                 }
                 return { r: 128, g: 128, b: 128 };
+            }
+
+            // ---- Compare mode methods ----
+
+            async fetchCompareData(electionId) {
+                if (this.compareCache[electionId]) return this.compareCache[electionId];
+                const res = await fetch(`data/tsne_${electionId}.json`);
+                const data = await res.json();
+                this.compareCache[electionId] = data;
+                return data;
+            }
+
+            buildCompareLookup() {
+                this.compareLookup = {};
+                if (!this.compareData || !this.selectedParty) return false;
+                const compareParty = this.compareData.parties.find(p => p.symbol === this.selectedParty.symbol);
+                if (!compareParty) return false;
+                this.compareData.stations.forEach(s => {
+                    const key = `${s.n}|${s.b}`;
+                    this.compareLookup[key] = (s.p || {})[compareParty.name] || 0;
+                });
+                return true;
+            }
+
+            getComparePct(station) {
+                const name = station.n || station.settlement_name || '';
+                const ballot = station.b || station.ballot_number || '';
+                const key = `${name}|${ballot}`;
+                let pct = this.compareLookup[key];
+                if (pct === undefined && String(ballot).endsWith('.1')) {
+                    pct = this.compareLookup[`${name}|${String(ballot).slice(0, -2)}`];
+                }
+                return pct;
+            }
+
+            getDiffColor(diff) {
+                const t = Math.max(-1, Math.min(1, diff / 20));
+                if (t < 0) {
+                    return this.interpolateColor('#f5f5f5', '#d97706', Math.abs(t));
+                } else {
+                    return this.interpolateColor('#f5f5f5', '#0d9488', t);
+                }
+            }
+
+            updateCompareRow() {
+                const row = document.getElementById('compare-row');
+                const pills = document.getElementById('compare-pills');
+                const label = document.getElementById('compare-label');
+                const msg = document.getElementById('compare-msg');
+                msg.style.display = 'none';
+
+                if (this.colorMode !== 'party' || !this.selectedParty) {
+                    row.style.display = 'none';
+                    return;
+                }
+
+                row.style.display = '';
+                const isEn = i18n.getLang() === 'en';
+                label.textContent = isEn ? 'Compare to:' : 'השוואה לכנסת:';
+
+                const electionIds = ['16','17','18','19','20','21','22','23','24','25'];
+                if (i18n.SHOW_E26) electionIds.push('26');
+
+                pills.innerHTML = electionIds
+                    .filter(id => id !== this.currentElection)
+                    .map(id => `<button class="compare-pill${this.compareElection === id ? ' active' : ''}" data-cmp="${id}">${id}</button>`)
+                    .join('');
+
+                pills.querySelectorAll('.compare-pill').forEach(btn => {
+                    btn.addEventListener('click', () => this.toggleCompare(btn.dataset.cmp));
+                });
+            }
+
+            async toggleCompare(electionId) {
+                const msg = document.getElementById('compare-msg');
+                msg.style.display = 'none';
+
+                if (this.compareElection === electionId) {
+                    this.compareElection = null;
+                    this.compareData = null;
+                    this.compareLookup = {};
+                } else {
+                    this.compareElection = electionId;
+                    this.compareData = await this.fetchCompareData(electionId);
+                    if (!this.buildCompareLookup()) {
+                        const isEn = i18n.getLang() === 'en';
+                        msg.textContent = isEn
+                            ? `Party not found in Knesset ${electionId}`
+                            : `המפלגה לא התמודדה בכנסת ${electionId}`;
+                        msg.style.display = 'block';
+                        this.compareElection = null;
+                        this.compareData = null;
+                        this.compareLookup = {};
+                        this.updateCompareRow();
+                        return;
+                    }
+                }
+                this.updateCompareRow();
+                this.updateLegend();
+                this.renderMarkers();
             }
 
             createClusterIcon(cluster) {
@@ -1765,16 +2017,40 @@
                     const winnerPct = totalVoters > 0 ? Math.round(partyVotes[winnerName] / totalVoters * 100) : 0;
                     infoText = `${winnerPct}%`;
                 } else if (this.colorMode === 'party' && this.selectedParty) {
-                    // Calculate average party percentage and use gradient
-                    const partyPct = totalVoters > 0 && partyVotes[this.selectedParty.name] ?
-                        Math.round(partyVotes[this.selectedParty.name] / totalVoters * 100) : 0;
-                    const t = Math.min(partyPct / 50, 1);
-                    bgColor = this.interpolateColor(
-                        this.lightenColor(this.selectedParty.color, 0.85),
-                        this.selectedParty.color,
-                        t
-                    );
-                    infoText = `${partyPct}%`;
+                    if (this.compareElection) {
+                        // Weighted average diff across children
+                        let totalWeight = 0, weightedDiff = 0, hasAny = false;
+                        childMarkers.forEach(m => {
+                            const s = m.options.stationData;
+                            if (!s) return;
+                            const v = s.v || s.total_voters || 0;
+                            const cp = this.getComparePct(s);
+                            if (cp === undefined) return;
+                            const curP = (s.p || s.proportions || {})[this.selectedParty.name] || 0;
+                            weightedDiff += (curP - cp) * v;
+                            totalWeight += v;
+                            hasAny = true;
+                        });
+                        if (hasAny && totalWeight > 0) {
+                            const avgDiff = weightedDiff / totalWeight;
+                            bgColor = this.getDiffColor(avgDiff);
+                            const sign = avgDiff >= 0 ? '+' : '';
+                            infoText = `${sign}${avgDiff.toFixed(1)}%`;
+                        } else {
+                            bgColor = 'rgba(102,102,102,0.5)';
+                            infoText = '?';
+                        }
+                    } else {
+                        const partyPct = totalVoters > 0 && partyVotes[this.selectedParty.name] ?
+                            Math.round(partyVotes[this.selectedParty.name] / totalVoters * 100) : 0;
+                        const t = Math.min(partyPct / 50, 1);
+                        bgColor = this.interpolateColor(
+                            this.lightenColor(this.selectedParty.color, 0.85),
+                            this.selectedParty.color,
+                            t
+                        );
+                        infoText = `${partyPct}%`;
+                    }
                 }
 
                 // Detect colocated cluster (all children at same coordinates)
@@ -1933,6 +2209,22 @@
                 const areaLabel = i18n.getLang() === 'en' ? 'area' : 'אזור';
                 const clusterText = seInfo ? ` (${clusterLabel} ${seInfo.cluster}${seInfo.statArea ? `, ${areaLabel} ${seInfo.statArea}` : ''})` : '';
 
+                // Compare diff for popup
+                let popupDiff = '';
+                if (this.compareElection && this.selectedParty) {
+                    const curPct = proportions[this.selectedParty.name] || 0;
+                    const cmpPct = this.getComparePct(station);
+                    if (cmpPct !== undefined) {
+                        const diff = curPct - cmpPct;
+                        const sign = diff >= 0 ? '+' : '';
+                        const isEn = i18n.getLang() === 'en';
+                        popupDiff = `<div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border-color);font-size:0.8rem;">
+                            <span dir="ltr" style="color:${diff >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${diff.toFixed(1)}%</span>
+                            <span dir="ltr" style="color:var(--text-muted);margin-right:4px;display:inline-block;">${isEn ? 'K.' : 'כ.'}${this.compareElection}: ${cmpPct.toFixed(1)}% ← ${isEn ? 'K.' : 'כ.'}${this.currentElection}: ${curPct.toFixed(1)}%</span>
+                        </div>`;
+                    }
+                }
+
                 return `
                     <div class="station-popup" style="direction: ${i18n.isRTL() ? 'rtl' : 'ltr'}">
                         <div class="station-popup-title">${i18n.settlementName(settlement)}${clusterText}</div>
@@ -1949,6 +2241,7 @@
                         <div class="station-popup-parties">
                             ${partyRows}
                         </div>
+                        ${popupDiff}
                         <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color)">
                             <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
                         </div>
@@ -2093,7 +2386,8 @@
                 }
             }
 
-            // Re-render legend
+            // Re-render legend + compare row
+            geoViz.updateCompareRow();
             geoViz.updateLegend();
 
             // Re-render markers (popups use i18n)
