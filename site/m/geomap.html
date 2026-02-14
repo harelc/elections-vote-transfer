@@ -909,24 +909,42 @@
             return data;
         }
 
+        normalizeBallot(b) {
+            const s = String(b);
+            return s.endsWith('.0') ? s.slice(0, -2) : s;
+        }
+
+        baseBallot(b) {
+            const s = this.normalizeBallot(b);
+            const dot = s.indexOf('.');
+            return dot >= 0 ? s.slice(0, dot) : s;
+        }
+
         buildCompareLookup() {
             this.compareLookup = {};
             if (!this.compareData || !this.selectedParty) return false;
             const compareParty = this.compareData.parties.find(p => p.symbol === this.selectedParty.symbol);
             if (!compareParty) return false;
             this.compareData.stations.forEach(s => {
-                const key = `${s.n}|${s.b}`;
-                this.compareLookup[key] = (s.p || {})[compareParty.name] || 0;
+                const val = (s.p || {})[compareParty.name] || 0;
+                // Store under both raw and normalized key
+                this.compareLookup[`${s.n}|${s.b}`] = val;
+                this.compareLookup[`${s.n}|${this.normalizeBallot(s.b)}`] = val;
             });
             return true;
         }
 
         getComparePct(station) {
-            const key = `${station.n || ''}|${station.b || ''}`;
-            let pct = this.compareLookup[key];
-            if (pct === undefined && String(station.b || '').endsWith('.1')) {
-                pct = this.compareLookup[`${station.n || ''}|${String(station.b).slice(0, -2)}`];
-            }
+            const name = station.n || station.settlement_name || '';
+            const ballot = station.b || station.ballot_number || '';
+            // Try exact key
+            let pct = this.compareLookup[`${name}|${ballot}`];
+            if (pct !== undefined) return pct;
+            // Try normalized (.0 stripped)
+            pct = this.compareLookup[`${name}|${this.normalizeBallot(ballot)}`];
+            if (pct !== undefined) return pct;
+            // Try base ballot number (strip subdivision: 14.2 → 14)
+            pct = this.compareLookup[`${name}|${this.baseBallot(ballot)}`];
             return pct;
         }
 
