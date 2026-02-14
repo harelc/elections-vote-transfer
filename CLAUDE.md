@@ -162,6 +162,7 @@ When comparing elections, ballots are matched by `settlement_name|ballot_number`
 
 This is implemented in:
 - `site/scatter.html`: `getBaseKey()` function
+- `site/geomap.html` & `site/m/geomap.html`: `getComparePct()` function (party comparison mode)
 - `generate_transfer_data.py`: `get_base_ballot_id()` function
 
 ### Data Formats
@@ -348,6 +349,7 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 - `getStationCluster(station)` same pattern as tsne — per-station first, settlement fallback
 - Settlement search with autocomplete
 - Uses CartoDB Positron tiles with CSS `brightness(0.7)` for dark theme
+- **Party support comparison mode**: When a party is selected, a row of election pills appears below the legend. Clicking one loads the comparison election's tsne data and shows a diverging bichromatic scale (orange = lost support, teal = gained support, clamped ±20%). Party matching across elections uses the party **symbol** (not name). Ballot matching uses `settlement|ballot` key with `.1` suffix fallback. State: `compareElection`, `compareData`, `compareLookup`, `compareCache` (cached fetches). Tooltips/popups show diff with both election percentages. Clusters show weighted average diff.
 
 ### scatter.html (Party Comparison)
 - Compare party X support vs party Y support across ballots
