@@ -156,8 +156,10 @@
             flex: 1;
             display: grid;
             grid-template-columns: 260px 1fr;
+            grid-template-rows: 1fr;
             gap: 0;
             position: relative;
+            min-height: 0;
         }
 
         /* Control panel */
@@ -431,6 +433,8 @@
         .map-container {
             position: relative;
             flex: 1;
+            overflow: hidden;
+            min-height: 0;
         }
 
         #map {
@@ -705,8 +709,8 @@
             border-radius: 8px;
             padding: 0.75rem;
             z-index: 1000;
-            max-height: calc(100% - 60px);
             overflow-y: auto;
+            max-height: calc(100% - 20px);
         }
 
         .color-scale-title {
