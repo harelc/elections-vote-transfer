@@ -7,6 +7,10 @@ Reads settlement names from map_25.json and queries:
 - Wikidata SPARQL for population, district, settlement type
 
 Output: site/data/settlement_wiki.json
+
+Usage:
+  python enrich_settlements_wikipedia.py         # Enrich new settlements only
+  python enrich_settlements_wikipedia.py --fix    # Re-process bad entries (disambiguation, wrong topic, null)
 """
 
 import json
@@ -19,8 +23,46 @@ import urllib.request
 OUTPUT = os.path.join('site', 'data', 'settlement_wiki.json')
 MAP_FILE = os.path.join('site', 'data', 'map_25.json')
 WIKI_API = 'https://he.wikipedia.org/api/rest_v1/page/summary/'
+WIKI_SEARCH_API = 'https://he.wikipedia.org/w/api.php'
 RATE_LIMIT = 0.15  # seconds between requests
 USER_AGENT = 'KolotNodedim/1.0 (https://kolot-nodedim.netlify.app/; elections research)'
+
+# Manual Wikipedia title overrides for normalized names that can't be auto-resolved
+# (mostly compound hyphenated names where CEC removed the hyphen)
+WIKI_TITLE_OVERRIDES = {
+    'בועינהנוגידאת': 'בועיינה-נוג\'ידאת',
+    'בנימינהגבעת עדה': 'בנימינה-גבעת עדה',
+    'גדידהמכר': 'ג\'דיידה-מכר',
+    'גסר אזרקא': 'ג\'סר א-זרקא',
+    'טובאזנגריה': 'טובא-זנגריה',
+    'יאנוחגת': 'ינוח-ג\'ת',
+    'יהודמונוסון': 'יהוד-מונוסון',
+    'כאוכב אבו אלהיגא': 'כאוכב אבו אל-היג\'א',
+    'כסראסמיע': 'כסרא-סמיע',
+    'כעביהטבאשחגאגרה': 'כעביה-טבאש-חג\'אג\'רה',
+    'מודיעיןמכביםרעות': 'מודיעין-מכבים-רעות',
+    'מעלותתרשיחא': 'מעלות-תרשיחא',
+    'סאגור': 'סאג\'ור',
+    'ערערהבנגב': 'ערערה בנגב',
+    'פרדס חנהכרכור': 'פרדס חנה-כרכור',
+    'קדימהצורן': 'קדימה-צורן',
+    'שגבשלום': 'שגב-שלום',
+    'מגד אלכרום': 'מג\'ד אל-כרום',
+    'מסעודין אלעזאזמה': 'מסעודין אל-עזאזמה',
+    'גש גוש חלב': 'גוש חלב',
+    'רםאון': 'רם-און',
+    'אורות': 'אורות (מושב)',
+    'צרעה': 'צרעה (קיבוץ)',
+    'חולדה': 'חולדה (קיבוץ)',
+    'ציפורי': 'ציפורי (מושב)',
+}
+
+# Keywords that indicate the article is about an Israeli settlement/locality
+SETTLEMENT_KEYWORDS = [
+    'בישראל', 'מושב', 'קיבוץ', 'מושבה', 'עיר', 'כפר', 'יישוב',
+    'התנחלות', 'קהילה', 'מועצה', 'נפה', 'שכונה', 'עיירה',
+    'עיירת פיתוח', 'מועצה מקומית', 'מועצה אזורית',
+]
 
 
 def fetch_json(url):
@@ -32,17 +74,32 @@ def fetch_json(url):
     try:
         with urllib.request.urlopen(req, timeout=10) as resp:
             return json.loads(resp.read().decode('utf-8'))
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return {'type': 'not_found'}
+        return None
     except Exception as e:
         return None
 
 
-def get_wiki_summary(name):
-    """Get Wikipedia summary for a settlement."""
-    encoded = urllib.parse.quote(name.replace(' ', '_'))
-    data = fetch_json(WIKI_API + encoded)
-    if not data or data.get('type') == 'not_found':
-        return None
+def is_settlement_article(data):
+    """Check if Wikipedia API response is about an Israeli settlement."""
+    if not data:
+        return False
+    if data.get('type') == 'not_found':
+        return False
+    if data.get('type') == 'disambiguation':
+        return False
+    desc = (data.get('description') or '').lower()
+    extract = (data.get('extract') or '').lower()
+    text = desc + ' ' + extract
+    return any(kw in text for kw in SETTLEMENT_KEYWORDS)
 
+
+def extract_result(data):
+    """Extract settlement wiki info from a Wikipedia API response."""
+    if not data or data.get('type') in ('not_found', 'disambiguation'):
+        return None
     result = {
         'title': data.get('title'),
         'description': data.get('description'),
@@ -50,12 +107,91 @@ def get_wiki_summary(name):
         'wiki_url': data.get('content_urls', {}).get('desktop', {}).get('page'),
         'thumbnail': None,
     }
-
     thumb = data.get('thumbnail')
     if thumb:
         result['thumbnail'] = thumb.get('source')
-
     return result
+
+
+def get_wiki_summary(name):
+    """Get Wikipedia summary for a settlement with fallback chain."""
+    # 0. Check manual overrides first
+    if name in WIKI_TITLE_OVERRIDES:
+        override_name = WIKI_TITLE_OVERRIDES[name]
+        override_encoded = urllib.parse.quote(override_name.replace(' ', '_'))
+        data = fetch_json(WIKI_API + override_encoded)
+        if data and data.get('type') not in ('not_found', 'disambiguation'):
+            result = extract_result(data)
+            if result:
+                return result
+        time.sleep(RATE_LIMIT)
+
+    encoded = urllib.parse.quote(name.replace(' ', '_'))
+
+    # 1. Try bare name
+    data = fetch_json(WIKI_API + encoded)
+    if data and is_settlement_article(data):
+        return extract_result(data)
+
+    time.sleep(RATE_LIMIT)
+
+    # 2. Try "{name} (יישוב)" — Wikipedia often redirects to specific article
+    suffix_encoded = urllib.parse.quote(f'{name} (יישוב)'.replace(' ', '_'))
+    data = fetch_json(WIKI_API + suffix_encoded)
+    if data and is_settlement_article(data):
+        return extract_result(data)
+
+    time.sleep(RATE_LIMIT)
+
+    # 3. Try search API (with and without quotes, also try hyphenated variant)
+    search_queries = [f'"{name}" יישוב ישראל']
+    # For compound names, also try with hyphens between space-separated parts
+    parts = name.split()
+    if len(parts) > 1:
+        search_queries.append(f'"{"-".join(parts)}" יישוב ישראל')
+    # Also try unquoted search
+    search_queries.append(f'{name} יישוב ישראל')
+
+    for sq in search_queries:
+        search_params = urllib.parse.urlencode({
+            'action': 'query',
+            'list': 'search',
+            'srsearch': sq,
+            'srnamespace': '0',
+            'srlimit': '5',
+            'format': 'json',
+        })
+        search_data = fetch_json(f'{WIKI_SEARCH_API}?{search_params}')
+        if search_data:
+            results = search_data.get('query', {}).get('search', [])
+            for sr in results:
+                title = sr.get('title', '')
+                title_encoded = urllib.parse.quote(title.replace(' ', '_'))
+                candidate = fetch_json(WIKI_API + title_encoded)
+                if candidate and is_settlement_article(candidate):
+                    return extract_result(candidate)
+                time.sleep(RATE_LIMIT)
+
+    return None
+
+
+def is_bad_entry(entry):
+    """Check if an existing entry is bad and should be re-fetched."""
+    if entry is None:
+        return True
+    if not isinstance(entry, dict):
+        return True
+    desc = entry.get('description') or ''
+    extract = entry.get('extract') or ''
+    title = entry.get('title') or ''
+    # Check if it's a disambiguation page
+    if 'פירושונים' in desc or 'פירושונים' in extract or 'פירושונים' in title:
+        return True
+    # Check if description/extract suggest it's NOT about a settlement
+    text = desc + ' ' + extract
+    if not any(kw in text for kw in SETTLEMENT_KEYWORDS):
+        return True
+    return False
 
 
 def get_wikidata_info(wiki_title):
@@ -80,6 +216,8 @@ def get_wikidata_info(wiki_title):
 
 
 def main():
+    fix_mode = '--fix' in sys.argv
+
     # Load settlement names
     print(f'Loading settlements from {MAP_FILE}...')
     with open(MAP_FILE, 'r', encoding='utf-8') as f:
@@ -96,27 +234,51 @@ def main():
             existing = json.load(f)
         print(f'Loaded {len(existing)} existing entries')
 
+    # In fix mode, identify bad entries + entries with manual overrides
+    if fix_mode:
+        bad_names = [name for name in names if name in existing and (
+            is_bad_entry(existing.get(name)) or name in WIKI_TITLE_OVERRIDES
+        )]
+        print(f'Fix mode: found {len(bad_names)} bad entries to re-process')
+        to_process = bad_names
+    else:
+        to_process = [name for name in names if name not in existing]
+        print(f'New entries to process: {len(to_process)}')
+
+    if not to_process:
+        print('Nothing to do!')
+        return
+
     # Enrich each settlement
     results = dict(existing)
-    new_count = 0
-    for i, name in enumerate(names):
-        if name in results:
-            continue
+    processed = 0
+    fixed = 0
+    for i, name in enumerate(to_process):
+        old_entry = results.get(name)
+        old_desc = (old_entry.get('description', '') if isinstance(old_entry, dict) else '') or ''
 
-        print(f'  [{i+1}/{len(names)}] {name}...', end=' ', flush=True)
+        print(f'  [{i+1}/{len(to_process)}] {name}...', end=' ', flush=True)
+        if fix_mode:
+            print(f'(was: {old_desc[:40]})', end=' ', flush=True)
+
         wiki = get_wiki_summary(name)
         if wiki:
             results[name] = wiki
-            print(f'OK ({(wiki.get("description") or "")[:40]})')
+            new_desc = (wiki.get('description') or '')[:40]
+            if fix_mode and old_entry is not None:
+                print(f'FIXED → {new_desc}')
+                fixed += 1
+            else:
+                print(f'OK ({new_desc})')
         else:
             results[name] = None
             print('not found')
 
-        new_count += 1
+        processed += 1
         time.sleep(RATE_LIMIT)
 
         # Save periodically
-        if new_count % 50 == 0:
+        if processed % 50 == 0:
             with open(OUTPUT, 'w', encoding='utf-8') as f:
                 json.dump(results, f, ensure_ascii=False, indent=1)
             print(f'  Saved {len(results)} entries')
@@ -128,6 +290,8 @@ def main():
 
     found = sum(1 for v in results.values() if v is not None)
     print(f'\nDone! {found}/{len(results)} settlements enriched.')
+    if fix_mode:
+        print(f'Fixed: {fixed} entries')
     print(f'Output: {OUTPUT}')
 
 
