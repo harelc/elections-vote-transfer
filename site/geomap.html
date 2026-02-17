@@ -19,7 +19,6 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
-
     <style>
         :root {
             --bg-primary: #0a0a0f;
@@ -121,6 +120,11 @@
             color: var(--text-primary);
             border-color: var(--accent-primary);
         }
+
+        .nav-extras { display:flex; justify-content:center; align-items:center; gap:0.25rem; margin-top:0.35rem; padding-bottom:0.1rem; }
+        .nav-extras .view-btn { font-size:0.8rem; padding:0.3rem 0.7rem; opacity:0.7; border:none; background:transparent; }
+        .nav-extras .view-btn:hover { opacity:1; background:var(--bg-tertiary); }
+        .nav-extras .view-btn.active { opacity:1; background:var(--accent-primary); border:none; }
 
         /* Navigation */
         .election-nav {
@@ -944,15 +948,7 @@
         <header class="main-header">
             <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="geomap_subtitle">מפה גיאוגרפית של קלפיות הצבעה</p>
-            <nav class="view-switcher">
-                <a href="sankey.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
-                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
-                <span class="view-btn active" data-i18n="nav_geomap">מפה גיאוגרפית</span>
-                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
-                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
-                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
-                <a href="regional.html" class="view-btn" data-i18n="nav_regional">בחירות אזוריות</a>
-            </nav>
+            <nav class="view-switcher"></nav>
         </header>
 
         <nav class="election-nav">

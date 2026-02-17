@@ -235,6 +235,13 @@
                 };
                 pills.appendChild(btn);
             });
+            // Animation link
+            const animBtn = document.createElement('a');
+            animBtn.href = '../animation.html';
+            animBtn.className = 'transition-pill';
+            animBtn.style.cssText = 'background:linear-gradient(135deg,#6366f1,#3b82f6);color:#fff;text-decoration:none;';
+            animBtn.textContent = '▶';
+            pills.appendChild(animBtn);
         }
 
         initEvents() {

@@ -114,6 +114,11 @@
         .view-btn:hover { background: #252535; color: var(--text-primary); }
         .view-btn.active { background: var(--accent-primary); color: var(--text-primary); border-color: var(--accent-primary); }
 
+        .nav-extras { display:flex; justify-content:center; align-items:center; gap:0.25rem; margin-top:0.35rem; padding-bottom:0.1rem; }
+        .nav-extras .view-btn { font-size:0.8rem; padding:0.3rem 0.7rem; opacity:0.7; border:none; background:transparent; }
+        .nav-extras .view-btn:hover { opacity:1; background:var(--bg-tertiary); }
+        .nav-extras .view-btn.active { opacity:1; background:var(--accent-primary); border:none; }
+
         /* Controls bar */
         .controls-bar {
             display: flex;
@@ -509,15 +514,7 @@
         <header class="main-header">
             <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="regional_subtitle">סימולציית בחירות אזוריות לכנסת ישראל</p>
-            <nav class="view-switcher">
-                <a href="sankey.html" class="view-btn" data-i18n="nav_sankey">נדידת קולות</a>
-                <a href="tsne.html" class="view-btn" data-i18n="nav_tsne">התפלגות קלפיות</a>
-                <a href="geomap.html" class="view-btn" data-i18n="nav_geomap">מפה גיאוגרפית</a>
-                <a href="scatter.html" class="view-btn" data-i18n="nav_scatter">השוואת מפלגות</a>
-                <a href="dhondt.html" class="view-btn" data-i18n="nav_dhondt">מחשבון באדר-עופר</a>
-                <a href="irregular.html" class="view-btn" data-i18n="nav_irregular">קלפיות חריגות</a>
-                <span class="view-btn active" data-i18n="nav_regional">בחירות אזוריות</span>
-            </nav>
+            <nav class="view-switcher"></nav>
         </header>
 
         <div class="controls-bar">

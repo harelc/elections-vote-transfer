@@ -14,14 +14,14 @@ PARTY_COLORS = {
     'labor': '#dc2626',       # Red
     'meretz': '#16a34a',      # Green
     'yisrael_beiteinu': '#db2777', # Pink/Magenta
-    'joint_list': '#059669',  # Teal
+    'joint_list': '#0d9488',  # Teal
     'raam': '#84cc16',        # Lime green (Islamic green)
     'hadash_taal': '#f43f5e', # Rose (communist red)
     'balad': '#065f46',       # Dark green
     'yamina': '#ea580c',      # Orange
     'religious_zionism': '#92400e', # Brown
-    'new_hope': '#a855f7',    # Light purple
-    'kulanu': '#eab308',      # Yellow
+    'new_hope': '#6ee7b7',    # Mint green
+    'kulanu': '#f472b6',      # Pink
     'national_unity': '#7c3aed', # Violet
     'other': '#6b7280',       # Gray
 }
@@ -476,7 +476,7 @@ PARTIES = {
     'נ': {
         'name': 'הימין החדש',
         'name_en': 'New Right',
-        'color': '#1e40af',
+        'color': '#b45309',
         'leader': 'נפתלי בנט ואיילת שקד',
         'logo': 'images/logos/new_right.png',
         'ideology': 'ימין, ליברלי-לאומי',
@@ -746,7 +746,7 @@ PARTY_OVERRIDES = {
     ('16', 'יש'): {
         'name': 'שינוי',
         'name_en': 'Shinui',
-        'color': '#f59e0b',
+        'color': '#e879f9',
         'leader': 'טומי לפיד',
         'leader_en': 'Tommy Lapid',
         'leader_image': 'images/leaders/tommy_lapid.jpg',
@@ -780,7 +780,7 @@ PARTY_OVERRIDES = {
     ('16', 'ו'): {
         'name': 'חד״ש',
         'name_en': 'Hadash',
-        'color': '#dc2626',
+        'color': '#f43f5e',
         'leader': 'מוחמד ברכה',
         'leader_en': 'Muhammad Barakeh',
         'leader_image': 'images/leaders/barakeh.jpg',
@@ -804,7 +804,7 @@ PARTY_OVERRIDES = {
     ('16', 'כן'): {
         'name': 'ישראל בעלייה',
         'name_en': 'Yisrael BaAliyah',
-        'color': '#3b82f6',
+        'color': '#db2777',
         'leader': 'נתן שרנסקי',
         'leader_en': 'Natan Sharansky',
         'leader_image': 'images/leaders/sharansky.jpg',
@@ -889,7 +889,7 @@ PARTY_OVERRIDES = {
     ('17', 'ו'): {
         'name': 'חד״ש',
         'name_en': 'Hadash',
-        'color': '#dc2626',
+        'color': '#f43f5e',
         'leader': 'מוחמד ברכה',
         'leader_en': 'Muhammad Barakeh',
         'leader_image': 'images/leaders/barakeh.jpg',
@@ -959,7 +959,7 @@ PARTY_OVERRIDES = {
     ('18', 'ו'): {
         'name': 'חד״ש',
         'name_en': 'Hadash',
-        'color': '#dc2626',
+        'color': '#f43f5e',
         'leader': 'מוחמד ברכה',
         'leader_en': 'Muhammad Barakeh',
         'leader_image': 'images/leaders/barakeh.jpg',
@@ -1005,7 +1005,7 @@ PARTY_OVERRIDES = {
     ('19', 'צפ'): {
         'name': 'התנועה',
         'name_en': 'Hatnuah',
-        'color': '#a855f7',
+        'color': '#fde68a',
         'leader': 'ציפי לבני',
         'leader_en': 'Tzipi Livni',
         'leader_image': 'images/leaders/livni.jpg',
@@ -1029,7 +1029,7 @@ PARTY_OVERRIDES = {
     ('19', 'ו'): {
         'name': 'חד״ש',
         'name_en': 'Hadash',
-        'color': '#dc2626',
+        'color': '#f43f5e',
         'leader': 'מוחמד ברכה',
         'leader_en': 'Muhammad Barakeh',
         'leader_image': 'images/leaders/barakeh.jpg',

@@ -134,7 +134,11 @@
             opacity: 0.4;
         }
         #controls:hover { opacity: 1 !important; }
-        #controls.hidden { opacity: 0.1; }
+        #controls.hidden { opacity: 0.15; }
+        @media (max-height: 500px), (max-width: 768px) {
+            #controls { opacity: 0.7; bottom: 6px; right: 8px; padding: 2px 6px; }
+            .ctrl-btn { font-size: 16px; padding: 4px 8px; }
+        }
         .ctrl-btn {
             background: none;
             border: none;
@@ -485,6 +489,7 @@ class ChainedSankeyAnimation {
         this.computeFullLayout();
         this.setupControls();
         this.setupKeyboard();
+        this.setupSwipe();
         this.setupVisibility();
         this.setupResize();
         this.startAutoHide();
@@ -1269,6 +1274,26 @@ class ChainedSankeyAnimation {
             else if (e.code === 'ArrowRight') this.prev();  // RTL: right = earlier
             else if (e.code === 'ArrowLeft') this.next();  // RTL: left = later
             else if (e.code === 'KeyR') this.restart();
+        });
+    }
+
+    setupSwipe() {
+        let startX = 0, startY = 0;
+        document.addEventListener('touchstart', e => {
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+        }, { passive: true });
+        document.addEventListener('touchend', e => {
+            const dx = e.changedTouches[0].clientX - startX;
+            const dy = e.changedTouches[0].clientY - startY;
+            if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return; // too short or vertical
+            if (dx > 0) this.prev();   // swipe right = earlier (RTL)
+            else this.next();           // swipe left = later (RTL)
+        }, { passive: true });
+        // Tap to toggle play/pause
+        document.addEventListener('click', e => {
+            if (e.target.closest('#controls, #back-link, #outro-overlay, a')) return;
+            this.togglePlay();
         });
     }
 

@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — קלפיות חריגות">
+    <meta property="og:description" content="ניתוח אינטראקטיבי של נתוני בחירות לכנסת — Interactive Israeli Knesset election data analysis">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>קלפיות חריגות - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
+    <style>
+        html, body { overflow: auto; height: auto; }
+
+        .main-area {
+            position: relative;
+            top: 0;
+            bottom: auto;
+            overflow-y: auto;
+            padding: 52px 0 calc(56px + var(--safe-bottom));
+            min-height: 100vh;
+        }
+
+        .election-pills-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border);
+            padding: 6px 10px;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .election-pills-bar::-webkit-scrollbar { display: none; }
+
+        .stats-row {
+            display: flex;
+            gap: 4px;
+            padding: 8px 10px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .stats-row::-webkit-scrollbar { display: none; }
+
+        .stat-chip {
+            flex-shrink: 0;
+            padding: 4px 10px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-align: center;
+            white-space: nowrap;
+        }
+        .stat-chip .val {
+            font-weight: 700;
+            color: var(--accent);
+            font-size: 0.8rem;
+        }
+
+        .cards-container {
+            padding: 0 10px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .irr-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .irr-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            cursor: pointer;
+        }
+        .irr-header:active { background: var(--bg-hover); }
+
+        .irr-rank {
+            width: 26px;
+            height: 26px;
+            background: var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.75rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .irr-info { flex: 1; min-width: 0; }
+
+        .irr-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .irr-sub {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .irr-badges {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            max-width: 45%;
+        }
+
+        .anom-badge {
+            padding: 2px 6px;
+            border-radius: 999px;
+            font-size: 0.6rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .anom-badge.shift_error { background: rgba(239,68,68,0.2); color: #ef4444; }
+        .anom-badge.round_numbers { background: rgba(139,92,246,0.2); color: #8b5cf6; }
+        .anom-badge.turnout_anomaly { background: rgba(249,115,22,0.2); color: #f97316; }
+        .anom-badge.statistical_outlier { background: rgba(6,182,212,0.2); color: #06b6d4; }
+        .anom-badge.extreme_dominance { background: rgba(236,72,153,0.2); color: #ec4899; }
+        .anom-badge.small_party_spike { background: rgba(234,179,8,0.2); color: #eab308; }
+
+        .expand-arrow {
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+        .irr-card.expanded .expand-arrow { transform: rotate(180deg); }
+
+        .irr-body {
+            display: none;
+            padding: 0 12px 12px;
+        }
+        .irr-card.expanded .irr-body { display: block; }
+
+        .irr-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+        .irr-stat {
+            text-align: center;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 6px 4px;
+        }
+        .irr-stat-val { font-weight: 700; font-size: 0.85rem; }
+        .irr-stat-lbl { font-size: 0.65rem; color: var(--text-muted); }
+
+        .official-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #10b981;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 10px;
+        }
+
+        .anom-section-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+
+        .anom-item {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 8px 10px;
+            margin-bottom: 6px;
+            border-right: 3px solid var(--border);
+        }
+        .anom-item.shift_error { border-right-color: #ef4444; }
+        .anom-item.round_numbers { border-right-color: #8b5cf6; }
+        .anom-item.turnout_anomaly { border-right-color: #f97316; }
+        .anom-item.statistical_outlier { border-right-color: #06b6d4; }
+        .anom-item.extreme_dominance { border-right-color: #ec4899; }
+        .anom-item.small_party_spike { border-right-color: #eab308; }
+
+        .anom-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .anom-item-type { font-weight: 600; font-size: 0.8rem; }
+        .anom-item-desc { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 4px; }
+        .anom-item-details {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            background: var(--bg-secondary);
+            padding: 6px 8px;
+            border-radius: 4px;
+        }
+        .anom-item-details code { color: #06b6d4; font-family: monospace; }
+
+        .shift-error-detail {
+            background: rgba(239,68,68,0.1);
+            padding: 6px 8px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            font-size: 0.7rem;
+        }
+        .shift-symbols { font-weight: 600; color: #ef4444; margin-bottom: 2px; }
+        .symbol-code {
+            background: rgba(239,68,68,0.2);
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .votes-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin: 10px 0 6px;
+        }
+
+        .votes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .vote-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 6px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+        .vote-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            flex-shrink: 0;
+        }
+        .vote-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .vote-cnt { font-weight: 600; color: var(--accent); font-size: 0.8rem; }
+        .vote-pct { font-size: 0.65rem; color: var(--text-muted); min-width: 36px; text-align: left; }
+
+        .empty-msg {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .loading-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            gap: 10px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Bar -->
+    <div class="top-bar">
+        <a href="index.html" class="home-link">🏠</a>
+        <span class="title" data-i18n="site_title">קולות נודדים</span>
+        <button class="info-toggle" id="info-btn">ℹ</button>
+        <button class="info-toggle" id="lang-btn" style="font-size:0.7rem;font-weight:700">EN</button>
+        <span style="font-size:0.7rem;color:var(--text-muted)">🔍</span>
+    </div>
+
+    <div class="main-area">
+        <!-- Election selector -->
+        <div class="election-pills-bar" id="election-pills"></div>
+
+        <!-- Stats row -->
+        <div class="stats-row" id="stats-row"></div>
+
+        <!-- Cards -->
+        <div class="cards-container" id="cards-container">
+            <div class="loading-wrap">
+                <div class="spinner"></div>
+                <span data-i18n="loading">טוען נתונים...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Tab Bar -->
+    <nav class="tab-bar" id="tab-bar"></nav>
+
+    <!-- Info Sheet -->
+    <div class="sheet-backdrop" id="info-backdrop"></div>
+    <div class="bottom-sheet about-sheet" id="info-sheet">
+        <div class="sheet-handle"></div>
+        <h3 data-i18n="about_title">אודות</h3>
+        <p data-i18n="about_text">ניתוח אינטראקטיבי של תוצאות הבחירות לכנסת ישראל.</p>
+        <p data-i18n="irregular_methodology_text">המערכת מנתחת את תוצאות כל קלפי ומחפשת דפוסים חריגים בכמה קטגוריות: טעויות הזנה, מספרים עגולים חשודים, חריגות סטטיסטיות, ותוצאות חריגות למפלגות שוליים.</p>
+        <h3 data-i18n="license_title">רישיון</h3>
+        <p>© הראל קין | <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a></p>
+        <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-inline">
+            <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="☕">
+            <span data-i18n="bmc_text">קנו לי קפה</span>
+        </a>
+        <br>
+        <a href="discussions.html" class="discussions-link">💬 <span data-i18n="nav_discussions">דיונים</span></a>
+    </div>
+
+    <script>
+    // ---- Tab bar ----
+    (function(){
+        const tabs = [
+            { id:'geomap', emoji:'🗺️', href:'geomap.html', i18n:'nav_geomap', text:'מפה' },
+            { id:'tsne', emoji:'🔵', href:'tsne.html', i18n:'nav_tsne', text:'פיזור' },
+            { id:'sankey', emoji:'🔀', href:'sankey.html', i18n:'nav_sankey', text:'נדידה' },
+            { id:'scatter', emoji:'📈', href:'scatter.html', i18n:'nav_scatter', text:'השוואה' },
+            { id:'dhondt', emoji:'🏛️', href:'dhondt.html', i18n:'nav_dhondt', text:'מנדטים' },
+            { id:'regional', emoji:'🧩', href:'regional.html', i18n:'nav_regional', text:'אזורי' },
+            { id:'irregular', emoji:'🔍', href:'irregular.html', i18n:'nav_irregular', text:'חריגות' },
+            { id:'discussions', emoji:'💬', href:'discussions.html', i18n:'nav_discussions', text:'דיונים' },
+        ];
+        const bar = document.getElementById('tab-bar');
+        tabs.forEach(t => {
+            const a = document.createElement('a');
+            a.href = t.href;
+            if (t.id === 'irregular') a.className = 'active';
+            a.innerHTML = `<span class="tab-icon">${t.emoji}</span><span data-i18n="${t.i18n}">${t.text}</span>`;
+            bar.appendChild(a);
+        });
+        // Scroll active tab into view
+        requestAnimationFrame(() => {
+            const active = bar.querySelector('.active');
+            if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
+        });
+    })();
+
+    // ---- Info sheet ----
+    (function(){
+        const btn = document.getElementById('info-btn');
+        const sheet = document.getElementById('info-sheet');
+        const backdrop = document.getElementById('info-backdrop');
+        function toggle() {
+            const open = sheet.classList.toggle('visible');
+            backdrop.classList.toggle('visible', open);
+        }
+        btn.addEventListener('click', toggle);
+        backdrop.addEventListener('click', toggle);
+    })();
+
+    // ---- Language toggle ----
+    (function(){
+        const btn = document.getElementById('lang-btn');
+        function update() { btn.textContent = i18n.getLang() === 'he' ? 'EN' : 'עב'; }
+        update();
+        btn.addEventListener('click', () => { i18n.setLang(i18n.getLang() === 'he' ? 'en' : 'he'); update(); });
+    })();
+
+    // ---- BMC banner ----
+    i18n.renderMobileBMC();
+
+    // ---- Local translations ----
+    const localDict = {
+        adjacent_letters:    { he: 'אותיות סמוכות:', en: 'Adjacent letters:' },
+        votes_count:         { he: 'קולות', en: 'votes' },
+        national_expectation:{ he: 'צפוי:', en: 'Expected:' },
+        round_numbers_label: { he: 'מספרים עגולים:', en: 'Round numbers:' },
+        distance_from_cluster:{ he: 'מרחק מאשכול:', en: 'Cluster distance:' },
+        received:            { he: 'קיבלה', en: 'received' },
+        of_the_votes:        { he: 'מהקולות', en: 'of votes' },
+        national_avg:        { he: 'ממוצע:', en: 'Avg:' },
+        ratio:               { he: 'יחס:', en: 'Ratio:' },
+        anomalies_detected:  { he: 'חריגות שזוהו', en: 'Anomalies detected' },
+        eligible:            { he: 'בעלי זכות', en: 'Eligible' },
+        voted_label:         { he: 'הצביעו', en: 'Voted' },
+        turnout_pct:         { he: 'הצבעה', en: 'Turnout' },
+        valid_votes:         { he: 'כשרים', en: 'Valid' },
+        invalid_votes:       { he: 'פסולים', en: 'Invalid' },
+        vote_distribution:   { he: 'התפלגות', en: 'Distribution' },
+        valid_short:         { he: 'כשרים', en: 'valid' },
+        compare_official:    { he: 'תוצאות רשמיות', en: 'Official results' },
+        no_anomalies_found:  { he: 'לא נמצאו חריגות', en: 'No anomalies found' },
+        ballot_label:        { he: 'קלפי', en: 'Ballot' },
+        stat_analyzed:       { he: 'נותחו', en: 'Analyzed' },
+        stat_suspects:       { he: 'חשודות', en: 'Suspects' },
+        stat_fixed:          { he: 'תוקנו', en: 'Fixed' },
+        stat_remaining:      { he: 'נותרו', en: 'Remaining' },
+    };
+
+    function tl(key) {
+        const e = localDict[key];
+        return e ? (e[i18n.getLang()] || e.he || key) : (i18n.t(key) || key);
+    }
+
+    const anomalyTypeKeys = {
+        'shift_error': 'data_entry_error',
+        'round_numbers': 'round_numbers',
+        'turnout_anomaly': 'turnout_anomaly',
+        'statistical_outlier': 'statistical_outlier',
+        'extreme_dominance': 'extreme_dominance',
+        'small_party_spike': 'small_party_spike'
+    };
+
+    function getAnomalyTypeName(type) { return i18n.t(anomalyTypeKeys[type] || type); }
+    function getSeverityLabel(s) {
+        if (s === 'high') return i18n.t('high_severity');
+        if (s === 'medium') return i18n.t('medium_severity');
+        return i18n.t('low_severity');
+    }
+
+    // ---- State ----
+    let currentData = null;
+    let currentElection = '25';
+    let partyData = {};
+
+    // ---- Election pills ----
+    function buildPills() {
+        const container = document.getElementById('election-pills');
+        const elections = ['16','17','18','19','20','21','22','23','24','25'];
+        if (i18n.SHOW_E26) elections.push('26');
+        container.innerHTML = '';
+        elections.forEach(id => {
+            const btn = document.createElement('button');
+            btn.className = 'election-pill' + (id === currentElection ? ' active' : '');
+            btn.dataset.election = id;
+            btn.textContent = i18n.getLang() === 'en' ? `K${id}` : `${id}`;
+            btn.addEventListener('click', () => {
+                currentElection = id;
+                container.querySelectorAll('.election-pill').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                loadData(id);
+            });
+            container.appendChild(btn);
+        });
+    }
+
+    // ---- Data loading ----
+    async function loadData(electionId) {
+        const container = document.getElementById('cards-container');
+        container.innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
+
+        try {
+            const resp = await fetch(`../data/irregularities_${electionId}.json`);
+            currentData = await resp.json();
+            currentElection = electionId;
+            partyData = {};
+            currentData.parties.forEach(p => { partyData[p.symbol] = p; });
+            updateStats();
+            renderCards();
+        } catch (e) {
+            container.innerHTML = `<div class="empty-msg">${i18n.t('error_loading') || 'שגיאה בטעינה'}</div>`;
+        }
+    }
+
+    function updateStats() {
+        const d = currentData;
+        const found = d.election.irregular_found;
+        const shown = d.irregularities.length;
+        const fixed = found - shown;
+        const row = document.getElementById('stats-row');
+        row.innerHTML = `
+            <div class="stat-chip"><div class="val">${i18n.fmtNum(d.election.analyzed_ballots)}</div>${tl('stat_analyzed')}</div>
+            <div class="stat-chip"><div class="val">${i18n.fmtNum(found)}</div>${tl('stat_suspects')}</div>
+            <div class="stat-chip"><div class="val">${i18n.fmtNum(fixed)}</div>${tl('stat_fixed')}</div>
+            <div class="stat-chip"><div class="val">${i18n.fmtNum(shown)}</div>${tl('stat_remaining')}</div>
+        `;
+    }
+
+    function getPartyName(symbol) {
+        const p = partyData[symbol];
+        return p ? i18n.partyName(p.name) : symbol;
+    }
+    function getPartyColor(symbol) { return partyData[symbol]?.color || '#6b7280'; }
+
+    function getOfficialUrl(item) {
+        const eid = currentData.election.id;
+        let bn = String(item.ballot);
+        if (bn.endsWith('.0')) bn = bn.slice(0, -2);
+        return `https://votes${eid}.bechirot.gov.il/ballotresults?cityID=${item.settlement_code}&BallotNumber=${bn}`;
+    }
+
+    function formatAnomalyDetails(anomaly) {
+        const d = anomaly.details;
+        if (!d) return '';
+        switch (anomaly.type) {
+            case 'shift_error':
+                if (!Array.isArray(d)) return '';
+                return d.map(x => `
+                    <div class="shift-error-detail">
+                        <div class="shift-symbols">${tl('adjacent_letters')} <code class="symbol-code">${x.missing} ↔ ${x.unexpected}</code></div>
+                        <div><strong>${x.missing}</strong> (${getPartyName(x.missing)}): <code>${i18n.fmtNum(x.missing_votes)}</code> (${tl('national_expectation')} <code>${i18n.fmtNum(x.expected_missing)}</code>)</div>
+                        <div><strong>${x.unexpected}</strong> (${getPartyName(x.unexpected)}): <code>${i18n.fmtNum(x.unexpected_votes)}</code> (${tl('national_expectation')} <code>${i18n.fmtNum(x.expected_unexpected)}</code>)</div>
+                    </div>
+                `).join('');
+            case 'round_numbers':
+                if (!Array.isArray(d)) return '';
+                return `${tl('round_numbers_label')} ${d.slice(0,5).map(x => `<strong>${getPartyName(x[0])}</strong>: <code>${i18n.fmtNum(x[1])}</code>`).join(', ')}${d.length > 5 ? '...' : ''}`;
+            case 'turnout_anomaly':
+                return Array.isArray(d) ? d.map(x => `<div>${x}</div>`).join('') : '';
+            case 'statistical_outlier':
+                return `${tl('distance_from_cluster')} <code>${d.distance_score}</code>`;
+            case 'extreme_dominance':
+                return `<strong>${d.party_name ? i18n.partyName(d.party_name) : getPartyName(d.party)}</strong> ${tl('received')} <code>${d.proportion}</code> ${tl('of_the_votes')} (<code>${i18n.fmtNum(d.votes)}</code>)`;
+            case 'small_party_spike':
+                if (!Array.isArray(d)) return '';
+                return d.map(x => `<div><strong>${x.party_name ? i18n.partyName(x.party_name) : getPartyName(x.party)}</strong>: <code>${i18n.fmtNum(x.votes)}</code> (<code>${x.proportion}</code>), ${tl('national_avg')} <code>${x.national_avg}</code>, ${tl('ratio')} <code>${x.ratio}</code></div>`).join('');
+            default:
+                return JSON.stringify(d);
+        }
+    }
+
+    function renderCards() {
+        const container = document.getElementById('cards-container');
+        if (!currentData.irregularities.length) {
+            container.innerHTML = `<div class="empty-msg">${tl('no_anomalies_found')}</div>`;
+            return;
+        }
+
+        let h = '';
+        currentData.irregularities.forEach((item, idx) => {
+            const turnout = item.eligible > 0 ? ((item.voted / item.eligible) * 100).toFixed(1) : '0';
+            const sortedVotes = Object.entries(item.votes).sort((a, b) => b[1] - a[1]);
+
+            h += `<div class="irr-card" data-idx="${idx}">`;
+            h += `<div class="irr-header" onclick="toggleCard(${idx})">`;
+            h += `<div class="irr-rank">${idx + 1}</div>`;
+            h += `<div class="irr-info"><div class="irr-title">${i18n.settlementName(item.settlement)}</div><div class="irr-sub">${tl('ballot_label')} ${item.ballot}</div></div>`;
+            h += `<div class="irr-badges">`;
+            item.anomalies.forEach(a => { h += `<span class="anom-badge ${a.type}">${getAnomalyTypeName(a.type)}</span>`; });
+            h += `</div><span class="expand-arrow">▼</span></div>`;
+
+            h += `<div class="irr-body">`;
+            // Stats
+            h += `<div class="irr-stats">`;
+            h += `<div class="irr-stat"><div class="irr-stat-val">${i18n.fmtNum(item.eligible)}</div><div class="irr-stat-lbl">${tl('eligible')}</div></div>`;
+            h += `<div class="irr-stat"><div class="irr-stat-val">${i18n.fmtNum(item.voted)}</div><div class="irr-stat-lbl">${tl('voted_label')}</div></div>`;
+            h += `<div class="irr-stat"><div class="irr-stat-val">${turnout}%</div><div class="irr-stat-lbl">${tl('turnout_pct')}</div></div>`;
+            h += `<div class="irr-stat"><div class="irr-stat-val">${i18n.fmtNum(item.valid)}</div><div class="irr-stat-lbl">${tl('valid_votes')}</div></div>`;
+            h += `<div class="irr-stat"><div class="irr-stat-val">${i18n.fmtNum(item.invalid)}</div><div class="irr-stat-lbl">${tl('invalid_votes')}</div></div>`;
+            h += `</div>`;
+
+            // Official link
+            h += `<a href="${getOfficialUrl(item)}" target="_blank" class="official-link">🔗 ${tl('compare_official')}</a>`;
+
+            // Anomalies
+            h += `<div class="anom-section-title">${tl('anomalies_detected')}</div>`;
+            item.anomalies.forEach(a => {
+                h += `<div class="anom-item ${a.type}">`;
+                h += `<div class="anom-item-header"><span class="anom-item-type">${getAnomalyTypeName(a.type)}</span><span class="anom-badge ${a.type}">${getSeverityLabel(a.severity)}</span></div>`;
+                h += `<div class="anom-item-desc">${a.description}</div>`;
+                h += `<div class="anom-item-details">${formatAnomalyDetails(a)}</div>`;
+                h += `</div>`;
+            });
+
+            // Votes
+            h += `<div class="votes-title">${tl('vote_distribution')} (${i18n.fmtNum(item.valid)} ${tl('valid_short')})</div>`;
+            h += `<div class="votes-list">`;
+            sortedVotes.forEach(([sym, cnt]) => {
+                const pct = ((cnt / item.valid) * 100).toFixed(1);
+                h += `<div class="vote-row"><div class="vote-dot" style="background:${getPartyColor(sym)}"></div><span class="vote-name">${getPartyName(sym)}</span><span class="vote-cnt">${i18n.fmtNum(cnt)}</span><span class="vote-pct">${pct}%</span></div>`;
+            });
+            h += `</div>`;
+
+            h += `</div></div>`;
+        });
+        container.innerHTML = h;
+    }
+
+    function toggleCard(idx) {
+        const cards = document.querySelectorAll('.irr-card');
+        const card = cards[idx];
+        if (card) card.classList.toggle('expanded');
+    }
+
+    // ---- Language change ----
+    window.addEventListener('langchange', () => {
+        buildPills();
+        if (currentData) {
+            updateStats();
+            renderCards();
+        }
+        i18n.applyTranslations();
+    });
+
+    // ---- Init ----
+    buildPills();
+    loadData('25');
+    </script>
+</body>
+</html>
