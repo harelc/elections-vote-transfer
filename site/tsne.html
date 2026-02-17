@@ -1461,6 +1461,7 @@
 
                 // Preserve current color mode
                 const previousColorMode = this.colorMode;
+                const previousPartySymbol = this.selectedParty ? this.selectedParty.symbol : null;
                 const previousPartyName = this.selectedParty ? this.selectedParty.name : null;
 
                 try {
@@ -1545,9 +1546,10 @@
                     // Restore previous color mode
                     if (previousColorMode === 'socioeconomic') {
                         this.selectSocioeconomicMode();
-                    } else if (previousColorMode === 'party' && previousPartyName) {
-                        // Try to find the same party in the new election
-                        const party = this.data.parties.find(p => p.name === previousPartyName);
+                    } else if (previousColorMode === 'party' && (previousPartySymbol || previousPartyName)) {
+                        // Try to find the same party family by symbol first, then by name
+                        const party = this.data.parties.find(p => p.symbol === previousPartySymbol)
+                            || this.data.parties.find(p => p.name === previousPartyName);
                         if (party) {
                             this.selectParty(party);
                         } else {

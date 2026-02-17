@@ -75,19 +75,27 @@ html, body {
 .election-pills {
     display: flex;
     gap: 4px;
-    margin-right: auto;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+    min-width: 0;
+    mask-image: linear-gradient(to left, transparent, black 12px, black calc(100% - 12px), transparent);
+    -webkit-mask-image: linear-gradient(to left, transparent, black 12px, black calc(100% - 12px), transparent);
 }
+.election-pills::-webkit-scrollbar { display: none; }
 
 .election-pill {
-    padding: 4px 10px;
+    padding: 4px 8px;
     border-radius: 14px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     border: 1px solid var(--border);
     background: transparent;
     color: var(--text-muted);
     cursor: pointer;
-    min-height: 28px;
+    min-height: 26px;
+    flex-shrink: 0;
     transition: all 0.15s;
 }
 

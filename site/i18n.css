@@ -153,31 +153,12 @@
     margin-left: 8px;
 }
 
-/* ── Shared nav: discussions link + separator ── */
+/* nav-sep kept for backwards compat */
 .nav-sep {
     color: var(--text-muted, #64748b);
     font-size: 0.85rem;
     margin: 0 0.1rem;
     align-self: center;
-}
-
-.view-btn.nav-discuss {
-    opacity: 0.65;
-    font-size: 0.8rem;
-    padding: 0.35rem 0.8rem;
-    border: none;
-    background: transparent;
-}
-
-.view-btn.nav-discuss:hover {
-    opacity: 1;
-    background: var(--bg-tertiary, #1a1a25);
-}
-
-.view-btn.nav-discuss.active {
-    opacity: 1;
-    background: var(--accent-primary, #6366f1);
-    border: none;
 }
 
 /* ── Shared BMC button ── */

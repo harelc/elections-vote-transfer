@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="he" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קולות נודדים — אנימציה</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: linear-gradient(170deg, #06060c 0%, #0d0d18 50%, #0a0a14 100%);
+            color: #e2e8f0;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        #canvas-container {
+            position: absolute;
+            inset: 0;
+            z-index: 2;
+        }
+
+        /* Year display */
+        #year-display {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+        }
+        #year-text {
+            font-size: clamp(20px, 3vw, 36px);
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #94a3b8;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+        #year-subtitle {
+            font-size: clamp(14px, 1.8vw, 20px);
+            font-weight: 400;
+            color: #64748b;
+            margin-top: 2px;
+            opacity: 0;
+            transition: opacity 0.6s;
+        }
+
+        /* Progress bar */
+        #progress-bar {
+            position: absolute;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            flex-direction: row-reverse;
+            align-items: center;
+            gap: 0;
+            pointer-events: none;
+        }
+        .progress-segment {
+            width: clamp(24px, 5vw, 55px);
+            height: 2px;
+            background: #1e293b;
+        }
+        .progress-segment.active {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+        .progress-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: 1.5px solid #334155;
+            flex-shrink: 0;
+            transition: all 0.5s;
+            position: relative;
+        }
+        .progress-dot.active {
+            background: #3b82f6;
+            border-color: #60a5fa;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+        }
+        .progress-dot .dot-label {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 9px;
+            color: #475569;
+            white-space: nowrap;
+            transition: color 0.5s;
+        }
+        .progress-dot.active .dot-label {
+            color: #94a3b8;
+        }
+
+        /* Controls */
+        #controls {
+            position: absolute;
+            bottom: 10px;
+            right: 16px;
+            z-index: 20;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(51, 65, 85, 0.25);
+            border-radius: 8px;
+            transition: opacity 0.4s;
+            opacity: 0.4;
+        }
+        #controls:hover { opacity: 1 !important; }
+        #controls.hidden { opacity: 0.1; }
+        .ctrl-btn {
+            background: none;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 2px 5px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .ctrl-btn:hover { background: rgba(51,65,85,0.5); color: #e2e8f0; }
+        .ctrl-btn.active { color: #3b82f6; }
+        #speed-slider { width: 44px; accent-color: #3b82f6; cursor: pointer; }
+        #speed-label { font-size: 9px; color: #64748b; min-width: 20px; text-align: center; }
+        .ctrl-sep { width: 1px; height: 14px; background: #334155; }
+
+        /* Outro overlay */
+        #outro-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 25;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(6, 6, 12, 0);
+            pointer-events: none;
+            transition: background 1.5s;
+        }
+        #outro-overlay.visible {
+            background: rgba(6, 6, 12, 0.75);
+        }
+        #outro-content {
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.2s 0.5s, transform 1.2s 0.5s;
+        }
+        #outro-overlay.visible #outro-content {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .outro-title {
+            font-size: clamp(32px, 5vw, 56px);
+            font-weight: 700;
+            letter-spacing: 6px;
+            background: linear-gradient(180deg, #f8fafc 0%, #64748b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+        .outro-subtitle {
+            font-size: clamp(16px, 2.5vw, 24px);
+            font-weight: 300;
+            color: #94a3b8;
+            margin-bottom: 30px;
+        }
+        .outro-url {
+            font-size: 14px;
+            color: #64748b;
+            letter-spacing: 1px;
+            margin-top: 16px;
+        }
+        #outro-qr {
+            image-rendering: pixelated;
+            border-radius: 4px;
+        }
+
+        #watermark {
+            position: fixed;
+            bottom: 10px;
+            left: 16px;
+            z-index: 5;
+            font-size: 15px;
+            color: #94a3b8;
+            letter-spacing: 0.5px;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        #back-link {
+            position: fixed;
+            top: 14px;
+            left: 16px;
+            z-index: 20;
+            font-size: 14px;
+            color: #94a3b8;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(51, 65, 85, 0.4);
+            transition: all 0.3s;
+            opacity: 0.7;
+            font-family: 'Heebo', sans-serif;
+        }
+        #back-link:hover {
+            opacity: 1;
+            color: #e2e8f0;
+            border-color: rgba(96, 165, 250, 0.5);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 30;
+            font-size: 18px;
+            color: #64748b;
+        }
+
+        /* Tooltip */
+        #tooltip {
+            position: fixed;
+            z-index: 50;
+            pointer-events: none;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.6);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #e2e8f0;
+            opacity: 0;
+            transition: opacity 0.15s;
+            max-width: 280px;
+            direction: rtl;
+        }
+        #tooltip.visible { opacity: 1; }
+        .tt-header { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .tt-leader-img {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid rgba(255,255,255,0.15);
+            flex-shrink: 0;
+        }
+        .tt-header-text { flex: 1; min-width: 0; }
+        .tt-name { font-weight: 600; font-size: 14px; line-height: 1.3; }
+        .tt-leader-name { color: #cbd5e1; font-size: 11px; }
+        .tt-row { color: #94a3b8; font-size: 11px; line-height: 1.5; }
+        .tt-color {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 2px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+        .tt-desc { color: #64748b; font-size: 10px; margin-top: 4px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<a id="back-link" href="sankey.html">← נדידת קולות</a>
+<div id="watermark">© kolot-nodedim.netlify.app · קולות נודדים</div>
+<div id="loading">טוען נתונים...</div>
+<div id="tooltip"></div>
+
+<div id="year-display">
+    <div id="year-text"></div>
+    <div id="year-subtitle"></div>
+</div>
+
+<div id="canvas-container"></div>
+
+<div id="progress-bar"></div>
+
+<div id="controls">
+    <button class="ctrl-btn" id="btn-next" title="Next (←)">⏩</button>
+    <button class="ctrl-btn active" id="btn-play" title="Play/Pause (Space)">⏸</button>
+    <button class="ctrl-btn" id="btn-prev" title="Previous (→)">⏪</button>
+    <button class="ctrl-btn" id="btn-restart" title="Restart (R)">⏮</button>
+    <div class="ctrl-sep"></div>
+    <input type="range" id="speed-slider" min="0.5" max="3" step="0.25" value="1">
+    <span id="speed-label">1×</span>
+</div>
+
+<div id="outro-overlay">
+    <div id="outro-content">
+        <div class="outro-title">קולות נודדים</div>
+        <div class="outro-subtitle">עשרים שנה של בחירות לכנסת ישראל</div>
+        <canvas id="outro-qr" width="125" height="125"></canvas>
+        <div class="outro-url">kolot-nodedim.netlify.app</div>
+    </div>
+</div>
+
+<script>
+const TRANSITIONS = [
+    '16_to_17','17_to_18','18_to_19','19_to_20','20_to_21',
+    '21_to_22','22_to_23','23_to_24','24_to_25'
+];
+const ELECTION_IDS = ['16','17','18','19','20','21','22','23','24','25'];
+const ELECTION_YEARS = {
+    '16':'2003','17':'2006','18':'2009','19':'2013','20':'2015',
+    '21':'אפריל 2019','22':'ספטמבר 2019','23':'2020','24':'2021','25':'2022'
+};
+const ELECTION_LABELS = {
+    '16':'הכנסת ה-16','17':'הכנסת ה-17','18':'הכנסת ה-18',
+    '19':'הכנסת ה-19','20':'הכנסת ה-20','21':'הכנסת ה-21',
+    '22':'הכנסת ה-22','23':'הכנסת ה-23','24':'הכנסת ה-24',
+    '25':'הכנסת ה-25'
+};
+
+const MIN_LINK_PCT = 1.5;
+// Allow URL param ?minWidth=N to override MIN_LINK_WIDTH
+const URL_PARAMS = new URLSearchParams(window.location.search);
+const MIN_LINK_WIDTH_OVERRIDE = URL_PARAMS.has('minWidth') ? parseFloat(URL_PARAMS.get('minWidth')) : null;
+
+// Fixed party family ordering (top to bottom): Likud → right-religious → Haredi → center → left → Arab
+// Within each family, secondary sort is by votes (largest first)
+const PARTY_FAMILY = {
+    // 0: Likud
+    'הליכוד': 0,
+    'הליכוד ישראל ביתנו': 0,
+    // 1: National-religious right
+    'האיחוד הלאומי': 1,
+    'האיחוד הלאומי-מפד״ל': 1,
+    'המפד״ל': 1,
+    'הבית היהודי': 1,
+    'ימינה': 1,
+    'הציונות הדתית': 1,
+    'הימין החדש': 1,
+    // 2: Yisrael Beiteinu
+    'ישראל ביתנו': 2,
+    // 3: Shas
+    'ש״ס': 3,
+    // 4: UTJ
+    'יהדות התורה': 4,
+    // 5: Center-right
+    'קדימה': 5,
+    'כולנו': 5,
+    'תקווה חדשה': 5,
+    'זהות': 5,
+    'שינוי': 5,
+    'עם אחד': 5,
+    'גיל': 5,
+    'ישראל בעלייה': 5,
+    // 6: Center
+    'כחול לבן': 6,
+    'יש עתיד': 6,
+    'התנועה': 6,
+    'המחנה הממלכתי': 6,
+    // 7: Labor / left
+    'העבודה': 7,
+    'העבודה-מימד': 7,
+    'העבודה-גשר': 7,
+    'עבודה-גשר-מרצ': 7,
+    'המחנה הציוני': 7,
+    // 8: Meretz
+    'מרצ': 8,
+    'המחנה הדמוקרטי': 8,
+    // 9: Arab parties (non-Islamist)
+    'חד״ש': 9,
+    'חד״ש-תע״ל': 9,
+    'הרשימה המשותפת': 9,
+    'בל״ד': 9,
+    // 10: Ra'am (Islamist) — always last
+    'רע״ם-תע״ל': 10,
+    'רע״ם-בל״ד': 10,
+    'רע״ם': 10,
+    'הרשימה הערבית המאוחדת': 10,
+    'הרשימה הערבית המאוחדת-התחדשות ערבית': 10,
+};
+function partyOrder(name, votes) {
+    const family = PARTY_FAMILY[name] ?? 5; // unknown → center-right
+    // Family * 1e12 to separate families, then largest votes first within family
+    return family * 1e12 - (votes || 0);
+}
+
+// Display name overrides (shorten long party names)
+const DISPLAY_NAMES = {
+    'הרשימה הערבית המאוחדת': 'רע״ם',
+    'הרשימה הערבית המאוחדת-התחדשות ערבית': 'רע״ם-התחדשות ערבית',
+};
+function displayName(name) { return DISPLAY_NAMES[name] || name; }
+
+// Info overrides for parties with placeholder descriptions
+const INFO_OVERRIDES = {
+    'שינוי': { ideology: 'מרכז, חילוניות, ליברליזם', founded: 1974, description: 'מפלגה חילונית-ליברלית בהנהגת טומי לפיד, נלחמה בכפייה דתית והשיגה 15 מנדטים בבחירות 2003' },
+    'חד״ש': { ideology: 'שמאל, קומוניזם, שיתוף יהודי-ערבי', founded: 1977, description: 'החזית הדמוקרטית לשלום ולשוויון — מפלגה יהודית-ערבית בהשראה קומוניסטית' },
+    'מרצ': { ideology: 'שמאל, סוציאל-דמוקרטיה, שלום', founded: 1992, description: 'מפלגת השמאל הציוני, תומכת בזכויות אדם, שלום ושוויון חברתי' },
+    'עם אחד': { ideology: 'שמאל-מרכז, עובדים, רווחה', founded: 1999, description: 'מפלגת עובדים בהנהגת עמיר פרץ, ייצגה את ההסתדרות ואוחדה עם העבודה ב-2004' },
+    'התנועה': { ideology: 'מרכז, מדינת חוק, משא ומתן', founded: 2012, description: 'מפלגת מרכז בהנהגת ציפי לבני, תמכה בתהליך השלום ובמדינת חוק' },
+};
+
+// Color overrides for specific parties (applied after data load)
+const COLOR_OVERRIDES = {
+    'שינוי': '#e879f9',  // fuchsia — distinguish from Kadima's amber
+    'ישראל בעלייה': '#db2777',  // match Yisrael Beiteinu
+    'כולנו': '#f472b6',  // pink
+    'זהות': '#a3e635',  // lime green
+    'חד״ש': '#f43f5e',  // match חד״ש-תע״ל
+    'הרשימה המשותפת': '#0d9488',  // teal — distinguish from Meretz green
+    'התנועה': '#fde68a',  // soft gold — unique warm pastel
+    'תקווה חדשה': '#6ee7b7',  // mint — distinct from מרצ green and teal
+    'הימין החדש': '#b45309',  // amber-brown — similar to religious-zionism #92400e but lighter
+};
+
+class ChainedSankeyAnimation {
+    constructor() {
+        this.data = null;
+        this.officialResults = null; // wiki_official_results.json
+        this.graph = null;        // full d3-sankey graph
+        this.colNodes = [];       // nodes per column [col0[], col1[], ...]
+        this.colLinks = [];       // links per gap [gap0[], gap1[], ...] (9 gaps)
+        this.revealedCol = -1;    // how many columns revealed (-1 = none)
+        this.currentStep = -1;    // animation step: -1=pre, 0-8=transitions, 9=done
+        this.playing = true;
+        this.speed = 1;
+        this.animationTimer = null;
+        this._cancelled = false;
+
+        this.width = window.innerWidth;
+        this.height = window.innerHeight;
+        this.isMobile = this.width < 768;
+        this.isShort = this.height < 500;
+        this.padding = this.isMobile
+            ? { top: 30, right: 20, bottom: 30, left: 20 }
+            : this.isShort
+                ? { top: 40, right: 60, bottom: 36, left: 60 }
+                : { top: 90, right: 90, bottom: 60, left: 90 };
+
+        this.init();
+    }
+
+    async init() {
+        try {
+            const [transferResp, officialResp] = await Promise.all([
+                fetch('data/all_transfers.json'),
+                fetch('data/wiki_official_results.json')
+            ]);
+            this.data = await transferResp.json();
+            this.officialResults = await officialResp.json();
+        } catch(e) {
+            document.getElementById('loading').textContent = 'שגיאה בטעינת נתונים';
+            return;
+        }
+        document.getElementById('loading').style.display = 'none';
+
+        this.setupSVG();
+        this.buildProgressBar();
+        this.computeFullLayout();
+        this.setupControls();
+        this.setupKeyboard();
+        this.setupVisibility();
+        this.setupResize();
+        this.startAutoHide();
+
+        this.runAnimation();
+    }
+
+    setupSVG() {
+        const container = document.getElementById('canvas-container');
+        container.innerHTML = '';
+        this.svg = d3.select(container)
+            .append('svg')
+            .attr('width', this.width)
+            .attr('height', this.height);
+
+        this.defs = this.svg.append('defs');
+        this.linksGroup = this.svg.append('g').attr('class', 'links');
+        this.particlesGroup = this.svg.append('g').attr('class', 'particles');
+        this.nodesGroup = this.svg.append('g').attr('class', 'nodes');
+        this.labelsGroup = this.svg.append('g').attr('class', 'labels');
+        this.yearLabelsGroup = this.svg.append('g').attr('class', 'year-labels');
+    }
+
+    computeFullLayout() {
+        const p = this.padding;
+        const innerW = this.width - p.left - p.right;
+        const innerH = this.height - p.top - p.bottom;
+
+        // Build unified node + link arrays for d3-sankey
+        // Each party in each election = unique node
+        const allNodes = [];
+        const allLinks = [];
+        const nodeIdMap = {};  // "elId_partyName" → index
+
+        TRANSITIONS.forEach((key, ti) => {
+            const t = this.data.transitions[key];
+            const fromId = t.from_election.id;
+            const toId = t.to_election.id;
+
+            // Add from-nodes (only if not already added by previous transition's to-nodes)
+            t.nodes_from.forEach(n => {
+                const nid = `e${fromId}_${n.name}`;
+                if (nodeIdMap[nid] === undefined) {
+                    const info = Object.assign({}, n.info || {}, INFO_OVERRIDES[n.name] || {});
+                    nodeIdMap[nid] = allNodes.length;
+                    allNodes.push({
+                        id: nid, name: n.name, election: fromId,
+                        col: ELECTION_IDS.indexOf(fromId),
+                        color: COLOR_OVERRIDES[n.name] || n.color,
+                        seats: n.seats, votes: n.votes, info
+                    });
+                }
+            });
+
+            // Add to-nodes
+            t.nodes_to.forEach(n => {
+                const nid = `e${toId}_${n.name}`;
+                if (nodeIdMap[nid] === undefined) {
+                    const info = Object.assign({}, n.info || {}, INFO_OVERRIDES[n.name] || {});
+                    nodeIdMap[nid] = allNodes.length;
+                    allNodes.push({
+                        id: nid, name: n.name, election: toId,
+                        col: ELECTION_IDS.indexOf(toId),
+                        color: COLOR_OVERRIDES[n.name] || n.color,
+                        seats: n.seats, votes: n.votes, info
+                    });
+                }
+            });
+
+            // Add links
+            t.transfers
+                .filter(tr => tr.percentage >= MIN_LINK_PCT)
+                .forEach(tr => {
+                    const sid = `e${fromId}_${tr.source}`;
+                    const tid = `e${toId}_${tr.target}`;
+                    if (nodeIdMap[sid] !== undefined && nodeIdMap[tid] !== undefined) {
+                        allLinks.push({
+                            source: sid,
+                            target: tid,
+                            value: tr.votes,
+                            transitionIdx: ti
+                        });
+                    }
+                });
+        });
+
+        // Use d3-sankey to compute the full layout
+        const sankeyGen = d3.sankey()
+            .nodeId(d => d.id)
+            .nodeWidth(this.isMobile ? 8 : 14)
+            .nodePadding(innerH < 400 ? 1 : innerH < 600 ? 3 : 5)
+            .nodeAlign(d3.sankeyJustify)
+            .nodeSort((a, b) => partyOrder(a.name, a.votes) - partyOrder(b.name, b.votes))
+            .iterations(32)
+            .extent([[p.left, p.top], [p.left + innerW, p.top + innerH]]);
+
+        this.graph = sankeyGen({
+            nodes: allNodes.map(d => ({...d})),
+            links: allLinks.map(d => ({...d}))
+        });
+
+        // Organize nodes by column
+        this.colNodes = ELECTION_IDS.map(() => []);
+        this.graph.nodes.forEach(n => {
+            this.colNodes[n.col].push(n);
+        });
+
+        // Normalize: scale each column to fill the same vertical extent
+        this.normalizeColumns();
+
+        // Mirror X for RTL: K16 on the right, K25 on the left
+        this.mirrorX();
+
+        // Organize links by transition gap index, store graph-wide index
+        this.colLinks = TRANSITIONS.map(() => []);
+        this.graph.links.forEach((l, i) => {
+            l._gIdx = i;
+            this.colLinks[l.transitionIdx].push(l);
+        });
+
+        // Create gradient defs for all links
+        this.defs.selectAll('.link-grad').remove();
+        this.graph.links.forEach((link, i) => {
+            const grad = this.defs.append('linearGradient')
+                .attr('class', 'link-grad')
+                .attr('id', `lg-${i}`)
+                .attr('gradientUnits', 'userSpaceOnUse')
+                .attr('x1', link.source.x0)
+                .attr('y1', 0)
+                .attr('x2', link.target.x1)
+                .attr('y2', 0);
+            grad.append('stop').attr('offset', '0%')
+                .attr('stop-color', link.source.color || '#6b7280');
+            grad.append('stop').attr('offset', '100%')
+                .attr('stop-color', link.target.color || '#6b7280');
+        });
+    }
+
+    normalizeColumns() {
+        const p = this.padding;
+        const targetTop = p.top;
+        const targetBot = this.height - p.bottom;
+        const targetH = targetBot - targetTop;
+        const nodePad = targetH < 400 ? 3 : targetH < 600 ? 5 : 10;
+
+        console.log(`normalizeColumns: isMobile=${this.isMobile}, nodePad=${nodePad}, targetH=${targetH}, top=${targetTop}, bot=${targetBot}`);
+        // Reposition each column: vote-proportional heights, uniform padding
+        for (const nodes of this.colNodes) {
+            if (!nodes.length) continue;
+
+            // Sort by party family order (matches nodeSort)
+            nodes.sort((a, b) => partyOrder(a.name, a.votes) - partyOrder(b.name, b.votes));
+
+            const totalVotes = d3.sum(nodes, n => n.votes || 1);
+            const totalPad = (nodes.length - 1) * nodePad;
+            const availH = targetH - totalPad;
+
+            let y = targetTop;
+            nodes.forEach(n => {
+                const minH = this.isMobile ? 1 : 2;
+                const h = Math.max(minH, ((n.votes || 1) / totalVotes) * availH);
+                n.y0 = y;
+                n.y1 = y + h;
+                y += h + nodePad;
+            });
+        }
+
+        // Rescale link widths per-column, then re-stack
+        // For each node, compute how much its height changed vs d3-sankey's value-based height
+        this.graph.nodes.forEach(node => {
+            const nodeH = node.y1 - node.y0;
+
+            // Re-stack source links (outgoing)
+            if (node.sourceLinks && node.sourceLinks.length) {
+                const totalLinkVal = d3.sum(node.sourceLinks, l => l.value);
+                node.sourceLinks.sort((a, b) =>
+                    (a.target.y0 + a.target.y1) / 2 - (b.target.y0 + b.target.y1) / 2);
+                let sy = node.y0;
+                node.sourceLinks.forEach(link => {
+                    const w = totalLinkVal > 0 ? (link.value / totalLinkVal) * nodeH : 0;
+                    link.width = Math.max(0.5, w);
+                    link.y0 = sy + link.width / 2;
+                    sy += link.width;
+                });
+            }
+
+            // Re-stack target links (incoming)
+            if (node.targetLinks && node.targetLinks.length) {
+                const totalLinkVal = d3.sum(node.targetLinks, l => l.value);
+                node.targetLinks.sort((a, b) =>
+                    (a.source.y0 + a.source.y1) / 2 - (b.source.y0 + b.source.y1) / 2);
+                let ty = node.y0;
+                node.targetLinks.forEach(link => {
+                    const w = totalLinkVal > 0 ? (link.value / totalLinkVal) * nodeH : 0;
+                    link.width = Math.max(0.5, w);
+                    link.y1 = ty + link.width / 2;
+                    ty += link.width;
+                });
+            }
+        });
+    }
+
+    mirrorX() {
+        // Flip all x-coordinates so K16 is on the right (RTL flow)
+        const W = this.width;
+        this.graph.nodes.forEach(n => {
+            const oldX0 = n.x0, oldX1 = n.x1;
+            n.x0 = W - oldX1;
+            n.x1 = W - oldX0;
+        });
+        // Recompute link horizontal positions (y0/y1 stay, but source/target x flipped)
+        // d3-sankey stores link.y0 (at source) and link.y1 (at target) — those are vertical, unchanged
+    }
+
+    // ─── Drawing primitives (additive — never clear previous) ──────
+
+    drawColumnNodes(colIdx, animated) {
+        const nodes = this.colNodes[colIdx];
+        const dur = animated ? 500 / this.speed : 0;
+
+        const groups = this.nodesGroup.selectAll(`.col-${colIdx}`)
+            .data(nodes, d => d.id)
+            .join('g')
+            .attr('class', `node-g col-${colIdx}`)
+            .attr('transform', d => `translate(${d.x0},${animated ? (d.y0 + d.y1) / 2 : d.y0})`)
+            .style('opacity', animated ? 0 : 1);
+
+        groups.append('rect')
+            .attr('width', d => d.x1 - d.x0)
+            .attr('height', animated ? 0 : (d => Math.max(1, d.y1 - d.y0)))
+            .attr('fill', d => d.color || '#6b7280')
+            .attr('rx', 2)
+            .style('cursor', 'pointer');
+
+        // Tooltip hover
+        const self = this;
+        groups
+            .on('mouseenter', function(event, d) {
+                self.showTooltip(event, d);
+                d3.select(this).select('rect').attr('opacity', 0.8);
+            })
+            .on('mousemove', function(event) {
+                self.moveTooltip(event);
+            })
+            .on('mouseleave', function() {
+                self.hideTooltip();
+                d3.select(this).select('rect').attr('opacity', 1);
+            });
+
+        if (animated) {
+            groups.transition()
+                .duration(dur)
+                .ease(d3.easeBackOut.overshoot(0.6))
+                .style('opacity', 1)
+                .attr('transform', d => `translate(${d.x0},${d.y0})`)
+                .select('rect')
+                .attr('height', d => Math.max(1, d.y1 - d.y0));
+
+            // Seat badges after nodes settle
+            const spd = this.speed;
+            setTimeout(() => {
+                groups.each(function(d) {
+                    const h = d.y1 - d.y0;
+                    if (d.seats && h > 12) {
+                        d3.select(this).append('text')
+                            .attr('x', (d.x1 - d.x0) / 2)
+                            .attr('y', h / 2)
+                            .attr('text-anchor', 'middle')
+                            .attr('dominant-baseline', 'central')
+                            .attr('fill', '#fff')
+                            .attr('font-size', Math.min(9, h - 2))
+                            .attr('font-weight', '600')
+                            .text(d.seats)
+                            .style('opacity', 0)
+                            .transition().duration(300 / spd).style('opacity', 1);
+                    }
+                });
+            }, dur);
+        } else {
+            groups.each(function(d) {
+                const h = d.y1 - d.y0;
+                if (d.seats && h > 12) {
+                    d3.select(this).append('text')
+                        .attr('x', (d.x1 - d.x0) / 2)
+                        .attr('y', h / 2)
+                        .attr('text-anchor', 'middle')
+                        .attr('dominant-baseline', 'central')
+                        .attr('fill', '#fff')
+                        .attr('font-size', Math.min(9, h - 2))
+                        .attr('font-weight', '600')
+                        .text(d.seats);
+                }
+            });
+        }
+    }
+
+    drawColumnLabels(colIdx, side, animated) {
+        // side: 'left' = labels left of nodes, 'right' = labels right of nodes
+        const nodes = this.colNodes[colIdx];
+        const dur = animated ? 400 / this.speed : 0;
+        const isLeft = side === 'left';
+
+        const labels = this.labelsGroup.selectAll(`.lbl-col-${colIdx}`)
+            .data(nodes.filter(d => (d.y1 - d.y0) > 8), d => d.id)
+            .join('text')
+            .attr('class', `lbl lbl-col-${colIdx}`)
+            .attr('x', d => isLeft ? d.x0 - 5 : d.x1 + 5)
+            .attr('y', d => (d.y0 + d.y1) / 2)
+            .attr('text-anchor', isLeft ? 'end' : 'start')
+            .attr('dominant-baseline', 'central')
+            .attr('fill', '#94a3b8')
+            .attr('font-size', d => {
+                const h = d.y1 - d.y0;
+                return h > 18 ? '11px' : h > 10 ? '9px' : '8px';
+            })
+            .text(d => displayName(d.name))
+            .style('opacity', animated ? 0 : 0.9);
+
+        if (animated) {
+            labels.transition().delay(100 / this.speed).duration(dur).style('opacity', 0.9);
+        }
+    }
+
+    drawColumnYear(colIdx, animated) {
+        const elId = ELECTION_IDS[colIdx];
+        const nodes = this.colNodes[colIdx];
+        if (!nodes.length) return;
+
+        // Position year label above the column
+        const cx = (nodes[0].x0 + nodes[0].x1) / 2;
+        const dur = animated ? 400 / this.speed : 0;
+
+        const yearText = ELECTION_YEARS[elId].replace('אפריל ', '\'04/').replace('ספטמבר ', '\'09/');
+        const shortYear = ELECTION_YEARS[elId].length <= 4 ? ELECTION_YEARS[elId] : yearText;
+
+        this.yearLabelsGroup.append('text')
+            .attr('class', `year-lbl year-col-${colIdx}`)
+            .attr('x', cx)
+            .attr('y', this.padding.top - 14)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#64748b')
+            .attr('font-size', '12px')
+            .attr('font-weight', '600')
+            .text(shortYear)
+            .style('opacity', animated ? 0 : 0.8)
+            .transition().duration(dur).style('opacity', 0.8);
+
+        // K-number below year
+        this.yearLabelsGroup.append('text')
+            .attr('class', `year-lbl year-col-${colIdx}`)
+            .attr('x', cx)
+            .attr('y', this.padding.top - 3)
+            .attr('text-anchor', 'middle')
+            .attr('fill', '#475569')
+            .attr('font-size', '9px')
+            .text(`K${elId}`)
+            .style('opacity', animated ? 0 : 0.6)
+            .transition().duration(dur).style('opacity', 0.6);
+    }
+
+    drawGapLinks(gapIdx, animated) {
+        const MIN_LINK_WIDTH = MIN_LINK_WIDTH_OVERRIDE !== null ? MIN_LINK_WIDTH_OVERRIDE : 1;
+        const links = this.colLinks[gapIdx].filter(d => d.width >= MIN_LINK_WIDTH);
+        if (!links.length) return;
+
+        const dur = animated ? 1400 / this.speed : 0;
+
+        // Compute the x-extent of this gap's links for clip-rect
+        // RTL: source is on the right, target on the left
+        const xMin = d3.min(links, d => Math.min(d.source.x0, d.target.x0));
+        const xMax = d3.max(links, d => Math.max(d.source.x1, d.target.x1));
+        const clipW = xMax - xMin + 40;
+
+        // Create a clip-path for animated reveal (grows right-to-left in RTL)
+        const clipId = `clip-gap-${gapIdx}`;
+        if (animated) {
+            this.defs.append('clipPath')
+                .attr('id', clipId)
+                .append('rect')
+                .attr('x', xMax)
+                .attr('y', 0)
+                .attr('width', 0)
+                .attr('height', this.height)
+                .transition()
+                .duration(dur)
+                .ease(d3.easeCubicOut)
+                .attr('x', xMin - 20)
+                .attr('width', clipW);
+        }
+
+        // Create a group for this gap's links
+        const gapGroup = this.linksGroup.append('g')
+            .attr('class', `gap-group gap-${gapIdx}`);
+
+        if (animated) {
+            gapGroup.attr('clip-path', `url(#${clipId})`);
+        }
+
+        const linkPaths = gapGroup.selectAll('.link-path')
+            .data(links, d => d.source.id + '→' + d.target.id)
+            .join('path')
+            .attr('class', 'link-path')
+            .attr('id', d => `lp-${d._gIdx}`)
+            .attr('d', d3.sankeyLinkHorizontal())
+            .attr('fill', 'none')
+            .attr('stroke', d => `url(#lg-${d._gIdx})`)
+            .attr('stroke-width', d => Math.max(0.5, d.width))
+            .attr('opacity', 0.5);
+
+        // Particles
+        if (animated) {
+            this.spawnParticles(links, 1600);
+        }
+    }
+
+    spawnParticles(links, durationMs) {
+        // Clear particles from previous transitions
+        this.particlesGroup.selectAll('*').interrupt().remove();
+
+        const dur = durationMs / this.speed;
+        const linkPathEls = links.map(link =>
+            document.getElementById(`lp-${link._gIdx}`)
+        );
+
+        links.forEach((link, i) => {
+            const pathEl = linkPathEls[i];
+            if (!pathEl) return;
+            const totalLen = pathEl.getTotalLength();
+            if (totalLen < 20) return;
+
+            // Parallel lanes across the link width
+            const count = Math.max(1, Math.round(link.width / 2));
+            const halfW = link.width / 2;
+
+            for (let p = 0; p < count; p++) {
+                const r = 1.2 + Math.random() * 1.2;
+                // Fixed lane offset: spread evenly across link width
+                const laneOffset = count > 1
+                    ? -halfW + (p / (count - 1)) * link.width
+                    : 0;
+
+                const particle = this.particlesGroup.append('circle')
+                    .attr('r', r)
+                    .attr('fill', '#fff')
+                    .attr('opacity', 0);
+
+                const startDelay = Math.random() * dur * 0.4;
+                particle.transition()
+                    .delay(startDelay)
+                    .duration(0)
+                    .attr('opacity', 0.45 + Math.random() * 0.3)
+                    .transition()
+                    .duration(dur * (0.4 + Math.random() * 0.2))
+                    .ease(d3.easeLinear)
+                    .attrTween('transform', function() {
+                        return function(t) {
+                            try {
+                                const pt = pathEl.getPointAtLength(t * totalLen);
+                                return `translate(${pt.x},${pt.y + laneOffset})`;
+                            } catch(e) { return 'translate(0,0)'; }
+                        };
+                    })
+                    .transition()
+                    .duration(200)
+                    .attr('opacity', 0)
+                    .remove();
+            }
+        });
+    }
+
+    // ─── Reveal a full step: links from col[step] → col[step+1], then col[step+1] nodes
+    revealStep(stepIdx, animated) {
+        // stepIdx: 0-8 (transition index). Reveals links for gap stepIdx + nodes for col stepIdx+1
+        const toCol = stepIdx + 1;
+
+        if (animated) {
+            this.drawGapLinks(stepIdx, true);
+            // Delay target nodes until links/particles are almost done
+            setTimeout(() => {
+                this.drawColumnNodes(toCol, true);
+                this.drawColumnYear(toCol, true);
+            }, 1200 / this.speed);
+        } else {
+            this.drawGapLinks(stepIdx, false);
+            this.drawColumnNodes(toCol, false);
+            this.drawColumnYear(toCol, false);
+        }
+
+        // Labels: only on the leftmost revealed column (RTL: grows leftward)
+        // Remove previous left-side labels
+        if (animated && toCol > 1) {
+            this.labelsGroup.selectAll(`.lbl-col-${toCol - 1}`)
+                .transition().duration(300 / this.speed).style('opacity', 0).remove();
+        }
+        // Labels on leftmost column (last in sequence = far left in RTL)
+        if (toCol === ELECTION_IDS.length - 1) {
+            this.drawColumnLabels(toCol, 'left', animated);
+        }
+
+        this.revealedCol = toCol;
+    }
+
+    // ─── Animation sequence ────────────────────────────────
+
+    delay(ms) {
+        return new Promise(resolve => {
+            this.animationTimer = setTimeout(resolve, ms / this.speed);
+        });
+    }
+
+    cancelAll() {
+        this._cancelled = true;
+        if (this.animationTimer) {
+            clearTimeout(this.animationTimer);
+            this.animationTimer = null;
+        }
+        this.svg.selectAll('*').interrupt();
+    }
+
+    get stopped() { return this._cancelled || !this.playing; }
+
+    async runAnimation() {
+        this.cancelAll();
+        this._cancelled = false;
+        this.currentStep = -1;
+        this.revealedCol = -1;
+        this.hideOutro();
+        this.clearAll();
+
+        // Phase: intro — show first column
+        this.updateProgress(0);
+        this.setYear(ELECTION_YEARS['16'], ELECTION_LABELS['16']);
+
+        this.drawColumnNodes(0, true);
+        this.drawColumnLabels(0, 'right', true);
+        this.drawColumnYear(0, true);
+        this.revealedCol = 0;
+
+        await this.delay(1200);
+        if (this.stopped) return;
+
+        // Reveal each transition
+        for (let step = 0; step < TRANSITIONS.length; step++) {
+            this.currentStep = step;
+            const toCol = step + 1;
+            const toElId = ELECTION_IDS[toCol];
+            const fromElId = ELECTION_IDS[step];
+
+            this.updateProgress(toCol);
+            this.setYear(ELECTION_YEARS[toElId], ELECTION_LABELS[toElId]);
+
+            this.revealStep(step, true);
+
+            // Wait for links + nodes to finish animating, then brief hold
+            await this.delay(2000);
+            if (this.stopped) return;
+        }
+
+        // Outro — hold the full picture, then dim and overlay
+        this.currentStep = TRANSITIONS.length;
+        this.setYear('2022 — 2003', '');
+
+        await this.delay(2000);
+        if (this.stopped) return;
+
+        this.showOutro();
+
+        await this.delay(6000);
+        if (this.stopped) return;
+
+        this.playing = false;
+        this.updatePlayBtn();
+    }
+
+    // ─── Helpers ───────────────────────────────────────────
+
+    clearAll() {
+        this.linksGroup.selectAll('*').remove();
+        this.nodesGroup.selectAll('*').remove();
+        this.labelsGroup.selectAll('*').remove();
+        this.particlesGroup.selectAll('*').remove();
+        this.yearLabelsGroup.selectAll('*').remove();
+        // NOTE: do NOT remove .link-grad defs — they are static and reused
+        this.defs.selectAll('clipPath').remove();
+    }
+
+    buildProgressBar() {
+        const bar = document.getElementById('progress-bar');
+        let html = '';
+        ELECTION_IDS.forEach((id, i) => {
+            html += `<div class="progress-dot" data-idx="${i}"><span class="dot-label">K${id}</span></div>`;
+            if (i < ELECTION_IDS.length - 1) {
+                html += `<div class="progress-segment" data-seg="${i}"></div>`;
+            }
+        });
+        bar.innerHTML = html;
+    }
+
+    updateProgress(upToCol) {
+        document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+            dot.classList.toggle('active', i <= upToCol);
+        });
+        document.querySelectorAll('.progress-segment').forEach((seg, i) => {
+            seg.classList.toggle('active', i < upToCol);
+        });
+    }
+
+    setYear(text, subtitle) {
+        const el = document.getElementById('year-text');
+        const sub = document.getElementById('year-subtitle');
+        el.textContent = text;
+        sub.textContent = subtitle || '';
+        el.style.opacity = 1;
+        sub.style.opacity = subtitle ? 1 : 0;
+    }
+
+    // ─── Tooltip ───────────────────────────────────────────
+
+    showTooltip(event, d) {
+        const tt = document.getElementById('tooltip');
+        const elId = ELECTION_IDS[d.col];
+        const info = d.info || {};
+        const name = displayName(d.name);
+
+        // Look up official vote count from wiki_official_results.json
+        let officialVotes = null;
+        let officialSeats = null;
+        if (this.officialResults && this.officialResults[elId]) {
+            const match = this.officialResults[elId].find(p => p.name === d.name);
+            if (match) {
+                officialVotes = match.votes;
+                officialSeats = match.seats;
+            }
+        }
+
+        const votes = officialVotes ? officialVotes.toLocaleString() : (d.votes ? d.votes.toLocaleString() : '');
+        const seats = officialSeats || d.seats || '';
+        const leader = info.leader || '';
+        const leaderImg = info.leader_image || '';
+
+        let html = '<div class="tt-header">';
+        if (leaderImg) {
+            html += `<img class="tt-leader-img" src="${leaderImg}" alt="${leader}" onerror="this.style.display='none'">`;
+        }
+        html += '<div class="tt-header-text">';
+        html += `<div class="tt-name"><span class="tt-color" style="background:${d.color}"></span> ${name}</div>`;
+        if (leader) html += `<div class="tt-leader-name">${leader}</div>`;
+        html += '</div></div>';
+        html += `<div class="tt-row">${ELECTION_LABELS[elId]} (${ELECTION_YEARS[elId]})</div>`;
+        if (seats) html += `<div class="tt-row">${seats} מנדטים · ${votes} קולות</div>`;
+        if (info.ideology) html += `<div class="tt-row">${info.ideology}</div>`;
+        if (info.description) html += `<div class="tt-desc">${info.description}</div>`;
+
+        tt.innerHTML = html;
+        tt.classList.add('visible');
+        this.moveTooltip(event);
+    }
+
+    moveTooltip(event) {
+        const tt = document.getElementById('tooltip');
+        const x = event.clientX;
+        const y = event.clientY;
+        const pad = 12;
+        // Flip if near right edge
+        const flipX = x + tt.offsetWidth + pad > window.innerWidth;
+        const flipY = y + tt.offsetHeight + pad > window.innerHeight;
+        tt.style.left = (flipX ? x - tt.offsetWidth - pad : x + pad) + 'px';
+        tt.style.top = (flipY ? y - tt.offsetHeight - pad : y + pad) + 'px';
+    }
+
+    hideTooltip() {
+        document.getElementById('tooltip').classList.remove('visible');
+    }
+
+    // ─── Outro overlay ───────────────────────────────────────
+
+    showOutro() {
+        this.renderQR();
+        document.getElementById('outro-overlay').classList.add('visible');
+    }
+
+    hideOutro() {
+        document.getElementById('outro-overlay').classList.remove('visible');
+    }
+
+    renderQR() {
+        // Pre-computed QR code for https://kolot-nodedim.netlify.app/ (29x29, ECC M)
+        const m = [
+            [1,1,1,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1],
+            [1,0,1,1,1,0,1,0,1,0,1,0,1,1,0,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
+            [1,0,1,1,1,0,1,0,1,0,0,1,1,0,1,1,0,1,0,1,0,0,1,0,1,1,1,0,1],
+            [1,0,1,1,1,0,1,0,1,0,1,1,1,0,0,1,1,0,1,1,0,0,1,0,1,1,1,0,1],
+            [1,0,0,0,0,0,1,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0],
+            [1,0,1,1,1,1,1,0,0,1,1,0,1,0,0,0,0,1,0,1,0,0,1,1,1,1,1,0,0],
+            [0,1,1,1,1,1,0,0,1,0,1,1,0,1,1,1,0,0,0,1,1,0,1,1,1,0,0,0,1],
+            [0,1,1,0,0,0,1,0,1,0,1,0,0,1,1,1,1,0,0,0,1,0,0,1,0,0,0,0,0],
+            [0,1,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1,0,1,0],
+            [1,1,1,0,1,0,1,1,1,0,1,1,0,0,1,0,0,1,0,1,0,1,0,0,0,1,1,0,0],
+            [0,1,1,0,1,1,0,0,0,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1],
+            [1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,1,0,1,1,1,0,0],
+            [1,1,1,0,0,0,0,1,0,1,0,0,1,0,1,1,0,0,1,0,1,0,0,1,0,0,0,1,0],
+            [1,1,1,0,0,1,1,1,0,1,1,0,1,0,0,1,1,1,0,0,0,0,0,0,0,1,1,0,0],
+            [1,0,1,0,1,1,0,1,1,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],
+            [1,0,1,0,1,1,1,0,0,1,1,1,0,1,1,1,0,0,1,0,1,0,1,1,0,0,1,0,0],
+            [1,0,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,1,0,0,0,1,0],
+            [1,0,1,1,0,0,1,0,1,1,0,1,0,0,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1],
+            [0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1,1,1,1,1],
+            [1,1,1,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,1,1,0,1,0,1,1,1,0,0],
+            [1,0,0,0,0,0,1,0,1,0,0,1,0,0,1,1,0,0,1,1,1,0,0,0,1,0,0,1,1],
+            [1,0,1,1,1,0,1,0,1,0,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,0,1,1,0],
+            [1,0,1,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,0,0,0,1,1,1,1],
+            [1,0,1,1,1,0,1,0,1,0,0,1,0,1,0,1,0,0,1,1,0,1,1,1,1,1,1,1,0],
+            [1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,1,0,0,0,1,0,1,1,0,1,0,1,0],
+            [1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0]
+        ];
+        const canvas = document.getElementById('outro-qr');
+        const size = 29;
+        const cell = 5;
+        canvas.width = size * cell;
+        canvas.height = size * cell;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = '#e2e8f0';
+        for (let y = 0; y < size; y++)
+            for (let x = 0; x < size; x++)
+                if (m[y][x]) ctx.fillRect(x * cell, y * cell, cell, cell);
+    }
+
+    // ─── Jump/Skip ─────────────────────────────────────────
+
+    jumpTo(stepIdx) {
+        this.cancelAll();
+        this.playing = false;
+        this.updatePlayBtn();
+        this.hideOutro();
+
+        if (stepIdx < 0) stepIdx = 0;
+        if (stepIdx >= TRANSITIONS.length) stepIdx = TRANSITIONS.length - 1;
+        this.currentStep = stepIdx;
+
+        this.clearAll();
+        this.computeFullLayout();  // recompute gradients
+
+        // Draw everything up to and including this step (instantly)
+        this.drawColumnNodes(0, false);
+        this.drawColumnLabels(0, 'right', false);
+        this.drawColumnYear(0, false);
+
+        for (let s = 0; s <= stepIdx; s++) {
+            this.revealStep(s, false);
+        }
+
+        this.revealedCol = stepIdx + 1;
+        this.updateProgress(stepIdx + 1);
+
+        const toElId = ELECTION_IDS[stepIdx + 1];
+        this.setYear(ELECTION_YEARS[toElId], ELECTION_LABELS[toElId]);
+    }
+
+    // ─── Controls ──────────────────────────────────────────
+
+    setupControls() {
+        document.getElementById('btn-play').addEventListener('click', () => this.togglePlay());
+        document.getElementById('btn-restart').addEventListener('click', () => this.restart());
+        document.getElementById('btn-prev').addEventListener('click', () => this.prev());
+        document.getElementById('btn-next').addEventListener('click', () => this.next());
+
+        const slider = document.getElementById('speed-slider');
+        slider.addEventListener('input', () => {
+            this.speed = parseFloat(slider.value);
+            document.getElementById('speed-label').textContent = this.speed + '×';
+        });
+    }
+
+    setupKeyboard() {
+        document.addEventListener('keydown', e => {
+            if (e.code === 'Space') { e.preventDefault(); this.togglePlay(); }
+            else if (e.code === 'ArrowRight') this.prev();  // RTL: right = earlier
+            else if (e.code === 'ArrowLeft') this.next();  // RTL: left = later
+            else if (e.code === 'KeyR') this.restart();
+        });
+    }
+
+    setupVisibility() {
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && this.playing) {
+                this._wasPlaying = true;
+                this.togglePlay();
+            } else if (!document.hidden && this._wasPlaying) {
+                this._wasPlaying = false;
+                this.togglePlay();
+            }
+        });
+    }
+
+    setupResize() {
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                this.width = window.innerWidth;
+                this.height = window.innerHeight;
+                this.setupSVG();
+                this.computeFullLayout();
+                if (this.currentStep >= 0) {
+                    this.jumpTo(this.currentStep);
+                }
+            }, 300);
+        });
+    }
+
+    startAutoHide() {
+        const controls = document.getElementById('controls');
+        let timeout;
+        const resetTimer = () => {
+            controls.classList.remove('hidden');
+            clearTimeout(timeout);
+            timeout = setTimeout(() => {
+                if (this.playing) controls.classList.add('hidden');
+            }, 3000);
+        };
+        document.addEventListener('mousemove', resetTimer);
+        document.addEventListener('touchstart', resetTimer);
+        resetTimer();
+    }
+
+    togglePlay() {
+        if (this.playing) {
+            this.playing = false;
+            this.cancelAll();
+        } else {
+            this.playing = true;
+            this._cancelled = false;
+            if (this.currentStep >= TRANSITIONS.length) {
+                this.restart();
+            } else if (this.currentStep >= 0) {
+                // Resume from current step
+                this.resumeFrom(this.currentStep + 1);
+            } else {
+                this.runAnimation();
+            }
+        }
+        this.updatePlayBtn();
+    }
+
+    async resumeFrom(fromStep) {
+        // Re-reveal remaining steps
+        for (let step = fromStep; step < TRANSITIONS.length; step++) {
+            this.currentStep = step;
+            const toCol = step + 1;
+            const toElId = ELECTION_IDS[toCol];
+
+            this.updateProgress(toCol);
+            this.setYear(ELECTION_YEARS[toElId], ELECTION_LABELS[toElId]);
+
+            this.revealStep(step, true);
+
+            await this.delay(2000);
+            if (this.stopped) return;
+        }
+
+        this.currentStep = TRANSITIONS.length;
+        this.setYear('2022 — 2003', '');
+
+        await this.delay(2000);
+        if (this.stopped) return;
+
+        this.showOutro();
+
+        await this.delay(6000);
+        if (this.stopped) return;
+
+        this.playing = false;
+        this.updatePlayBtn();
+    }
+
+    updatePlayBtn() {
+        const btn = document.getElementById('btn-play');
+        btn.textContent = this.playing ? '⏸' : '▶';
+        btn.classList.toggle('active', this.playing);
+    }
+
+    restart() {
+        this.cancelAll();
+        this._cancelled = false;
+        this.playing = true;
+        this.updatePlayBtn();
+        this.runAnimation();
+    }
+
+    next() {
+        if (this.currentStep >= TRANSITIONS.length - 1) {
+            this.goToOutro();
+            return;
+        }
+        const target = Math.min((this.currentStep < 0 ? 0 : this.currentStep + 1), TRANSITIONS.length - 1);
+        this.jumpTo(target);
+    }
+
+    prev() {
+        const target = Math.max((this.currentStep <= 0 ? 0 : this.currentStep - 1), 0);
+        this.jumpTo(target);
+    }
+
+    goToOutro() {
+        this.jumpTo(TRANSITIONS.length - 1);
+        this.currentStep = TRANSITIONS.length;
+        this.setYear('2022 — 2003', '');
+        this.updateProgress(ELECTION_IDS.length - 1);
+        this.showOutro();
+    }
+}
+
+new ChainedSankeyAnimation();
+</script>
+</body>
+</html>

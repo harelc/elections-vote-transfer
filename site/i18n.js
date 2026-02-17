@@ -22,6 +22,7 @@
         nav_dhondt:            { he: 'מחשבון באדר-עופר', en: 'D\'Hondt Calculator' },
         nav_irregular:         { he: 'קלפיות חריגות', en: 'Irregular Ballots' },
         export_png:            { he: '📷 ייצוא PNG', en: '📷 Export PNG' },
+        nav_animation:         { he: '▶ אנימציה', en: '▶ Animation' },
 
         /* ── Mobile tabs ── */
         tab_map:               { he: 'מפה', en: 'Map' },
@@ -246,6 +247,7 @@
         dashboard_stat_visitors:   { he: 'מבקרים באתר', en: 'Site visitors' },
         dashboard_stat_lists:      { he: 'רשימות', en: 'Lists' },
         card_sankey_desc:          { he: 'תרשים נדידת קולות בין בחירות עוקבות', en: 'Vote flow diagram between consecutive elections' },
+        card_animation_desc:       { he: 'אנימציה של נדידת קולות מ-2003 עד 2022', en: 'Animated vote flow from 2003 to 2022' },
         card_tsne_desc:            { he: 'מיפוי קלפיות לפי דמיון דפוסי הצבעה', en: 'Ballot box mapping by voting pattern similarity' },
         card_geomap_desc:          { he: 'מפה גיאוגרפית של קלפיות הצבעה', en: 'Geographic map of polling stations' },
         card_scatter_desc:         { he: 'השוואת תמיכה בין מפלגות לפי קלפיות', en: 'Compare party support across ballot boxes' },
@@ -698,29 +700,34 @@
             return href + (href.includes('?') ? '&' : '?') + 'e26=1';
         }
 
+        function viewLink(v) {
+            const cls = 'view-btn' + (v.cls ? ' ' + v.cls : '');
+            if (v.id === activeId) {
+                return '<span class="' + cls + ' active" data-i18n="' + v.i18n + '">' + v.text + '</span>';
+            }
+            return '<a href="' + addE26(v.href) + '" class="' + cls + '" data-i18n="' + v.i18n + '">' + v.text + '</a>';
+        }
+
         const extraLinks = [
             { id: 'settlement', href: 'settlement.html', i18n: 'settlement_profile', text: 'פרופיל יישוב' },
             { id: 'party',      href: 'party.html',      i18n: 'party_profile',      text: 'פרופיל מפלגה' },
             { id: 'rankings',   href: 'rankings.html',   i18n: 'nav_rankings',       text: 'דירוגים' },
-            { id: 'discussions', href: 'discussions.html', i18n: 'nav_discussions',    text: 'דיונים', cls: 'nav-discuss' },
+            { id: 'discussions', href: 'discussions.html', i18n: 'nav_discussions',    text: 'דיונים' },
         ];
-        nav.innerHTML = navViews.map(v => {
-            if (v.id === activeId) {
-                return '<span class="view-btn active" data-i18n="' + v.i18n + '">' + v.text + '</span>';
-            }
-            return '<a href="' + addE26(v.href) + '" class="view-btn" data-i18n="' + v.i18n + '">' + v.text + '</a>';
-        }).join('\n') +
-            '\n<span class="nav-sep">\u00b7</span>' +
-            extraLinks.map(v => {
-                const cls = 'view-btn' + (v.cls ? ' ' + v.cls : '');
-                if (v.id === activeId) {
-                    return '\n<span class="' + cls + ' active" data-i18n="' + v.i18n + '">' + v.text + '</span>';
-                }
-                return '\n<a href="' + addE26(v.href) + '" class="' + cls + '" data-i18n="' + v.i18n + '">' + v.text + '</a>';
-            }).join('');
 
-        if (exportBtn) nav.appendChild(exportBtn);
-        injectLangToggle('.view-switcher');
+        // Main views row
+        nav.innerHTML = navViews.map(viewLink).join('\n');
+
+        // Extras row (below main views)
+        let extrasRow = nav.parentElement.querySelector('.nav-extras');
+        if (!extrasRow) {
+            extrasRow = document.createElement('div');
+            extrasRow.className = 'nav-extras';
+            nav.parentElement.appendChild(extrasRow);
+        }
+        extrasRow.innerHTML = extraLinks.map(viewLink).join('\n');
+        if (exportBtn) extrasRow.appendChild(exportBtn);
+        injectLangToggle('.nav-extras');
         applyTranslations();
     }
 

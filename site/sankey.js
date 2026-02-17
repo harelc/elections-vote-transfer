@@ -3,6 +3,34 @@
  * Visualizes vote transfer between Israeli Knesset elections
  */
 
+// Color overrides for specific parties
+const COLOR_OVERRIDES = {
+    'שינוי': '#e879f9',
+    'ישראל בעלייה': '#db2777',
+    'כולנו': '#f472b6',
+    'זהות': '#a3e635',
+    'חד״ש': '#f43f5e',
+    'הרשימה המשותפת': '#0d9488',
+    'התנועה': '#fde68a',
+    'תקווה חדשה': '#6ee7b7',
+    'הימין החדש': '#b45309',
+};
+
+const INFO_OVERRIDES = {
+    'שינוי': { ideology: 'מרכז, חילוניות, ליברליזם', founded: 1974, description: 'מפלגה חילונית-ליברלית בהנהגת טומי לפיד, נלחמה בכפייה דתית והשיגה 15 מנדטים בבחירות 2003' },
+    'חד״ש': { ideology: 'שמאל, קומוניזם, שיתוף יהודי-ערבי', founded: 1977, description: 'החזית הדמוקרטית לשלום ולשוויון — מפלגה יהודית-ערבית בהשראה קומוניסטית' },
+    'מרצ': { ideology: 'שמאל, סוציאל-דמוקרטיה, שלום', founded: 1992, description: 'מפלגת השמאל הציוני, תומכת בזכויות אדם, שלום ושוויון חברתי' },
+    'עם אחד': { ideology: 'שמאל-מרכז, עובדים, רווחה', founded: 1999, description: 'מפלגת עובדים בהנהגת עמיר פרץ, ייצגה את ההסתדרות ואוחדה עם העבודה ב-2004' },
+    'התנועה': { ideology: 'מרכז, מדינת חוק, משא ומתן', founded: 2012, description: 'מפלגת מרכז בהנהגת ציפי לבני, תמכה בתהליך השלום ובמדינת חוק' },
+};
+
+function applyColorOverrides(nodes) {
+    nodes.forEach(n => {
+        if (COLOR_OVERRIDES[n.name]) n.color = COLOR_OVERRIDES[n.name];
+        if (INFO_OVERRIDES[n.name] && n.info) Object.assign(n.info, INFO_OVERRIDES[n.name]);
+    });
+}
+
 class VoteTransferSankey {
     constructor(containerId) {
         this.containerId = containerId;
@@ -89,36 +117,40 @@ class VoteTransferSankey {
     }
 
     generateQRCodeDataURL() {
-        // Pre-computed QR code for https://kolot-nodedim.netlify.app/
+        // Pre-computed QR code for https://kolot-nodedim.netlify.app/ (29x29, ECC M)
         const qrMatrix = [
-            [1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1],
-            [1,0,0,0,0,0,1,0,0,1,0,1,1,0,0,0,1,0,1,0,0,0,0,0,1],
-            [1,0,1,1,1,0,1,0,1,1,0,0,0,1,1,0,1,0,1,0,1,1,1,0,1],
-            [1,0,1,1,1,0,1,0,0,0,1,0,1,0,0,1,0,0,1,0,1,1,1,0,1],
-            [1,0,1,1,1,0,1,0,1,0,1,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
-            [1,0,0,0,0,0,1,0,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,1],
-            [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
-            [0,0,0,0,0,0,0,0,1,1,0,0,1,1,0,1,1,0,0,0,0,0,0,0,0],
-            [1,0,1,1,0,1,1,1,1,0,1,0,0,0,1,0,0,1,1,0,0,1,0,1,0],
-            [0,1,0,0,1,0,0,1,0,0,0,1,1,0,1,1,0,0,0,1,0,0,1,0,1],
-            [1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,1,0,0,1,0,0,1,0],
-            [0,0,1,1,0,1,0,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,0,1],
-            [0,0,0,1,1,0,1,0,1,1,0,0,1,1,0,1,1,0,1,0,0,1,1,0,0],
-            [0,1,1,0,0,1,0,1,0,1,1,0,0,1,0,0,0,0,1,1,0,0,0,1,1],
-            [1,0,1,0,1,0,1,0,1,0,0,1,0,1,1,0,1,1,0,1,1,0,1,0,0],
-            [0,1,0,1,0,0,0,0,0,0,1,1,0,0,0,1,1,0,0,0,1,1,0,0,1],
-            [1,0,0,1,1,1,1,0,1,1,1,0,1,1,1,0,0,1,1,1,1,1,0,1,0],
-            [0,0,0,0,0,0,0,0,1,0,0,0,0,0,1,0,1,0,0,0,1,0,0,1,1],
-            [1,1,1,1,1,1,1,0,1,0,1,0,0,0,1,0,0,0,1,0,1,1,1,0,0],
-            [1,0,0,0,0,0,1,0,0,0,0,0,1,1,0,0,1,0,0,0,1,0,1,0,1],
-            [1,0,1,1,1,0,1,0,1,1,1,1,0,1,1,0,0,1,1,1,1,1,0,1,0],
-            [1,0,1,1,1,0,1,0,0,1,0,0,1,0,1,0,1,0,0,1,0,0,0,0,1],
-            [1,0,1,1,1,0,1,0,1,0,0,1,0,0,1,1,1,1,0,1,1,0,1,1,0],
-            [1,0,0,0,0,0,1,0,0,0,1,1,0,0,0,1,0,0,0,1,1,0,0,1,1],
-            [1,1,1,1,1,1,1,0,1,0,0,1,1,0,1,0,0,1,0,0,1,1,1,0,0]
+            [1,1,1,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1],
+            [1,0,0,0,0,0,1,0,0,0,1,1,1,1,1,1,1,1,0,0,0,0,1,0,0,0,0,0,1],
+            [1,0,1,1,1,0,1,0,1,0,1,0,1,1,0,1,0,0,1,1,1,0,1,0,1,1,1,0,1],
+            [1,0,1,1,1,0,1,0,1,0,0,1,1,0,1,1,0,1,0,1,0,0,1,0,1,1,1,0,1],
+            [1,0,1,1,1,0,1,0,1,0,1,1,1,0,0,1,1,0,1,1,0,0,1,0,1,1,1,0,1],
+            [1,0,0,0,0,0,1,0,1,0,1,1,1,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,1],
+            [1,1,1,1,1,1,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,1,1,1,1,1,1],
+            [0,0,0,0,0,0,0,0,1,1,0,1,1,0,1,0,1,0,0,0,1,0,0,0,0,0,0,0,0],
+            [1,0,1,1,1,1,1,0,0,1,1,0,1,0,0,0,0,1,0,1,0,0,1,1,1,1,1,0,0],
+            [0,1,1,1,1,1,0,0,1,0,1,1,0,1,1,1,0,0,0,1,1,0,1,1,1,0,0,0,1],
+            [0,1,1,0,0,0,1,0,1,0,1,0,0,1,1,1,1,0,0,0,1,0,0,1,0,0,0,0,0],
+            [0,1,0,0,1,1,0,0,1,0,0,1,0,1,0,0,1,0,1,0,0,1,0,1,0,1,0,1,0],
+            [1,1,1,0,1,0,1,1,1,0,1,1,0,0,1,0,0,1,0,1,0,1,0,0,0,1,1,0,0],
+            [0,1,1,0,1,1,0,0,0,1,0,1,1,0,0,0,0,1,1,1,1,1,1,1,1,0,0,0,1],
+            [1,0,0,0,1,1,1,0,0,1,1,0,0,0,0,1,0,0,0,0,0,0,1,0,1,1,1,0,0],
+            [1,1,1,0,0,0,0,1,0,1,0,0,1,0,1,1,0,0,1,0,1,0,0,1,0,0,0,1,0],
+            [1,1,1,0,0,1,1,1,0,1,1,0,1,0,0,1,1,1,0,0,0,0,0,0,0,1,1,0,0],
+            [1,0,1,0,1,1,0,1,1,0,0,0,0,1,1,0,1,1,1,1,1,1,1,1,1,0,1,0,1],
+            [1,0,1,0,1,1,1,0,0,1,1,1,0,1,1,1,0,0,1,0,1,0,1,1,0,0,1,0,0],
+            [1,0,1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,0,0,0,1,1,1,1,0,0,0,1,0],
+            [1,0,1,1,0,0,1,0,1,1,0,1,0,0,1,1,1,1,0,0,1,1,1,1,1,0,1,1,1],
+            [0,0,0,0,0,0,0,0,1,0,1,1,0,0,0,0,1,0,1,0,1,0,0,0,1,1,1,1,1],
+            [1,1,1,1,1,1,1,0,0,1,1,1,0,0,0,1,1,1,0,1,1,0,1,0,1,1,1,0,0],
+            [1,0,0,0,0,0,1,0,1,0,0,1,0,0,1,1,0,0,1,1,1,0,0,0,1,0,0,1,1],
+            [1,0,1,1,1,0,1,0,1,0,0,0,0,0,0,1,0,1,0,0,1,1,1,1,1,0,1,1,0],
+            [1,0,1,1,1,0,1,0,1,1,0,1,1,1,1,0,1,1,0,0,0,0,0,0,0,1,1,1,1],
+            [1,0,1,1,1,0,1,0,1,0,0,1,0,1,0,1,0,0,1,1,0,1,1,1,1,1,1,1,0],
+            [1,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,1,0,0,0,1,0,1,1,0,1,0,1,0],
+            [1,1,1,1,1,1,1,0,1,0,1,0,1,1,1,0,0,1,1,1,0,0,1,0,0,0,1,0,0]
         ];
 
-        const size = 25;
+        const size = 29;
         const cellSize = 4;
         const canvasSize = size * cellSize;
         const canvas = document.createElement('canvas');
@@ -544,6 +576,10 @@ class VoteTransferSankey {
             this.data = await response.json();
             console.log('Data loaded:', this.data);
 
+            // Apply color overrides
+            applyColorOverrides(this.data.nodes_from);
+            applyColorOverrides(this.data.nodes_to);
+
             this.updateInfo();
             this.render();
             this.updateLegend();
@@ -686,9 +722,28 @@ class VoteTransferSankey {
             });
         }
 
+        // Normalize columns: make both sides fill the same vertical extent
+        this.normalizeColumns(graph, innerHeight);
+
         // Create groups
+        const defs = this.svg.append('defs');
         const linksGroup = this.g.append('g').attr('class', 'sankey-links');
         const nodesGroup = this.g.append('g').attr('class', 'sankey-nodes');
+
+        // Create link gradients
+        graph.links.forEach((link, i) => {
+            const grad = defs.append('linearGradient')
+                .attr('id', `sankey-lg-${i}`)
+                .attr('gradientUnits', 'userSpaceOnUse')
+                .attr('x1', link.source.x1)
+                .attr('y1', 0)
+                .attr('x2', link.target.x0)
+                .attr('y2', 0);
+            grad.append('stop').attr('offset', '0%')
+                .attr('stop-color', link.source.color || '#6b7280');
+            grad.append('stop').attr('offset', '100%')
+                .attr('stop-color', link.target.color || '#6b7280');
+        });
 
         // Draw links
         this.links = linksGroup.selectAll('.sankey-link')
@@ -696,7 +751,7 @@ class VoteTransferSankey {
             .join('path')
             .attr('class', 'sankey-link')
             .attr('d', d3.sankeyLinkHorizontal())
-            .attr('stroke', d => d.target.color || '#6b7280')
+            .attr('stroke', (d, i) => `url(#sankey-lg-${i})`)
             .attr('stroke-width', d => Math.max(1, d.width))
             .style('fill', 'none')
             .style('stroke-opacity', 0.4)
@@ -811,6 +866,69 @@ class VoteTransferSankey {
         }
 
         console.log('Render complete');
+    }
+
+    normalizeColumns(graph, innerHeight) {
+        const nodePad = 10;
+        const targetTop = 0;
+        const targetH = innerHeight;
+
+        // Group nodes by side (from / to)
+        const sides = { from: [], to: [] };
+        graph.nodes.forEach(n => {
+            sides[n.side].push(n);
+        });
+
+        for (const side of ['from', 'to']) {
+            const nodes = sides[side];
+            if (!nodes.length) continue;
+
+            // Sort by votes descending
+            nodes.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+
+            const totalVotes = d3.sum(nodes, n => n.votes || 1);
+            const totalPadding = (nodes.length - 1) * nodePad;
+            const availH = targetH - totalPadding;
+
+            let y = targetTop;
+            nodes.forEach(n => {
+                const h = Math.max(2, ((n.votes || 1) / totalVotes) * availH);
+                n.y0 = y;
+                n.y1 = y + h;
+                y += h + nodePad;
+            });
+        }
+
+        // Re-stack link positions on each node
+        graph.nodes.forEach(node => {
+            const nodeH = node.y1 - node.y0;
+
+            if (node.sourceLinks && node.sourceLinks.length) {
+                const totalVal = d3.sum(node.sourceLinks, l => l.value);
+                node.sourceLinks.sort((a, b) =>
+                    (a.target.y0 + a.target.y1) / 2 - (b.target.y0 + b.target.y1) / 2);
+                let sy = node.y0;
+                node.sourceLinks.forEach(link => {
+                    const w = totalVal > 0 ? (link.value / totalVal) * nodeH : 0;
+                    link.width = Math.max(0.5, w);
+                    link.y0 = sy + link.width / 2;
+                    sy += link.width;
+                });
+            }
+
+            if (node.targetLinks && node.targetLinks.length) {
+                const totalVal = d3.sum(node.targetLinks, l => l.value);
+                node.targetLinks.sort((a, b) =>
+                    (a.source.y0 + a.source.y1) / 2 - (b.source.y0 + b.source.y1) / 2);
+                let ty = node.y0;
+                node.targetLinks.forEach(link => {
+                    const w = totalVal > 0 ? (link.value / totalVal) * nodeH : 0;
+                    link.width = Math.max(0.5, w);
+                    link.y1 = ty + link.width / 2;
+                    ty += link.width;
+                });
+            }
+        });
     }
 
     highlightNode(node) {

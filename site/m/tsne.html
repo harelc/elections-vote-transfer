@@ -292,6 +292,8 @@
                 btn.onclick = () => this.switchElection(id);
                 pills.appendChild(btn);
             });
+            const active = pills.querySelector('.active');
+            if (active) setTimeout(() => active.scrollIntoView({ inline: 'center', block: 'nearest' }), 0);
         }
 
         initEvents() {
@@ -369,10 +371,15 @@
 
         async switchElection(id) {
             this.currentElection = id;
-            document.querySelectorAll('.election-pill').forEach(p =>
-                p.classList.toggle('active', p.textContent === id));
+            document.querySelectorAll('.election-pill').forEach(p => {
+                p.classList.toggle('active', p.textContent === id);
+                if (p.textContent === id) p.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
+            });
             this.selectedSettlements = [];
             document.getElementById('settlement-tags').innerHTML = '';
+
+            const prevSymbol = this.selectedParty ? this.selectedParty.symbol : null;
+            const prevMode = this.colorMode;
 
             document.getElementById('loading').style.display = 'flex';
             try {
@@ -381,7 +388,14 @@
                 this.buildSettlements();
                 this.buildColorFabs();
                 this.updateProjToggle();
-                this.render();
+                // Restore party selection by symbol (party family)
+                if (prevSymbol && prevMode === 'party') {
+                    const match = (this.data.parties || []).find(p => p.symbol === prevSymbol);
+                    if (match) { this.setColorMode('party', match); }
+                    else { this.render(); }
+                } else {
+                    this.render();
+                }
             } catch (err) { console.error(err); }
             document.getElementById('loading').style.display = 'none';
         }
