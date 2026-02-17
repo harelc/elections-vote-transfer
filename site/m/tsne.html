@@ -402,11 +402,16 @@
 
         buildSettlements() {
             const counts = {};
+            const locations = {};
             this.data.stations.forEach(s => {
                 counts[s.n] = (counts[s.n] || 0) + 1;
+                if (s.l) {
+                    if (!locations[s.n]) locations[s.n] = new Set();
+                    locations[s.n].add(s.l);
+                }
             });
             this.settlements = Object.entries(counts)
-                .map(([name, count]) => ({ name, count }))
+                .map(([name, count]) => ({ name, count, locations: locations[name] ? [...locations[name]] : [] }))
                 .sort((a, b) => b.count - a.count);
         }
 
@@ -678,7 +683,8 @@
         handleSettlementSearch(query) {
             const results = document.getElementById('settlement-results');
             if (query.length < 1) { results.classList.remove('visible'); return; }
-            const matches = this.settlements.filter(s => i18n.settlementMatches(s.name, query)).slice(0, 10);
+            const matches = this.settlements.filter(s => i18n.settlementMatches(s.name, query) ||
+                s.locations.some(loc => loc.includes(query))).slice(0, 10);
             if (!matches.length) { results.classList.remove('visible'); return; }
             results.innerHTML = matches.map(s => `
                 <div class="search-result-item" data-name="${s.name}">

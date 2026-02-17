@@ -96,6 +96,22 @@ def match_location(station, locations_data, election_config):
     return None
 
 
+def load_station_coordinates():
+    """Load station_coordinates.json for manually verified location names."""
+    coords_file = Path('site/data/station_coordinates.json')
+    if not coords_file.exists():
+        return {}
+    with open(coords_file, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+    # Build lookup: "settlement|ballot" -> location name
+    lookup = {}
+    for key, val in data.get('stations', {}).items():
+        loc = val.get('location')
+        if loc:
+            lookup[key] = loc
+    return lookup
+
+
 def add_locations_to_tsne(election_id):
     """Add ballot locations to T-SNE data for one election."""
     logger.info(f"Processing election {election_id}...")
@@ -110,17 +126,25 @@ def add_locations_to_tsne(election_id):
         return False
 
     election_config = ELECTIONS.get(election_id, {})
+    coord_locations = load_station_coordinates()
 
     # Match locations for each station
+    # Prefer station_coordinates.json (manually verified) over ballot_locations (CEC scraped)
     matched = 0
     total = len(tsne_data.get('stations', []))
 
     for station in tsne_data.get('stations', []):
-        location = match_location(station, locations_data, election_config)
-        if location:
-            # Add location using compact key 'l' for location
-            station['l'] = location
+        name = station.get('n') or station.get('settlement_name', '')
+        ballot = str(station.get('b') or station.get('ballot_number', ''))
+        coord_loc = coord_locations.get(f"{name}|{ballot}")
+        if coord_loc:
+            station['l'] = coord_loc
             matched += 1
+        else:
+            location = match_location(station, locations_data, election_config)
+            if location:
+                station['l'] = location
+                matched += 1
 
     logger.info(f"  Matched {matched}/{total} stations ({100*matched/total:.1f}%)")
 

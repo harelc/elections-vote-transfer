@@ -1114,16 +1114,21 @@
             }
 
             buildSettlementsList() {
-                // Count stations per settlement
+                // Count stations per settlement and collect venue names
                 const counts = {};
+                const locations = {};
                 this.data.stations.forEach(s => {
                     const name = s.n || s.settlement_name;
                     counts[name] = (counts[name] || 0) + 1;
+                    if (s.l) {
+                        if (!locations[name]) locations[name] = new Set();
+                        locations[name].add(s.l);
+                    }
                 });
 
                 // Sort by station count (descending)
                 this.settlements = Object.entries(counts)
-                    .map(([name, count]) => ({ name, count }))
+                    .map(([name, count]) => ({ name, count, locations: locations[name] ? [...locations[name]] : [] }))
                     .sort((a, b) => b.count - a.count);
             }
 
@@ -1136,7 +1141,8 @@
                 }
 
                 const matches = this.settlements
-                    .filter(s => i18n.settlementMatches(s.name, query))
+                    .filter(s => i18n.settlementMatches(s.name, query) ||
+                        s.locations.some(loc => loc.includes(query)))
                     .slice(0, 15);
 
                 if (matches.length === 0) {
