@@ -168,9 +168,11 @@
             background: rgba(6, 6, 12, 0);
             pointer-events: none;
             transition: background 1.5s;
+            cursor: pointer;
         }
         #outro-overlay.visible {
             background: rgba(6, 6, 12, 0.75);
+            pointer-events: auto;
         }
         #outro-content {
             text-align: center;
@@ -204,6 +206,14 @@
             letter-spacing: 1px;
             margin-top: 16px;
         }
+        .outro-dismiss {
+            font-size: 13px;
+            color: #475569;
+            margin-top: 28px;
+            opacity: 0;
+            transition: opacity 1s 2s;
+        }
+        #outro-overlay.visible .outro-dismiss { opacity: 1; }
         #outro-qr {
             image-rendering: pixelated;
             border-radius: 4px;
@@ -219,6 +229,15 @@
             letter-spacing: 0.5px;
             pointer-events: none;
             opacity: 0.7;
+            transition: all 0.8s;
+        }
+        #watermark.center {
+            top: clamp(34px, 4vw, 48px);
+            bottom: auto;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 1;
+            font-size: 13px;
         }
 
         #back-link {
@@ -328,6 +347,7 @@
         <div class="outro-subtitle">עשרים שנה של בחירות לכנסת ישראל</div>
         <canvas id="outro-qr" width="125" height="125"></canvas>
         <div class="outro-url">kolot-nodedim.netlify.app</div>
+        <div class="outro-dismiss">לחצו בכל מקום לחזור לתצוגה המלאה</div>
     </div>
 </div>
 
@@ -464,8 +484,8 @@ class ChainedSankeyAnimation {
         this.padding = this.isMobile
             ? { top: 30, right: 20, bottom: 30, left: 20 }
             : this.isShort
-                ? { top: 40, right: 60, bottom: 36, left: 60 }
-                : { top: 90, right: 90, bottom: 60, left: 90 };
+                ? { top: 50, right: 60, bottom: 36, left: 60 }
+                : { top: 100, right: 90, bottom: 60, left: 90 };
 
         this.init();
     }
@@ -1048,13 +1068,16 @@ class ChainedSankeyAnimation {
             if (this.stopped) return;
         }
 
-        // Outro — hold the full picture, then dim and overlay
+        // Full view — show all 10 columns with summary title
         this.currentStep = TRANSITIONS.length;
-        this.setYear('2022 — 2003', '');
+        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        document.getElementById('watermark').classList.add('center');
 
-        await this.delay(2000);
+        await this.delay(3000);
         if (this.stopped) return;
 
+        // Outro overlay
+        this.currentStep = TRANSITIONS.length + 1;
         this.showOutro();
 
         await this.delay(6000);
@@ -1104,6 +1127,7 @@ class ChainedSankeyAnimation {
         sub.textContent = subtitle || '';
         el.style.opacity = 1;
         sub.style.opacity = subtitle ? 1 : 0;
+        document.getElementById('watermark').classList.remove('center');
     }
 
     // ─── Tooltip ───────────────────────────────────────────
@@ -1175,6 +1199,17 @@ class ChainedSankeyAnimation {
         document.getElementById('outro-overlay').classList.remove('visible');
     }
 
+    dismissOutro() {
+        this.cancelAll();
+        this.playing = false;
+        this.updatePlayBtn();
+        this.hideOutro();
+        // Go back to the full-view step (all 10 columns, summary title)
+        this.currentStep = TRANSITIONS.length;
+        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        document.getElementById('watermark').classList.add('center');
+    }
+
     renderQR() {
         // Pre-computed QR code for https://kolot-nodedim.netlify.app/ (29x29, ECC M)
         const m = [
@@ -1230,17 +1265,25 @@ class ChainedSankeyAnimation {
         this.updatePlayBtn();
         this.hideOutro();
 
-        if (stepIdx < 0) stepIdx = 0;
+        if (stepIdx < -1) stepIdx = -1;
         if (stepIdx >= TRANSITIONS.length) stepIdx = TRANSITIONS.length - 1;
         this.currentStep = stepIdx;
 
         this.clearAll();
         this.computeFullLayout();  // recompute gradients
 
-        // Draw everything up to and including this step (instantly)
+        // Draw first column (always visible)
         this.drawColumnNodes(0, false);
         this.drawColumnLabels(0, 'right', false);
         this.drawColumnYear(0, false);
+
+        if (stepIdx === -1) {
+            // Intro state: just K16
+            this.revealedCol = 0;
+            this.updateProgress(0);
+            this.setYear(ELECTION_YEARS['16'], ELECTION_LABELS['16']);
+            return;
+        }
 
         for (let s = 0; s <= stepIdx; s++) {
             this.revealStep(s, false);
@@ -1270,7 +1313,8 @@ class ChainedSankeyAnimation {
 
     setupKeyboard() {
         document.addEventListener('keydown', e => {
-            if (e.code === 'Space') { e.preventDefault(); this.togglePlay(); }
+            if (e.code === 'Escape' && this.currentStep > TRANSITIONS.length) { this.dismissOutro(); }
+            else if (e.code === 'Space') { e.preventDefault(); this.togglePlay(); }
             else if (e.code === 'ArrowRight') this.prev();  // RTL: right = earlier
             else if (e.code === 'ArrowLeft') this.next();  // RTL: left = later
             else if (e.code === 'KeyR') this.restart();
@@ -1290,6 +1334,11 @@ class ChainedSankeyAnimation {
             if (dx > 0) this.prev();   // swipe right = earlier (RTL)
             else this.next();           // swipe left = later (RTL)
         }, { passive: true });
+        // Tap outro overlay to dismiss
+        document.getElementById('outro-overlay').addEventListener('click', e => {
+            e.stopPropagation();
+            this.dismissOutro();
+        });
         // Tap to toggle play/pause
         document.addEventListener('click', e => {
             if (e.target.closest('#controls, #back-link, #outro-overlay, a')) return;
@@ -1347,8 +1396,11 @@ class ChainedSankeyAnimation {
         } else {
             this.playing = true;
             this._cancelled = false;
-            if (this.currentStep >= TRANSITIONS.length) {
+            if (this.currentStep > TRANSITIONS.length) {
                 this.restart();
+            } else if (this.currentStep === TRANSITIONS.length) {
+                // On full-view step, resume to outro
+                this.resumeOutro();
             } else if (this.currentStep >= 0) {
                 // Resume from current step
                 this.resumeFrom(this.currentStep + 1);
@@ -1375,12 +1427,19 @@ class ChainedSankeyAnimation {
             if (this.stopped) return;
         }
 
+        // Full view step
         this.currentStep = TRANSITIONS.length;
-        this.setYear('2022 — 2003', '');
+        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        document.getElementById('watermark').classList.add('center');
 
-        await this.delay(2000);
+        await this.delay(3000);
         if (this.stopped) return;
 
+        await this.resumeOutro();
+    }
+
+    async resumeOutro() {
+        this.currentStep = TRANSITIONS.length + 1;
         this.showOutro();
 
         await this.delay(6000);
@@ -1405,8 +1464,12 @@ class ChainedSankeyAnimation {
     }
 
     next() {
-        if (this.currentStep >= TRANSITIONS.length - 1) {
+        if (this.currentStep >= TRANSITIONS.length) {
             this.goToOutro();
+            return;
+        }
+        if (this.currentStep === TRANSITIONS.length - 1) {
+            this.goToFullView();
             return;
         }
         const target = Math.min((this.currentStep < 0 ? 0 : this.currentStep + 1), TRANSITIONS.length - 1);
@@ -1414,14 +1477,41 @@ class ChainedSankeyAnimation {
     }
 
     prev() {
-        const target = Math.max((this.currentStep <= 0 ? 0 : this.currentStep - 1), 0);
+        if (this.currentStep > TRANSITIONS.length) {
+            this.dismissOutro();
+            return;
+        }
+        if (this.currentStep === TRANSITIONS.length) {
+            this.jumpTo(TRANSITIONS.length - 1);
+            return;
+        }
+        const target = Math.max(this.currentStep - 1, -1);
         this.jumpTo(target);
     }
 
-    goToOutro() {
-        this.jumpTo(TRANSITIONS.length - 1);
+    goToFullView() {
+        this.cancelAll();
+        this.playing = false;
+        this.updatePlayBtn();
+        this.hideOutro();
+        // Make sure all steps are drawn
+        if (this.currentStep < TRANSITIONS.length - 1) {
+            this.jumpTo(TRANSITIONS.length - 1);
+        }
         this.currentStep = TRANSITIONS.length;
-        this.setYear('2022 — 2003', '');
+        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        document.getElementById('watermark').classList.add('center');
+        this.updateProgress(ELECTION_IDS.length - 1);
+    }
+
+    goToOutro() {
+        // Ensure full view is drawn first
+        if (this.currentStep < TRANSITIONS.length) {
+            this.jumpTo(TRANSITIONS.length - 1);
+        }
+        this.currentStep = TRANSITIONS.length + 1;
+        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        document.getElementById('watermark').classList.add('center');
         this.updateProgress(ELECTION_IDS.length - 1);
         this.showOutro();
     }
