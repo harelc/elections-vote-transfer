@@ -256,7 +256,13 @@ def generate_tsne_json(election_id, compact=True):
 
 def main():
     """Generate T-SNE data for all elections."""
-    elections = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
+    import argparse
+    parser = argparse.ArgumentParser(description='Generate T-SNE clustering data')
+    parser.add_argument('--elections', nargs='+',
+                        help='Only process specific elections, e.g. --elections 25 26')
+    args = parser.parse_args()
+
+    elections = args.elections or ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
 
     for election_id in elections:
         logger.info(f"\n{'='*60}")

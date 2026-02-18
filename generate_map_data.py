@@ -15,7 +15,7 @@ SITE_DATA_DIR = 'site/data'
 COORDINATES_FILE = os.path.join(SITE_DATA_DIR, 'station_coordinates.json')
 SOCIOECONOMIC_FILE = os.path.join(SITE_DATA_DIR, 'socioeconomic_clusters.json')
 
-ELECTIONS = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
+ELECTIONS = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26']
 
 # CSV files and encodings per election (for counting total lists)
 ELECTION_CSV = {
@@ -29,6 +29,7 @@ ELECTION_CSV = {
     '23': ('ballot23.csv', 'iso8859_8'),
     '24': ('ballot24.csv', 'iso8859_8'),
     '25': ('ballot25.csv', 'utf-8-sig'),
+    '26': ('ballot26.csv', 'utf-8-sig'),
 }
 
 

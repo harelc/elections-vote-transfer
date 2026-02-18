@@ -399,11 +399,12 @@ class VoteTransferAnalyzer:
         }
 
 
-def run_analysis(include_abstention=False):
+def run_analysis(include_abstention=False, only_transitions=None):
     """Run transfer analysis for all election pairs.
 
     Args:
         include_abstention: Whether to include "did not vote" pseudo-party
+        only_transitions: Optional list of "X_to_Y" strings to filter pairs
     """
     suffix = '_abstention' if include_abstention else ''
     label = ' (with abstention)' if include_abstention else ''
@@ -426,7 +427,15 @@ def run_analysis(include_abstention=False):
         ('22', '23'),
         ('23', '24'),
         ('24', '25'),
+        ('25', '26'),
     ]
+
+    if only_transitions:
+        requested = set(only_transitions)
+        pairs = [(f, t) for f, t in pairs if f"{f}_to_{t}" in requested]
+        if not pairs:
+            logger.warning(f"No matching transitions found for: {only_transitions}")
+            return
 
     all_data = {
         'generated_at': time.strftime('%Y-%m-%d %H:%M:%S'),
@@ -454,8 +463,14 @@ def run_analysis(include_abstention=False):
             logger.error(f"Failed to analyze {from_id} → {to_id}{label}: {e}")
             raise
 
-    # Save combined file
+    # Save combined file — merge into existing if running subset
     combined_file = f'data/all_transfers{suffix}.json'
+    if only_transitions and Path(combined_file).exists():
+        with open(combined_file, 'r', encoding='utf-8') as f:
+            existing = json.load(f)
+        existing['transitions'].update(all_data['transitions'])
+        existing['generated_at'] = all_data['generated_at']
+        all_data = existing
     with open(combined_file, 'w', encoding='utf-8') as f:
         json.dump(all_data, f, ensure_ascii=False, indent=2)
     logger.info(f"\nSaved {combined_file}")
@@ -463,13 +478,21 @@ def run_analysis(include_abstention=False):
 
 def main():
     """Generate transfer data for all consecutive election pairs."""
+    import argparse
+    parser = argparse.ArgumentParser(description='Generate vote transfer matrices')
+    parser.add_argument('--transitions', nargs='+',
+                        help='Only compute specific transitions, e.g. --transitions 25_to_26 24_to_25')
+    args = parser.parse_args()
+
+    only = args.transitions
+
     # Regular analysis
     logger.info("=== Regular transfer analysis ===")
-    run_analysis(include_abstention=False)
+    run_analysis(include_abstention=False, only_transitions=only)
 
     # Abstention analysis
     logger.info("\n=== Abstention transfer analysis ===")
-    run_analysis(include_abstention=True)
+    run_analysis(include_abstention=True, only_transitions=only)
 
     logger.info("\nDone!")
 

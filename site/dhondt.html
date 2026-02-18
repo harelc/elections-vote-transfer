@@ -759,6 +759,15 @@
                 <div class="control-panel-scrollable">
                     <div class="control-section">
                         <h3 class="control-title" data-i18n="settings">הגדרות</h3>
+                        <div class="threshold-row" style="margin-bottom:0.75rem">
+                            <div class="threshold-control">
+                                <label data-i18n="dhondt_election_label">בחירות:</label>
+                                <div id="election-toggle" style="display:inline-flex;gap:2px;background:var(--bg-tertiary);border-radius:6px;padding:2px;border:1px solid var(--border-color)">
+                                    <button class="election-toggle-btn active" data-election="25" style="padding:0.3rem 0.8rem;border:none;border-radius:4px;font-family:inherit;font-size:0.85rem;cursor:pointer;transition:all 150ms ease;background:var(--accent-primary);color:var(--text-primary)">כנסת 25</button>
+                                    <button class="election-toggle-btn" data-election="26" style="padding:0.3rem 0.8rem;border:none;border-radius:4px;font-family:inherit;font-size:0.85rem;cursor:pointer;transition:all 150ms ease;background:transparent;color:var(--text-secondary)">כנסת 26</button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="threshold-row">
                             <div class="threshold-control">
                                 <label data-i18n="threshold_pct">אחוז חסימה:</label>
@@ -798,7 +807,7 @@
                         </div>
                     </div>
 
-                    <button class="reset-btn" id="reset-btn" data-i18n="reset_to_official">אפס לתוצאות כנסת 25</button>
+                    <button class="reset-btn" id="reset-btn">אפס לתוצאות כנסת 25</button>
                 </div>
             </aside>
 
@@ -844,7 +853,7 @@
 
     <script>
         // Party data from Knesset 25 - Official Wikipedia results
-        const defaultParties = [
+        const parties25 = [
             { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right', name_en: 'Likud' },
             { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
             { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
@@ -863,17 +872,44 @@
             { name: 'הכלכלית החדשה', votes: 13920, color: '#ec4899', block: 'left', name_en: 'The New Economy' },
         ];
 
-        // Default surplus agreements (by party indices)
-        // הליכוד (0) + הציונות הדתית (2)
-        // ש״ס (4) + יהדות התורה (5)
-        // יש עתיד (1) + המחנה הממלכתי (3)
-        // העבודה (9) + מרצ (10)
-        const defaultAgreements = [
+        const agreements25 = [
             [0, 2],  // הליכוד + הציונות הדתית
             [4, 5],  // ש״ס + יהדות התורה
             [1, 3],  // יש עתיד + המחנה הממלכתי
             [9, 10], // העבודה + מרצ
         ];
+
+        // Party data from Knesset 26 - Simulated
+        const parties26 = [
+            { name: 'בנט 26', votes: 794104, color: '#f97316', block: 'left', name_en: 'Bennett-26' },
+            { name: 'הליכוד', votes: 677878, color: '#2563eb', block: 'right', name_en: 'Likud' },
+            { name: 'הרשימה המשותפת', votes: 430396, color: '#84cc16', block: 'arab', name_en: "United Arab List" },
+            { name: 'ש״ס', votes: 410839, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+            { name: 'הדמוקרטים', votes: 402811, color: '#16a34a', block: 'left', name_en: 'The Democrats' },
+            { name: 'יש עתיד', votes: 388018, color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
+            { name: 'ישר', votes: 382627, color: '#7c3aed', block: 'left', name_en: 'Yashar' },
+            { name: 'עוצמה יהודית', votes: 349275, color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
+            { name: 'ישראל ביתנו', votes: 322659, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+            { name: 'יהדות התורה', votes: 264250, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+            { name: 'הציונות הדתית', votes: 151320, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+        ];
+
+        const agreements26 = [
+            [3, 9],   // ש״ס + יהדות התורה
+            [7, 10],  // עוצמה יהודית + הציונות הדתית
+            [5, 6],   // יש עתיד + ישר
+            [0, 8],   // בנט 26 + ישראל ביתנו
+        ];
+
+        // Presets keyed by election
+        const presets = {
+            '25': { parties: parties25, agreements: agreements25 },
+            '26': { parties: parties26, agreements: agreements26 },
+        };
+
+        let currentElection = '25';
+        const defaultParties = parties25;
+        const defaultAgreements = agreements25;
 
         class DHondtCalculator {
             constructor() {
@@ -1007,6 +1043,23 @@
                 this.calculate();
             }
 
+            loadPreset(electionId) {
+                const preset = presets[electionId];
+                this.parties = JSON.parse(JSON.stringify(preset.parties));
+                this.agreements = JSON.parse(JSON.stringify(preset.agreements));
+                this.threshold = 3.25;
+                this.totalSeats = 120;
+                document.getElementById('threshold').value = '3.25';
+                document.getElementById('total-seats').value = '120';
+                const label = i18n.getLang() === 'en' ? `Reset to Knesset ${electionId}` : `אפס לתוצאות כנסת ${electionId}`;
+                document.getElementById('reset-btn').textContent = label;
+                this.renderPartyInputs();
+                this.renderAgreementSelects();
+                this.renderAgreementsList();
+                this.setupVoteInputListeners();
+                this.calculate();
+            }
+
             setupEventListeners() {
                 // Threshold change
                 document.getElementById('threshold').addEventListener('change', (e) => {
@@ -1078,17 +1131,24 @@
 
                 // Reset button
                 document.getElementById('reset-btn').addEventListener('click', () => {
-                    this.parties = JSON.parse(JSON.stringify(defaultParties));
-                    this.threshold = 3.25;
-                    this.totalSeats = 120;
-                    this.agreements = JSON.parse(JSON.stringify(defaultAgreements));
-                    document.getElementById('threshold').value = '3.25';
-                    document.getElementById('total-seats').value = '120';
-                    this.renderPartyInputs();
-                    this.renderAgreementSelects();
-                    this.renderAgreementsList();
-                    this.setupVoteInputListeners();
-                    this.calculate();
+                    this.loadPreset(currentElection);
+                });
+
+                // Election toggle
+                document.querySelectorAll('.election-toggle-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        const el = e.target.dataset.election;
+                        if (el === currentElection) return;
+                        currentElection = el;
+                        this.loadPreset(el);
+                        // Update toggle visual
+                        document.querySelectorAll('.election-toggle-btn').forEach(b => {
+                            const isActive = b.dataset.election === el;
+                            b.classList.toggle('active', isActive);
+                            b.style.background = isActive ? 'var(--accent-primary)' : 'transparent';
+                            b.style.color = isActive ? 'var(--text-primary)' : 'var(--text-secondary)';
+                        });
+                    });
                 });
 
                 this.setupVoteInputListeners();
@@ -1466,18 +1526,23 @@
 
                 // Political order from left to right
                 const politicalOrder = {
+                    'הרשימה המשותפת': 0.5,
                     'בל״ד': 1,
                     'חד״ש-תע״ל': 2,
                     'רע״ם': 3,
                     'מרצ': 4,
+                    'הדמוקרטים': 5,
                     'העבודה': 5,
                     'המחנה הממלכתי': 6,
+                    'ישר': 6.5,
                     'יש עתיד': 7,
                     'ישראל ביתנו': 8,
+                    'בנט 26': 8.5,
                     'ש״ס': 9,
                     'יהדות התורה': 10,
                     'הליכוד': 11,
                     'הציונות הדתית': 12,
+                    'עוצמה יהודית': 12.5,
                     'הבית היהודי': 13,
                 };
 
@@ -1862,6 +1927,8 @@
 
         // Re-render all dynamic content when language changes
         window.addEventListener('langchange', () => {
+            const label = i18n.getLang() === 'en' ? `Reset to Knesset ${currentElection}` : `אפס לתוצאות כנסת ${currentElection}`;
+            document.getElementById('reset-btn').textContent = label;
             calculator.renderPartyInputs();
             calculator.renderAgreementSelects();
             calculator.renderAgreementsList();

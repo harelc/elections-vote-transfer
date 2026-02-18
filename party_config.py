@@ -506,6 +506,48 @@ PARTIES = {
         'ideology': 'ליברלית',
         'description': 'מפלגה ליברלית התומכת בלגליזציה של הקנאביס'
     },
+
+    # ===== Election 26 new parties =====
+    'נב': {
+        'name': 'בנט 26',
+        'name_en': 'Bennett-26',
+        'color': '#f97316',
+        'leader': 'נפתלי בנט',
+        'leader_en': 'Naftali Bennett',
+        'leader_image': 'images/leaders/bennett.jpg',
+        'ideology': 'ימין, ממלכתיות',
+        'description': 'מפלגה חדשה בראשות נפתלי בנט'
+    },
+    'דמ': {
+        'name': 'הדמוקרטים',
+        'name_en': 'The Democrats',
+        'color': '#16a34a',
+        'leader': 'יאיר גולן',
+        'leader_en': 'Yair Golan',
+        'leader_image': 'images/leaders/golan.jpg',
+        'ideology': 'שמאל-מרכז, סוציאל-דמוקרטיה',
+        'description': 'מיזוג של העבודה ומרצ למפלגה דמוקרטית-חברתית'
+    },
+    'עי': {
+        'name': 'עוצמה יהודית',
+        'name_en': 'Jewish Power',
+        'color': '#7f1d1d',
+        'leader': 'איתמר בן גביר',
+        'leader_en': 'Itamar Ben Gvir',
+        'leader_image': 'images/leaders/ben_gvir.jpg',
+        'ideology': 'ימין קיצוני, לאומנות',
+        'description': 'מפלגת ימין קיצוני בראשות איתמר בן גביר'
+    },
+    'יר': {
+        'name': 'ישר',
+        'name_en': 'Yashar',
+        'color': '#7c3aed',
+        'leader': 'גדי אייזנקוט',
+        'leader_en': 'Gadi Eisenkot',
+        'leader_image': 'images/leaders/eisenkot.jpg',
+        'ideology': 'מרכז, ממלכתיות',
+        'description': 'מפלגת מרכז חדשה בהנהגת גדי אייזנקוט'
+    },
 }
 
 # Default party info for unknown symbols
@@ -721,15 +763,16 @@ ELECTIONS = {
         'file': 'ballot26.csv',
         'encoding': 'utf-8-sig',
         'ballot_field': 'קלפי',
-        # TBD - placeholder values until official data available
-        'eligible_voters': 0,
-        'votes_cast': 0,
-        'valid_votes': 0,
-        'turnout_percent': 0,
+        # Simulated — placeholder values, updated after simulation
+        'eligible_voters': 6900000,
+        'votes_cast': 4800000,
+        'valid_votes': 4750000,
+        'turnout_percent': 69.6,
         'major_parties': {
-            'symbols': [],
-            'names': [],
-            'seats': []
+            'symbols': ['מחל', 'נב', 'פה', 'ל', 'דמ', 'שס', 'ג', 'עם', 'ט', 'עי', 'יר'],
+            'names': ['הליכוד', 'בנט 26', 'יש עתיד', 'ישראל ביתנו', 'הדמוקרטים', 'ש״ס',
+                     'יהדות התורה', 'הרשימה המשותפת', 'הציונות הדתית', 'עוצמה יהודית', 'ישר'],
+            'seats': [18, 22, 10, 8, 10, 11, 7, 11, 4, 9, 10]
         }
     }
 }
@@ -1326,6 +1369,24 @@ PARTY_OVERRIDES = {
         'leader_en': 'Zahava Galon',
         'leader_image': 'images/leaders/galon.jpg',
         'description': 'מפלגת מרצ בהנהגת זהבה גלאון, לא עברה את אחוז החסימה'
+    },
+
+    # ===== ELECTION 26 (Simulated) =====
+    ('26', 'ט'): {
+        'name': 'הציונות הדתית',
+        'name_en': 'Religious Zionism',
+        'color': '#92400e',
+        'leader': 'בצלאל סמוטריץ׳',
+        'leader_en': 'Bezalel Smotrich',
+        'leader_image': 'images/leaders/smotrich.jpg',
+    },
+    ('26', 'עם'): {
+        'name': 'הרשימה המשותפת',
+        'name_en': 'United Arab List',
+        'color': '#84cc16',
+        'leader': 'מנסור עבאס',
+        'leader_en': 'Mansour Abbas',
+        'leader_image': 'images/leaders/abbas.jpg',
     },
 
     # ===== SMALL PARTY OVERRIDES (symbols reused across elections) =====

@@ -486,13 +486,13 @@ body {
     border-radius: var(--radius-lg);
     border: 1px solid var(--border-color);
     padding: var(--spacing-lg);
-    min-height: 800px;
+    min-height: 1040px;
     overflow: hidden;
 }
 
 #sankey-chart {
     width: 100%;
-    height: 800px;
+    height: 1040px;
 }
 
 /* Legend */

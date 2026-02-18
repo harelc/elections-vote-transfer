@@ -35,7 +35,10 @@ def copy_ballot_csv(real_csv=None):
     dest = 'ballot26.csv'
     if real_csv:
         print(f"Using real CSV: {real_csv} → {dest}")
-        shutil.copy2(real_csv, dest)
+        if os.path.abspath(real_csv) != os.path.abspath(dest):
+            shutil.copy2(real_csv, dest)
+        else:
+            print(f"  (source and dest are the same file, skipping copy)")
         return
 
     src = 'ballot25.csv'
@@ -74,7 +77,6 @@ def copy_outputs():
     copies = [
         ('data/transfer_25_to_26.json', 'site/data/transfer_25_to_26.json'),
         ('data/tsne_26.json', 'site/data/tsne_26.json'),
-        ('data/map_26.json', 'site/data/map_26.json'),
     ]
     for src, dest in copies:
         if os.path.exists(src):

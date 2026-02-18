@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>קולות נודדים — אנימציה</title>
+    <meta property="og:type" content="video.other">
+    <meta property="og:title" content="קולות נודדים — 20 שנה של בחירות לכנסת">
+    <meta property="og:description" content="אנימציה אינטראקטיבית של מעבר קולות בין 10 בחירות לכנסת ישראל (2003–2022)">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta property="og:video" content="https://kolot-nodedim.netlify.app/animation.mp4">
+    <meta property="og:video:type" content="video/mp4">
+    <meta property="og:video:width" content="1920">
+    <meta property="og:video:height" content="1080">
+    <meta property="og:url" content="https://kolot-nodedim.netlify.app/animation.html">
+    <meta name="twitter:card" content="player">
+    <meta name="twitter:title" content="קולות נודדים — 20 שנה של בחירות לכנסת">
+    <meta name="twitter:description" content="אנימציה אינטראקטיבית של מעבר קולות בין 10 בחירות לכנסת ישראל (2003–2022)">
+    <meta name="twitter:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:player" content="https://kolot-nodedim.netlify.app/animation.html">
+    <meta name="twitter:player:width" content="1920">
+    <meta name="twitter:player:height" content="1080">
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -318,6 +334,7 @@
 <body>
 
 <a id="back-link" href="sankey.html">← נדידת קולות</a>
+<script>if(new URLSearchParams(location.search).get('e26')==='1'){var bl=document.getElementById('back-link');bl.href+='?e26=1'}</script>
 <div id="watermark">© kolot-nodedim.netlify.app · קולות נודדים</div>
 <div id="loading">טוען נתונים...</div>
 <div id="tooltip"></div>
@@ -352,20 +369,30 @@
 </div>
 
 <script>
-const TRANSITIONS = [
+const SHOW_E26 = new URLSearchParams(window.location.search).get('e26') === '1';
+if (SHOW_E26) {
+    document.querySelector('.outro-subtitle').textContent = 'עשרים ושלוש שנה של בחירות לכנסת ישראל';
+}
+const TRANSITIONS = SHOW_E26 ? [
+    '16_to_17','17_to_18','18_to_19','19_to_20','20_to_21',
+    '21_to_22','22_to_23','23_to_24','24_to_25','25_to_26'
+] : [
     '16_to_17','17_to_18','18_to_19','19_to_20','20_to_21',
     '21_to_22','22_to_23','23_to_24','24_to_25'
 ];
-const ELECTION_IDS = ['16','17','18','19','20','21','22','23','24','25'];
+const ELECTION_IDS = SHOW_E26
+    ? ['16','17','18','19','20','21','22','23','24','25','26']
+    : ['16','17','18','19','20','21','22','23','24','25'];
 const ELECTION_YEARS = {
     '16':'2003','17':'2006','18':'2009','19':'2013','20':'2015',
-    '21':'אפריל 2019','22':'ספטמבר 2019','23':'2020','24':'2021','25':'2022'
+    '21':'אפריל 2019','22':'ספטמבר 2019','23':'2020','24':'2021','25':'2022',
+    '26':'2026'
 };
 const ELECTION_LABELS = {
     '16':'הכנסת ה-16','17':'הכנסת ה-17','18':'הכנסת ה-18',
     '19':'הכנסת ה-19','20':'הכנסת ה-20','21':'הכנסת ה-21',
     '22':'הכנסת ה-22','23':'הכנסת ה-23','24':'הכנסת ה-24',
-    '25':'הכנסת ה-25'
+    '25':'הכנסת ה-25','26':'הכנסת ה-26'
 };
 
 const MIN_LINK_PCT = 1.5;
@@ -427,6 +454,12 @@ const PARTY_FAMILY = {
     'רע״ם': 10,
     'הרשימה הערבית המאוחדת': 10,
     'הרשימה הערבית המאוחדת-התחדשות ערבית': 10,
+    // E26 parties
+    'בנט 26': 5,
+    'הדמוקרטים': 8,
+    'עוצמה יהודית': 1,
+    'ישר': 6,
+    'הרשימה המשותפת': 10,
 };
 function partyOrder(name, votes) {
     const family = PARTY_FAMILY[name] ?? 5; // unknown → center-right
@@ -1070,7 +1103,7 @@ class ChainedSankeyAnimation {
 
         // Full view — show all 10 columns with summary title
         this.currentStep = TRANSITIONS.length;
-        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        this.setYear(SHOW_E26 ? 'עשרים ושלוש שנה של בחירות לכנסת — 2003–2026' : 'עשרים שנה של בחירות לכנסת — 2003–2022', '');
         document.getElementById('watermark').classList.add('center');
 
         await this.delay(3000);
@@ -1206,7 +1239,7 @@ class ChainedSankeyAnimation {
         this.hideOutro();
         // Go back to the full-view step (all 10 columns, summary title)
         this.currentStep = TRANSITIONS.length;
-        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        this.setYear(SHOW_E26 ? 'עשרים ושלוש שנה של בחירות לכנסת — 2003–2026' : 'עשרים שנה של בחירות לכנסת — 2003–2022', '');
         document.getElementById('watermark').classList.add('center');
     }
 
@@ -1429,7 +1462,7 @@ class ChainedSankeyAnimation {
 
         // Full view step
         this.currentStep = TRANSITIONS.length;
-        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        this.setYear(SHOW_E26 ? 'עשרים ושלוש שנה של בחירות לכנסת — 2003–2026' : 'עשרים שנה של בחירות לכנסת — 2003–2022', '');
         document.getElementById('watermark').classList.add('center');
 
         await this.delay(3000);
@@ -1499,7 +1532,7 @@ class ChainedSankeyAnimation {
             this.jumpTo(TRANSITIONS.length - 1);
         }
         this.currentStep = TRANSITIONS.length;
-        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        this.setYear(SHOW_E26 ? 'עשרים ושלוש שנה של בחירות לכנסת — 2003–2026' : 'עשרים שנה של בחירות לכנסת — 2003–2022', '');
         document.getElementById('watermark').classList.add('center');
         this.updateProgress(ELECTION_IDS.length - 1);
     }
@@ -1510,7 +1543,7 @@ class ChainedSankeyAnimation {
             this.jumpTo(TRANSITIONS.length - 1);
         }
         this.currentStep = TRANSITIONS.length + 1;
-        this.setYear('עשרים שנה של בחירות לכנסת — 2003–2022', '');
+        this.setYear(SHOW_E26 ? 'עשרים ושלוש שנה של בחירות לכנסת — 2003–2026' : 'עשרים שנה של בחירות לכנסת — 2003–2022', '');
         document.getElementById('watermark').classList.add('center');
         this.updateProgress(ELECTION_IDS.length - 1);
         this.showOutro();

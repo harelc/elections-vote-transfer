@@ -150,6 +150,7 @@
         choose:                { he: 'בחר...', en: 'Choose...' },
         reset:                 { he: 'איפוס', en: 'Reset' },
         reset_to_official:     { he: 'איפוס לתוצאות רשמיות', en: 'Reset to official results' },
+        dhondt_election_label: { he: 'בחירות:', en: 'Election:' },
         knesset_composition:   { he: 'הרכב הכנסת (120 מושבים)', en: 'Knesset Composition (120 seats)' },
         seats_120:             { he: '120 מושבים', en: '120 seats' },
         right_bloc:            { he: 'גוש ימין-חרדי', en: 'Right-Haredi bloc' },
@@ -463,6 +464,10 @@
         'חופש כלכלי': 'Economic Freedom',
         'באומץ בשבילך': 'Courageously For You',
         'הכלכלית החדשה': 'The New Economy',
+        'בנט 26': 'Bennett-26',
+        'הדמוקרטים': 'The Democrats',
+        'עוצמה יהודית': 'Jewish Power',
+        'ישר': 'Yashar',
     };
 
     /* ── State ── */

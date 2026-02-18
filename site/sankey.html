@@ -92,7 +92,7 @@
                 </a>
             </div>
         </nav>
-        <script>if(i18n.SHOW_E26){var c=document.querySelector('.nav-container'),b=document.createElement('button');b.className='nav-btn';b.dataset.transition='25_to_26';b.innerHTML='<span class="nav-from">25</span><span class="nav-arrow">←</span><span class="nav-to">26</span>';c.appendChild(b)}</script>
+        <script>if(i18n.SHOW_E26){var c=document.querySelector('.nav-container'),a=c.querySelector('.animation-link'),b=document.createElement('button');b.className='nav-btn';b.dataset.transition='25_to_26';b.innerHTML='<span class="nav-from">25</span><span class="nav-arrow">←</span><span class="nav-to">26</span>';c.insertBefore(b,a);a.href='animation.html?e26=1'}</script>
 
         <main class="main-content">
             <div class="info-panel">
