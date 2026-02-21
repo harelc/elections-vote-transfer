@@ -444,7 +444,7 @@
             <label data-i18n="dhondt_election_label">בחירות:</label>
             <div id="election-toggle" style="display:inline-flex;gap:2px;background:var(--bg-tertiary);border-radius:6px;padding:2px;border:1px solid var(--border)">
                 <button class="election-toggle-btn active" data-election="25" style="padding:4px 12px;border:none;border-radius:4px;font-family:inherit;font-size:0.8rem;cursor:pointer;background:var(--accent);color:white">כנסת 25</button>
-                <button class="election-toggle-btn" data-election="26" style="padding:4px 12px;border:none;border-radius:4px;font-family:inherit;font-size:0.8rem;cursor:pointer;background:transparent;color:var(--text-secondary)">כנסת 26</button>
+                <button class="election-toggle-btn" data-election="26" id="e26-btn" style="display:none;padding:4px 12px;border:none;border-radius:4px;font-family:inherit;font-size:0.8rem;cursor:pointer;background:transparent;color:var(--text-secondary)">כנסת 26</button>
             </div>
         </div>
         <div class="threshold-row">
@@ -646,6 +646,12 @@
                 this.loadPreset(currentElection);
                 this.closeSheets();
             });
+
+            // Show E26 button if feature flag is set
+            if (i18n.SHOW_E26) {
+                const e26Btn = document.getElementById('e26-btn');
+                if (e26Btn) e26Btn.style.display = '';
+            }
 
             // Election toggle
             document.querySelectorAll('.election-toggle-btn').forEach(btn => {
