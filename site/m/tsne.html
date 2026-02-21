@@ -385,6 +385,7 @@
             try {
                 const res = await fetch(`../data/tsne_${id}.json`);
                 this.data = await res.json();
+                this.crossEntropyLookup = null;
                 this.buildSettlements();
                 this.buildColorFabs();
                 this.updateProjToggle();
@@ -420,6 +421,7 @@
             const modes = [
                 { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', labelKey: 'turnout' },
                 { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', labelKey: 'socioeconomic' },
+                { id: 'crossentropy', bg: 'linear-gradient(to bottom, #0038b8, #4a7fd4, #ffffff)', labelKey: 'cross_entropy' },
                 { id: 'party', bg: '#6366f1', labelKey: 'party' }
             ];
             container.innerHTML = modes.map(m => `
@@ -434,6 +436,10 @@
                 wrapper.onclick = () => {
                     const mode = wrapper.dataset.mode;
                     if (mode === 'party') this.showPartyPicker();
+                    else if (mode === 'crossentropy') {
+                        if (!this.crossEntropyLookup) this.computeCrossEntropy();
+                        this.setColorMode(mode);
+                    }
                     else this.setColorMode(mode);
                 };
             });
@@ -475,6 +481,12 @@
                 title.textContent = i18n.t('socioeconomic');
                 bar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
                 min.textContent = '1'; max.textContent = '10';
+            } else if (this.colorMode === 'crossentropy') {
+                el.style.display = 'block';
+                title.textContent = i18n.t('cross_entropy');
+                bar.style.background = 'linear-gradient(to left, #0038b8, #4a7fd4, #ffffff)';
+                min.textContent = i18n.getLang() === 'en' ? 'Similar' : 'דומה';
+                max.textContent = i18n.getLang() === 'en' ? 'Divergent' : 'שונה';
             } else if (this.colorMode === 'party' && this.selectedParty) {
                 el.style.display = 'block';
                 title.textContent = i18n.partyName(this.selectedParty.name);
@@ -602,6 +614,11 @@
                 const colors = ['#9e0142','#d53e4f','#f46d43','#fdae61','#fee08b','#e6f598','#abdda4','#66c2a5','#3288bd','#5e4fa2'];
                 return colors[Math.min(Math.max(se.cluster, 1), 10) - 1];
             }
+            if (this.colorMode === 'crossentropy') {
+                if (!this.crossEntropyLookup) this.computeCrossEntropy();
+                const pct = this.crossEntropyLookup.get(station) || 0;
+                return this.interpolateHex('#ffffff', '#0038b8', pct);
+            }
             if (this.colorMode === 'party' && this.selectedParty) {
                 const pct = (station.p || {})[this.selectedParty.name] || 0;
                 const t = Math.min(pct / this.partyScaleMax, 1);
@@ -632,10 +649,15 @@
             }).join('');
 
             const seLabel = se ? (' · ' + i18n.t('socioeconomic') + ' ' + se.cluster + (se.statArea ? ', ' + (i18n.getLang() === 'en' ? 'area' : 'אזור') + ' ' + se.statArea : '')) : '';
+            let ceLabel = '';
+            if (this.colorMode === 'crossentropy' && this.crossEntropyLookup) {
+                const kl = this.crossEntropyLookup.get(station);
+                if (kl != null) ceLabel = ' · ' + i18n.t('cross_entropy') + ': ' + kl.toFixed(3);
+            }
             document.getElementById('sheet-content').innerHTML = `
                 <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${i18n.settlementName(station.n)}</div>
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
-                    ${i18n.t('ballot')} ${station.b}${station.l ? ' · ' + station.l : ''}${seLabel}
+                    ${i18n.t('ballot')} ${station.b}${station.l ? ' · ' + station.l : ''}${seLabel}${ceLabel}
                 </div>
                 <div class="stat-grid">
                     <span class="label">${i18n.t('eligible_voters')}</span><span class="value">${i18n.fmtNum(station.e || 0)}</span>
@@ -783,6 +805,51 @@
             }
             const c = this.socioeconomicData?.[name] || this.socioeconomicData?.[this.normalizeName(name)];
             return c ? { cluster: c, statArea: null } : null;
+        }
+
+        computeCrossEntropy() {
+            const stations = this.data.stations;
+            const partyNames = this.data.parties.map(p => p.name);
+
+            // Voter-weighted national average proportions
+            let totalVoters = 0;
+            const avgProps = {};
+            partyNames.forEach(p => avgProps[p] = 0);
+
+            stations.forEach(s => {
+                const v = s.v || 1;
+                totalVoters += v;
+                const props = s.p || {};
+                partyNames.forEach(p => { avgProps[p] += (props[p] || 0) * v; });
+            });
+            partyNames.forEach(p => avgProps[p] /= totalVoters);
+
+            const eps = 0.001;
+            const klValues = [];
+            stations.forEach(s => {
+                const props = s.p || {};
+                let kl = 0;
+                partyNames.forEach(p => {
+                    const pi = Math.max((props[p] || 0), eps) / 100;
+                    const qi = Math.max(avgProps[p], eps) / 100;
+                    kl += pi * Math.log(pi / qi);
+                });
+                klValues.push(kl);
+            });
+
+            // Convert to percentiles
+            const n = klValues.length;
+            const indexed = klValues.map((v, i) => ({ v, i }));
+            indexed.sort((a, b) => a.v - b.v);
+            const percentiles = new Array(n);
+            indexed.forEach((item, rank) => {
+                percentiles[item.i] = rank / (n - 1);
+            });
+
+            this.crossEntropyLookup = new Map();
+            stations.forEach((s, i) => {
+                this.crossEntropyLookup.set(s, percentiles[i]);
+            });
         }
 
         normalizeName(name) {

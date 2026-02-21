@@ -953,6 +953,10 @@
                     <span class="legend-color" style="background: linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142);"></span>
                     <span class="legend-name" data-i18n="socioeconomic">אשכול חברתי-כלכלי</span>
                 </div>
+                <div class="legend-item" id="crossentropy-option" data-mode="crossentropy">
+                    <span class="legend-color" style="background: linear-gradient(to left, #0038b8, #4a7fd4, #ffffff);"></span>
+                    <span class="legend-name" data-i18n="cross_entropy">מרחק מהממוצע הארצי</span>
+                </div>
                 <div class="legend-divider"></div>
                 <h3 class="legend-title" data-i18n="projection_method">שיטת הטלה</h3>
                 <div class="projection-toggle" id="projection-toggle">
@@ -1041,6 +1045,11 @@
                 // Socioeconomic option
                 document.getElementById('socioeconomic-option').addEventListener('click', () => {
                     this.selectSocioeconomicMode();
+                });
+
+                // Cross-entropy option
+                document.getElementById('crossentropy-option').addEventListener('click', () => {
+                    this.selectCrossEntropyMode();
                 });
 
                 // Dynamic range toggle
@@ -1421,6 +1430,81 @@
                 this.updateColors();
             }
 
+            computeCrossEntropy() {
+                // Compute KL divergence of each ballot from the voter-weighted national average
+                const stations = this.data.stations;
+                const partyNames = this.data.parties.map(p => p.name);
+
+                // Compute voter-weighted national average proportions
+                let totalVoters = 0;
+                const avgProps = {};
+                partyNames.forEach(p => avgProps[p] = 0);
+
+                stations.forEach(s => {
+                    const v = s.v || s.total_voters || 1;
+                    totalVoters += v;
+                    const props = s.p || s.proportions || {};
+                    partyNames.forEach(p => {
+                        avgProps[p] += (props[p] || 0) * v;
+                    });
+                });
+
+                partyNames.forEach(p => avgProps[p] /= totalVoters);
+
+                // KL divergence: D_KL(station || national) = sum p_i * log(p_i / q_i)
+                // where p = station proportions, q = national average
+                // Use small epsilon to avoid log(0)
+                const eps = 0.001; // 0.001% floor
+                this.crossEntropyValues = stations.map(s => {
+                    const props = s.p || s.proportions || {};
+                    let kl = 0;
+                    partyNames.forEach(p => {
+                        const pi = Math.max((props[p] || 0), eps) / 100;
+                        const qi = Math.max(avgProps[p], eps) / 100;
+                        kl += pi * Math.log(pi / qi);
+                    });
+                    return kl;
+                });
+
+                // Convert to percentiles
+                const n = this.crossEntropyValues.length;
+                const indexed = this.crossEntropyValues.map((v, i) => ({ v, i }));
+                indexed.sort((a, b) => a.v - b.v);
+                const percentiles = new Array(n);
+                indexed.forEach((item, rank) => {
+                    percentiles[item.i] = rank / (n - 1); // 0 = lowest KL, 1 = highest KL
+                });
+
+                this.crossEntropyLookup = new Map();
+                stations.forEach((s, i) => {
+                    this.crossEntropyLookup.set(s, percentiles[i]);
+                });
+            }
+
+            selectCrossEntropyMode() {
+                this.colorMode = 'crossentropy';
+                this.selectedParty = null;
+
+                // Compute if needed
+                if (!this.crossEntropyLookup) {
+                    this.computeCrossEntropy();
+                }
+
+                // Update legend active state
+                document.querySelectorAll('.legend-item').forEach(item => item.classList.remove('active'));
+                document.getElementById('crossentropy-option').classList.add('active');
+
+                // Update color scale
+                this.colorScale.classed('visible', true);
+                d3.select('#color-scale-bar').style('background', 'linear-gradient(to left, #0038b8, #4a7fd4, #ffffff)');
+                d3.select('.color-scale-title').text(i18n.t('cross_entropy'));
+                d3.select('#color-scale-min').text(i18n.getLang() === 'en' ? 'Similar' : 'דומה');
+                d3.select('#color-scale-max').text(i18n.getLang() === 'en' ? 'Divergent' : 'שונה');
+                document.getElementById('color-scale-toggle').classList.add('hidden');
+
+                this.updateColors();
+            }
+
             async loadPartyInfo(electionId) {
                 // Map election ID to transfer file and which side has the party info
                 const transferMap = {
@@ -1470,6 +1554,7 @@
                     const response = await fetch(`data/tsne_${electionId}.json`);
                     this.data = await response.json();
                     this.selectedParty = null;
+                    this.crossEntropyLookup = null; // Reset on election change
                     this.colorMode = 'turnout'; // Temporary, will restore below
 
                     // Load party info from transfer data
@@ -1546,7 +1631,9 @@
                     this.render();
 
                     // Restore previous color mode
-                    if (previousColorMode === 'socioeconomic') {
+                    if (previousColorMode === 'crossentropy') {
+                        this.selectCrossEntropyMode();
+                    } else if (previousColorMode === 'socioeconomic') {
                         this.selectSocioeconomicMode();
                     } else if (previousColorMode === 'party' && (previousPartySymbol || previousPartyName)) {
                         // Try to find the same party family by symbol first, then by name
@@ -1819,6 +1906,16 @@
                     return discreteColors[Math.min(Math.max(se.cluster, 1), 10) - 1];
                 }
 
+                if (this.colorMode === 'crossentropy') {
+                    if (!this.crossEntropyLookup) this.computeCrossEntropy();
+                    const pct = this.crossEntropyLookup.get(station) || 0;
+                    const colorScale = d3.scaleLinear()
+                        .domain([0, 1])
+                        .range(['#ffffff', '#0038b8'])
+                        .clamp(true);
+                    return colorScale(pct);
+                }
+
                 if (!this.selectedParty) {
                     // No selection: gray
                     return '#64748b';
@@ -1888,6 +1985,16 @@
                 const areaLabel = i18n.getLang() === 'en' ? 'area' : 'אזור';
                 const clusterHtml = seInfo ? ` <span class="tooltip-cluster">(${clusterLabel} ${seInfo.cluster}${seInfo.statArea ? `, ${areaLabel} ${seInfo.statArea}` : ''})</span>` : '';
 
+                // Cross-entropy distance from national average
+                let ceHtml = '';
+                if (this.colorMode === 'crossentropy' && this.crossEntropyLookup) {
+                    const kl = this.crossEntropyLookup.get(station);
+                    if (kl != null) {
+                        const ceLabel = i18n.getLang() === 'en' ? 'Distance from national avg.' : 'מרחק מהממוצע הארצי';
+                        ceHtml = `<div style="font-size:0.8rem;color:var(--accent-primary);margin-bottom:0.25rem">${ceLabel}: ${kl.toFixed(3)}</div>`;
+                    }
+                }
+
                 const locationHtml = location
                     ? `<div class="tooltip-location">${location}</div>`
                     : '';
@@ -1896,6 +2003,7 @@
                     <div class="tooltip-title">${i18n.settlementName(settlementName)}${clusterHtml}</div>
                     <div class="tooltip-subtitle">${i18n.t('ballot')} ${ballotNumber}</div>
                     ${locationHtml}
+                    ${ceHtml}
                     <div class="tooltip-turnout">
                         <span>${i18n.fmtNum(eligibleVoters)} ${i18n.t('eligible_voters')}</span>
                         <span>${i18n.fmtNum(totalVoters)} ${i18n.t('voted')}</span>
@@ -2143,6 +2251,8 @@
                 // Re-render color scale and labels for current mode
                 if (tsneViz.colorMode === 'turnout') {
                     tsneViz.selectTurnoutMode();
+                } else if (tsneViz.colorMode === 'crossentropy') {
+                    tsneViz.selectCrossEntropyMode();
                 } else if (tsneViz.colorMode === 'socioeconomic') {
                     tsneViz.selectSocioeconomicMode();
                 } else if (tsneViz.colorMode === 'party' && tsneViz.selectedParty) {

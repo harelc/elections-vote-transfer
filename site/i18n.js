@@ -92,6 +92,7 @@
         dynamic_range:         { he: 'טווח דינמי', en: 'Dynamic range' },
         turnout:               { he: 'אחוז הצבעה', en: 'Turnout' },
         socioeconomic:         { he: 'אשכול חברתי-כלכלי', en: 'Socioeconomic cluster' },
+        cross_entropy:         { he: 'מרחק מהממוצע הארצי', en: 'Distance from national avg.' },
         party_support:         { he: 'תמיכה במפלגה', en: 'Party support' },
         search_settlement:     { he: 'חיפוש יישוב...', en: 'Search settlement...' },
         search_station:        { he: 'חיפוש תחנה, קלפי או מיקום...', en: 'Search station, ballot or location...' },
