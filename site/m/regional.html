@@ -1218,6 +1218,7 @@
         async function init() {
             initMap();
             setupControls();
+            updateRegionPillStates();
             try {
                 await loadData();
                 document.getElementById('loading').style.display = 'none';
