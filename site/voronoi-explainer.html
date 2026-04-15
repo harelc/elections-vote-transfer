@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>איך עובדת חלוקה לאזורי בחירה</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg2: #12121a;
+            --text: #f8fafc;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --accent: #3b82f6;
+            --border: #2a2a3a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        #main-canvas {
+            flex: 1;
+            display: block;
+        }
+
+        .caption-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            padding: 2rem 2rem 1rem;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .caption-title {
+            font-size: clamp(1.2rem, 3vw, 2rem);
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            text-shadow: 0 2px 20px rgba(0,0,0,0.8);
+        }
+
+        .caption-subtitle {
+            font-size: clamp(0.8rem, 1.5vw, 1.05rem);
+            font-weight: 300;
+            color: var(--text2);
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            margin-top: 0.3rem;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.8);
+        }
+
+        .caption-title.visible, .caption-subtitle.visible { opacity: 1; }
+
+        .step-indicator {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .step-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: background 0.4s ease, transform 0.3s ease;
+            cursor: pointer;
+        }
+
+        .step-dot.active {
+            background: var(--accent);
+            transform: scale(1.3);
+        }
+
+        .step-dot.done {
+            background: var(--text3);
+        }
+
+        .click-hint {
+            position: absolute;
+            bottom: 3.2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--text3);
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 1s ease;
+            pointer-events: none;
+        }
+
+        .click-hint.visible { opacity: 1; }
+
+        .regional-link {
+            position: absolute;
+            top: 50%;
+            left: 2rem;
+            transform: translateY(-50%);
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text);
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid var(--accent);
+            padding: 1rem 1.8rem;
+            border-radius: 12px;
+            text-decoration: none;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.8s ease, background 0.2s ease;
+            pointer-events: none;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+        }
+        .regional-link.visible { opacity: 1; pointer-events: auto; }
+        .regional-link:hover { background: rgba(59, 130, 246, 0.3); }
+
+        .cumbar-container {
+            position: absolute;
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(400px, 70vw);
+            height: 32px;
+            background: rgba(18, 18, 26, 0.85);
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .cumbar-container.visible { opacity: 1; }
+
+        .cumbar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, rgba(59,130,246,0.5), rgba(59,130,246,0.8));
+            border-radius: 6px 0 0 6px;
+            transition: width 0.05s linear;
+            position: relative;
+        }
+
+        .cumbar-label {
+            position: absolute;
+            right: 8px;
+            font-size: 0.72rem;
+            color: var(--text);
+            font-weight: 600;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .cumbar-half {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            height: 100%;
+            width: 1px;
+            background: rgba(248, 250, 252, 0.4);
+        }
+
+        .cumbar-half-label {
+            position: absolute;
+            left: 50%;
+            top: -18px;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--text3);
+        }
+
+        .region-legend {
+            position: absolute;
+            top: 50%;
+            left: 2rem;
+            transform: translateY(-50%);
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            pointer-events: none;
+        }
+
+        .region-legend.visible { opacity: 1; }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.82rem;
+            color: var(--text2);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .legend-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="main-canvas"></canvas>
+
+    <div class="caption-overlay">
+        <div class="caption-title" id="caption-title"></div>
+        <div class="caption-subtitle" id="caption-sub"></div>
+    </div>
+
+    <div class="cumbar-container" id="cumbar">
+        <div class="cumbar-fill" id="cumbar-fill">
+            <span class="cumbar-label" id="cumbar-label">0%</span>
+        </div>
+        <div class="cumbar-half"></div>
+        <div class="cumbar-half-label">50%</div>
+    </div>
+
+    <div class="region-legend" id="region-legend"></div>
+
+    <div class="click-hint" id="click-hint">לחצו או הקישו מקש כלשהו להמשך</div>
+
+    <a href="regional.html" id="regional-link" class="regional-link">🗳️ לסימולציית בחירות אזוריות ←</a>
+
+    <div class="step-indicator" id="steps"></div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        const REGION_COLORS = [
+            '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
+            '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1',
+            '#84cc16', '#e11d48', '#0ea5e9', '#d946ef', '#a3e635',
+            '#fb923c', '#2dd4bf', '#f43f5e', '#818cf8', '#facc15',
+            '#34d399', '#c084fc', '#fbbf24', '#38bdf8', '#a78bfa',
+            '#f472b6', '#4ade80', '#fcd34d', '#67e8f9', '#c4b5fd',
+            '#fda4af', '#86efac', '#fde68a', '#7dd3fc', '#d8b4fe',
+            '#f9a8d4', '#a7f3d0', '#fef08a', '#99f6e4', '#e879f9',
+        ];
+        const TARGET_REGIONS = 40;
+        const TOTAL_PHASES = 9;
+        const KNESSET_SEATS = 120;
+
+        // Israel border polygon [lng, lat] — from regional.html
+        const israelBorder = [
+            [35.4961, 31.6403], [35.4607, 31.3717], [35.4066, 31.2815], [35.3993, 31.2529],
+            [35.411, 31.2102], [35.4493, 31.1574], [35.4562, 31.1283], [35.4503, 31.0895],
+            [35.426, 31.0448], [35.4165, 30.9509], [35.3941, 30.9266], [35.3712, 30.9268],
+            [35.3543, 30.9083], [35.3315, 30.8609], [35.3299, 30.8415], [35.3411, 30.8155],
+            [35.3369, 30.7987], [35.3222, 30.7969], [35.3138, 30.7696], [35.2958, 30.762],
+            [35.2863, 30.7229], [35.2937, 30.7123], [35.2818, 30.7104], [35.2627, 30.6725],
+            [35.2639, 30.6602], [35.2222, 30.6191], [35.204, 30.582], [35.1932, 30.4989],
+            [35.162, 30.4413], [35.1657, 30.4007], [35.192, 30.3461], [35.1547, 30.3067],
+            [35.146, 30.282], [35.1514, 30.2025], [35.1446, 30.1626], [35.155, 30.155],
+            [35.151, 30.1436], [35.1622, 30.1225], [35.1458, 30.0628], [35.1307, 30.0616],
+            [35.1009, 30.0123], [35.1162, 29.9952], [35.0989, 29.9915], [35.089, 29.9634],
+            [35.0753, 29.9503], [35.0836, 29.9471], [35.0773, 29.9249], [35.0845, 29.8855],
+            [35.0586, 29.8407], [35.0439, 29.7881], [35.03, 29.7719], [35.0133, 29.7109],
+            [35.0211, 29.6725], [35.0146, 29.6391], [34.9786, 29.5768], [34.9781, 29.5442],
+            [34.9665, 29.5191], [34.9212, 29.4534], [34.8785, 29.5434], [34.8664, 29.5972],
+            [34.8771, 29.6133], [34.8786, 29.6436], [34.8566, 29.6879], [34.8486, 29.7588],
+            [34.6115, 30.371], [34.5435, 30.4129], [34.5418, 30.4419], [34.5577, 30.4946],
+            [34.5186, 30.5325], [34.5188, 30.5919], [34.497, 30.6792], [34.4034, 30.8591],
+            [34.2675, 31.2201], [34.3665, 31.2905], [34.3733, 31.3062], [34.3651, 31.3644],
+            [34.3803, 31.3896], [34.4779, 31.4762], [34.5127, 31.5007], [34.5468, 31.513],
+            [34.5654, 31.5332], [34.5667, 31.5415], [34.4878, 31.5969], [34.54, 31.67],
+            [34.58, 31.75], [34.62, 31.8], [34.63, 31.83], [34.68, 31.89],
+            [34.75, 32.01], [34.79, 32.18], [34.85, 32.3], [34.89, 32.46],
+            [34.9, 32.58], [34.96, 32.72], [34.98, 32.8], [35.01, 32.85],
+            [35.05, 32.88], [35.07, 32.92], [35.1, 33.05], [35.1, 33.0952],
+            [35.1555, 33.0864], [35.1777, 33.0942], [35.1935, 33.0854], [35.2075, 33.0876],
+            [35.2122, 33.0999], [35.2384, 33.0921], [35.2933, 33.108], [35.3006, 33.1005],
+            [35.3171, 33.1049], [35.322, 33.0863], [35.3484, 33.0598], [35.3782, 33.055],
+            [35.3822, 33.0615], [35.4314, 33.0654], [35.4464, 33.0908], [35.5035, 33.0895],
+            [35.5028, 33.1143], [35.5198, 33.1163], [35.5331, 33.1298], [35.5271, 33.1416],
+            [35.542, 33.1921], [35.5372, 33.2306], [35.5642, 33.2732], [35.5658, 33.2887],
+            [35.5845, 33.2819], [35.5836, 33.2663], [35.5985, 33.2541], [35.6242, 33.2424],
+            [35.6215, 33.2786], [35.6588, 33.274], [35.707, 33.3053], [35.718, 33.3277],
+            [35.7413, 33.3256], [35.7733, 33.3356], [35.8132, 33.317], [35.7774, 33.2767],
+            [35.8151, 33.245], [35.8172, 33.2031], [35.8377, 33.1931], [35.8444, 33.1676],
+            [35.818, 33.1274], [35.817, 33.113], [35.8505, 33.1024], [35.8713, 32.9814],
+            [35.895, 32.9449], [35.8615, 32.9078], [35.8444, 32.8702], [35.8377, 32.8282],
+            [35.8003, 32.7823], [35.7826, 32.7743], [35.7326, 32.723], [35.7258, 32.7269],
+            [35.7161, 32.7153], [35.6752, 32.7053], [35.6745, 32.6848], [35.617, 32.6803],
+            [35.5982, 32.6677], [35.6057, 32.6514], [35.5935, 32.653], [35.5863, 32.6416],
+            [35.5613, 32.6459], [35.5681, 32.6424], [35.5615, 32.6247], [35.5728, 32.6137],
+            [35.5672, 32.5966], [35.5781, 32.597], [35.5769, 32.5685], [35.5704, 32.5654],
+            [35.577, 32.5526], [35.5694, 32.552], [35.5694, 32.5389], [35.5614, 32.5449],
+            [35.5599, 32.5313], [35.567, 32.5252], [35.5525, 32.5147], [35.5599, 32.5073],
+            [35.5624, 32.5146], [35.5583, 32.5021], [35.5751, 32.4972], [35.5802, 32.4874],
+            [35.5654, 32.481], [35.5624, 32.4635], [35.5738, 32.4587], [35.5658, 32.4358],
+            [35.5555, 32.4309], [35.5622, 32.4239], [35.5518, 32.4224], [35.5591, 32.4185],
+            [35.5606, 32.4012], [35.5463, 32.4006], [35.5634, 32.3839], [35.5612, 32.3636],
+            [35.5529, 32.3662], [35.5596, 32.3483], [35.5531, 32.3219], [35.5638, 32.3097],
+            [35.5551, 32.2983], [35.5678, 32.2837], [35.5575, 32.2732], [35.5627, 32.2509],
+            [35.5711, 32.2511], [35.5609, 32.2415], [35.5641, 32.2288], [35.5727, 32.2294],
+            [35.5665, 32.2194], [35.5739, 32.2113], [35.5628, 32.2045], [35.5703, 32.1917],
+            [35.5585, 32.1886], [35.5601, 32.1736], [35.5535, 32.1769], [35.5521, 32.1709],
+            [35.5574, 32.1676], [35.5477, 32.1665], [35.5607, 32.1509], [35.5438, 32.1424],
+            [35.5512, 32.1283], [35.5325, 32.107], [35.5461, 32.0823], [35.5336, 32.0767],
+            [35.53, 32.0509], [35.5193, 32.0479], [35.5189, 32.0354], [35.5292, 32.0186],
+            [35.5223, 32.0139], [35.5254, 32.0028], [35.5388, 31.9959], [35.5329, 31.9864],
+            [35.5483, 31.9689], [35.5414, 31.9581], [35.5458, 31.9357], [35.5265, 31.9227],
+            [35.5243, 31.9077], [35.5348, 31.8945], [35.533, 31.8818], [35.5499, 31.8727],
+            [35.5365, 31.8564], [35.549, 31.844], [35.5487, 31.8237], [35.5389, 31.8162],
+            [35.5612, 31.7585], [35.5277, 31.7215],
+        ];
+
+        // Projected Israel border path (recomputed on resize)
+        let borderPath = null;
+        function buildBorderPath() {
+            borderPath = new Path2D();
+            const pts = israelBorder.map(p => project(p[1], p[0]));
+            borderPath.moveTo(pts[0][0], pts[0][1]);
+            for (let i = 1; i < pts.length; i++) borderPath.lineTo(pts[i][0], pts[i][1]);
+            borderPath.closePath();
+        }
+
+        function clipToBorder(fn) {
+            if (!borderPath) return fn();
+            ctx.save();
+            ctx.clip(borderPath);
+            fn();
+            ctx.restore();
+        }
+
+        function drawBorderOutline(alpha) {
+            if (!borderPath) return;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 1.5;
+            ctx.stroke(borderPath);
+            ctx.restore();
+        }
+
+        // -- Load real ballot station data --
+        async function loadStations() {
+            const [tsneData, coordData] = await Promise.all([
+                fetch('data/tsne_25.json').then(r => r.json()),
+                fetch('data/station_coordinates.json').then(r => r.json()),
+            ]);
+            const coordMap = coordData.stations;
+            const stations = [];
+            for (const s of tsneData.stations) {
+                const key = s.n + '|' + s.b;
+                const coord = coordMap[key];
+                if (!coord || coord.lat == null || coord.lng == null) continue;
+                stations.push({ lat: coord.lat, lng: coord.lng, eligible: s.e || 0 });
+            }
+            return stations;
+        }
+
+        // -- Partition with bbox tracking --
+        function buildInitialRegion(stations) {
+            let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+            for (const s of stations) {
+                if (s.lat < minLat) minLat = s.lat;
+                if (s.lat > maxLat) maxLat = s.lat;
+                if (s.lng < minLng) minLng = s.lng;
+                if (s.lng > maxLng) maxLng = s.lng;
+            }
+            const padLat = (maxLat - minLat) * 0.04;
+            const padLng = (maxLng - minLng) * 0.04;
+            return {
+                points: stations.slice(),
+                bbox: { minLat: minLat - padLat, maxLat: maxLat + padLat,
+                         minLng: minLng - padLng, maxLng: maxLng + padLng },
+            };
+        }
+
+        function partitionStep(regs) {
+            let maxIdx = 0, maxE = 0;
+            for (let i = 0; i < regs.length; i++) {
+                const e = regs[i].points.reduce((s, p) => s + p.eligible, 0);
+                if (e > maxE) { maxE = e; maxIdx = i; }
+            }
+            const region = regs[maxIdx];
+            if (region.points.length < 2) return { regs, splitInfo: null };
+
+            const { bbox } = region;
+            const latSpan = (bbox.maxLat - bbox.minLat) * 111;
+            const lngSpan = (bbox.maxLng - bbox.minLng) * 85;
+            const axis = latSpan > lngSpan ? 'lat' : 'lng';
+
+            region.points.sort((a, b) => a[axis] - b[axis]);
+
+            const totalE = region.points.reduce((s, p) => s + p.eligible, 0);
+            const half = totalE / 2;
+            let cum = 0, splitIdx = 0;
+            for (let i = 0; i < region.points.length; i++) {
+                cum += region.points[i].eligible;
+                if (cum >= half) { splitIdx = i + 1; break; }
+            }
+            if (splitIdx === 0) splitIdx = 1;
+            if (splitIdx >= region.points.length) splitIdx = region.points.length - 1;
+
+            const h1pts = region.points.slice(0, splitIdx);
+            const h2pts = region.points.slice(splitIdx);
+            const splitValue = (h1pts[h1pts.length - 1][axis] + h2pts[0][axis]) / 2;
+
+            let bbox1, bbox2;
+            if (axis === 'lat') {
+                bbox1 = { minLat: bbox.minLat, maxLat: splitValue, minLng: bbox.minLng, maxLng: bbox.maxLng };
+                bbox2 = { minLat: splitValue, maxLat: bbox.maxLat, minLng: bbox.minLng, maxLng: bbox.maxLng };
+            } else {
+                bbox1 = { minLat: bbox.minLat, maxLat: bbox.maxLat, minLng: bbox.minLng, maxLng: splitValue };
+                bbox2 = { minLat: bbox.minLat, maxLat: bbox.maxLat, minLng: splitValue, maxLng: bbox.maxLng };
+            }
+
+            const newRegs = [...regs];
+            newRegs.splice(maxIdx, 1, { points: h1pts, bbox: bbox1 }, { points: h2pts, bbox: bbox2 });
+
+            return {
+                regs: newRegs,
+                splitInfo: {
+                    regionIdx: maxIdx,
+                    axis,
+                    splitValue,
+                    parentBbox: bbox,
+                    totalE,
+                    splitIdx,
+                    h1E: h1pts.reduce((s, p) => s + p.eligible, 0),
+                    h2E: h2pts.reduce((s, p) => s + p.eligible, 0),
+                    stations: region.points,
+                    latSpanKm: latSpan,
+                    lngSpanKm: lngSpan,
+                },
+            };
+        }
+
+        // -- Canvas --
+        const canvas = document.getElementById('main-canvas');
+        const ctx = canvas.getContext('2d');
+        let W, H;
+        const pad = 60;
+
+        function resize() {
+            W = canvas.width = window.innerWidth * devicePixelRatio;
+            H = canvas.height = window.innerHeight * devicePixelRatio;
+            canvas.style.width = window.innerWidth + 'px';
+            canvas.style.height = window.innerHeight + 'px';
+            ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+        }
+        window.addEventListener('resize', () => {
+            resize();
+            buildBorderPath();
+            if (stations.length > 0) computeVoronoi();
+        });
+        resize();
+
+        // -- Projection --
+        const gLatMin = 29.4, gLatMax = 33.4, gLngMin = 34.2, gLngMax = 35.95;
+
+        function project(lat, lng) {
+            const availW = window.innerWidth - pad * 2;
+            const availH = window.innerHeight - pad * 2;
+            const dataAspect = ((gLngMax - gLngMin) * 85) / ((gLatMax - gLatMin) * 111);
+            const screenAspect = availW / availH;
+            let drawW, drawH;
+            if (dataAspect < screenAspect) { drawH = availH; drawW = drawH * dataAspect; }
+            else { drawW = availW; drawH = drawW / dataAspect; }
+            const ox = (window.innerWidth - drawW) / 2;
+            const oy = (window.innerHeight - drawH) / 2;
+            const x = ox + ((lng - gLngMin) / (gLngMax - gLngMin)) * drawW;
+            const y = oy + (1 - (lat - gLatMin) / (gLatMax - gLatMin)) * drawH;
+            return [x, y];
+        }
+
+        function projectBbox(bbox) {
+            const [x1, y1] = project(bbox.maxLat, bbox.minLng);
+            const [x2, y2] = project(bbox.minLat, bbox.maxLng);
+            return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
+        }
+
+        // -- State --
+        let stations = [];
+        let phase = -1;
+        let animFrame = null;
+        let phaseStart = 0;
+        let transitioning = false;
+
+        let initRegion, allSplits, finalRegs, stationRegion, regStates;
+        let vorDelaunay = null, vorVoronoi = null, projected = [];
+
+        async function initData() {
+            stations = await loadStations();
+
+            initRegion = buildInitialRegion(stations);
+            allSplits = [];
+            let tempRegs = [initRegion];
+            for (let i = 0; i < TARGET_REGIONS - 1; i++) {
+                const result = partitionStep(tempRegs);
+                allSplits.push(result);
+                tempRegs = result.regs;
+            }
+            finalRegs = tempRegs;
+
+            stationRegion = new Map();
+            finalRegs.forEach((reg, ri) => reg.points.forEach(s => stationRegion.set(s, ri)));
+
+            regStates = [[initRegion]];
+            let rs = [initRegion];
+            for (const split of allSplits) {
+                rs = split.regs;
+                regStates.push(rs.map(r => ({ points: r.points.slice(), bbox: { ...r.bbox } })));
+            }
+
+            // Build border clip path and Voronoi tessellation
+            buildBorderPath();
+            computeVoronoi();
+
+            // Hare quota seat allocation
+            computeHareQuota();
+        }
+
+        let hareData = null; // { quota, regions: [{eligible, autoSeats, remainder, finalSeats, centroid}], remainderOrder }
+
+        function computeHareQuota() {
+            const regs = regStates[TARGET_REGIONS - 1];
+            const totalE = regs.reduce((s, r) => s + r.points.reduce((a, p) => a + p.eligible, 0), 0);
+            const quota = totalE / KNESSET_SEATS;
+
+            const regions = regs.map((r, i) => {
+                const eligible = r.points.reduce((s, p) => s + p.eligible, 0);
+                const exact = eligible / quota;
+                const autoSeats = Math.floor(exact);
+                const remainder = exact - autoSeats;
+                // Centroid from station positions
+                let cLat = 0, cLng = 0;
+                for (const p of r.points) { cLat += p.lat; cLng += p.lng; }
+                cLat /= r.points.length; cLng /= r.points.length;
+                return { idx: i, eligible, exact, autoSeats, remainder, finalSeats: autoSeats, centroid: project(cLat, cLng) };
+            });
+
+            const autoTotal = regions.reduce((s, r) => s + r.autoSeats, 0);
+            const remainderSeats = KNESSET_SEATS - autoTotal;
+
+            // Sort by remainder descending to determine who gets the extra seats
+            const remainderOrder = [...regions]
+                .sort((a, b) => b.remainder - a.remainder)
+                .slice(0, remainderSeats)
+                .map(r => r.idx);
+
+            // Apply remainder seats
+            for (const idx of remainderOrder) {
+                regions[idx].finalSeats++;
+            }
+
+            hareData = { quota, totalE, autoTotal, remainderSeats, regions, remainderOrder };
+        }
+
+        function computeVoronoi() {
+            projected = stations.map(s => project(s.lat, s.lng));
+            vorDelaunay = d3.Delaunay.from(projected);
+            vorVoronoi = vorDelaunay.voronoi([0, 0, window.innerWidth, window.innerHeight]);
+            if (stationRegion) buildVoronoiBoundarySegments();
+        }
+
+        // Assign stable color index: each region's color is determined by its first station's final index
+        function getRegionColor(reg) {
+            if (!reg.points.length) return '#333';
+            return REGION_COLORS[stationRegion.get(reg.points[0]) % REGION_COLORS.length];
+        }
+
+        // -- DOM refs --
+        const titleEl = document.getElementById('caption-title');
+        const subEl = document.getElementById('caption-sub');
+        const hintEl = document.getElementById('click-hint');
+        const cumbarEl = document.getElementById('cumbar');
+        const cumbarFill = document.getElementById('cumbar-fill');
+        const cumbarLabel = document.getElementById('cumbar-label');
+        const legendEl = document.getElementById('region-legend');
+
+        function setCaption(title, sub) {
+            titleEl.textContent = title;
+            subEl.textContent = sub || '';
+            titleEl.classList.add('visible');
+            if (sub) subEl.classList.add('visible');
+            else subEl.classList.remove('visible');
+        }
+        function hideCaption() {
+            titleEl.classList.remove('visible');
+            subEl.classList.remove('visible');
+        }
+
+        // -- Step dots --
+        const stepsEl = document.getElementById('steps');
+        for (let i = 0; i < TOTAL_PHASES; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'step-dot';
+            dot.addEventListener('click', (e) => { e.stopPropagation(); goToPhase(i); });
+            stepsEl.appendChild(dot);
+        }
+        function updateSteps() {
+            stepsEl.querySelectorAll('.step-dot').forEach((d, i) => {
+                d.className = 'step-dot';
+                if (i === phase) d.classList.add('active');
+                else if (i < phase) d.classList.add('done');
+            });
+        }
+
+        // -- Drawing helpers --
+        function sizeForEligible(e) {
+            return Math.sqrt(e / 200) * 0.5 + 0.8;
+        }
+
+        function drawPoint(x, y, r, color, alpha = 1, glow = false) {
+            if (glow) {
+                ctx.save();
+                ctx.globalAlpha = alpha * 0.3;
+                ctx.beginPath();
+                ctx.arc(x, y, r + 4, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+                ctx.restore();
+            }
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawRect(bbox, strokeColor, lineWidth, alpha, dash) {
+            const r = projectBbox(bbox);
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineWidth = lineWidth;
+            if (dash) ctx.setLineDash(dash);
+            ctx.strokeRect(r.x, r.y, r.w, r.h);
+            ctx.restore();
+        }
+
+        function fillRect(bbox, color, alpha) {
+            const r = projectBbox(bbox);
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = color;
+            ctx.fillRect(r.x, r.y, r.w, r.h);
+            ctx.restore();
+        }
+
+        function drawScanLine(splitInfo, progress) {
+            const { axis, parentBbox, stations: pts } = splitInfo;
+            const sorted = [...pts].sort((a, b) => a[axis] - b[axis]);
+            const startVal = sorted[0][axis];
+            const endVal = splitInfo.splitValue;
+            const currentVal = startVal + (endVal - startVal) * Math.min(progress, 1);
+
+            ctx.save();
+            if (axis === 'lat') {
+                const [, y] = project(currentVal, 0);
+                const [x1] = project(0, parentBbox.minLng);
+                const [x2] = project(0, parentBbox.maxLng);
+                // glow
+                ctx.globalAlpha = 0.25;
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 8;
+                ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+                // bright
+                ctx.globalAlpha = 0.9;
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+            } else {
+                const [x] = project(0, currentVal);
+                const [, y1] = project(parentBbox.maxLat, 0);
+                const [, y2] = project(parentBbox.minLat, 0);
+                ctx.globalAlpha = 0.25;
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 8;
+                ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
+                ctx.globalAlpha = 0.9;
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawFinalSplitLine(splitInfo, alpha) {
+            const { axis, splitValue, parentBbox } = splitInfo;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = '#e2e8f0';
+            ctx.lineWidth = 2.5;
+            if (axis === 'lat') {
+                const [, y] = project(splitValue, 0);
+                const [x1] = project(0, parentBbox.minLng);
+                const [x2] = project(0, parentBbox.maxLng);
+                ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
+            } else {
+                const [x] = project(0, splitValue);
+                const [, y1] = project(parentBbox.maxLat, 0);
+                const [, y2] = project(parentBbox.minLat, 0);
+                ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function drawRegions(regs, alpha) {
+            for (const reg of regs) {
+                fillRect(reg.bbox, getRegionColor(reg), alpha * 0.2);
+            }
+        }
+
+        function drawAllBoundaries(regs, alpha) {
+            for (const reg of regs) {
+                drawRect(reg.bbox, '#e2e8f0', 2, alpha, null);
+            }
+        }
+
+        function drawPointsColored(regs, alpha) {
+            for (const reg of regs) {
+                const color = getRegionColor(reg);
+                for (const s of reg.points) {
+                    const [x, y] = project(s.lat, s.lng);
+                    const r = sizeForEligible(s.eligible);
+                    drawPoint(x, y, r, color, alpha, false);
+                }
+            }
+        }
+
+        function drawPointsGray(alphaFn) {
+            for (let i = 0; i < stations.length; i++) {
+                const s = stations[i];
+                const [x, y] = project(s.lat, s.lng);
+                const r = sizeForEligible(s.eligible);
+                const a = typeof alphaFn === 'function' ? alphaFn(i) : alphaFn;
+                drawPoint(x, y, r, '#94a3b8', a, false);
+            }
+        }
+
+        function drawVoterLabel(bbox, eligible, alpha) {
+            const r = projectBbox(bbox);
+            const cx = r.x + r.w / 2;
+            const cy = r.y + r.h / 2;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '600 13px Heebo';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.shadowColor = 'rgba(0,0,0,0.7)';
+            ctx.shadowBlur = 6;
+            const txt = eligible >= 1000000
+                ? (eligible / 1000000).toFixed(1) + 'M'
+                : Math.round(eligible / 1000) + 'K';
+            ctx.fillText(txt, cx, cy);
+            ctx.restore();
+        }
+
+        function drawDimensionMarkers(bbox, latSpanKm, lngSpanKm, alpha, highlightAxis) {
+            const r = projectBbox(bbox);
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.font = '500 11px Heebo';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Height marker (lat span) on left side
+            const hColor = highlightAxis === 'lat' ? '#60a5fa' : '#64748b';
+            ctx.strokeStyle = hColor;
+            ctx.fillStyle = hColor;
+            ctx.lineWidth = 1;
+            const mx = r.x - 14;
+            ctx.beginPath(); ctx.moveTo(mx, r.y); ctx.lineTo(mx, r.y + r.h); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(mx - 3, r.y); ctx.lineTo(mx + 3, r.y); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(mx - 3, r.y + r.h); ctx.lineTo(mx + 3, r.y + r.h); ctx.stroke();
+            ctx.save();
+            ctx.translate(mx - 10, r.y + r.h / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('~' + Math.round(latSpanKm) + ' ק״מ', 0, 0);
+            ctx.restore();
+
+            // Width marker (lng span) on bottom
+            const wColor = highlightAxis === 'lng' ? '#60a5fa' : '#64748b';
+            ctx.strokeStyle = wColor;
+            ctx.fillStyle = wColor;
+            const my = r.y + r.h + 14;
+            ctx.beginPath(); ctx.moveTo(r.x, my); ctx.lineTo(r.x + r.w, my); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(r.x, my - 3); ctx.lineTo(r.x, my + 3); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(r.x + r.w, my - 3); ctx.lineTo(r.x + r.w, my + 3); ctx.stroke();
+            ctx.fillText('~' + Math.round(lngSpanKm) + ' ק״מ', r.x + r.w / 2, my + 12);
+
+            ctx.restore();
+        }
+
+        function drawHighlightRect(bbox, t) {
+            const pulse = 0.6 + 0.4 * Math.sin(t * 4);
+            drawRect(bbox, '#60a5fa', 2.5, pulse, null);
+        }
+
+        function setCumbar(pct) {
+            cumbarFill.style.width = pct + '%';
+            cumbarLabel.textContent = Math.round(pct) + '%';
+        }
+
+        function buildLegend(regs) {
+            legendEl.innerHTML = '';
+            for (let i = 0; i < regs.length; i++) {
+                const e = regs[i].points.reduce((s, p) => s + p.eligible, 0);
+                const div = document.createElement('div');
+                div.className = 'legend-item';
+                div.innerHTML = `<div class="legend-swatch" style="background:${getRegionColor(regs[i])}"></div>
+                    אזור ${i + 1}: ${e >= 1000000 ? (e / 1000000).toFixed(2) + 'M' : (e / 1000).toFixed(0) + 'K'} בוחרים`;
+                legendEl.appendChild(div);
+            }
+        }
+
+        // -- Clear --
+        function clear() {
+            ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+        }
+
+        // -- Voronoi drawing --
+        function drawVoronoiEdges(alpha) {
+            if (!vorVoronoi) return;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = 'rgba(203, 213, 225, 0.5)';
+            ctx.lineWidth = 0.4;
+            ctx.beginPath();
+            vorVoronoi.render(ctx);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function drawVoronoiCellsColored(regs, alpha) {
+            if (!vorVoronoi) return;
+            // Build station→region color map
+            const colorMap = new Map();
+            for (const reg of regs) {
+                const color = getRegionColor(reg);
+                for (const s of reg.points) colorMap.set(s, color);
+            }
+            ctx.save();
+            for (let i = 0; i < stations.length; i++) {
+                const cell = vorVoronoi.cellPolygon(i);
+                if (!cell) continue;
+                const color = colorMap.get(stations[i]) || '#888';
+                ctx.globalAlpha = alpha * 0.25;
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(cell[0][0], cell[0][1]);
+                for (let j = 1; j < cell.length; j++) ctx.lineTo(cell[j][0], cell[j][1]);
+                ctx.closePath();
+                ctx.fill();
+            }
+            ctx.restore();
+        }
+
+        // Pre-computed boundary segments (built once, redrawn each frame)
+        let vorBoundarySegments = null;
+
+        function buildVoronoiBoundarySegments() {
+            if (!vorDelaunay || !vorVoronoi || !stationRegion) return;
+            const segs = [];
+            for (let i = 0; i < stations.length; i++) {
+                const ri = stationRegion.get(stations[i]);
+                for (const j of vorDelaunay.neighbors(i)) {
+                    if (j <= i) continue;
+                    const rj = stationRegion.get(stations[j]);
+                    if (ri === rj) continue;
+                    const cellI = vorVoronoi.cellPolygon(i);
+                    const cellJ = vorVoronoi.cellPolygon(j);
+                    if (!cellI || !cellJ) continue;
+                    const shared = [];
+                    for (let a = 0; a < cellI.length - 1; a++) {
+                        for (let b = 0; b < cellJ.length - 1; b++) {
+                            if (Math.abs(cellI[a][0] - cellJ[b][0]) < 0.5 &&
+                                Math.abs(cellI[a][1] - cellJ[b][1]) < 0.5) {
+                                shared.push(cellI[a]);
+                                break;
+                            }
+                        }
+                        if (shared.length >= 2) break;
+                    }
+                    if (shared.length >= 2) segs.push(shared);
+                }
+            }
+            vorBoundarySegments = segs;
+        }
+
+        function drawVoronoiBoundaries(alpha) {
+            if (!vorBoundarySegments) return;
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.strokeStyle = '#f1f5f9';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (const seg of vorBoundarySegments) {
+                ctx.moveTo(seg[0][0], seg[0][1]);
+                ctx.lineTo(seg[1][0], seg[1][1]);
+            }
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        // -- Phase rendering --
+        function render(now) {
+            const t = (now - phaseStart) / 1000;
+            clear();
+
+            clipToBorder(() => {
+                if (phase === 0) renderPhase0(t);
+                else if (phase === 1) renderPhase1(t);
+                else if (phase === 2) renderPhase2(t);
+                else if (phase === 3) renderPhase3(t);
+                else if (phase === 4) renderPhase4(t);
+                else if (phase === 5) renderPhase5(t);
+                else if (phase === 6) renderPhase6(t);
+                else if (phase === 7) renderPhase7(t);
+                else if (phase === 8) renderPhase8(t);
+            });
+
+            // Border outline on top of clipped content
+            drawBorderOutline(0.6);
+
+            // Overlays drawn outside the clip
+            if (phase === 8) renderPhase8Overlay(t);
+
+            animFrame = requestAnimationFrame(render);
+        }
+
+        // Phase 0: Ballot Stations appear
+        function renderPhase0(t) {
+            const staggerDur = 2.0;
+            for (let i = 0; i < stations.length; i++) {
+                const delay = (i / stations.length) * staggerDur;
+                const a = Math.min(1, Math.max(0, (t - delay) / 0.4));
+                if (a <= 0) continue;
+                const s = stations[i];
+                const [x, y] = project(s.lat, s.lng);
+                const r = sizeForEligible(s.eligible);
+                const eased = d3.easeCubicOut(a);
+                drawPoint(x, y, r * eased, '#94a3b8', eased, false);
+            }
+            // Bounding box fades in
+            const bboxAlpha = Math.min(1, Math.max(0, (t - 1.5) / 1.0));
+            if (bboxAlpha > 0) {
+                drawRect(initRegion.bbox, '#64748b', 1, bboxAlpha * 0.5, [6, 4]);
+            }
+        }
+
+        // Phase 1: Finding the Longest Axis
+        function renderPhase1(t) {
+            drawPointsGray(0.7);
+            drawRect(initRegion.bbox, '#94a3b8', 1.5, 0.7, null);
+
+            const si = allSplits[0].splitInfo;
+            const dimAlpha = Math.min(1, Math.max(0, (t - 0.5) / 1.0));
+            if (dimAlpha > 0) {
+                const hlAxis = t > 1.8 ? si.axis : null;
+                drawDimensionMarkers(initRegion.bbox, si.latSpanKm, si.lngSpanKm, dimAlpha, hlAxis);
+            }
+            // Highlight longer axis with glow at 1.8s
+            if (t > 1.8) {
+                const pulse = 0.5 + 0.3 * Math.sin(t * 3);
+                if (si.axis === 'lat') {
+                    const r = projectBbox(initRegion.bbox);
+                    ctx.save();
+                    ctx.globalAlpha = pulse;
+                    ctx.strokeStyle = '#3b82f6';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.h); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r.x + r.w, r.y); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.stroke();
+                    ctx.restore();
+                } else {
+                    const r = projectBbox(initRegion.bbox);
+                    ctx.save();
+                    ctx.globalAlpha = pulse;
+                    ctx.strokeStyle = '#3b82f6';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x + r.w, r.y); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(r.x, r.y + r.h); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }
+
+        // Phase 2: First Split
+        function renderPhase2(t) {
+            const si = allSplits[0].splitInfo;
+            const scanDur = 2.5;
+            const scanProgress = Math.min(1, t / scanDur);
+            const splitDone = t > scanDur + 0.3;
+
+            if (!splitDone) {
+                drawPointsGray(0.7);
+                drawRect(initRegion.bbox, '#94a3b8', 1.5, 0.6, null);
+                drawScanLine(si, d3.easeCubicInOut(scanProgress));
+                cumbarEl.classList.add('visible');
+                setCumbar(scanProgress * 50);
+            } else {
+                const fadeIn = Math.min(1, (t - scanDur - 0.3) / 0.8);
+                cumbarEl.classList.remove('visible');
+                const regs2 = regStates[1];
+                drawRegions(regs2, fadeIn);
+                drawAllBoundaries(regs2, fadeIn);
+                drawPointsColored(regs2, 0.4 + fadeIn * 0.6);
+                // Voter labels
+                if (fadeIn > 0.5) {
+                    for (const reg of regs2) {
+                        const e = reg.points.reduce((s, p) => s + p.eligible, 0);
+                        drawVoterLabel(reg.bbox, e, (fadeIn - 0.5) * 2);
+                    }
+                }
+                drawFinalSplitLine(si, fadeIn);
+            }
+        }
+
+        // Phase 3: Second Split
+        function renderPhase3(t) {
+            const regs2 = regStates[1];
+            const si = allSplits[1].splitInfo;
+            const highlightDur = 1.0;
+            const scanStart = highlightDur;
+            const scanDur = 2.0;
+            const scanEnd = scanStart + scanDur;
+
+            if (t < scanEnd + 0.3) {
+                // Draw existing regions
+                drawRegions(regs2, 1);
+                drawAllBoundaries(regs2, 0.6);
+                drawPointsColored(regs2, 0.85);
+                drawFinalSplitLine(allSplits[0].splitInfo, 0.8);
+
+                // Highlight largest
+                if (t < scanStart) {
+                    drawHighlightRect(si.parentBbox, t);
+                }
+                // Scan
+                if (t >= scanStart) {
+                    const scanProg = Math.min(1, (t - scanStart) / scanDur);
+                    drawScanLine(si, d3.easeCubicInOut(scanProg));
+                    cumbarEl.classList.add('visible');
+                    setCumbar(scanProg * 50);
+                }
+            } else {
+                cumbarEl.classList.remove('visible');
+                const fadeIn = Math.min(1, (t - scanEnd - 0.3) / 0.8);
+                const regs3 = regStates[2];
+                drawRegions(regs3, fadeIn);
+                drawAllBoundaries(regs3, fadeIn);
+                drawPointsColored(regs3, 0.5 + fadeIn * 0.5);
+                // All split lines so far
+                for (let i = 0; i < 2; i++) drawFinalSplitLine(allSplits[i].splitInfo, fadeIn);
+                if (fadeIn > 0.5) {
+                    for (const reg of regs3) {
+                        const e = reg.points.reduce((s, p) => s + p.eligible, 0);
+                        drawVoterLabel(reg.bbox, e, (fadeIn - 0.5) * 2);
+                    }
+                }
+            }
+        }
+
+        // Phase 4: Recursive quick splits (remaining splits to reach TARGET_REGIONS)
+        function renderPhase4(t) {
+            const numRemaining = TARGET_REGIONS - 3; // we already have 3 regions after phase 3
+            const splitDur = Math.max(0.3, Math.min(1.0, 8.0 / numRemaining)); // adaptive speed
+
+            let currentRegIdx = 2; // start with 3 regions (regStates index 2)
+            let activeSplit = -1;
+            let splitT = 0;
+
+            for (let i = 0; i < numRemaining; i++) {
+                const start = i * splitDur;
+                if (t >= start && t < start + splitDur) {
+                    activeSplit = i;
+                    splitT = (t - start) / splitDur;
+                    break;
+                }
+                if (t >= start + splitDur) {
+                    currentRegIdx = Math.min(3 + i, regStates.length - 1);
+                }
+            }
+
+            const baseRegs = regStates[Math.min(currentRegIdx, regStates.length - 1)];
+            drawRegions(baseRegs, 1);
+            drawAllBoundaries(baseRegs, 0.5);
+            drawPointsColored(baseRegs, 0.85);
+
+            if (activeSplit >= 0 && (2 + activeSplit) < allSplits.length) {
+                const si = allSplits[2 + activeSplit].splitInfo;
+                const scanProg = Math.min(1, splitT / 0.7);
+                drawScanLine(si, d3.easeCubicInOut(scanProg));
+            }
+            cumbarEl.classList.remove('visible');
+        }
+
+        // Phase 5: Final 6 districts (rectangles)
+        function renderPhase5(t) {
+            cumbarEl.classList.remove('visible');
+            const fadeIn = Math.min(1, t / 1.0);
+            const regs6 = regStates[TARGET_REGIONS - 1];
+            drawRegions(regs6, fadeIn);
+            drawPointsColored(regs6, fadeIn);
+            drawAllBoundaries(regs6, fadeIn * 0.8);
+            for (let i = 0; i < allSplits.length; i++) drawFinalSplitLine(allSplits[i].splitInfo, fadeIn * 0.6);
+
+            if (fadeIn > 0.3) {
+                legendEl.classList.add('visible');
+            }
+        }
+
+        // Phase 6: Voronoi tessellation appears
+        function renderPhase6(t) {
+            cumbarEl.classList.remove('visible');
+            const fadeIn = Math.min(1, t / 1.5);
+            const ease = d3.easeCubicOut(fadeIn);
+
+            // Points fade out as edges fade in
+            drawPointsGray(0.4 * (1 - ease));
+
+            // All Voronoi edges fade in together
+            drawVoronoiEdges(ease * 0.5);
+        }
+
+        // Phase 7: Voronoi cells colored by region — the actual map rendering
+        function renderPhase7(t) {
+            cumbarEl.classList.remove('visible');
+            const fadeIn = Math.min(1, t / 1.2);
+            const regs6 = regStates[TARGET_REGIONS - 1];
+
+            // Colored Voronoi cells
+            drawVoronoiCellsColored(regs6, fadeIn);
+
+            // Voronoi edges (subtle)
+            drawVoronoiEdges(fadeIn * 0.4);
+
+            // Region boundaries (pre-computed, fast)
+            drawVoronoiBoundaries(fadeIn * 0.8);
+
+            if (fadeIn > 0.3) {
+                legendEl.classList.add('visible');
+            }
+        }
+
+        // Phase 8: Hare quota seat allocation (map content — inside clip)
+        function renderPhase8(t) {
+            cumbarEl.classList.remove('visible');
+            if (!hareData) return;
+            const regs = regStates[TARGET_REGIONS - 1];
+            drawVoronoiCellsColored(regs, 0.6);
+            drawVoronoiEdges(0.15);
+            drawVoronoiBoundaries(0.5);
+        }
+
+        // Phase 8 overlay: seat labels + info box (outside clip)
+        function renderPhase8Overlay(t) {
+            if (!hareData) return;
+
+            // Sort regions by eligible (largest first) for auto-seat reveal order
+            const autoOrder = hareData.regions
+                .filter(r => r.autoSeats > 0)
+                .sort((a, b) => b.eligible - a.eligible);
+
+            // Timeline:
+            // Stage 1: auto seats appear one by one
+            const autoPerRegion = Math.max(0.06, Math.min(0.15, 5.0 / autoOrder.length));
+            const autoDur = autoOrder.length * autoPerRegion;
+            const autoCount = Math.min(autoOrder.length, Math.floor(t / autoPerRegion));
+            const autoComplete = t >= autoDur;
+
+            // Stage 2: remainder seats tick in one by one (after a brief pause)
+            const remainderStart = autoDur + 0.6;
+            const remainderPerSeat = Math.max(0.06, Math.min(0.12, 3.0 / hareData.remainderSeats));
+            const remainderCount = t > remainderStart
+                ? Math.min(hareData.remainderSeats, Math.floor((t - remainderStart) / remainderPerSeat))
+                : 0;
+            const inStage2 = remainderCount > 0;
+
+            // Sets for what's visible
+            const autoRevealed = new Set();
+            for (let i = 0; i < autoCount; i++) autoRevealed.add(autoOrder[i].idx);
+            const justAutoIdx = autoCount > 0 && !autoComplete ? autoOrder[autoCount - 1].idx : -1;
+
+            const hasRemainder = new Set();
+            for (let i = 0; i < remainderCount; i++) hasRemainder.add(hareData.remainderOrder[i]);
+            const justRemIdx = remainderCount > 0 ? hareData.remainderOrder[remainderCount - 1] : -1;
+
+            // Running totals
+            let autoSeatsSoFar = 0;
+            for (const idx of autoRevealed) autoSeatsSoFar += hareData.regions[idx].autoSeats;
+
+            // Simple seat pills on the map
+            ctx.save();
+            for (const r of hareData.regions) {
+                if (!autoRevealed.has(r.idx)) continue;
+                const [cx, cy] = r.centroid;
+                const seats = r.autoSeats + (hasRemainder.has(r.idx) ? 1 : 0);
+                const isJust = r.idx === justAutoIdx || r.idx === justRemIdx;
+
+                ctx.globalAlpha = 0.88;
+                const txt = '' + seats;
+                ctx.font = '700 12px Heebo';
+                const pw = ctx.measureText(txt).width + 10;
+                const ph = 18;
+                ctx.fillStyle = isJust ? '#fbbf24' : 'rgba(15, 23, 42, 0.8)';
+                ctx.beginPath();
+                ctx.roundRect(cx - pw / 2, cy - ph / 2, pw, ph, 4);
+                ctx.fill();
+                ctx.strokeStyle = hasRemainder.has(r.idx) ? '#fbbf24' : 'rgba(148, 163, 184, 0.5)';
+                ctx.lineWidth = hasRemainder.has(r.idx) ? 1.5 : 0.5;
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+                ctx.fillStyle = isJust ? '#0a0a0f' : '#f8fafc';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(txt, cx, cy);
+            }
+            ctx.restore();
+
+            // Info box with running calculation log
+            ctx.save();
+            ctx.globalAlpha = 0.94;
+            const boxW = 420;
+            const infoX = window.innerWidth - boxW - 24;
+            const infoY = 120;
+            const lineH = 15;
+            const headerH = 70;
+            // How many log lines to show (auto + remainder so far)
+            const maxVisibleLines = Math.floor((window.innerHeight - infoY - headerH - 60) / lineH);
+            const totalLogLines = autoCount + (inStage2 ? 1 + remainderCount : 0); // +1 for separator
+            const scrollOffset = Math.max(0, totalLogLines - maxVisibleLines);
+            const visibleLines = Math.min(totalLogLines, maxVisibleLines);
+            const boxH = headerH + visibleLines * lineH + 12;
+
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.94)';
+            ctx.beginPath();
+            ctx.roundRect(infoX, infoY, boxW, boxH, 10);
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.2)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            const tx = infoX + boxW - 14;
+            let ly = infoY + 12;
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'top';
+            ctx.direction = 'rtl';
+
+            // Header
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '500 13px Heebo';
+            ctx.fillText('מכסת הייר (שיטת המילטון)', tx, ly);
+            ly += 20;
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '700 14px Heebo';
+            const quotaK = (hareData.quota / 1000).toFixed(1);
+            ctx.fillText(`מכסה = ${(hareData.totalE / 1e6).toFixed(2)}M \u00f7 ${KNESSET_SEATS} = ${Math.round(hareData.quota).toLocaleString()}`, tx, ly);
+            ly += 20;
+            ctx.fillStyle = autoComplete ? '#94a3b8' : '#f8fafc';
+            ctx.font = '500 12px Heebo';
+            ctx.fillText(`חלוקה שלמה: ${autoSeatsSoFar} מנדטים${inStage2 ? '  |  שאריות: +' + remainderCount + ' מתוך ' + hareData.remainderSeats : ''}`, tx, ly);
+            ly += 18;
+
+            // Scrolling log lines
+            ctx.save();
+            ctx.beginPath();
+            ctx.rect(infoX, ly, boxW, visibleLines * lineH + 4);
+            ctx.clip();
+
+            let logLine = 0;
+            // Auto allocation lines
+            for (let i = 0; i < autoCount; i++) {
+                if (logLine >= scrollOffset) {
+                    const r = autoOrder[i];
+                    const drawY = ly + (logLine - scrollOffset) * lineH;
+                    const isJust = r.idx === justAutoIdx;
+                    ctx.font = isJust ? '600 11px Heebo' : '400 11px Heebo';
+                    ctx.fillStyle = isJust ? '#f8fafc' : '#94a3b8';
+                    const eK = (r.eligible / 1000).toFixed(0);
+                    const qK = (hareData.quota / 1000).toFixed(0);
+                    ctx.fillText(`${eK}K \u00f7 ${qK}K = ${r.exact.toFixed(2)}  \u2192  ${r.autoSeats} מנדטים  (שארית ${r.remainder.toFixed(2)})`, tx, drawY);
+                }
+                logLine++;
+            }
+
+            // Remainder stage separator + lines
+            if (inStage2) {
+                if (logLine >= scrollOffset) {
+                    const drawY = ly + (logLine - scrollOffset) * lineH;
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.font = '600 11px Heebo';
+                    ctx.fillText(`── שאריות גדולות ביותר ──`, tx, drawY);
+                }
+                logLine++;
+
+                // Remainder lines: show regions sorted by remainder, mark those that got +1
+                const remSorted = [...hareData.regions].sort((a, b) => b.remainder - a.remainder);
+                for (let i = 0; i < remainderCount; i++) {
+                    if (logLine >= scrollOffset) {
+                        const r = remSorted[i];
+                        const drawY = ly + (logLine - scrollOffset) * lineH;
+                        const isJust = r.idx === justRemIdx;
+                        ctx.font = isJust ? '600 11px Heebo' : '400 11px Heebo';
+                        ctx.fillStyle = isJust ? '#fbbf24' : '#d4a017';
+                        ctx.fillText(`שארית ${r.remainder.toFixed(4)}  \u2192  +1  (סה״כ ${r.autoSeats + 1})`, tx, drawY);
+                    }
+                    logLine++;
+                }
+            }
+            ctx.restore();
+            ctx.restore();
+        }
+
+        // -- Phase transitions --
+        function goToPhase(p) {
+            if (p < 0 || p >= TOTAL_PHASES) return;
+            if (transitioning) return;
+            transitioning = true;
+
+            phase = p;
+            phaseStart = performance.now();
+            updateSteps();
+            cumbarEl.classList.remove('visible');
+            legendEl.classList.remove('visible');
+            legendEl.innerHTML = '';
+            document.getElementById('regional-link').classList.toggle('visible', phase === TOTAL_PHASES - 1);
+
+            if (phase === 0) {
+                setCaption('חלוקת ישראל ל-' + TARGET_REGIONS + ' אזורי בחירה', `${stations.length.toLocaleString()} קלפיות מבחירות לכנסת ה-25 · נחלק ל-${TARGET_REGIONS} אזורים ונקצה ${KNESSET_SEATS} מנדטים`);
+                hintEl.classList.add('visible');
+            } else if (phase === 1) {
+                hintEl.classList.remove('visible');
+                const si = allSplits[0].splitInfo;
+                setCaption('מציאת הציר הארוך',
+                    `המלבן התוחם: ~${Math.round(si.latSpanKm)} ק״מ צפון-דרום × ~${Math.round(si.lngSpanKm)} ק״מ מזרח-מערב — ${si.axis === 'lat' ? 'ציר צפון-דרום' : 'ציר מזרח-מערב'} ארוך יותר`);
+            } else if (phase === 2) {
+                setCaption('חיתוך ראשון',
+                    'ממיינים את הקלפיות לאורך הציר הארוך, סורקים עד שמגיעים ל-50% מבעלי זכות הבחירה');
+            } else if (phase === 3) {
+                setCaption('חיתוך שני',
+                    'מוצאים שוב את האזור בעל מספר הבוחרים הגדול ביותר, קובעים את הציר הארוך, חותכים ב-50%');
+            } else if (phase === 4) {
+                setCaption('חלוקה רקורסיבית',
+                    `חוזרים: תמיד חותכים את האזור בעל מספר הבוחרים הגדול ביותר. עוד ${TARGET_REGIONS - 3} חיתוכים עד ${TARGET_REGIONS} אזורים.`);
+            } else if (phase === 5) {
+                setCaption(`${TARGET_REGIONS} אזורי בחירה`,
+                    'לכל אזור מספר דומה של בעלי זכות בחירה. הגבולות הם מלבנים מקבילים לצירים.');
+                buildLegend(finalRegs);
+            } else if (phase === 6) {
+                setCaption('פסיפס וורונוי',
+                    'כל קלפי "תובעת" את השטח הקרוב אליה ביותר. באזורים צפופים — תאים זעירים. באזורים דלילים — תאים ענקיים.');
+            } else if (phase === 7) {
+                setCaption('אזורים על המפה',
+                    'צובעים כל תא וורונוי לפי האזור שלו. צפיפות האוכלוסייה קובעת את המראה — לא שטח הקרקע.');
+                buildLegend(finalRegs);
+            } else if (phase === 8) {
+                setCaption('חלוקת מנדטים — מכסת הייר',
+                    `מחלקים ${KNESSET_SEATS} מנדטים בין ${TARGET_REGIONS} אזורים ביחס לבעלי זכות הבחירה. השאריות הולכות לאזורים בעלי השארית הגדולה ביותר.`);
+            }
+
+            setTimeout(() => { transitioning = false; }, 300);
+        }
+
+        function advance() {
+            if (phase < TOTAL_PHASES - 1) goToPhase(phase + 1);
+        }
+        function retreat() {
+            if (phase > 0) goToPhase(phase - 1);
+        }
+
+        // -- Input --
+        document.addEventListener('click', advance);
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') retreat();  // RTL: right = back
+            else if (['ArrowLeft', ' ', 'Enter'].includes(e.key)) advance();  // RTL: left = forward
+        });
+
+        // -- Start --
+        (async () => {
+            setCaption('טוען...', 'מוריד נתוני קלפיות');
+            await initData();
+            animFrame = requestAnimationFrame(render);
+            goToPhase(0);
+        })();
+    })();
+    </script>
+</body>
+</html>

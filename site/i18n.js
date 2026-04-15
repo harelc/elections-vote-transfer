@@ -391,6 +391,7 @@
         district_method_label: { he: 'שיטת חלוקה:', en: 'District method:' },
         method_dhondt:         { he: 'באדר-עופר', en: "d'Hondt" },
         method_fptp:           { he: 'זוכה-לוקח-הכל', en: 'Winner takes all' },
+        explainer_link:        { he: 'הסבר מונפש →', en: 'Animated explainer →' },
 
         /* ── Mobile per-page info texts ── */
         about_this_view:       { he: 'על תצוגה זו', en: 'About this view' },
