@@ -1018,28 +1018,74 @@
             });
         }
 
+        let _mRegionData = [];
+        let _mRegionSortCol = 'eligible';
+        let _mRegionSortAsc = false;
+
         function renderMobileRegionSummary(regionResults) {
             const wrap = document.getElementById('m-region-summary');
-            const tbody = document.getElementById('m-region-summary-body');
             if (regionResults.length <= 1) { wrap.style.display = 'none'; return; }
             wrap.style.display = '';
-            const sorted = regionResults.map((r, i) => ({ ...r, idx: i })).sort((a, b) => b.eligible - a.eligible);
-            tbody.innerHTML = sorted.map(r => {
-                const name = getDisplayName(r.idx);
+            _mRegionData = regionResults.map((r, i) => {
                 const seats = r.seats || {};
                 let maxS = 0, winner = null;
                 for (const [p, s] of Object.entries(seats)) { if (s > maxS) { maxS = s; winner = p; } }
-                const color = winner ? (partyColorMap[winner] || '#888') : '#888';
-                const ratio = r.seatCount > 0 ? Math.round(r.eligible / r.seatCount).toLocaleString() : '-';
+                return {
+                    idx: i, name: getDisplayName(i),
+                    color: winner ? (partyColorMap[winner] || '#888') : '#888',
+                    eligible: r.eligible, seatCount: r.seatCount,
+                    ratio: r.seatCount > 0 ? r.eligible / r.seatCount : 0,
+                    seatDots: Object.entries(seats).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]),
+                };
+            });
+            _mRegionSortCol = 'eligible';
+            _mRegionSortAsc = false;
+            renderMobileRegionRows();
+            setupMobileRegionHeaders();
+        }
+
+        function renderMobileRegionRows() {
+            const tbody = document.getElementById('m-region-summary-body');
+            const sorted = [..._mRegionData].sort((a, b) => {
+                if (_mRegionSortCol === 'name') {
+                    return _mRegionSortAsc ? a.name.localeCompare(b.name, 'he') : b.name.localeCompare(a.name, 'he');
+                }
+                return _mRegionSortAsc ? a[_mRegionSortCol] - b[_mRegionSortCol] : b[_mRegionSortCol] - a[_mRegionSortCol];
+            });
+            tbody.innerHTML = sorted.map(r => {
+                const dots = r.seatDots.map(([party, count]) => {
+                    const c = partyColorMap[party] || '#888';
+                    return `<span class="m-party-dot" style="background:${c}"></span>`.repeat(count);
+                }).join('');
                 return `<tr data-region="${r.idx}">
-                    <td><span class="m-party-dot" style="background:${color}"></span>${name}</td>
+                    <td>${r.name} ${dots}</td>
                     <td class="m-seats-cell">${i18n.fmtNum(r.eligible)}</td>
                     <td class="m-seats-cell">${r.seatCount}</td>
-                    <td class="m-seats-cell">${ratio}</td>
+                    <td class="m-seats-cell">${Math.round(r.ratio).toLocaleString()}</td>
                 </tr>`;
             }).join('');
             tbody.querySelectorAll('tr').forEach(tr => {
                 tr.addEventListener('click', () => { showRegionDetail(parseInt(tr.dataset.region)); });
+            });
+            const ths = document.querySelectorAll('#m-region-summary th');
+            const cols = ['name', 'eligible', 'seatCount', 'ratio'];
+            ths.forEach((th, i) => {
+                const arrow = th.querySelector('.sort-arrow');
+                if (arrow) arrow.textContent = cols[i] === _mRegionSortCol ? (_mRegionSortAsc ? ' ▲' : ' ▼') : '';
+            });
+        }
+
+        function setupMobileRegionHeaders() {
+            const ths = document.querySelectorAll('#m-region-summary th');
+            const cols = ['name', 'eligible', 'seatCount', 'ratio'];
+            ths.forEach((th, i) => {
+                if (!th.querySelector('.sort-arrow')) th.insertAdjacentHTML('beforeend', '<span class="sort-arrow" style="font-size:0.6rem;margin-inline-start:2px;"></span>');
+                th.style.cursor = 'pointer';
+                th.onclick = () => {
+                    if (_mRegionSortCol === cols[i]) _mRegionSortAsc = !_mRegionSortAsc;
+                    else { _mRegionSortCol = cols[i]; _mRegionSortAsc = cols[i] === 'name'; }
+                    renderMobileRegionRows();
+                };
             });
         }
 
@@ -1135,6 +1181,12 @@
         function showRegionDetail(idx) {
             const region = regionResults[idx];
             if (!region) return;
+            // Zoom map to region bounds
+            if (region.stations.length > 0) {
+                const lats = region.stations.map(s => s.lat);
+                const lngs = region.stations.map(s => s.lng);
+                map.fitBounds([[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]], { padding: [20, 20], maxZoom: 12 });
+            }
             const displayName = getDisplayName(idx);
             const sorted = Object.entries(region.seats).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]);
 

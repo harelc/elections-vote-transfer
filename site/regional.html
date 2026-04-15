@@ -326,11 +326,14 @@
             font-size: 0.72rem;
             padding: 0.25rem 0.4rem;
             border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            user-select: none;
         }
+        .region-summary-table th:hover { color: var(--text-secondary); }
+        .region-summary-table th .sort-arrow { font-size: 0.6rem; margin-inline-start: 2px; }
         .region-summary-table td {
             padding: 0.2rem 0.4rem;
             border-bottom: 1px solid rgba(42, 42, 58, 0.3);
-            white-space: nowrap;
         }
         .region-summary-table .num-cell { text-align: center; }
         .region-summary-table .region-color-dot {
@@ -1427,32 +1430,85 @@
             });
         }
 
+        let _regionSummaryData = [];
+        let _regionSortCol = 'eligible';
+        let _regionSortAsc = false;
+
         function renderRegionSummary(regionResults) {
-            const tbody = document.getElementById('region-summary-body');
             const section = document.getElementById('region-summary-section');
             if (regionResults.length <= 1) {
                 section.style.display = 'none';
                 return;
             }
             section.style.display = '';
-            const sorted = regionResults
-                .map((r, i) => ({ ...r, idx: i }))
-                .sort((a, b) => b.eligible - a.eligible);
+            _regionSummaryData = regionResults.map((r, i) => ({
+                idx: i,
+                name: getDisplayName(i),
+                color: getWinnerColor(r.seats),
+                eligible: r.eligible,
+                seatCount: r.seatCount,
+                ratio: r.seatCount > 0 ? r.eligible / r.seatCount : 0,
+                seatDots: Object.entries(r.seats).filter(([_, s]) => s > 0).sort((a, b) => b[1] - a[1]),
+            }));
+            _regionSortCol = 'eligible';
+            _regionSortAsc = false;
+            renderRegionSummaryRows();
+            setupRegionSummaryHeaders();
+        }
+
+        function renderRegionSummaryRows() {
+            const tbody = document.getElementById('region-summary-body');
+            const sorted = [..._regionSummaryData].sort((a, b) => {
+                let va, vb;
+                if (_regionSortCol === 'name') {
+                    va = a.name; vb = b.name;
+                    return _regionSortAsc ? va.localeCompare(vb, 'he') : vb.localeCompare(va, 'he');
+                }
+                va = a[_regionSortCol]; vb = b[_regionSortCol];
+                return _regionSortAsc ? va - vb : vb - va;
+            });
             tbody.innerHTML = sorted.map(r => {
-                const name = getDisplayName(r.idx);
-                const color = getWinnerColor(r.seats);
-                const ratio = r.seatCount > 0 ? Math.round(r.eligible / r.seatCount).toLocaleString() : '-';
+                const dots = r.seatDots.map(([party, count]) => {
+                    const c = partyColorMap[party] || '#888';
+                    return `<span class="region-color-dot" style="background:${c}" title="${i18n.partyName(party)}: ${count}"></span>`.repeat(count);
+                }).join('');
                 return `<tr data-region="${r.idx}">
-                    <td><span class="region-color-dot" style="background:${color}"></span>${name}</td>
+                    <td>${r.name} ${dots}</td>
                     <td class="num-cell">${i18n.fmtNum(r.eligible)}</td>
                     <td class="num-cell">${r.seatCount}</td>
-                    <td class="num-cell">${ratio}</td>
+                    <td class="num-cell">${Math.round(r.ratio).toLocaleString()}</td>
                 </tr>`;
             }).join('');
             tbody.querySelectorAll('tr').forEach(tr => {
                 tr.addEventListener('click', () => {
                     onRegionClick(parseInt(tr.dataset.region));
                 });
+            });
+            // Update header arrows
+            const ths = document.querySelectorAll('#region-summary-table thead th');
+            const cols = ['name', 'eligible', 'seatCount', 'ratio'];
+            ths.forEach((th, i) => {
+                const arrow = th.querySelector('.sort-arrow');
+                if (arrow) arrow.textContent = cols[i] === _regionSortCol ? (_regionSortAsc ? ' ▲' : ' ▼') : '';
+            });
+        }
+
+        function setupRegionSummaryHeaders() {
+            const ths = document.querySelectorAll('#region-summary-table thead th');
+            const cols = ['name', 'eligible', 'seatCount', 'ratio'];
+            ths.forEach((th, i) => {
+                if (!th.querySelector('.sort-arrow')) {
+                    th.insertAdjacentHTML('beforeend', '<span class="sort-arrow"></span>');
+                }
+                th.onclick = () => {
+                    if (_regionSortCol === cols[i]) {
+                        _regionSortAsc = !_regionSortAsc;
+                    } else {
+                        _regionSortCol = cols[i];
+                        _regionSortAsc = cols[i] === 'name';
+                    }
+                    renderRegionSummaryRows();
+                };
             });
         }
 
@@ -1764,6 +1820,14 @@
             if (!regionResults || !regionResults[idx]) return;
 
             const region = regionResults[idx];
+
+            // Zoom map to region bounds
+            if (region.stations.length > 0) {
+                const lats = region.stations.map(s => s.lat);
+                const lngs = region.stations.map(s => s.lng);
+                map.fitBounds([[Math.min(...lats), Math.min(...lngs)], [Math.max(...lats), Math.max(...lngs)]], { padding: [30, 30], maxZoom: 12 });
+            }
+
             const name = getDisplayName(idx);
             const content = document.getElementById('region-detail-content');
             const placeholder = content.previousElementSibling;
