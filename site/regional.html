@@ -312,6 +312,38 @@
 
         .seats-cell { text-align: center; font-variant-numeric: tabular-nums; }
 
+        /* Region summary table */
+        .region-summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.78rem;
+            font-variant-numeric: tabular-nums;
+        }
+        .region-summary-table th {
+            text-align: start;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.72rem;
+            padding: 0.25rem 0.4rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .region-summary-table td {
+            padding: 0.2rem 0.4rem;
+            border-bottom: 1px solid rgba(42, 42, 58, 0.3);
+            white-space: nowrap;
+        }
+        .region-summary-table .num-cell { text-align: center; }
+        .region-summary-table .region-color-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-inline-end: 4px;
+            vertical-align: middle;
+        }
+        .region-summary-table tr { cursor: pointer; }
+        .region-summary-table tr:hover td { background: var(--bg-tertiary); }
+
         /* Region details */
         .region-detail-placeholder {
             color: var(--text-muted);
@@ -611,6 +643,20 @@
                             </tr>
                         </thead>
                         <tbody id="comparison-body"></tbody>
+                    </table>
+                </div>
+
+                <!-- Region summary -->
+                <div class="panel-section" id="region-summary-section">
+                    <div class="section-title" data-i18n="region_summary">סיכום אזורים</div>
+                    <table class="region-summary-table" id="region-summary-table">
+                        <thead><tr>
+                            <th data-i18n="region_col">אזור</th>
+                            <th class="num-cell" data-i18n="eligible_col">בזב״ה</th>
+                            <th class="num-cell" data-i18n="seats_col">מנדטים</th>
+                            <th class="num-cell" data-i18n="ratio_col">בזב״ה/מנדט</th>
+                        </tr></thead>
+                        <tbody id="region-summary-body"></tbody>
                     </table>
                 </div>
 
@@ -1198,6 +1244,7 @@
             // Render
             renderParliament(results, nationalSeats);
             renderComparisonTable(results);
+            renderRegionSummary(regionResults);
             renderMap(regionResults);
             renderBlocTotals(results);
 
@@ -1377,6 +1424,35 @@
                     <td class="seats-cell ${diff > 0 ? 'diff-positive' : diff < 0 ? 'diff-negative' : 'diff-zero'}">${diff > 0 ? '+' + diff : diff}</td>
                 `;
                 tbody.appendChild(tr);
+            });
+        }
+
+        function renderRegionSummary(regionResults) {
+            const tbody = document.getElementById('region-summary-body');
+            const section = document.getElementById('region-summary-section');
+            if (regionResults.length <= 1) {
+                section.style.display = 'none';
+                return;
+            }
+            section.style.display = '';
+            const sorted = regionResults
+                .map((r, i) => ({ ...r, idx: i }))
+                .sort((a, b) => b.eligible - a.eligible);
+            tbody.innerHTML = sorted.map(r => {
+                const name = getDisplayName(r.idx);
+                const color = getWinnerColor(r.seats);
+                const ratio = r.seatCount > 0 ? Math.round(r.eligible / r.seatCount).toLocaleString() : '-';
+                return `<tr data-region="${r.idx}">
+                    <td><span class="region-color-dot" style="background:${color}"></span>${name}</td>
+                    <td class="num-cell">${i18n.fmtNum(r.eligible)}</td>
+                    <td class="num-cell">${r.seatCount}</td>
+                    <td class="num-cell">${ratio}</td>
+                </tr>`;
+            }).join('');
+            tbody.querySelectorAll('tr').forEach(tr => {
+                tr.addEventListener('click', () => {
+                    onRegionClick(parseInt(tr.dataset.region));
+                });
             });
         }
 
@@ -2000,6 +2076,7 @@
 
                 renderParliament(results, nationalSeats);
                 renderComparisonTable(results);
+                renderRegionSummary(window._regionResults);
                 renderBlocTotals(results);
                 renderMap(window._regionResults);
 

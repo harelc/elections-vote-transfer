@@ -429,6 +429,18 @@
                 </thead>
                 <tbody id="m-comparison-body"></tbody>
             </table>
+            <div id="m-region-summary" style="display:none; margin-top:0.75rem;">
+                <div style="font-size:0.8rem; font-weight:600; color:var(--text-secondary); margin-bottom:0.3rem;" data-i18n="region_summary">סיכום אזורים</div>
+                <table class="m-table" style="font-size:0.72rem;">
+                    <thead><tr>
+                        <th data-i18n="region_col">אזור</th>
+                        <th class="m-seats-cell" data-i18n="eligible_col">בזב״ה</th>
+                        <th class="m-seats-cell" data-i18n="seats_col">מנדטים</th>
+                        <th class="m-seats-cell" data-i18n="ratio_col">בזב״ה/מנדט</th>
+                    </tr></thead>
+                    <tbody id="m-region-summary-body"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -811,6 +823,7 @@
 
             renderMap(regionResults);
             renderMobileResults(results);
+            renderMobileRegionSummary(regionResults);
         }
 
         let cellLayer = null, boundaryLayer = null, maskLayer = null;
@@ -1002,6 +1015,31 @@
                     <td class="m-seats-cell ${diff > 0 ? 'm-diff-positive' : diff < 0 ? 'm-diff-negative' : 'm-diff-zero'}">${diff > 0 ? '+' + diff : diff}</td>
                 `;
                 tbody.appendChild(tr);
+            });
+        }
+
+        function renderMobileRegionSummary(regionResults) {
+            const wrap = document.getElementById('m-region-summary');
+            const tbody = document.getElementById('m-region-summary-body');
+            if (regionResults.length <= 1) { wrap.style.display = 'none'; return; }
+            wrap.style.display = '';
+            const sorted = regionResults.map((r, i) => ({ ...r, idx: i })).sort((a, b) => b.eligible - a.eligible);
+            tbody.innerHTML = sorted.map(r => {
+                const name = getDisplayName(r.idx);
+                const seats = r.seats || {};
+                let maxS = 0, winner = null;
+                for (const [p, s] of Object.entries(seats)) { if (s > maxS) { maxS = s; winner = p; } }
+                const color = winner ? (partyColorMap[winner] || '#888') : '#888';
+                const ratio = r.seatCount > 0 ? Math.round(r.eligible / r.seatCount).toLocaleString() : '-';
+                return `<tr data-region="${r.idx}">
+                    <td><span class="m-party-dot" style="background:${color}"></span>${name}</td>
+                    <td class="m-seats-cell">${i18n.fmtNum(r.eligible)}</td>
+                    <td class="m-seats-cell">${r.seatCount}</td>
+                    <td class="m-seats-cell">${ratio}</td>
+                </tr>`;
+            }).join('');
+            tbody.querySelectorAll('tr').forEach(tr => {
+                tr.addEventListener('click', () => { showRegionDetail(parseInt(tr.dataset.region)); });
             });
         }
 
