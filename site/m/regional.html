@@ -656,33 +656,35 @@
         // ── Partitioning ──
         function partitionRegions(stationList, n) {
             if (n <= 1) return [stationList];
+            function bboxRatio(pts) {
+                let mnLa = Infinity, mxLa = -Infinity, mnLo = Infinity, mxLo = -Infinity;
+                for (const s of pts) { if (s.lat < mnLa) mnLa = s.lat; if (s.lat > mxLa) mxLa = s.lat; if (s.lng < mnLo) mnLo = s.lng; if (s.lng > mxLo) mxLo = s.lng; }
+                const h = (mxLa - mnLa) * 111, w = (mxLo - mnLo) * 85;
+                return (h < 0.01 || w < 0.01) ? 1 : Math.max(h, w) / Math.min(h, w);
+            }
+            function trySplit(region, axis) {
+                const sorted = [...region].sort((a, b) => a[axis] - b[axis]);
+                const totalE = sorted.reduce((s, st) => s + st.eligible, 0);
+                let cum = 0, si = 0;
+                for (let i = 0; i < sorted.length; i++) { cum += sorted[i].eligible; if (cum >= totalE / 2) { si = i + 1; break; } }
+                if (si === 0) si = 1; if (si >= sorted.length) si = sorted.length - 1;
+                return { half1: sorted.slice(0, si), half2: sorted.slice(si), worstChildRatio: Math.max(bboxRatio(sorted.slice(0, si)), bboxRatio(sorted.slice(si))) };
+            }
             let regs = [stationList.slice()];
             while (regs.length < n) {
                 let maxIdx = 0, maxE = 0;
-                for (let i = 0; i < regs.length; i++) {
-                    const e = regs[i].reduce((s, st) => s + st.eligible, 0);
-                    if (e > maxE) { maxE = e; maxIdx = i; }
-                }
+                for (let i = 0; i < regs.length; i++) { const e = regs[i].reduce((s, st) => s + st.eligible, 0); if (e > maxE) { maxE = e; maxIdx = i; } }
                 const region = regs[maxIdx];
                 if (region.length < 2) break;
                 let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
-                for (const s of region) {
-                    if (s.lat < minLat) minLat = s.lat;
-                    if (s.lat > maxLat) maxLat = s.lat;
-                    if (s.lng < minLng) minLng = s.lng;
-                    if (s.lng > maxLng) maxLng = s.lng;
-                }
-                const axis = (maxLat - minLat) * 111 > (maxLng - minLng) * 85 ? 'lat' : 'lng';
-                region.sort((a, b) => a[axis] - b[axis]);
-                const totalE = region.reduce((s, st) => s + st.eligible, 0);
-                let cum = 0, splitIdx = 0;
-                for (let i = 0; i < region.length; i++) {
-                    cum += region[i].eligible;
-                    if (cum >= totalE / 2) { splitIdx = i + 1; break; }
-                }
-                if (splitIdx === 0) splitIdx = 1;
-                if (splitIdx >= region.length) splitIdx = region.length - 1;
-                regs.splice(maxIdx, 1, region.slice(0, splitIdx), region.slice(splitIdx));
+                for (const s of region) { if (s.lat < minLat) minLat = s.lat; if (s.lat > maxLat) maxLat = s.lat; if (s.lng < minLng) minLng = s.lng; if (s.lng > maxLng) maxLng = s.lng; }
+                const defAxis = (maxLat - minLat) * 111 > (maxLng - minLng) * 85 ? 'lat' : 'lng';
+                const altAxis = defAxis === 'lat' ? 'lng' : 'lat';
+                const splitA = trySplit(region, defAxis);
+                const splitB = trySplit(region, altAxis);
+                const best = splitA.worstChildRatio <= splitB.worstChildRatio ? splitA : splitB;
+                const half1 = best.half1, half2 = best.half2;
+                regs.splice(maxIdx, 1, half1, half2);
             }
             return regs;
         }

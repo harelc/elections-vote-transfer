@@ -1018,7 +1018,40 @@
         function partitionRegions(stationList, n) {
             if (n <= 1) return [stationList];
 
-            // Start with all stations in one region
+            // Compute bbox aspect ratio in km
+            function bboxRatio(pts) {
+                let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+                for (const s of pts) {
+                    if (s.lat < minLat) minLat = s.lat;
+                    if (s.lat > maxLat) maxLat = s.lat;
+                    if (s.lng < minLng) minLng = s.lng;
+                    if (s.lng > maxLng) maxLng = s.lng;
+                }
+                const h = (maxLat - minLat) * 111;
+                const w = (maxLng - minLng) * 85;
+                if (h < 0.01 || w < 0.01) return 1;
+                return Math.max(h, w) / Math.min(h, w);
+            }
+
+            // Try splitting a region along a given axis, return { half1, half2, splitIdx }
+            function trySplit(region, axis) {
+                const sorted = [...region].sort((a, b) => a[axis] - b[axis]);
+                const totalE = sorted.reduce((sum, s) => sum + s.eligible, 0);
+                const halfTarget = totalE / 2;
+                let cum = 0, splitIdx = 0;
+                for (let i = 0; i < sorted.length; i++) {
+                    cum += sorted[i].eligible;
+                    if (cum >= halfTarget) { splitIdx = i + 1; break; }
+                }
+                if (splitIdx === 0) splitIdx = 1;
+                if (splitIdx >= sorted.length) splitIdx = sorted.length - 1;
+                return {
+                    half1: sorted.slice(0, splitIdx),
+                    half2: sorted.slice(splitIdx),
+                    worstChildRatio: Math.max(bboxRatio(sorted.slice(0, splitIdx)), bboxRatio(sorted.slice(splitIdx))),
+                };
+            }
+
             let regs = [stationList.slice()];
 
             while (regs.length < n) {
@@ -1036,7 +1069,7 @@
                 const region = regs[maxIdx];
                 if (region.length < 2) break;
 
-                // Determine axis: lat if bbox taller, else lng
+                // Determine default axis: lat if bbox taller, else lng
                 let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
                 for (const s of region) {
                     if (s.lat < minLat) minLat = s.lat;
@@ -1044,34 +1077,17 @@
                     if (s.lng < minLng) minLng = s.lng;
                     if (s.lng > maxLng) maxLng = s.lng;
                 }
-
-                // Approximate: 1 degree lat ~111km, 1 degree lng ~85km at Israel's latitude
                 const latSpan = (maxLat - minLat) * 111;
                 const lngSpan = (maxLng - minLng) * 85;
-                const axis = latSpan > lngSpan ? 'lat' : 'lng';
+                const defaultAxis = latSpan > lngSpan ? 'lat' : 'lng';
+                const altAxis = defaultAxis === 'lat' ? 'lng' : 'lat';
 
-                // Sort along axis
-                region.sort((a, b) => a[axis] - b[axis]);
-
-                // Find split point that divides eligible voters ~50/50
-                const totalEligible = region.reduce((sum, s) => sum + s.eligible, 0);
-                const halfTarget = totalEligible / 2;
-                let cumulative = 0;
-                let splitIdx = 0;
-                for (let i = 0; i < region.length; i++) {
-                    cumulative += region[i].eligible;
-                    if (cumulative >= halfTarget) {
-                        splitIdx = i + 1;
-                        break;
-                    }
-                }
-
-                // Ensure at least 1 station in each half
-                if (splitIdx === 0) splitIdx = 1;
-                if (splitIdx >= region.length) splitIdx = region.length - 1;
-
-                const half1 = region.slice(0, splitIdx);
-                const half2 = region.slice(splitIdx);
+                // Try both axes, pick the one whose worst child is squarer
+                const splitA = trySplit(region, defaultAxis);
+                const splitB = trySplit(region, altAxis);
+                const best = splitA.worstChildRatio <= splitB.worstChildRatio ? splitA : splitB;
+                const half1 = best.half1;
+                const half2 = best.half2;
 
                 regs.splice(maxIdx, 1, half1, half2);
             }

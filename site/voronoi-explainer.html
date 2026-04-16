@@ -398,22 +398,36 @@
             const { bbox } = region;
             const latSpan = (bbox.maxLat - bbox.minLat) * 111;
             const lngSpan = (bbox.maxLng - bbox.minLng) * 85;
-            const axis = latSpan > lngSpan ? 'lat' : 'lng';
 
-            region.points.sort((a, b) => a[axis] - b[axis]);
-
-            const totalE = region.points.reduce((s, p) => s + p.eligible, 0);
-            const half = totalE / 2;
-            let cum = 0, splitIdx = 0;
-            for (let i = 0; i < region.points.length; i++) {
-                cum += region.points[i].eligible;
-                if (cum >= half) { splitIdx = i + 1; break; }
+            // Try splitting along a given axis, return child info
+            function trySplitAxis(ax) {
+                const sorted = [...region.points].sort((a, b) => a[ax] - b[ax]);
+                const totalE = sorted.reduce((s, p) => s + p.eligible, 0);
+                let cum = 0, si = 0;
+                for (let i = 0; i < sorted.length; i++) {
+                    cum += sorted[i].eligible;
+                    if (cum >= totalE / 2) { si = i + 1; break; }
+                }
+                if (si === 0) si = 1;
+                if (si >= sorted.length) si = sorted.length - 1;
+                const h1 = sorted.slice(0, si), h2 = sorted.slice(si);
+                // Aspect ratio of each child's bbox
+                function childRatio(pts) {
+                    let mnLa = Infinity, mxLa = -Infinity, mnLo = Infinity, mxLo = -Infinity;
+                    for (const p of pts) { if (p.lat < mnLa) mnLa = p.lat; if (p.lat > mxLa) mxLa = p.lat; if (p.lng < mnLo) mnLo = p.lng; if (p.lng > mxLo) mxLo = p.lng; }
+                    const h = (mxLa - mnLa) * 111, w = (mxLo - mnLo) * 85;
+                    return (h < 0.01 || w < 0.01) ? 1 : Math.max(h, w) / Math.min(h, w);
+                }
+                return { sorted, h1, h2, si, totalE, worstRatio: Math.max(childRatio(h1), childRatio(h2)) };
             }
-            if (splitIdx === 0) splitIdx = 1;
-            if (splitIdx >= region.points.length) splitIdx = region.points.length - 1;
 
-            const h1pts = region.points.slice(0, splitIdx);
-            const h2pts = region.points.slice(splitIdx);
+            // Try both axes, pick the squarer result
+            const tryLat = trySplitAxis('lat');
+            const tryLng = trySplitAxis('lng');
+            const best = tryLat.worstRatio <= tryLng.worstRatio ? tryLat : tryLng;
+            const axis = tryLat.worstRatio <= tryLng.worstRatio ? 'lat' : 'lng';
+
+            const h1pts = best.h1, h2pts = best.h2;
             const splitValue = (h1pts[h1pts.length - 1][axis] + h2pts[0][axis]) / 2;
 
             let bbox1, bbox2;
@@ -435,8 +449,8 @@
                     axis,
                     splitValue,
                     parentBbox: bbox,
-                    totalE,
-                    splitIdx,
+                    totalE: best.totalE,
+                    splitIdx: best.si,
                     h1E: h1pts.reduce((s, p) => s + p.eligible, 0),
                     h2E: h2pts.reduce((s, p) => s + p.eligible, 0),
                     stations: region.points,
