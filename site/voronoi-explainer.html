@@ -1137,7 +1137,7 @@
             }
         }
 
-        // Phase 6: Voronoi tessellation appears
+        // Phase 6: Voronoi tessellation appears (edges only, bright)
         function renderPhase6(t) {
             cumbarEl.classList.remove('visible');
             const fadeIn = Math.min(1, t / 1.5);
@@ -1146,8 +1146,17 @@
             // Points fade out as edges fade in
             drawPointsGray(0.4 * (1 - ease));
 
-            // All Voronoi edges fade in together
-            drawVoronoiEdges(ease * 0.5);
+            // Voronoi edges — brighter here since no colored cells or region boundaries
+            if (vorVoronoi) {
+                ctx.save();
+                ctx.globalAlpha = ease * 0.7;
+                ctx.strokeStyle = 'rgba(226, 232, 240, 0.6)';
+                ctx.lineWidth = 0.5;
+                ctx.beginPath();
+                vorVoronoi.render(ctx);
+                ctx.stroke();
+                ctx.restore();
+            }
         }
 
         // Phase 7: Voronoi cells colored by region — the actual map rendering
