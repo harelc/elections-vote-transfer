@@ -710,6 +710,12 @@
                 notes: { '17': 'העבודה-מימד (אמת)' }
             },
             {
+                id: 'together', name: 'ביחד', name_en: 'Together (Beyachad)', color: '#f97316',
+                elections: {
+                    '26': { partyName: 'ביחד', symbol: 'נב', seats: 32 },
+                }
+            },
+            {
                 id: 'hatnuah', name: 'התנועה', name_en: 'Hatnuah', color: '#fde68a',
                 elections: {
                     '19': { partyName: 'התנועה', symbol: 'צפ', seats: 6 },
@@ -732,6 +738,11 @@
             '25': { he: 'כנסת 25', en: 'Knesset 25' },
         };
         const TRANSITION_PAIRS = ['16_to_17', '17_to_18', '18_to_19', '19_to_20', '20_to_21', '21_to_22', '22_to_23', '23_to_24', '24_to_25'];
+        if (i18n.SHOW_E26) {
+            ELECTIONS.push('26');
+            ELECTION_LABELS['26'] = { he: 'כנסת 26', en: 'Knesset 26' };
+            TRANSITION_PAIRS.push('25_to_26');
+        }
 
         const params = new URLSearchParams(location.search);
         const partyParam = params.get('name');
@@ -748,8 +759,17 @@
             showProfile(partyParam);
         }
 
+        function withE26(href) {
+            if (!i18n.SHOW_E26) return href;
+            return href + (href.includes('?') ? '&' : '?') + 'e26=1';
+        }
+
+        function activeFamilies() {
+            return PARTY_FAMILIES.filter(f => ELECTIONS.some(e => f.elections[e]));
+        }
+
         function findFamily(name) {
-            return PARTY_FAMILIES.find(f =>
+            return activeFamilies().find(f =>
                 f.name === name || f.name_en === name ||
                 Object.values(f.elections).some(e => e.partyName === name)
             );
@@ -761,7 +781,7 @@
             const lang = i18n.getLang();
 
             // Sort families by latest seats desc
-            const sorted = [...PARTY_FAMILIES].sort((a, b) => {
+            const sorted = activeFamilies().sort((a, b) => {
                 const aSeats = getLatestSeats(a);
                 const bSeats = getLatestSeats(b);
                 return bSeats - aSeats;
@@ -778,7 +798,7 @@
                 const seats = getLatestSeats(f);
                 const displayName = lang === 'en' ? f.name_en : f.name;
                 const seatsLabel = seats > 0 ? seats + ' ' + i18n.t('seats') : '—';
-                html += '<a class="party-card" href="party.html?name=' + encodeURIComponent(f.name) + '">';
+                html += '<a class="party-card" href="' + withE26('party.html?name=' + encodeURIComponent(f.name)) + '">';
                 html += '<span class="party-card-dot" style="background:' + f.color + '"></span>';
                 html += '<div class="party-card-info">';
                 html += '<div class="party-card-name">' + displayName + '</div>';
@@ -1521,7 +1541,7 @@
                 if (q.length < 1) { dropdown.classList.remove('visible'); return; }
 
                 const lang = i18n.getLang();
-                const matches = PARTY_FAMILIES.filter(f => {
+                const matches = activeFamilies().filter(f => {
                     const names = [f.name, f.name_en, ...Object.values(f.elections).map(e => e.partyName)];
                     return names.some(n => n && n.toLowerCase().includes(q));
                 }).slice(0, 10);
@@ -1530,7 +1550,7 @@
 
                 dropdown.innerHTML = matches.map(f => {
                     const display = lang === 'en' ? f.name_en : f.name;
-                    return '<a href="party.html?name=' + encodeURIComponent(f.name) + '">' +
+                    return '<a href="' + withE26('party.html?name=' + encodeURIComponent(f.name)) + '">' +
                         '<span class="sdot" style="background:' + f.color + '"></span>' + display + '</a>';
                 }).join('');
                 dropdown.classList.add('visible');

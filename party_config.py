@@ -8,6 +8,7 @@ Official data from votes.bechirot.gov.il
 PARTY_COLORS = {
     'likud': '#2563eb',       # Blue
     'yesh_atid': '#06b6d4',   # Cyan
+    'together': '#f97316',    # Orange (Bennett-led joint list)
     'blue_white': '#8b5cf6',  # Purple
     'shas': '#1e3a8a',        # Dark blue
     'utj': '#4b5563',         # Gray
@@ -509,14 +510,16 @@ PARTIES = {
 
     # ===== Election 26 new parties =====
     'נב': {
-        'name': 'בנט 26',
-        'name_en': 'Bennett-26',
-        'color': '#f97316',
-        'leader': 'נפתלי בנט',
-        'leader_en': 'Naftali Bennett',
+        'name': 'ביחד',
+        'name_en': 'Together (Beyachad)',
+        'color': PARTY_COLORS['together'],
+        'leader': 'נפתלי בנט ויאיר לפיד',
+        'leader_en': 'Naftali Bennett and Yair Lapid',
         'leader_image': 'images/leaders/bennett.jpg',
-        'ideology': 'ימין, ממלכתיות',
-        'description': 'מפלגה חדשה בראשות נפתלי בנט'
+        'logo': 'images/logos/yesh_atid.png',
+        'ideology': 'מרכז-ימין, ממלכתיות, ליברליזם',
+        'founded': 2026,
+        'description': 'רשימה משותפת של בנט 26 ויש עתיד בראשות נפתלי בנט'
     },
     'דמ': {
         'name': 'הדמוקרטים',
@@ -769,10 +772,10 @@ ELECTIONS = {
         'valid_votes': 4750000,
         'turnout_percent': 69.6,
         'major_parties': {
-            'symbols': ['מחל', 'נב', 'פה', 'ל', 'דמ', 'שס', 'ג', 'עם', 'ט', 'עי', 'יר'],
-            'names': ['הליכוד', 'בנט 26', 'יש עתיד', 'ישראל ביתנו', 'הדמוקרטים', 'ש״ס',
+            'symbols': ['מחל', 'נב', 'ל', 'דמ', 'שס', 'ג', 'עם', 'ט', 'עי', 'יר'],
+            'names': ['הליכוד', 'ביחד', 'ישראל ביתנו', 'הדמוקרטים', 'ש״ס',
                      'יהדות התורה', 'הרשימה המשותפת', 'הציונות הדתית', 'עוצמה יהודית', 'ישר'],
-            'seats': [18, 22, 10, 8, 10, 11, 7, 11, 4, 9, 10]
+            'seats': [18, 32, 8, 10, 11, 7, 11, 4, 9, 10]
         }
     }
 }
