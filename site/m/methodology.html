@@ -13,6 +13,12 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+            crossorigin="anonymous"
+            onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'\\\\(',right:'\\\\)',display:false},{left:'\\\\[',right:'\\\\]',display:true},{left:'$',right:'$',display:false}]});"></script>
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
     <style>
@@ -34,14 +40,21 @@
             min-height: 100vh;
             line-height: 1.65;
         }
+        /* Show Hebrew or English prose based on root lang */
+        html[lang="he"] .prose-en { display: none; }
+        html[lang="en"] .prose-he { display: none; }
+        html[lang="en"] body { direction: ltr; }
         .main-header {
             text-align: center;
             padding: 1.2rem 1rem 0.8rem;
             background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
             border-bottom: 1px solid var(--border-color);
+            position: relative;
         }
         .main-header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; }
         .main-header .subtitle { color: var(--text-secondary); font-size: 1rem; margin-top: 0.3rem; }
+        .header-controls { position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem; }
+        html[dir="rtl"] .header-controls { left: auto; right: 1rem; }
         .content {
             max-width: 1100px;
             margin: 0 auto;
@@ -51,19 +64,16 @@
         .content h2 { font-size: 1.5rem; margin-bottom: 0.8rem; color: #cfe1ff; }
         .content h3 { font-size: 1.1rem; margin: 1.2rem 0 0.4rem; color: var(--text-secondary); }
         .content p { margin-bottom: 0.8rem; }
-        .formula {
+        .formula-block {
             background: var(--bg-secondary);
             padding: 1rem 1.5rem;
             border-radius: 6px;
-            font-family: 'Heebo', monospace;
             text-align: center;
-            font-size: 1.1rem;
-            color: #ffd7a8;
             border: 1px solid var(--border-color);
             margin: 0.8rem 0;
             direction: ltr;
         }
-        code { background: var(--bg-tertiary); padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.95em; }
+        .formula-block .katex { color: #ffd7a8; }
         .alpha-table {
             border-collapse: collapse;
             width: 100%;
@@ -84,7 +94,9 @@
             top: 0;
         }
         .alpha-table th.party { text-align: right; font-weight: 600; }
+        html[lang="en"] .alpha-table th.party { text-align: left; }
         .alpha-table td.party { text-align: right; font-family: 'Heebo'; color: var(--text-secondary); }
+        html[lang="en"] .alpha-table td.party { text-align: left; }
         .alpha-cell { font-weight: 500; color: white; }
         .alpha-empty { color: var(--text-muted); opacity: 0.4; }
         .pooled-row td { font-weight: 700; background: var(--bg-secondary); }
@@ -113,6 +125,7 @@
             border-radius: 4px;
             font-size: 0.95rem;
         }
+        html[dir="rtl"] .insight-card { border-left: none; border-right: 3px solid var(--accent-primary); }
         .insight-card strong { color: #ffd7a8; }
         footer {
             text-align: center;
@@ -123,99 +136,186 @@
         }
         footer a { color: var(--text-secondary); text-decoration: none; }
         footer a:hover { color: var(--text-primary); }
+        .lang-btn {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 0.3rem 0.7rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        .lang-btn:hover { background: var(--bg-secondary); }
     </style>
 </head>
 <body>
     <header class="main-header">
-        <h1>מתודולוגיה: פיזור שאריות והפרמטר α</h1>
+        <div class="header-controls">
+            <a href="index.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.9rem;padding:0.3rem 0.7rem;border:1px solid var(--border-color);border-radius:4px"><span class="prose-he">→ דף הבית</span><span class="prose-en">← Home</span></a>
+            <button class="lang-btn" id="lang-toggle"><span class="prose-he">EN</span><span class="prose-en">עב</span></button>
+        </div>
+        <h1><span class="prose-he">מתודולוגיה: פיזור שאריות והפרמטר α</span><span class="prose-en">Methodology: Residual Dispersion and α</span></h1>
         <p class="subtitle">Residual dispersion in vote-transfer estimation — Dirichlet model</p>
-        <nav style="margin-top:1rem"><a href="index.html" style="color:var(--text-secondary);text-decoration:none">← דף הבית</a></nav>
-    </header>
-    <style>.content { padding: 1rem !important; } .formula { font-size: 0.95rem !important; padding: 0.6rem !important; } .alpha-table { font-size: 0.75rem !important; }</style>
-    <header style="display:none">
     </header>
 
     <main class="content">
+        <!-- Section 1: The model -->
         <section>
-            <h2>The model</h2>
-            <p>Our convex-optimization solver produces a transfer matrix <code>M</code> that maps K-prev party shares to K-curr party shares <em>on average</em>. But individual ballots vary around this average — some precincts swing harder than the matrix predicts, others swing softer. We model this residual variation with a <strong>Dirichlet distribution</strong>: for each ballot <code>b</code>, the K-curr vote proportions are drawn from</p>
-            <div class="formula">y<sub>b</sub> ~ Dirichlet(α · p̂<sub>b</sub>),&nbsp;&nbsp;where&nbsp; p̂<sub>b</sub> = (x<sub>b</sub> · M) / ‖x<sub>b</sub> · M‖<sub>1</sub></div>
-            <p>The scalar <code>α</code> ("concentration") controls how tightly each ballot clusters around the matrix-predicted proportion. The variance of each component is</p>
-            <div class="formula">Var(y<sub>bi</sub>) = p̂<sub>bi</sub>(1 − p̂<sub>bi</sub>) / (α + 1)</div>
-            <p>Large α → low noise (every ballot looks like the matrix prediction); small α → high noise (precincts wobble considerably).</p>
+            <h2><span class="prose-he">המודל</span><span class="prose-en">The model</span></h2>
+            <div class="prose-he">
+                <p>פותר הקוֹמְבֶּקְס אוֹפְּטִימִיזֵישְׁן שלנו מפיק מטריצת העברה $M$ שממפה את חלקי ההצבעה בבחירות הקודמות לבחירות הנוכחיות <em>בממוצע</em>. אך קלפיות בודדות סוטות מהממוצע — חלק מהקלפיות סוטות חזק יותר ממה שהמטריצה צופה, אחרות פחות. אנו מודלים את הפיזור הזה בעזרת <strong>התפלגות דיריכלה</strong>: עבור כל קלפי $k$, וקטור החלקים בבחירות החדשות נדגם מ:</p>
+                <div class="formula-block">$$\mathbf{y}_k \sim \mathrm{Dirichlet}(\alpha \cdot \hat{\mathbf{p}}_k), \quad \hat{\mathbf{p}}_k = \frac{\mathbf{x}_k^\top M}{\|\mathbf{x}_k^\top M\|_1}$$</div>
+                <p>הסקלר $\alpha$ (פרמטר ה־"ריכוז") קובע עד כמה כל קלפי צמודה לתחזית המטריצה. השונות של כל רכיב היא:</p>
+                <div class="formula-block">$$\mathrm{Var}(y_{kj}) = \frac{\hat{p}_{kj}(1 - \hat{p}_{kj})}{\alpha + 1}$$</div>
+                <p>$\alpha$ גדול → רעש נמוך (כל קלפי דומה לתחזית המטריצה); $\alpha$ קטן → רעש גבוה (קלפיות סוטות באופן משמעותי).</p>
+            </div>
+            <div class="prose-en">
+                <p>Our convex-optimization solver produces a transfer matrix $M$ that maps K-prev party shares to K-curr party shares <em>on average</em>. But individual ballots vary around this average — some precincts swing harder than the matrix predicts, others softer. We model this residual variation with a <strong>Dirichlet distribution</strong>: for each ballot $k$, the K-curr vote proportions are drawn from</p>
+                <div class="formula-block">$$\mathbf{y}_k \sim \mathrm{Dirichlet}(\alpha \cdot \hat{\mathbf{p}}_k), \quad \hat{\mathbf{p}}_k = \frac{\mathbf{x}_k^\top M}{\|\mathbf{x}_k^\top M\|_1}$$</div>
+                <p>The scalar $\alpha$ (the "concentration parameter") controls how tightly each ballot clusters around the matrix-predicted proportion. The variance of each component is</p>
+                <div class="formula-block">$$\mathrm{Var}(y_{kj}) = \frac{\hat{p}_{kj}(1 - \hat{p}_{kj})}{\alpha + 1}$$</div>
+                <p>Large $\alpha$ → low noise (every ballot looks like the matrix prediction); small $\alpha$ → high noise (precincts wobble considerably).</p>
+            </div>
         </section>
 
+        <!-- Section 2: Estimation -->
         <section>
-            <h2>Estimating α empirically</h2>
-            <p>Given the recovered matrix M and ballot-level data, we use method-of-moments:</p>
-            <div class="formula">α̂ + 1 = Σ<sub>b,i</sub> p̂<sub>bi</sub>(1 − p̂<sub>bi</sub>) / Σ<sub>b,i</sub> (y<sub>bi</sub> − p̂<sub>bi</sub>)<sup>2</sup></div>
-            <p>We compute this both <strong>pooled</strong> across all (ballot, party) cells, and <strong>per destination party</strong> (column of M), revealing which parties cluster tightly around the matrix vs. which fragment unpredictably across precincts.</p>
-
-            <h3>Why the &quot;effective sample size&quot; analogy?</h3>
-            <p>If each ballot's voters drew independently from <code>p̂<sub>b</sub></code>, the variance would be <code>p(1−p)/N</code> for N voters. Real Israeli ballots have ~300–400 voters but the data shows variance equivalent to only α ≈ 30–120 independent draws — i.e., a <strong>3–14× over-dispersion factor</strong> relative to pure multinomial sampling. This excess reflects unmodeled local factors: candidate visits, neighborhood-specific events, single-block voting blocs, etc.</p>
+            <h2><span class="prose-he">אמידה אמפירית של α</span><span class="prose-en">Estimating α empirically</span></h2>
+            <div class="prose-he">
+                <p>בהינתן המטריצה המשוחזרת $M$ והנתונים ברמת הקלפי, אנו משתמשים בשיטת המומנטים:</p>
+                <div class="formula-block">$$\hat{\alpha} + 1 = \frac{\sum_{k,j} \hat{p}_{kj}(1 - \hat{p}_{kj})}{\sum_{k,j} (y_{kj} - \hat{p}_{kj})^2}$$</div>
+                <p>אנו מחשבים זאת גם <strong>אגרגטיבית</strong> על כל תאי השאריות, וגם <strong>לפי מפלגת יעד</strong> (טור של $M$), כדי לחשוף אילו מפלגות צמודות בעקביות לתחזית המטריצה ואילו מתפזרות בקלפיות באופן בלתי צפוי.</p>
+                <h3>למה האנלוגיה ל"גודל מדגם אפקטיבי"?</h3>
+                <p>אם כל קלפי הייתה דוגמת מצביעים באופן בלתי תלוי מ־$\hat{\mathbf{p}}_k$, השונות הייתה $p(1-p)/N$ עבור $N$ מצביעים. בקלפיות ישראליות יש בדרך כלל 300–400 מצביעים, אך הנתונים מראים שונות שווה רק ל־$\alpha \approx 30$–$120$ הגרלות עצמאיות — כלומר <strong>גורם פיזור־יתר של פי 3–14</strong> ביחס לדגימה מולטינומיאלית טהורה. עודף זה משקף השפעות מקומיות שהמטריצה לא תופסת: ביקורי מועמדים, אירועי שכונה, בלוקי הצבעה משותפים וכד'.</p>
+            </div>
+            <div class="prose-en">
+                <p>Given the recovered matrix $M$ and ballot-level data, we use method-of-moments:</p>
+                <div class="formula-block">$$\hat{\alpha} + 1 = \frac{\sum_{k,j} \hat{p}_{kj}(1 - \hat{p}_{kj})}{\sum_{k,j} (y_{kj} - \hat{p}_{kj})^2}$$</div>
+                <p>We compute this both <strong>pooled</strong> across all (ballot, party) cells, and <strong>per destination party</strong> (column of $M$), revealing which parties cluster tightly around the matrix vs. which fragment unpredictably across precincts.</p>
+                <h3>Why the "effective sample size" analogy?</h3>
+                <p>If each ballot's voters drew independently from $\hat{\mathbf{p}}_k$, the variance would be $p(1-p)/N$ for $N$ voters. Real Israeli ballots have ~300–400 voters but the data shows variance equivalent to only $\alpha \approx 30$–$120$ independent draws — i.e., a <strong>3–14× over-dispersion factor</strong> relative to pure multinomial sampling. This excess reflects unmodeled local factors: candidate visits, neighborhood-specific events, single-block voting blocs, etc.</p>
+            </div>
         </section>
 
+        <!-- Section 3: Pooled table -->
         <section>
-            <h2>Pooled α per transition</h2>
-            <p>Each row solves the convex optimization, then computes α̂ over all (ballot, party) residuals. <em>N/α</em> = over-dispersion vs. pure independent sampling.</p>
+            <h2><span class="prose-he">α אגרגטיבי לפי מעבר</span><span class="prose-en">Pooled α per transition</span></h2>
+            <div class="prose-he">
+                <p>כל שורה פותרת את האופטימיזציה הקמורה, ואז מחשבת את $\hat\alpha$ על כל תאי השאריות. $N/\alpha$ = פיזור־יתר ביחס לדגימה עצמאית טהורה.</p>
+            </div>
+            <div class="prose-en">
+                <p>Each row solves the convex optimization, then computes $\hat\alpha$ over all (ballot, party) residuals. $N/\alpha$ = over-dispersion vs. pure independent sampling.</p>
+            </div>
             <div class="table-wrapper">
                 <table class="alpha-table" id="pooled-table">
-                    <thead><tr><th>Transition</th><th>α (pooled)</th><th>Avg ballot size</th><th>N/α (over-disp)</th><th># ballots</th></tr></thead>
+                    <thead><tr>
+                        <th><span class="prose-he">מעבר</span><span class="prose-en">Transition</span></th>
+                        <th>α <span class="prose-he">(אגרגטיבי)</span><span class="prose-en">(pooled)</span></th>
+                        <th><span class="prose-he">גודל קלפי ממוצע</span><span class="prose-en">Avg ballot size</span></th>
+                        <th>N/α <span class="prose-he">(פיזור־יתר)</span><span class="prose-en">(over-disp)</span></th>
+                        <th><span class="prose-he">מס׳ קלפיות</span><span class="prose-en"># ballots</span></th>
+                    </tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
-            <div class="insight-card"><strong>Pattern:</strong> α peaks during back-to-back repeat elections (K21→K22, K22→K23) when voter behavior is most stable, and bottoms out during realignments (K20→K21).</div>
+            <div class="insight-card">
+                <span class="prose-he"><strong>תבנית:</strong> $\alpha$ מגיע לשיא בבחירות עוקבות חוזרות (K21→K22, K22→K23) שבהן התנהגות המצביעים יציבה ביותר, ויורד למינימום במהלך מהפכים פוליטיים (K20→K21).</span>
+                <span class="prose-en"><strong>Pattern:</strong> $\alpha$ peaks during back-to-back repeat elections (K21→K22, K22→K23) when voter behavior is most stable, and bottoms out during realignments (K20→K21).</span>
+            </div>
         </section>
 
+        <!-- Section 4: Heatmap -->
         <section>
-            <h2>Per-destination α heatmap</h2>
-            <p>One cell per (transition, party) pair. Color encodes α: deeper teal = tighter clustering. Empty cells = party not in election. Hover for exact value + mean share.</p>
+            <h2><span class="prose-he">α לפי מפלגת יעד — מפת חום</span><span class="prose-en">Per-destination α heatmap</span></h2>
+            <div class="prose-he">
+                <p>תא אחד לכל זוג (מעבר, מפלגה). הצבע מקודד את $\alpha$: ירוק־כחול עמוק = ריכוז הדוק, אדום = פיזור גבוה. תאים ריקים = המפלגה לא הייתה בבחירות. ריחוף מציג ערך מדויק וחלק ממוצע.</p>
+            </div>
+            <div class="prose-en">
+                <p>One cell per (transition, party) pair. Color encodes $\alpha$: deeper teal = tighter clustering. Empty cells = party not in election. Hover for exact value + mean share.</p>
+            </div>
             <div class="legend">
-                <span>Low α (volatile)</span>
+                <span class="prose-he">α נמוך (תנודתי)</span><span class="prose-en">Low α (volatile)</span>
                 <span class="legend-swatch" style="background:#7a1f1f"></span>
                 <span class="legend-swatch" style="background:#a35234"></span>
                 <span class="legend-swatch" style="background:#8a7a35"></span>
                 <span class="legend-swatch" style="background:#2d6f6a"></span>
                 <span class="legend-swatch" style="background:#0d4a5a"></span>
-                <span>High α (cohesive)</span>
+                <span class="prose-he">α גבוה (לכיד)</span><span class="prose-en">High α (cohesive)</span>
             </div>
             <div class="table-wrapper">
                 <table class="alpha-table" id="heatmap-table"></table>
             </div>
-            <div class="insight-card" style="margin-top:1rem"><strong>Three regimes emerge:</strong></div>
-            <div class="insight-card"><strong>Ultra-Orthodox</strong> (ש״ס, יהדות התורה): α = 30–225 — the tightest communal voting in the country. Rabbinic endorsement effectively dictates every ballot's mix.</div>
-            <div class="insight-card"><strong>Major centrist/right Jewish parties</strong> (Likud, יש עתיד, כחול לבן, קדימה): α = 50–160. Moderately consistent; mainstream voters scatter somewhat but the matrix captures most of the signal.</div>
-            <div class="insight-card"><strong>Arab parties</strong> (חד״ש, רע״ם, בל״ד, Joint List): α = 4–25. The lowest in the country — <em>not</em> because individual Arab voters are flighty, but because their geographic distribution is bimodal (≈80% support in Arab-majority precincts, near-0% elsewhere). The matrix's single transfer fraction can't capture both regimes, so the residuals are huge.</div>
+            <div class="insight-card" style="margin-top:1rem">
+                <span class="prose-he"><strong>שלושה משטרים מובחנים:</strong></span>
+                <span class="prose-en"><strong>Three regimes emerge:</strong></span>
+            </div>
+            <div class="insight-card">
+                <span class="prose-he"><strong>חרדים</strong> (ש״ס, יהדות התורה): $\alpha = 30$–$225$ — ההצבעה הקהילתית הצפופה ביותר במדינה. תמיכת רבנים קובעת בפועל את התמהיל בכל קלפי.</span>
+                <span class="prose-en"><strong>Ultra-Orthodox</strong> (ש״ס, יהדות התורה): $\alpha = 30$–$225$ — the tightest communal voting in the country. Rabbinic endorsement effectively dictates every ballot's mix.</span>
+            </div>
+            <div class="insight-card">
+                <span class="prose-he"><strong>מפלגות מרכז־ימין יהודיות גדולות</strong> (הליכוד, יש עתיד, כחול לבן, קדימה): $\alpha = 50$–$160$. עקביות בינונית; מצביעי המיינסטרים מתפזרים מעט אך המטריצה תופסת את רוב האות.</span>
+                <span class="prose-en"><strong>Major centrist/right Jewish parties</strong> (Likud, יש עתיד, כחול לבן, קדימה): $\alpha = 50$–$160$. Moderately consistent; mainstream voters scatter somewhat but the matrix captures most of the signal.</span>
+            </div>
+            <div class="insight-card">
+                <span class="prose-he"><strong>מפלגות ערביות</strong> (חד״ש, רע״ם, בל״ד, הרשימה המשותפת): $\alpha = 4$–$25$. הנמוך ביותר במדינה — <em>לא</em> בגלל שמצביעים ערבים אישית הפכפכים, אלא בגלל שהתפלגות התמיכה גיאוגרפית דו־מודלית (כ־80% בקלפיות ערביות, קרוב ל־0% בשאר), והמטריצה לא יכולה לתפוס שני המשטרים בו־זמנית, כך שהשאריות גדולות.</span>
+                <span class="prose-en"><strong>Arab parties</strong> (חד״ש, רע״ם, בל״ד, Joint List): $\alpha = 4$–$25$. The lowest in the country — <em>not</em> because individual Arab voters are flighty, but because their geographic distribution is bimodal (≈80% support in Arab-majority precincts, near-0% elsewhere). The matrix's single transfer fraction can't capture both regimes, so the residuals are huge.</span>
+            </div>
         </section>
 
+        <!-- Section 5: Implications -->
         <section>
-            <h2>Implications</h2>
-            <p>α is a useful summary statistic for several purposes:</p>
-            <ul style="margin:0.5rem 1.5rem 1rem 0; line-height:1.8">
-                <li><strong>Forward simulation</strong> (e.g., K26 scenario): plug α back into a Dirichlet noise model to generate realistic synthetic ballots given a hypothesized matrix.</li>
-                <li><strong>Bootstrap-free CIs</strong>: closed-form variance for transfer-matrix coefficients, given α and ballot-size distribution.</li>
-                <li><strong>Diagnostic</strong>: low α for a party indicates that the linear-stochastic transfer model is a poor fit for that party — either due to demographic bimodality, structural change, or genuine over-dispersion.</li>
-            </ul>
-            <p>The full per-(transition, party) table is also available as JSON: <a href="../data/alpha_estimates.json" style="color:var(--accent-primary)">data/alpha_estimates.json</a>.</p>
+            <h2><span class="prose-he">השלכות</span><span class="prose-en">Implications</span></h2>
+            <div class="prose-he">
+                <p>$\alpha$ הוא סטטיסטיקה שימושית למספר מטרות:</p>
+                <ul style="margin:0.5rem 1.5rem 1rem 0; line-height:1.8">
+                    <li><strong>סימולציה קדימה</strong> (כמו תרחיש K26): הזרקה של $\alpha$ למודל רעש דיריכלה ייצור קלפיות סינתטיות מציאותיות בהינתן מטריצה משוערת.</li>
+                    <li><strong>רווחי סמך ללא בוטסטראפ</strong>: שונות בצורה סגורה למקדמי המטריצה, בהינתן $\alpha$ והתפלגות גדלי הקלפיות.</li>
+                    <li><strong>דיאגנוסטיקה</strong>: $\alpha$ נמוך עבור מפלגה מצביע שמודל ההעברה הליניארי־סטוכסטי לא מתאים לה — בשל דו־מודאליות גיאוגרפית, שינוי מבני, או פיזור־יתר אמיתי.</li>
+                </ul>
+                <p>הטבלה המלאה לפי (מעבר, מפלגה) זמינה גם כ־JSON: <a href="../data/alpha_estimates.json" style="color:var(--accent-primary)">data/alpha_estimates.json</a>.</p>
+            </div>
+            <div class="prose-en">
+                <p>$\alpha$ is a useful summary statistic for several purposes:</p>
+                <ul style="margin:0.5rem 1.5rem 1rem 0; line-height:1.8">
+                    <li><strong>Forward simulation</strong> (e.g., K26 scenario): plug $\alpha$ back into a Dirichlet noise model to generate realistic synthetic ballots given a hypothesized matrix.</li>
+                    <li><strong>Bootstrap-free CIs</strong>: closed-form variance for transfer-matrix coefficients, given $\alpha$ and ballot-size distribution.</li>
+                    <li><strong>Diagnostic</strong>: low $\alpha$ for a party indicates that the linear-stochastic transfer model is a poor fit for that party — either due to demographic bimodality, structural change, or genuine over-dispersion.</li>
+                </ul>
+                <p>The full per-(transition, party) table is also available as JSON: <a href="../data/alpha_estimates.json" style="color:var(--accent-primary)">data/alpha_estimates.json</a>.</p>
+            </div>
         </section>
     </main>
 
     <footer>
-        Methodology by Harel Cain · <a href="https://github.com/harelc/elections-vote-transfer">Source code</a>
+        <span class="prose-he">מתודולוגיה מאת הראל קיין · <a href="https://github.com/harelc/elections-vote-transfer">קוד מקור</a></span>
+        <span class="prose-en">Methodology by Harel Cain · <a href="https://github.com/harelc/elections-vote-transfer">Source code</a></span>
     </footer>
 
     <script>
+        // Language toggle (lightweight; doesn't rely on i18n.js which expects data-i18n keys)
+        const langToggle = document.getElementById('lang-toggle');
+        function setLang(lang) {
+            document.documentElement.lang = lang;
+            document.documentElement.dir = (lang === 'he') ? 'rtl' : 'ltr';
+            try { localStorage.setItem('lang', lang); } catch (e) {}
+        }
+        // Initialize from stored preference
+        try {
+            const stored = localStorage.getItem('lang');
+            if (stored === 'he' || stored === 'en') setLang(stored);
+        } catch (e) {}
+        langToggle.addEventListener('click', () => {
+            setLang(document.documentElement.lang === 'he' ? 'en' : 'he');
+        });
+
         // Color scale for alpha: red (low) → orange → yellow → teal → blue (high)
         function alphaColor(a) {
             if (a == null || isNaN(a)) return '#1a1a25';
-            // Map log(alpha) over [log(3), log(250)] to a 5-stop gradient
             const t = Math.max(0, Math.min(1, (Math.log(a) - Math.log(3)) / (Math.log(250) - Math.log(3))));
             const stops = [
-                [122, 31, 31],   // dark red
-                [163, 82, 52],   // burnt orange
-                [138, 122, 53],  // dark gold
-                [45, 111, 106],  // teal
-                [13, 74, 90],    // deep blue-teal
+                [122, 31, 31], [163, 82, 52], [138, 122, 53], [45, 111, 106], [13, 74, 90],
             ];
             const idx = Math.min(stops.length - 2, Math.floor(t * (stops.length - 1)));
             const frac = t * (stops.length - 1) - idx;
@@ -225,10 +325,7 @@
 
         fetch('../data/alpha_estimates.json')
             .then(r => r.json())
-            .then(data => {
-                renderPooled(data);
-                renderHeatmap(data);
-            });
+            .then(data => { renderPooled(data); renderHeatmap(data); });
 
         function renderPooled(data) {
             const tbody = document.querySelector('#pooled-table tbody');
@@ -249,12 +346,8 @@
 
         function renderHeatmap(data) {
             const transitions = Object.keys(data);
-            // Gather all destination parties across transitions
             const allParties = new Set();
-            for (const k of transitions) {
-                for (const p of Object.keys(data[k].per_destination)) allParties.add(p);
-            }
-            // Sort parties by max-α-across-transitions descending (tighter parties first)
+            for (const k of transitions) for (const p of Object.keys(data[k].per_destination)) allParties.add(p);
             const partyMaxAlpha = {};
             for (const p of allParties) {
                 let maxA = 0;
@@ -267,14 +360,9 @@
             const partyList = [...allParties].sort((a, b) => partyMaxAlpha[b] - partyMaxAlpha[a]);
 
             const table = document.getElementById('heatmap-table');
-            // Header row
             let html = '<thead><tr><th class="party">Party</th>';
-            for (const k of transitions) {
-                const [from, to] = k.split('_to_');
-                html += `<th>${from}→${to}</th>`;
-            }
+            for (const k of transitions) { const [from, to] = k.split('_to_'); html += `<th>${from}→${to}</th>`; }
             html += '</tr></thead><tbody>';
-            // Data rows
             for (const p of partyList) {
                 html += `<tr><td class="party">${p}</td>`;
                 for (const k of transitions) {
@@ -287,8 +375,7 @@
                 }
                 html += '</tr>';
             }
-            // Pooled row
-            html += '<tr class="pooled-row"><td class="party">Pooled (all parties)</td>';
+            html += '<tr class="pooled-row"><td class="party">Pooled</td>';
             for (const k of transitions) {
                 const a = data[k].alpha_pooled;
                 html += `<td class="alpha-cell" style="background:${alphaColor(a)}">${a.toFixed(1)}</td>`;
