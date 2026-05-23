@@ -203,7 +203,7 @@
                 <p class="methodology">
                     <strong data-i18n="methodology_short">מתודולוגיה:</strong>
                     <span data-i18n="methodology_text">כל קלפי מהווה תצפית רועשת (noisy observation) של דפוס מעבר הקולות הארצי. המצביעים בכל קלפי נוהגים באופן דומה לאוכלוסייה הכללית, אך גודל המדגם הקטן (מאות בוחרים) יוצר רעש סטטיסטי. על ידי רגרסיה על אלפי קלפיות ברחבי הארץ, ניתן לשחזר את מטריצת המעבר הארצית האמיתית.</span>
-                    <a href="#" class="methodology-link" id="open-methodology" data-i18n="read_more_methodology">קראו עוד על המתודולוגיה...</a>
+                    <a href="methodology.html" class="methodology-link" data-i18n="read_more_methodology">קראו עוד על המתודולוגיה...</a>
                 </p>
                 <p class="credits">
                     <span data-i18n="credits_line">© הראל קין</span> |
@@ -399,22 +399,11 @@
             }
         </style>
 
+        <!-- Methodology link now navigates to methodology.html (modal removed). -->
         <script>
-            document.getElementById('open-methodology').addEventListener('click', (e) => {
-                e.preventDefault();
-                document.getElementById('methodology-modal').classList.add('visible');
-                document.body.style.overflow = 'hidden';
-            });
-            document.getElementById('close-methodology').addEventListener('click', () => {
-                document.getElementById('methodology-modal').classList.remove('visible');
-                document.body.style.overflow = '';
-            });
-            document.getElementById('methodology-modal').addEventListener('click', (e) => {
-                if (e.target === e.currentTarget) {
-                    document.getElementById('methodology-modal').classList.remove('visible');
-                    document.body.style.overflow = '';
-                }
-            });
+            // Hide the unused modal HTML left in place above (the link no longer triggers it).
+            const _oldModal = document.getElementById('methodology-modal');
+            if (_oldModal) _oldModal.remove();
         </script>
     </div>
 
