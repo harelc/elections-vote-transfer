@@ -476,6 +476,7 @@
         'הדמוקרטים': 'The Democrats',
         'עוצמה יהודית': 'Jewish Power',
         'ישר': 'Yashar',
+        'המילואימניקים': 'The Reservists',
     };
 
     /* ── State ── */

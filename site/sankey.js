@@ -25,7 +25,8 @@ const INFO_OVERRIDES = {
     'ביחד': { ideology: 'מרכז-ימין, ממלכתיות, ליברליזם', founded: 2026, description: 'רשימה משותפת של בנט 26 ויש עתיד בראשות נפתלי בנט' },
     'הדמוקרטים': { ideology: 'שמאל, סוציאל-דמוקרטיה', founded: 2026, description: 'איחוד העבודה ומרצ תחת מטריית מפלגה חדשה' },
     'עוצמה יהודית': { ideology: 'ימין קיצוני, לאומנות', founded: 2012, description: 'מפלגה לאומנית בהנהגת איתמר בן גביר' },
-    'ישר': { ideology: 'מרכז, ליברליזם', founded: 2026, description: 'מפלגת מרכז חדשה' },
+    'ישר': { ideology: 'מרכז, ממלכתיות, ביטחון', founded: 2026, description: 'מפלגת מרכז חדשה בראשות הרמטכ"ל לשעבר גדי אייזנקוט' },
+    'המילואימניקים': { ideology: 'מרכז-ימין, ביטחון, מילואים', founded: 2026, description: 'מפלגה חדשה בראשות יועז הנדל המייצגת את ציבור המילואימניקים' },
 };
 
 function applyColorOverrides(nodes) {
@@ -45,7 +46,7 @@ class VoteTransferSankey {
         this.legendsOverlay = document.getElementById('legends-overlay');
         this.data = null;
         this.officialResults = null;
-        this.currentTransition = '24_to_25';
+        this.currentTransition = (typeof i18n !== 'undefined' && i18n.SHOW_E26) ? '25_to_26' : '24_to_25';
         this.svg = null;
         this.g = null;
         this.percentMode = 'source'; // 'source' or 'target'

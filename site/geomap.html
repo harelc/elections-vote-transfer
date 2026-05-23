@@ -963,7 +963,7 @@
             <button class="nav-btn" data-election="24">כנסת 24</button>
             <button class="nav-btn active" data-election="25">כנסת 25</button>
         </nav>
-        <script>if(i18n.SHOW_E26){var n=document.querySelector('.election-nav'),b=document.createElement('button');b.className='nav-btn';b.dataset.election='26';b.textContent='כנסת 26';n.appendChild(b)}</script>
+        <script>if(i18n.SHOW_E26){var n=document.querySelector('.election-nav'),b=document.createElement('button');b.className='nav-btn active';b.dataset.election='26';b.textContent='כנסת 26';n.appendChild(b);var prev=n.querySelector('.nav-btn[data-election="25"]');if(prev)prev.classList.remove('active')}</script>
 
         <main class="main-content">
             <aside class="control-panel" id="control-panel">
@@ -1080,7 +1080,7 @@
                 this.parties = [];
                 this.colorMode = 'winner';
                 this.selectedParty = null;
-                this.currentElection = '25';
+                this.currentElection = i18n.SHOW_E26 ? '26' : '25';
                 this.settlements = [];
                 this.compareElection = null;
                 this.compareData = null;
