@@ -881,24 +881,27 @@
 
         // Party data from Knesset 26 - Simulated
         const parties26 = [
-            { name: 'בנט 26', votes: 794104, color: '#f97316', block: 'left', name_en: 'Bennett-26' },
-            { name: 'הליכוד', votes: 677878, color: '#2563eb', block: 'right', name_en: 'Likud' },
-            { name: 'הרשימה המשותפת', votes: 430396, color: '#84cc16', block: 'arab', name_en: "United Arab List" },
-            { name: 'ש״ס', votes: 410839, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
-            { name: 'הדמוקרטים', votes: 402811, color: '#16a34a', block: 'left', name_en: 'The Democrats' },
-            { name: 'יש עתיד', votes: 388018, color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
-            { name: 'ישר', votes: 382627, color: '#7c3aed', block: 'left', name_en: 'Yashar' },
-            { name: 'עוצמה יהודית', votes: 349275, color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
-            { name: 'ישראל ביתנו', votes: 322659, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
-            { name: 'יהדות התורה', votes: 264250, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
-            { name: 'הציונות הדתית', votes: 151320, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+            { name: 'הליכוד', votes: 948052, color: '#2563eb', block: 'right', name_en: 'Likud' },
+            { name: 'ביחד', votes: 829589, color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
+            { name: 'ישר', votes: 611464, color: '#14b8a6', block: 'left', name_en: 'Yashar' },
+            { name: 'הדמוקרטים', votes: 421610, color: '#16a34a', block: 'left', name_en: 'The Democrats' },
+            { name: 'ש״ס', votes: 389589, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+            { name: 'עוצמה יהודית', votes: 355488, color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
+            { name: 'יהדות התורה', votes: 305720, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+            { name: 'ישראל ביתנו', votes: 299877, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+            { name: 'חד״ש-תע״ל', votes: 217391, color: '#f43f5e', block: 'arab', name_en: 'Hadash-Taal' },
+            { name: 'רע״ם', votes: 192419, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
+            { name: 'הציונות הדתית', votes: 137875, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+            { name: 'המילואימניקים', votes: 120557, color: '#a16207', block: 'right', name_en: 'The Reservists' },
+            { name: 'בל״ד', votes: 72820, color: '#065f46', block: 'arab', name_en: 'Balad' },
+            { name: 'כחול לבן', votes: 49258, color: '#8b5cf6', block: 'left', name_en: 'Blue and White' },
         ];
 
         const agreements26 = [
-            [3, 9],   // ש״ס + יהדות התורה
-            [7, 10],  // עוצמה יהודית + הציונות הדתית
-            [5, 6],   // יש עתיד + ישר
-            [0, 8],   // בנט 26 + ישראל ביתנו
+            [4, 6],   // ש״ס + יהדות התורה
+            [5, 10],  // עוצמה יהודית + הציונות הדתית
+            [2, 7],   // ישר + ישראל ביתנו
+            [8, 9],   // חד״ש-תע״ל + רע״ם
         ];
 
         // Presets keyed by election
@@ -907,9 +910,9 @@
             '26': { parties: parties26, agreements: agreements26 },
         };
 
-        let currentElection = '25';
-        const defaultParties = parties25;
-        const defaultAgreements = agreements25;
+        let currentElection = i18n.SHOW_E26 ? '26' : '25';
+        const defaultParties = presets[currentElection].parties;
+        const defaultAgreements = presets[currentElection].agreements;
 
         class DHondtCalculator {
             constructor() {
@@ -1134,10 +1137,20 @@
                     this.loadPreset(currentElection);
                 });
 
-                // Show E26 button if feature flag is set
+                // Show E26 button if feature flag is set (and make it the active toggle)
                 if (i18n.SHOW_E26) {
                     const e26Btn = document.getElementById('e26-btn');
-                    if (e26Btn) e26Btn.style.display = '';
+                    if (e26Btn) {
+                        e26Btn.style.display = '';
+                        e26Btn.classList.add('active');
+                        e26Btn.style.background = 'var(--accent-primary)';
+                        e26Btn.style.color = 'var(--text-primary)';
+                    }
+                    document.querySelectorAll('.election-toggle-btn[data-election="25"]').forEach(b => {
+                        b.classList.remove('active');
+                        b.style.background = 'transparent';
+                        b.style.color = 'var(--text-secondary)';
+                    });
                 }
 
                 // Election toggle
@@ -1543,9 +1556,11 @@
                     'ישר': 6.5,
                     'יש עתיד': 7,
                     'ישראל ביתנו': 8,
-                    'בנט 26': 8.5,
+                    'ביחד': 8.5,
+                    'כחול לבן': 8.7,
                     'ש״ס': 9,
                     'יהדות התורה': 10,
+                    'המילואימניקים': 10.5,
                     'הליכוד': 11,
                     'הציונות הדתית': 12,
                     'עוצמה יהודית': 12.5,

@@ -76,6 +76,7 @@ def copy_outputs():
     os.makedirs('site/data', exist_ok=True)
     copies = [
         ('data/transfer_25_to_26.json', 'site/data/transfer_25_to_26.json'),
+        ('data/transfer_25_to_26_abstention.json', 'site/data/transfer_25_to_26_abstention.json'),
         ('data/tsne_26.json', 'site/data/tsne_26.json'),
     ]
     for src, dest in copies:
@@ -85,10 +86,12 @@ def copy_outputs():
         else:
             print(f"  WARNING: {src} not found, skipping")
 
-    # Also update all_transfers.json if transfer data was generated
-    if os.path.exists('data/all_transfers.json'):
-        shutil.copy2('data/all_transfers.json', 'site/data/all_transfers.json')
-        print("  Copied data/all_transfers.json → site/data/all_transfers.json")
+    # Also update combined all_transfers files if generated
+    for name in ('all_transfers.json', 'all_transfers_abstention.json'):
+        src = f'data/{name}'
+        if os.path.exists(src):
+            shutil.copy2(src, f'site/data/{name}')
+            print(f"  Copied {src} → site/data/{name}")
 
 
 def main():

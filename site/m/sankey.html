@@ -194,7 +194,7 @@
     <script>
     class MobileSankey {
         constructor() {
-            this.currentTransition = '24_to_25';
+            this.currentTransition = (typeof i18n !== 'undefined' && i18n.SHOW_E26) ? '25_to_26' : '24_to_25';
             this.data = null;
             this.officialResults = null;
             this.percentMode = 'source';

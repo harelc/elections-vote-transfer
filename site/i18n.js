@@ -472,9 +472,11 @@
         'באומץ בשבילך': 'Courageously For You',
         'הכלכלית החדשה': 'The New Economy',
         'בנט 26': 'Bennett-26',
+        'ביחד': 'Together (Beyachad)',
         'הדמוקרטים': 'The Democrats',
         'עוצמה יהודית': 'Jewish Power',
         'ישר': 'Yashar',
+        'המילואימניקים': 'The Reservists',
     };
 
     /* ── State ── */

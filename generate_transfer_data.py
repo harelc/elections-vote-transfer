@@ -106,17 +106,21 @@ class VoteTransferAnalyzer:
 
         return party_df, existing_symbols, existing_names
 
-    def solve_transfer_matrix_convex(self, X, Y):
+    def solve_transfer_matrix_convex(self, X, Y, row_sum=1.0):
         """
         Solve for transfer matrix using convex optimization.
 
         Minimizes ||XM - Y||_F subject to:
-        - 0 <= M <= 1 (probabilities)
-        - sum(M, axis=1) == 1 (each row sums to 1)
+        - 0 <= M <= row_sum (each cell at most the row total)
+        - sum(M, axis=1) == row_sum (each row sums to row_sum)
+
+        row_sum > 1 accommodates population growth between elections (e.g. for
+        K25→K26 it's ~1.075, reflecting ~7.5% growth in eligible voters).
 
         Args:
             X: Previous election votes (n_precincts, n_parties_prev)
             Y: Current election votes (n_precincts, n_parties_curr)
+            row_sum: Constraint for each row sum (default 1.0)
 
         Returns:
             Transfer matrix M (n_parties_prev, n_parties_curr)
@@ -124,8 +128,8 @@ class VoteTransferAnalyzer:
         M = cvx.Variable((X.shape[1], Y.shape[1]))
         constraints = [
             M >= 0,
-            M <= 1,
-            cvx.sum(M, axis=1) == 1
+            M <= row_sum,
+            cvx.sum(M, axis=1) == row_sum
         ]
         objective = cvx.Minimize(cvx.norm(X @ M - Y, 'fro'))
 
@@ -266,8 +270,17 @@ class VoteTransferAnalyzer:
         # Compute transfer matrix
         logger.info(f"Computing transfer matrix using {self.method} method...")
 
+        # Population growth between elections (used as row-sum constraint).
+        # Hard-coded for 25→26 to match simulate_election_26.POP_GROWTH.
+        POP_GROWTH_PER_TRANSITION = {
+            ('25', '26'): 1.075,
+        }
+        row_sum = POP_GROWTH_PER_TRANSITION.get((str(election_from), str(election_to)), 1.0)
+        if row_sum != 1.0:
+            logger.info(f"  Using row_sum={row_sum} for {election_from}→{election_to} (population growth)")
+
         if self.method == 'convex':
-            M = self.solve_transfer_matrix_convex(X, Y)
+            M = self.solve_transfer_matrix_convex(X, Y, row_sum=row_sum)
         elif self.method == 'nnls':
             M = self.solve_transfer_matrix_nnls(X, Y)
         else:

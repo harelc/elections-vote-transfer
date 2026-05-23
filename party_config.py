@@ -8,6 +8,7 @@ Official data from votes.bechirot.gov.il
 PARTY_COLORS = {
     'likud': '#2563eb',       # Blue
     'yesh_atid': '#06b6d4',   # Cyan
+    'together': '#f97316',    # Orange (Bennett-led joint list)
     'blue_white': '#8b5cf6',  # Purple
     'shas': '#1e3a8a',        # Dark blue
     'utj': '#4b5563',         # Gray
@@ -509,14 +510,16 @@ PARTIES = {
 
     # ===== Election 26 new parties =====
     'נב': {
-        'name': 'בנט 26',
-        'name_en': 'Bennett-26',
-        'color': '#f97316',
-        'leader': 'נפתלי בנט',
-        'leader_en': 'Naftali Bennett',
+        'name': 'ביחד',
+        'name_en': 'Together (Beyachad)',
+        'color': PARTY_COLORS['together'],
+        'leader': 'נפתלי בנט ויאיר לפיד',
+        'leader_en': 'Naftali Bennett and Yair Lapid',
         'leader_image': 'images/leaders/bennett.jpg',
-        'ideology': 'ימין, ממלכתיות',
-        'description': 'מפלגה חדשה בראשות נפתלי בנט'
+        'logo': 'images/logos/yesh_atid.png',
+        'ideology': 'מרכז-ימין, ממלכתיות, ליברליזם',
+        'founded': 2026,
+        'description': 'רשימה משותפת של בנט 26 ויש עתיד בראשות נפתלי בנט'
     },
     'דמ': {
         'name': 'הדמוקרטים',
@@ -538,15 +541,27 @@ PARTIES = {
         'ideology': 'ימין קיצוני, לאומנות',
         'description': 'מפלגת ימין קיצוני בראשות איתמר בן גביר'
     },
+    'מי': {
+        'name': 'המילואימניקים',
+        'name_en': 'The Reservists',
+        'color': '#a16207',
+        'leader': 'יועז הנדל',
+        'leader_en': 'Yoaz Hendel',
+        'leader_image': 'images/leaders/hendel.jpg',
+        'ideology': 'מרכז-ימין, ביטחון, מילואים',
+        'founded': 2026,
+        'description': 'מפלגה חדשה בראשות יועז הנדל המייצגת את ציבור המילואימניקים, מדגישה ערכי ביטחון, ממלכתיות ומחויבות לעורף'
+    },
     'יר': {
         'name': 'ישר',
         'name_en': 'Yashar',
-        'color': '#7c3aed',
+        'color': '#14b8a6',
         'leader': 'גדי אייזנקוט',
         'leader_en': 'Gadi Eisenkot',
         'leader_image': 'images/leaders/eisenkot.jpg',
-        'ideology': 'מרכז, ממלכתיות',
-        'description': 'מפלגת מרכז חדשה בהנהגת גדי אייזנקוט'
+        'ideology': 'מרכז, ממלכתיות, ביטחון',
+        'founded': 2026,
+        'description': 'מפלגת מרכז חדשה בראשות הרמטכ"ל לשעבר גדי אייזנקוט, מדגישה ממלכתיות, ביטחון ושיקום האמון במוסדות'
     },
 }
 
@@ -763,16 +778,17 @@ ELECTIONS = {
         'file': 'ballot26.csv',
         'encoding': 'utf-8-sig',
         'ballot_field': 'קלפי',
-        # Simulated — placeholder values, updated after simulation
-        'eligible_voters': 6900000,
-        'votes_cast': 4800000,
-        'valid_votes': 4750000,
-        'turnout_percent': 69.6,
+        # Simulated — values reflect ~7.5% population growth Nov 2022 → Oct 2026
+        'eligible_voters': 7300000,
+        'votes_cast': 5000000,
+        'valid_votes': 4950000,
+        'turnout_percent': 68.5,
         'major_parties': {
-            'symbols': ['מחל', 'נב', 'פה', 'ל', 'דמ', 'שס', 'ג', 'עם', 'ט', 'עי', 'יר'],
-            'names': ['הליכוד', 'בנט 26', 'יש עתיד', 'ישראל ביתנו', 'הדמוקרטים', 'ש״ס',
-                     'יהדות התורה', 'הרשימה המשותפת', 'הציונות הדתית', 'עוצמה יהודית', 'ישר'],
-            'seats': [18, 22, 10, 8, 10, 11, 7, 11, 4, 9, 10]
+            'symbols': ['מחל', 'נב', 'יר', 'דמ', 'שס', 'עי', 'ג', 'ל', 'ום', 'עם', 'ט', 'מי', 'ד', 'כל'],
+            'names': ['הליכוד', 'ביחד', 'ישר', 'הדמוקרטים', 'ש״ס',
+                     'עוצמה יהודית', 'יהדות התורה', 'ישראל ביתנו', 'חד״ש-תע״ל', 'רע״ם',
+                     'הציונות הדתית', 'המילואימניקים', 'בל״ד', 'כחול לבן'],
+            'seats': [25, 22, 16, 11, 10, 9, 8, 8, 6, 5, 0, 0, 0, 0]
         }
     }
 }

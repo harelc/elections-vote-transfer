@@ -24,33 +24,36 @@ from party_config import ELECTIONS
 # E26 party definitions: symbol → (hebrew_name, color)
 E26_PARTIES = {
     'מחל': ('הליכוד', '#2563eb'),
-    'נב':  ('בנט 26', '#f97316'),
-    'פה':  ('יש עתיד', '#06b6d4'),
+    'נב':  ('ביחד', '#f97316'),
     'ל':   ('ישראל ביתנו', '#db2777'),
     'דמ':  ('הדמוקרטים', '#16a34a'),
     'שס':  ('ש״ס', '#1e3a8a'),
     'ג':   ('יהדות התורה', '#4b5563'),
-    'עם':  ('הרשימה המשותפת', '#84cc16'),
+    'ום':  ('חד״ש-תע״ל', '#f43f5e'),
+    'עם':  ('רע״ם', '#84cc16'),
+    'ד':   ('בל״ד', '#065f46'),
     'ט':   ('הציונות הדתית', '#92400e'),
     'עי':  ('עוצמה יהודית', '#7f1d1d'),
-    'יר':  ('ישר', '#7c3aed'),
+    'יר':  ('ישר', '#14b8a6'),
+    'מי':  ('המילואימניקים', '#a16207'),
+    'כל':  ('כחול לבן', '#8b5cf6'),
 }
 
 # Transfer matrix: E25 party name → dict of E26 party name → fraction
 # Each row must sum to 1.0
 TRANSFER_MATRIX = {
-    'הליכוד':        {'הליכוד': 0.53, 'בנט 26': 0.22, 'הציונות הדתית': 0.02, 'עוצמה יהודית': 0.09, 'ישר': 0.05, 'יש עתיד': 0.04, 'ש״ס': 0.03, 'יהדות התורה': 0.02},
-    'יש עתיד':      {'יש עתיד': 0.28, 'בנט 26': 0.22, 'ישר': 0.18, 'הדמוקרטים': 0.12, 'ישראל ביתנו': 0.15, 'הליכוד': 0.05},
-    'הציונות הדתית': {'הציונות הדתית': 0.26, 'עוצמה יהודית': 0.40, 'בנט 26': 0.15, 'הליכוד': 0.10, 'ש״ס': 0.05, 'ישר': 0.04},
-    'המחנה הממלכתי': {'בנט 26': 0.50, 'ישר': 0.15, 'יש עתיד': 0.10, 'הדמוקרטים': 0.05, 'ישראל ביתנו': 0.15, 'הליכוד': 0.05},
-    'ש״ס':          {'ש״ס': 0.87, 'הליכוד': 0.03, 'עוצמה יהודית': 0.10},
-    'יהדות התורה':  {'יהדות התורה': 0.87, 'ש״ס': 0.05, 'הליכוד': 0.02, 'עוצמה יהודית': 0.06},
-    'ישראל ביתנו':  {'ישראל ביתנו': 0.50, 'בנט 26': 0.20, 'ישר': 0.15, 'הליכוד': 0.10, 'יש עתיד': 0.05},
-    'רע״ם':         {'הרשימה המשותפת': 0.97, 'הדמוקרטים': 0.03},
-    'חד״ש-תע״ל':   {'הרשימה המשותפת': 0.85, 'הדמוקרטים': 0.15},
-    'העבודה':       {'הדמוקרטים': 0.60, 'בנט 26': 0.10, 'ישר': 0.15, 'יש עתיד': 0.10, 'ישראל ביתנו': 0.05},
-    'מרצ':          {'הדמוקרטים': 0.70, 'בנט 26': 0.05, 'יש עתיד': 0.10, 'ישר': 0.12, 'הרשימה המשותפת': 0.03},
-    'בל״ד':         {'הרשימה המשותפת': 0.95, 'הדמוקרטים': 0.05},
+    'הליכוד':        {'הליכוד': 0.70, 'ביחד': 0.12, 'הציונות הדתית': 0.02, 'עוצמה יהודית': 0.05, 'ישר': 0.05, 'ש״ס': 0.01, 'יהדות התורה': 0.01, 'המילואימניקים': 0.04},
+    'יש עתיד':      {'ביחד': 0.40, 'ישר': 0.29, 'הדמוקרטים': 0.13, 'ישראל ביתנו': 0.10, 'הליכוד': 0.04, 'המילואימניקים': 0.03, 'כחול לבן': 0.01},
+    'הציונות הדתית': {'הציונות הדתית': 0.22, 'עוצמה יהודית': 0.48, 'ביחד': 0.10, 'הליכוד': 0.13, 'ש״ס': 0.04, 'ישר': 0.03},
+    'המחנה הממלכתי': {'ביחד': 0.38, 'ישר': 0.32, 'הדמוקרטים': 0.04, 'ישראל ביתנו': 0.12, 'הליכוד': 0.05, 'המילואימניקים': 0.07, 'כחול לבן': 0.02},
+    'ש״ס':          {'ש״ס': 0.82, 'הליכוד': 0.04, 'עוצמה יהודית': 0.08, 'יהדות התורה': 0.06},
+    'יהדות התורה':  {'יהדות התורה': 0.90, 'ש״ס': 0.04, 'הליכוד': 0.02, 'עוצמה יהודית': 0.04},
+    'ישראל ביתנו':  {'ישראל ביתנו': 0.59, 'ביחד': 0.12, 'ישר': 0.15, 'הליכוד': 0.07, 'המילואימניקים': 0.05, 'כחול לבן': 0.02},
+    'רע״ם':         {'רע״ם': 0.90, 'חד״ש-תע״ל': 0.05, 'הדמוקרטים': 0.03, 'בל״ד': 0.02},
+    'חד״ש-תע״ל':   {'חד״ש-תע״ל': 0.85, 'בל״ד': 0.05, 'רע״ם': 0.05, 'הדמוקרטים': 0.05},
+    'העבודה':       {'הדמוקרטים': 0.62, 'ביחד': 0.11, 'ישר': 0.17, 'ישראל ביתנו': 0.03, 'כחול לבן': 0.07},
+    'מרצ':          {'הדמוקרטים': 0.70, 'ביחד': 0.06, 'ישר': 0.14, 'חד״ש-תע״ל': 0.04, 'כחול לבן': 0.06},
+    'בל״ד':         {'בל״ד': 0.45, 'חד״ש-תע״ל': 0.40, 'רע״ם': 0.10, 'הדמוקרטים': 0.05},
 }
 
 # Per-source-party turnout factor: what fraction of E25 voters show up in E26.
@@ -58,10 +61,10 @@ TRANSFER_MATRIX = {
 # The transfer matrix rows still sum to 1.0 (distribution among E26 parties),
 # but the effective contribution is scaled by this factor.
 ROW_TURNOUT = {
-    'הליכוד':        0.85,   # Likud base demobilized
-    'יש עתיד':      1.05,   # Centrist voters energized
-    'הציונות הדתית': 0.97,   # Some stay home after split
-    'המחנה הממלכתי': 1.05,   # National Unity base mobilized
+    'הליכוד':        0.88,   # Likud base demobilized
+    'יש עתיד':      1.05,   # Yesh Atid bloc (→ Beyachad) energized
+    'הציונות הדתית': 0.94,   # RZ demobilized after split
+    'המחנה הממלכתי': 1.08,   # National Unity bloc (→ Yashar) strongly mobilized
     'ש״ס':          1.00,   # Shas machine keeps turnout high
     'יהדות התורה':  1.00,   # UTJ same
     'ישראל ביתנו':  1.00,   # Stable
@@ -72,6 +75,11 @@ ROW_TURNOUT = {
     'בל״ד':         0.90,   # Arab turnout lower
 }
 DEFAULT_ROW_TURNOUT = 1.00
+
+# Global population growth between K25 (Nov 2022) and K26 (~Oct 2026).
+# Israeli registered-voter rolls grew ~1.93%/year (2021→2022 CEC figures);
+# extrapolated over ~3.9 years → ~7.5% growth in eligible voters.
+POP_GROWTH = 1.075
 
 # E25 symbol → party name mapping (major parties only)
 E25_SYMBOL_TO_NAME = {
@@ -151,16 +159,16 @@ def simulate_ballot(votes_by_e25_name, e26_party_list, rng, alpha):
         if votes <= 0:
             continue
 
-        # Scale by per-source turnout factor
+        # Scale by per-source turnout factor and global population growth
         turnout = ROW_TURNOUT.get(e25_name, DEFAULT_ROW_TURNOUT)
-        effective_votes = votes * turnout
+        effective_votes = votes * turnout * POP_GROWTH
         effective_total += effective_votes
 
         # Get transfer row; if no row, distribute proportionally to all parties
         row = TRANSFER_MATRIX.get(e25_name)
         if row is None:
-            row = {'הליכוד': 0.3, 'יש עתיד': 0.2, 'ישר': 0.15, 'הדמוקרטים': 0.15,
-                   'בנט 26': 0.1, 'ישראל ביתנו': 0.05, 'הרשימה המשותפת': 0.05}
+            row = {'הליכוד': 0.3, 'ביחד': 0.3, 'ישר': 0.15, 'הדמוקרטים': 0.15,
+                   'ישראל ביתנו': 0.05, 'חד״ש-תע״ל': 0.05}
 
         for dst_name, fraction in row.items():
             if dst_name in party_idx:
@@ -257,7 +265,13 @@ def simulate(alpha=55, seed=42):
         # Update metadata to reflect adjusted totals
         e26_total = sum(e26_votes.values())
         out_df.at[idx, 'כשרים'] = e26_total
-        out_df.at[idx, 'מצביעים'] = e26_total + int(row.get('פסולים', 0) or 0)
+        # Scale invalid ballots by population growth too, then recompute voters
+        invalid_e26 = int(round(int(row.get('פסולים', 0) or 0) * POP_GROWTH))
+        out_df.at[idx, 'פסולים'] = invalid_e26
+        out_df.at[idx, 'מצביעים'] = e26_total + invalid_e26
+        # Scale eligible voters by population growth so turnout ratio stays consistent
+        if 'בזב' in out_df.columns:
+            out_df.at[idx, 'בזב'] = int(round(int(row.get('בזב', 0) or 0) * POP_GROWTH))
 
         # Write E26 votes by symbol
         for sym, (name, _) in E26_PARTIES.items():
