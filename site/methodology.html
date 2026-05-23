@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
     <meta property="og:title" content="קולות נודדים — מתודולוגיה">
-    <meta property="og:description" content="The Dirichlet residual-dispersion model for ballot-level vote transfers — empirical α estimates across all Israeli Knesset elections 16–25.">
+    <meta property="og:description" content="How we estimate vote-transfer matrices between Israeli Knesset elections — convex optimization, R², and a Dirichlet model of residual dispersion.">
     <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
     <meta name="twitter:card" content="summary_large_image">
     <title>מתודולוגיה - קולות נודדים</title>
@@ -156,8 +156,8 @@
             <a href="index.html" style="color:var(--text-secondary);text-decoration:none;font-size:0.9rem;padding:0.3rem 0.7rem;border:1px solid var(--border-color);border-radius:4px"><span class="prose-he">→ דף הבית</span><span class="prose-en">← Home</span></a>
             <button class="lang-btn" id="lang-toggle"><span class="prose-he">EN</span><span class="prose-en">עב</span></button>
         </div>
-        <h1><span class="prose-he">מתודולוגיה: פיזור שאריות והפרמטר α</span><span class="prose-en">Methodology: Residual Dispersion and α</span></h1>
-        <p class="subtitle">Residual dispersion in vote-transfer estimation — Dirichlet model</p>
+        <h1><span class="prose-he">מתודולוגיה</span><span class="prose-en">Methodology</span></h1>
+        <p class="subtitle"><span class="prose-he">איך אנו מחשבים את מטריצת מעבר הקולות בין בחירות</span><span class="prose-en">How we estimate the vote-transfer matrix between elections</span></p>
     </header>
 
     <main class="content">
@@ -282,6 +282,7 @@
                 <table class="alpha-table" id="pooled-table">
                     <thead><tr>
                         <th><span class="prose-he">מעבר</span><span class="prose-en">Transition</span></th>
+                        <th>R²</th>
                         <th>α <span class="prose-he">(אגרגטיבי)</span><span class="prose-en">(pooled)</span></th>
                         <th><span class="prose-he">גודל קלפי ממוצע</span><span class="prose-en">Avg ballot size</span></th>
                         <th>N/α <span class="prose-he">(פיזור־יתר)</span><span class="prose-en">(over-disp)</span></th>
@@ -440,6 +441,7 @@
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td>K${from} → K${to}</td>
+                    <td>${r.r_squared != null ? r.r_squared.toFixed(3) : '—'}</td>
                     <td class="alpha-cell" style="background:${alphaColor(r.alpha_pooled)}">${r.alpha_pooled.toFixed(1)}</td>
                     <td>${r.avg_ballot_size.toFixed(0)}</td>
                     <td>${r.overdispersion ? r.overdispersion.toFixed(1) + '×' : '—'}</td>
