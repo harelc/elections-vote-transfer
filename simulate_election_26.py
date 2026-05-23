@@ -302,7 +302,9 @@ def simulate(alpha=55, seed=42):
 def main():
     parser = argparse.ArgumentParser(description='Simulate election 26 from election 25 data')
     parser.add_argument('--alpha', type=float, default=55,
-                        help='Dirichlet concentration (higher = less noise, default: 55)')
+                        help='Dirichlet concentration (higher = less noise, default: 55, '
+                             'roughly matches the empirically-estimated K24→K25 pooled α=51.2 '
+                             'from estimate_alpha.py; see site/data/alpha_estimates.json)')
     parser.add_argument('--seed', type=int, default=42,
                         help='Random seed for reproducibility (default: 42)')
     args = parser.parse_args()
