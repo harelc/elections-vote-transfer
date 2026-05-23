@@ -774,7 +774,8 @@ ELECTIONS = {
     '26': {
         'name': 'הכנסת ה-26',
         'name_en': '26th Knesset',
-        'date': '2026-??-??',
+        'date': '2026-10-27',
+        'estimated': True,  # anticipated date, not yet confirmed
         'file': 'ballot26.csv',
         'encoding': 'utf-8-sig',
         'ballot_field': 'קלפי',

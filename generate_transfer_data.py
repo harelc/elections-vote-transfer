@@ -188,6 +188,12 @@ class VoteTransferAnalyzer:
         df_from, config_from = self.load_election_data(election_from)
         df_to, config_to = self.load_election_data(election_to)
 
+        # Also load raw (un-9999-filtered) frames for full national totals
+        # so the left/right column totals match official results (which include
+        # city 9999 military/hospital aggregate ballots).
+        df_from_raw = pd.read_csv(config_from['file'], encoding=config_from['encoding'])
+        df_to_raw = pd.read_csv(config_to['file'], encoding=config_to['encoding'])
+
         # Get party configurations
         parties_from = config_from['major_parties']
         parties_to = config_to['major_parties']
@@ -294,8 +300,12 @@ class VoteTransferAnalyzer:
         logger.info(f"R² = {r_squared:.4f}")
 
         # Compute vote movements
-        # Use national totals (all precincts, not just matched)
-        total_votes_from = votes_from.sum().values
+        # National totals from raw CSV (includes city 9999 special ballots),
+        # so left/right column totals match official Wikipedia results.
+        total_votes_from = np.array([
+            int(df_from_raw[sym].sum()) if sym in df_from_raw.columns else 0
+            for sym in symbols_from if sym != 'abstain'
+        ], dtype=float)
         if self.include_abstention:
             national_dnv_from = self._compute_dnv(df_from, config_from).sum()
             total_votes_from = np.append(total_votes_from, national_dnv_from)
@@ -350,7 +360,10 @@ class VoteTransferAnalyzer:
                     'info': info
                 })
 
-        total_votes_to = votes_to.sum().values
+        total_votes_to = np.array([
+            int(df_to_raw[sym].sum()) if sym in df_to_raw.columns else 0
+            for sym in symbols_to if sym != 'abstain'
+        ], dtype=float)
         if self.include_abstention:
             national_dnv_to = self._compute_dnv(df_to, config_to).sum()
             total_votes_to = np.append(total_votes_to, national_dnv_to)
@@ -384,6 +397,7 @@ class VoteTransferAnalyzer:
                 'name': config_from['name'],
                 'name_en': config_from['name_en'],
                 'date': config_from['date'],
+                'estimated': config_from.get('estimated', False),
                 'eligible_voters': config_from.get('eligible_voters'),
                 'votes_cast': config_from.get('votes_cast'),
                 'valid_votes': config_from.get('valid_votes'),
@@ -394,6 +408,7 @@ class VoteTransferAnalyzer:
                 'name': config_to['name'],
                 'name_en': config_to['name_en'],
                 'date': config_to['date'],
+                'estimated': config_to.get('estimated', False),
                 'eligible_voters': config_to.get('eligible_voters'),
                 'votes_cast': config_to.get('votes_cast'),
                 'valid_votes': config_to.get('valid_votes'),
@@ -424,7 +439,7 @@ def run_analysis(include_abstention=False, only_transitions=None):
 
     analyzer = VoteTransferAnalyzer(
         method='convex',
-        min_flow_threshold=5000,
+        min_flow_threshold=15000,
         verbose=False,
         include_abstention=include_abstention
     )

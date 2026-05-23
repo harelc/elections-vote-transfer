@@ -303,13 +303,21 @@
             document.getElementById('loading').style.display = 'none';
         }
 
+        fmtDate(el) {
+            const d = new Date(el.date);
+            if (isNaN(d)) return el.date;
+            const isHe = i18n.getLang() === 'he';
+            const s = `${String(d.getDate()).padStart(2,'0')}.${String(d.getMonth()+1).padStart(2,'0')}.${d.getFullYear()}`;
+            return el.estimated ? `${s} (${isHe ? 'משוער' : 'estimated'})` : s;
+        }
+
         updateElectionStrip() {
             const strip = document.getElementById('election-strip');
             strip.style.display = 'flex';
             document.getElementById('from-name').textContent = i18n.electionName(this.data.from_election);
-            document.getElementById('from-date').textContent = this.data.from_election.date;
+            document.getElementById('from-date').textContent = this.fmtDate(this.data.from_election);
             document.getElementById('to-name').textContent = i18n.electionName(this.data.to_election);
-            document.getElementById('to-date').textContent = this.data.to_election.date;
+            document.getElementById('to-date').textContent = this.fmtDate(this.data.to_election);
 
             // Adjust main area top
             const mainArea = document.getElementById('main-area');

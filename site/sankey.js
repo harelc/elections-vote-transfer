@@ -599,9 +599,9 @@ class VoteTransferSankey {
 
         // Update election info
         document.getElementById('from-election-name').textContent = i18n.electionName(from_election);
-        document.getElementById('from-election-date').textContent = this.formatDate(from_election.date);
+        document.getElementById('from-election-date').textContent = this.formatDate(from_election.date, from_election.estimated);
         document.getElementById('to-election-name').textContent = i18n.electionName(to_election);
-        document.getElementById('to-election-date').textContent = this.formatDate(to_election.date);
+        document.getElementById('to-election-date').textContent = this.formatDate(to_election.date, to_election.estimated);
 
         // Update voter statistics for "from" election
         if (from_election.eligible_voters) {
@@ -622,10 +622,16 @@ class VoteTransferSankey {
         document.getElementById('stat-r2').textContent = stats.r_squared.toFixed(3);
     }
 
-    formatDate(dateStr) {
+    formatDate(dateStr, estimated) {
         const date = new Date(dateStr);
-        const locale = i18n.getLang() === 'he' ? 'he-IL' : 'en-GB';
-        return date.toLocaleDateString(locale, { day: '2-digit', month: '2-digit', year: 'numeric' });
+        if (isNaN(date)) return dateStr;
+        const isHe = i18n.getLang() === 'he';
+        // Format as DD.MM.YYYY using dots
+        const dd = String(date.getDate()).padStart(2, '0');
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const yyyy = date.getFullYear();
+        const formatted = `${dd}.${mm}.${yyyy}`;
+        return estimated ? `${formatted} (${isHe ? 'משוער' : 'estimated'})` : formatted;
     }
 
     render() {
