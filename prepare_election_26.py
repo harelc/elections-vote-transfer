@@ -111,13 +111,22 @@ def main():
         'Generating T-SNE data for election 26'
     )
 
+    # Step 2.5: Copy fresh tsne to site/data/ BEFORE running map_data,
+    # because generate_map_data.py reads tsne from site/data/, not data/.
+    # Without this hop the map JSON would lag one prepare-run behind on any
+    # party_config change (e.g., a new leader override).
+    if os.path.exists('data/tsne_26.json'):
+        os.makedirs('site/data', exist_ok=True)
+        shutil.copy2('data/tsne_26.json', 'site/data/tsne_26.json')
+        print('  Pre-copied data/tsne_26.json → site/data/ for map_data step')
+
     # Step 3: Generate transfer data for 25→26
     run_script(
         [sys.executable, 'generate_transfer_data.py', '--transitions', '25_to_26'],
         'Generating transfer data for 25→26'
     )
 
-    # Step 4: Generate map data for election 26
+    # Step 4: Generate map data for election 26 (reads from site/data/tsne_26.json)
     run_script(
         [sys.executable, 'generate_map_data.py', '--elections', '26'],
         'Generating map data for election 26'
