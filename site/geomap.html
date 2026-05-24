@@ -1103,7 +1103,7 @@
                 // Load data
                 await this.loadSocioeconomicData();
                 await this.loadCoordinates();
-                await this.loadElection('25');
+                await this.loadElection(this.currentElection);
             }
 
             applyDynamicLang() {
