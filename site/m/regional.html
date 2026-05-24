@@ -638,9 +638,10 @@
         let regionResults = [];
 
         // ── Data loading ──
+        const mobileElection = i18n.SHOW_E26 ? '26' : '25';
         async function loadData() {
             const [tsneRes, coordsRes] = await Promise.all([
-                fetch('../data/tsne_25.json').then(r => r.json()),
+                fetch(`../data/tsne_${mobileElection}.json`).then(r => r.json()),
                 fetch('../data/station_coordinates.json').then(r => r.json()),
             ]);
             const coordMap = coordsRes.stations || coordsRes;

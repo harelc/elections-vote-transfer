@@ -555,6 +555,13 @@
         </header>
 
         <div class="controls-bar">
+            <div class="control-group" id="election-toggle-group" style="display:none">
+                <label>כנסת:</label>
+                <div class="pill-group" id="election-pills">
+                    <button class="pill-btn" data-election="25">25</button>
+                    <button class="pill-btn active" data-election="26">26</button>
+                </div>
+            </div>
             <div class="control-group">
                 <label data-i18n="regions_label">מחוזות בחירה:</label>
                 <div class="pill-group" id="region-pills">
@@ -708,6 +715,7 @@
 
         // ── Party config (from dhondt.html Knesset 25) ──
         const partyConfig = [
+            // K25 parties
             { name: 'הליכוד', color: '#2563eb', block: 'right', name_en: 'Likud' },
             { name: 'יש עתיד', color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
             { name: 'הציונות הדתית', color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
@@ -720,6 +728,13 @@
             { name: 'העבודה', color: '#dc2626', block: 'left', name_en: 'Labor' },
             { name: 'מרצ', color: '#16a34a', block: 'left', name_en: 'Meretz' },
             { name: 'בל״ד', color: '#065f46', block: 'arab', name_en: 'Balad' },
+            // K26 simulated additions
+            { name: 'ביחד', color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
+            { name: 'ישר', color: '#14b8a6', block: 'left', name_en: 'Yashar' },
+            { name: 'הדמוקרטים', color: '#16a34a', block: 'left', name_en: 'The Democrats' },
+            { name: 'עוצמה יהודית', color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
+            { name: 'המילואימניקים', color: '#a16207', block: 'right', name_en: 'The Reservists' },
+            { name: 'כחול לבן', color: '#8b5cf6', block: 'left', name_en: 'Blue and White' },
         ];
 
         const partyColorMap = {};
@@ -732,9 +747,10 @@
         // Political order for hemicycle (left to right)
         const politicalOrder = {
             'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
-            'העבודה': 5, 'המחנה הממלכתי': 6, 'יש עתיד': 7,
-            'ישראל ביתנו': 8, 'ש״ס': 9, 'יהדות התורה': 10,
-            'הליכוד': 11, 'הציונות הדתית': 12, 'הבית היהודי': 13,
+            'העבודה': 5, 'הדמוקרטים': 5, 'המחנה הממלכתי': 6, 'יש עתיד': 7,
+            'ישר': 6.5, 'ביחד': 8.5, 'כחול לבן': 8.7,
+            'ישראל ביתנו': 8, 'ש״ס': 9, 'יהדות התורה': 10, 'המילואימניקים': 10.5,
+            'הליכוד': 11, 'הציונות הדתית': 12, 'עוצמה יהודית': 12.5, 'הבית היהודי': 13,
         };
 
         // Actual Knesset 25 seats
@@ -984,9 +1000,10 @@
         let knessetSize = 120;
 
         // ── Data loading ──
+        let currentElection = i18n.SHOW_E26 ? '26' : '25';
         async function loadData() {
             const [tsneRes, coordsRes] = await Promise.all([
-                fetch('data/tsne_25.json').then(r => r.json()),
+                fetch(`data/tsne_${currentElection}.json`).then(r => r.json()),
                 fetch('data/station_coordinates.json').then(r => r.json()),
             ]);
 
@@ -2013,6 +2030,23 @@
         }
 
         function setupControls() {
+            // Election toggle (only visible when SHOW_E26)
+            if (i18n.SHOW_E26) {
+                document.getElementById('election-toggle-group').style.display = '';
+                document.querySelectorAll('#election-pills .pill-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.election === currentElection);
+                    btn.addEventListener('click', async () => {
+                        const next = btn.dataset.election;
+                        if (next === currentElection) return;
+                        document.querySelectorAll('#election-pills .pill-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        currentElection = next;
+                        await loadData();
+                        runSimulation();
+                    });
+                });
+            }
+
             // Region pills
             document.querySelectorAll('#region-pills .pill-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
