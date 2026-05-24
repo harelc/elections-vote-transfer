@@ -111,14 +111,23 @@ def main():
         'Generating T-SNE data for election 26'
     )
 
-    # Step 2.5: Copy fresh tsne to site/data/ BEFORE running map_data,
-    # because generate_map_data.py reads tsne from site/data/, not data/.
-    # Without this hop the map JSON would lag one prepare-run behind on any
-    # party_config change (e.g., a new leader override).
+    # Step 2.5: Copy fresh tsne to site/data/ AND normalize settlement names
+    # BEFORE running map_data. Two reasons:
+    # (a) generate_map_data.py reads tsne from site/data/, not data/, so without
+    #     this hop the map JSON would lag one prepare-run behind on any
+    #     party_config change (e.g., a new leader override).
+    # (b) CSV settlement names can have multi-spaces / hyphens / geresh that the
+    #     coord-lookup hash on the frontend doesn't tolerate. normalize_tsne_names.py
+    #     collapses those — without it, e.g. Tel Aviv (תל אביב  יפו, 2 spaces) won't
+    #     match the coords file (single-space).
     if os.path.exists('data/tsne_26.json'):
         os.makedirs('site/data', exist_ok=True)
         shutil.copy2('data/tsne_26.json', 'site/data/tsne_26.json')
         print('  Pre-copied data/tsne_26.json → site/data/ for map_data step')
+    run_script(
+        [sys.executable, 'normalize_tsne_names.py'],
+        'Normalizing settlement names in site/data/tsne_*.json'
+    )
 
     # Step 3: Generate transfer data for 25→26
     run_script(
