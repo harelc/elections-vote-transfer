@@ -2167,7 +2167,7 @@
                         weight: 1,
                         opacity: 0.8,
                         fillOpacity: 0.7,
-                        stationData: { ...station, l: coordData.location || '' }  // Store for cluster aggregation
+                        stationData: { ...station, l: station.l || coordData.location || '' }  // Prefer tsne-stamped venue; fall back to coords file (some stations have only one of the two)
                     });
 
                     // Popup content
