@@ -1117,6 +1117,7 @@
             let totalVoters = 0, totalEligible = 0;
             const partyVotes = {};
             const settlements = new Set();
+            const settlementEligible = {};
             const locations = new Set();
 
             children.forEach(m => {
@@ -1124,7 +1125,10 @@
                 if (!s) return;
                 totalVoters += s.v || 0;
                 totalEligible += s.e || 0;
-                if (s.n) settlements.add(s.n);
+                if (s.n) {
+                    settlements.add(s.n);
+                    settlementEligible[s.n] = (settlementEligible[s.n] || 0) + (s.e || 0);
+                }
                 if (s.l) locations.add(s.l);
                 Object.entries(s.p || {}).forEach(([p, pct]) => {
                     partyVotes[p] = (partyVotes[p] || 0) + ((s.v || 0) * pct / 100);
@@ -1132,7 +1136,10 @@
             });
 
             const avgTurnout = totalEligible > 0 ? Math.round(totalVoters / totalEligible * 100) : 0;
-            const setList = [...settlements];
+            const setList = [...settlements].sort((a, b) => {
+                const eligibleDiff = (settlementEligible[b] || 0) - (settlementEligible[a] || 0);
+                return eligibleDiff || i18n.settlementName(a).localeCompare(i18n.settlementName(b), i18n.getLang() === 'he' ? 'he' : 'en');
+            });
             const andMore = i18n.getLang() === 'he'
                 ? `ועוד ${setList.length - 2}`
                 : `and ${setList.length - 2} more`;

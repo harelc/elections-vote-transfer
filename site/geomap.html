@@ -1193,6 +1193,7 @@
                 let totalEligible = 0;
                 const partyVotes = {};
                 const settlements = new Set();
+                const settlementEligible = {};
                 const clusterCounts = {};
 
                 const locations = new Set();
@@ -1207,7 +1208,10 @@
                     totalEligible += eligible;
 
                     const name = station.n || station.settlement_name;
-                    settlements.add(name);
+                    if (name) {
+                        settlements.add(name);
+                        settlementEligible[name] = (settlementEligible[name] || 0) + eligible;
+                    }
 
                     const loc = station.l || '';
                     if (loc) locations.add(loc);
@@ -1236,7 +1240,10 @@
                     }));
 
                 // Title
-                const settlementList = [...settlements];
+                const settlementList = [...settlements].sort((a, b) => {
+                    const eligibleDiff = (settlementEligible[b] || 0) - (settlementEligible[a] || 0);
+                    return eligibleDiff || i18n.settlementName(a).localeCompare(i18n.settlementName(b), i18n.getLang() === 'he' ? 'he' : 'en');
+                });
                 let title = '';
                 if (settlementList.length === 1) {
                     title = i18n.settlementName(settlementList[0]);
