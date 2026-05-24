@@ -418,11 +418,11 @@
         e26_why_link:          { he: 'מה זה?', en: 'Why?' },
         e26_modal_title:       { he: 'מצב כנסת 26 — מהי הסימולציה הזו?', en: 'Knesset 26 mode — what is this simulation?' },
         e26_modal_p1:          {
-            he: 'אתר זה כולל "מצב כנסת 26" אופציונלי, המציג נתונים <strong>סימולטיביים</strong> של הבחירות הקרובות לכנסת ה־26, הצפויות באוקטובר 2026. הנתונים אינם אמיתיים — הם הופקו על ידי שילוב של מספר מקורות:',
+            he: 'אתר זה כולל "מצב כנסת 26" אופציונלי, המציג נתונים <strong>מסולמצים</strong> של הבחירות הקרובות לכנסת ה־26, הצפויות באוקטובר 2026. הנתונים אינם אמיתיים — הם הופקו על ידי שילוב של מספר מקורות:',
             en: 'This site includes an optional "Knesset 26 mode" that shows <strong>simulated</strong> data for the upcoming Knesset 26 election, expected October 2026. The data is not real — it is produced by combining several sources:'
         },
         e26_modal_li1:         {
-            he: '<strong>ממוצעי סקרים:</strong> חלקי ההצבעה הצפויים לכל מפלגה מבוססים על ממוצעי סקרים מעודכנים.',
+            he: '<strong>ממוצעי סקרים:</strong> שיעור המצביעים הצפוי לכל מפלגה מבוסס על ממוצעי סקרים מעודכנים.',
             en: '<strong>Polling averages:</strong> expected vote shares per party are based on aggregated current polling.'
         },
         e26_modal_li2:         {
@@ -430,11 +430,11 @@
             en: '<strong>Data-driven transfer matrix:</strong> quantitative estimates of voter movement between parties, derived from the historical transfer matrices we computed (see <a href="methodology.html" style="color:var(--accent-primary,#3b82f6)">Methodology</a>).'
         },
         e26_modal_li3:         {
-            he: '<strong>שונות בין־קלפיות מאומדת:</strong> הרעש הסטטיסטי ברמת הקלפי נדגם מהתפלגות דיריכלה עם פרמטר ריכוז שאומד על בסיס בחירות העבר.',
+            he: '<strong>שונות בין־קלפיות נאמדת:</strong> הרעש הסטטיסטי ברמת הקלפי נדגם מהתפלגות דיריכלה עם פרמטר ריכוז שנאמד על בסיס בחירות העבר.',
             en: '<strong>Empirically-estimated inter-precinct variance:</strong> ballot-level noise is sampled from a Dirichlet distribution whose concentration parameter is estimated from past elections.'
         },
         e26_modal_li4:         {
-            he: '<strong>אומדן צמיחת אוכלוסייה:</strong> מספר בעלי זכות הבחירה הצפוי בכנסת 26 (~7.3 מיליון) מאומד על פי קצב הגידול ההיסטורי של האוכלוסייה הבוגרת בישראל.',
+            he: '<strong>אומדן צמיחת אוכלוסייה:</strong> מספר בעלי זכות הבחירה הצפוי בכנסת 26 (~7.3 מיליון) נאמד על פי קצב הגידול ההיסטורי של האוכלוסייה הבוגרת בישראל.',
             en: '<strong>Population growth estimate:</strong> the expected number of eligible voters in K26 (~7.3 million) is estimated from the historical growth rate of Israel\'s adult population.'
         },
         e26_modal_p2:          {
@@ -876,8 +876,8 @@
         css.textContent = `
             #e26-widget {
                 position: fixed;
-                bottom: 14px;
-                inset-inline-end: 14px;
+                top: 14px;
+                inset-inline-start: 14px;
                 z-index: 9998;
                 background: rgba(17, 24, 39, 0.92);
                 border: 1px solid rgba(148, 163, 184, 0.25);
