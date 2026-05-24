@@ -201,8 +201,8 @@
             this.electionsData = {};
             this.electionIds = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25'];
             if (i18n.SHOW_E26) this.electionIds.push('26');
-            this.currentElectionX = '25';
-            this.currentElectionY = '25';
+            this.currentElectionX = i18n.SHOW_E26 ? '26' : '25';
+            this.currentElectionY = i18n.SHOW_E26 ? '26' : '25';
             this.currentPartyX = null;
             this.currentPartyY = null;
             this.selectedSettlements = [];
@@ -290,10 +290,10 @@
 
         async init() {
             document.getElementById('loading').style.display = 'flex';
-            await this.loadParties('x', '25', false);
-            await this.loadParties('y', '25', false);
+            await this.loadParties('x', this.currentElectionX, false);
+            await this.loadParties('y', this.currentElectionY, false);
             // Default: first party for X, second for Y
-            const data = this.electionsData['25'];
+            const data = this.electionsData[this.currentElectionX];
             if (data.parties.length > 1) {
                 this.currentPartyY = data.parties[1].name;
                 document.getElementById('party-y').value = this.currentPartyY;

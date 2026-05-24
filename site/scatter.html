@@ -857,8 +857,8 @@
             constructor() {
                 this.electionsData = {};
                 this.metricsData = null;
-                this.currentElectionX = '25';
-                this.currentElectionY = '25';
+                this.currentElectionX = i18n.SHOW_E26 ? '26' : '25';
+                this.currentElectionY = i18n.SHOW_E26 ? '26' : '25';
                 this.currentPartyX = null;
                 this.currentPartyY = null;
                 this.scaleType = 'linear'; // 'linear' or 'symlog'
@@ -986,8 +986,8 @@
                 this.rebuildElectionDropdowns();
 
                 // Load initial data (don't update chart until both are loaded)
-                await this.loadElectionParties('x', '25', false);
-                await this.loadElectionParties('y', '25', false);
+                await this.loadElectionParties('x', this.currentElectionX, false);
+                await this.loadElectionParties('y', this.currentElectionY, false);
                 this.updateChart();
             }
 
