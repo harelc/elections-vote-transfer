@@ -1997,6 +1997,13 @@ PARTY_OVERRIDES = {
         'name': 'כבוד האדם',
         'description': 'כבוד האדם'
     },
+
+    # ===== ELECTION 26 (October 2026 — simulated scenario) =====
+    ('26', 'ום'): {
+        'leader': 'יוסף ג׳בארין',
+        'leader_en': 'Yousef Jabarin',
+        'leader_image': 'images/leaders/jabarin.jpg',
+    },
 }
 
 
