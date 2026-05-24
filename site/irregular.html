@@ -849,7 +849,7 @@
                 <button class="election-btn" data-election="24">כנסת 24</button>
                 <button class="election-btn active" data-election="25">כנסת 25</button>
             </div>
-            <script>if(i18n.SHOW_E26){var s=document.getElementById('election-selector'),b=document.createElement('button');b.className='election-btn';b.dataset.election='26';b.textContent='כנסת 26';s.appendChild(b)}</script>
+            <script>if(i18n.SHOW_E26){var s=document.getElementById('election-selector'),b=document.createElement('button');b.className='election-btn active';b.dataset.election='26';b.textContent='כנסת 26';s.appendChild(b);var prev=s.querySelector('.election-btn[data-election="25"]');if(prev)prev.classList.remove('active')}</script>
 
             <div class="stats-bar" id="stats-bar">
                 <div class="stat-item">
@@ -953,7 +953,7 @@
 
         // Current data
         let currentData = null;
-        let currentElection = '25';
+        let currentElection = i18n.SHOW_E26 ? '26' : '25';
 
         // Party data from loaded data (full objects)
         let partyData = {};
@@ -1312,7 +1312,7 @@
         }
 
         // Initial load
-        loadData('25');
+        loadData(currentElection);
     </script>
     <script>i18n.renderNav('irregular'); i18n.renderBMC();</script>
 </body>

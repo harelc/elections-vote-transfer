@@ -581,15 +581,28 @@ def generate_irregularities(election_id):
 
 def main():
     """Generate irregularities data for all elections."""
-    for election_id in ['21', '22', '23', '24', '25']:
+    import argparse, shutil, os
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--elections', nargs='+', help='Only run for these election IDs')
+    args = parser.parse_args()
+    elections = args.elections if args.elections else ['21', '22', '23', '24', '25', '26']
+    os.makedirs('site/data', exist_ok=True)
+    for election_id in elections:
+        if election_id not in ELECTIONS:
+            print(f"  Skipping {election_id}: not in ELECTIONS config", flush=True)
+            continue
         try:
             data = generate_irregularities(election_id)
 
             output_file = f"data/irregularities_{election_id}.json"
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
-
             print(f"  Saved to {output_file}", flush=True)
+
+            # Also copy to site/data/ so the web server can serve it
+            site_file = f"site/data/irregularities_{election_id}.json"
+            shutil.copy2(output_file, site_file)
+            print(f"  Copied to {site_file}", flush=True)
         except Exception as e:
             print(f"  Error processing election {election_id}: {e}", flush=True)
             import traceback

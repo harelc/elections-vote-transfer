@@ -447,7 +447,7 @@
 
     // ---- State ----
     let currentData = null;
-    let currentElection = '25';
+    let currentElection = i18n.SHOW_E26 ? '26' : '25';
     let partyData = {};
 
     // ---- Election pills ----
@@ -621,7 +621,7 @@
 
     // ---- Init ----
     buildPills();
-    loadData('25');
+    loadData(currentElection);
     </script>
 </body>
 </html>
