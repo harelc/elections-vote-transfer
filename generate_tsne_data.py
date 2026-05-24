@@ -21,6 +21,7 @@ except ImportError:
     HAS_UMAP = False
 
 from party_config import ELECTIONS, get_party_info
+from generate_map_data import normalize_name as _normalize_settlement_name
 
 # Configure logging
 logging.basicConfig(
@@ -222,7 +223,7 @@ def generate_tsne_json(election_id, compact=True):
             cs = {
                 'x': round(s['x'], 2),
                 'y': round(s['y'], 2),
-                'n': s['settlement_name'],  # shortened key
+                'n': _normalize_settlement_name(s['settlement_name']),  # normalized: single-space, no geresh/hyphens/parens — matches station_coordinates.json keys
                 'b': s['ballot_number'],     # shortened key
                 'v': s['total_voters'],      # shortened key
                 'e': s['eligible_voters'],   # eligible voters
