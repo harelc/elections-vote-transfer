@@ -993,9 +993,10 @@
 
             /** Rebuild election select options with current language */
             rebuildElectionDropdowns() {
+                const desiredValues = { 'election-x': this.currentElectionX, 'election-y': this.currentElectionY };
                 ['election-x', 'election-y'].forEach(id => {
                     const select = document.getElementById(id);
-                    const currentVal = select.value;
+                    const currentVal = desiredValues[id];
                     select.innerHTML = Object.keys(this.electionMeta).map(eid =>
                         `<option value="${eid}"${eid === currentVal ? ' selected' : ''}>${this.electionLabel(eid)}</option>`
                     ).join('');
