@@ -161,7 +161,7 @@ def main():
     import argparse
 
     parser = argparse.ArgumentParser(description='Add ballot locations to T-SNE data')
-    all_elections = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
+    all_elections = ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26']
     parser.add_argument('--election', '-e', choices=all_elections + ['all'],
                        default='all', help='Election to process (default: all)')
     args = parser.parse_args()

@@ -128,6 +128,14 @@ def main():
         [sys.executable, 'normalize_tsne_names.py'],
         'Normalizing settlement names in site/data/tsne_*.json'
     )
+    # Step 2.6: Stamp venue names (the `l` field) onto each station.
+    # Without this, geomap pop-ups for K26 ballots show no venue label.
+    # We expect data/ballot_locations_26.json to exist (clone from _25 if needed
+    # until CEC publishes the real scrape).
+    run_script(
+        [sys.executable, 'add_locations_to_tsne.py', '-e', '26'],
+        'Adding venue names to site/data/tsne_26.json'
+    )
 
     # Step 3: Generate transfer data for 25→26
     run_script(
