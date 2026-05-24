@@ -583,6 +583,170 @@ body {
     opacity: 0.9;
 }
 
+/* Mandate source breakdown */
+.mandate-breakdown-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
+}
+
+.mandate-empty {
+    color: var(--text-muted);
+    text-align: center;
+    font-size: 0.95rem;
+}
+
+.mandate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+}
+
+.mandate-title-row {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: 0.25rem;
+}
+
+.mandate-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.mandate-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.mandate-summary {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.mandate-total {
+    color: var(--accent-primary);
+    font-weight: 700;
+    font-size: 1.05rem;
+    white-space: nowrap;
+}
+
+.mandate-body {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.95fr) minmax(420px, 1.25fr);
+    gap: var(--spacing-lg);
+    align-items: start;
+}
+
+.mandate-bar-wrap {
+    min-width: 0;
+}
+
+.mandate-bar {
+    height: 42px;
+    display: flex;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--bg-secondary);
+    direction: ltr;
+}
+
+.mandate-segment {
+    height: 100%;
+    min-width: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.65);
+}
+
+.mandate-segment.is-small span {
+    display: none;
+}
+
+.mandate-note {
+    margin-top: var(--spacing-sm);
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    line-height: 1.6;
+}
+
+.mandate-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.mandate-table th,
+.mandate-table td {
+    padding: 0.55rem 0.4rem;
+    border-bottom: 1px solid var(--border-color);
+    text-align: right;
+    vertical-align: middle;
+}
+
+.mandate-table th {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.mandate-table td {
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.mandate-table td.numeric,
+.mandate-table th.numeric {
+    text-align: left;
+}
+
+.mandate-source-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.mandate-source-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+.mandate-equivalent {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.legend-item.selected-target {
+    background: rgba(79, 126, 255, 0.12);
+    outline: 1px solid rgba(79, 126, 255, 0.45);
+}
+
+.sankey-node.selected-target rect {
+    stroke: #f8fafc;
+    stroke-width: 2;
+}
+
 /* Tooltip */
 .tooltip {
     position: fixed;
@@ -888,6 +1052,10 @@ body {
         grid-template-columns: 1fr;
     }
 
+    .mandate-body {
+        grid-template-columns: 1fr;
+    }
+
     .legend-container {
         position: static;
         order: -1;
@@ -969,6 +1137,38 @@ body {
 
     .info-panel {
         margin-bottom: var(--spacing-sm);
+    }
+
+    .mandate-breakdown-panel {
+        padding: var(--spacing-md);
+        margin-bottom: var(--spacing-md);
+    }
+
+    .mandate-header {
+        flex-direction: column;
+        gap: var(--spacing-xs);
+        margin-bottom: var(--spacing-sm);
+    }
+
+    .mandate-title {
+        font-size: 1rem;
+    }
+
+    .mandate-total {
+        font-size: 0.95rem;
+    }
+
+    .mandate-bar {
+        height: 34px;
+    }
+
+    .mandate-table {
+        font-size: 0.78rem;
+    }
+
+    .mandate-table th,
+    .mandate-table td {
+        padding: 0.45rem 0.25rem;
     }
 
     .election-info {

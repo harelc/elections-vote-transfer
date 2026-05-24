@@ -44,9 +44,11 @@ class VoteTransferSankey {
         this.bottomSheet = document.getElementById('bottom-sheet');
         this.bottomSheetContent = document.getElementById('bottom-sheet-content');
         this.legendsOverlay = document.getElementById('legends-overlay');
+        this.mandateBreakdownPanel = document.getElementById('mandate-breakdown');
         this.data = null;
         this.officialResults = null;
         this.currentTransition = (typeof i18n !== 'undefined' && i18n.SHOW_E26) ? '25_to_26' : '24_to_25';
+        this.selectedTargetName = null;
         this.svg = null;
         this.g = null;
         this.percentMode = 'source'; // 'source' or 'target'
@@ -65,6 +67,8 @@ class VoteTransferSankey {
                 this.updateInfo();
                 this.render();
                 this.updateLegend();
+                this.updateMandateBreakdown();
+                this.applyPersistentSelection();
             }
         });
 
@@ -544,6 +548,7 @@ class VoteTransferSankey {
 
     async loadTransition(transitionId) {
         this.currentTransition = transitionId;
+        this.selectedTargetName = null;
         this.container.innerHTML = `<div class="loading">${i18n.t('loading')}</div>`;
 
         // Disable abstention for transitions with unreliable data
@@ -584,10 +589,13 @@ class VoteTransferSankey {
             // Apply color overrides
             applyColorOverrides(this.data.nodes_from);
             applyColorOverrides(this.data.nodes_to);
+            this.ensureSelectedTarget();
 
             this.updateInfo();
             this.render();
             this.updateLegend();
+            this.updateMandateBreakdown();
+            this.applyPersistentSelection();
         } catch (error) {
             console.error('Error loading data:', error);
             this.container.innerHTML = `<div class="loading">${i18n.t('error_loading')}: ${error.message}</div>`;
@@ -632,6 +640,172 @@ class VoteTransferSankey {
         const yyyy = date.getFullYear();
         const formatted = `${dd}.${mm}.${yyyy}`;
         return estimated ? `${formatted} (${isHe ? 'משוער' : 'estimated'})` : formatted;
+    }
+
+    ensureSelectedTarget() {
+        const targets = this.data?.nodes_to || [];
+        if (!targets.length) {
+            this.selectedTargetName = null;
+            return;
+        }
+
+        const stillExists = targets.some(t => t.name === this.selectedTargetName);
+        if (stillExists) return;
+        this.selectedTargetName = null;
+    }
+
+    selectTargetParty(targetName) {
+        if (!this.data?.nodes_to?.some(n => n.name === targetName)) return;
+        this.selectedTargetName = targetName;
+        this.updateMandateBreakdown();
+        this.applyPersistentSelection();
+    }
+
+    escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        }[ch]));
+    }
+
+    formatMandateValue(value) {
+        if (!Number.isFinite(value)) return '0';
+        if (value > 0 && value < 0.05) return '<0.1';
+        const rounded = Math.round(value * 10) / 10;
+        return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
+    }
+
+    formatPercentValue(value) {
+        if (!Number.isFinite(value)) return '0%';
+        if (value > 0 && value < 0.05) return '<0.1%';
+        return `${value.toFixed(1)}%`;
+    }
+
+    isFutureTargetElection() {
+        return !!this.data?.to_election?.estimated;
+    }
+
+    getTargetBreakdown(targetName) {
+        if (!this.data) return null;
+        const target = this.data.nodes_to.find(n => n.name === targetName);
+        if (!target) return null;
+
+        const sourceByName = new Map(this.data.nodes_from.map(n => [n.name, n]));
+        const transfers = this.data.transfers
+            .filter(t => t.target === targetName && t.votes > 0)
+            .sort((a, b) => b.votes - a.votes);
+
+        const totalIncoming = d3.sum(transfers, t => t.votes);
+        const seats = target.seats || 0;
+
+        const rows = transfers.map(t => {
+            const source = sourceByName.get(t.source) || {
+                name: t.source,
+                color: COLOR_OVERRIDES[t.source] || '#6b7280'
+            };
+            const share = totalIncoming > 0 ? t.votes / totalIncoming : 0;
+            return {
+                source,
+                sourceName: t.source,
+                sourceDisplay: i18n.partyName(source),
+                color: source.color || '#6b7280',
+                votes: t.votes,
+                share,
+                mandateEquivalent: share * seats
+            };
+        });
+
+        return { target, rows, totalIncoming, seats };
+    }
+
+    updateMandateBreakdown() {
+        if (!this.mandateBreakdownPanel || !this.data) return;
+        this.ensureSelectedTarget();
+        const breakdown = this.getTargetBreakdown(this.selectedTargetName);
+
+        if (!breakdown || !breakdown.rows.length) {
+            this.mandateBreakdownPanel.innerHTML =
+                `<div class="mandate-empty">${i18n.t(this.isFutureTargetElection() ? 'mandate_select_hint_future' : 'mandate_select_hint')}</div>`;
+            return;
+        }
+
+        const { target, rows, totalIncoming, seats } = breakdown;
+        const isFutureTarget = this.isFutureTargetElection();
+        const targetName = i18n.partyName(target);
+        const targetColor = target.color || '#6b7280';
+        const totalText = seats > 0
+            ? `${this.formatMandateValue(seats)} ${i18n.t('seats')}`
+            : i18n.t('below_threshold');
+        const summaryText = seats > 0
+            ? i18n.t('mandate_panel_summary', {
+                seats: this.formatMandateValue(seats),
+                votes: i18n.fmtNum(totalIncoming || target.votes || 0)
+            })
+            : i18n.t('mandate_panel_below', {
+                votes: i18n.fmtNum(totalIncoming || target.votes || 0)
+            });
+
+        const barHTML = rows.map(row => {
+            const pct = row.share * 100;
+            const label = seats > 0
+                ? this.formatMandateValue(row.mandateEquivalent)
+                : this.formatPercentValue(pct);
+            const title = `${row.sourceDisplay}: ${i18n.fmtNum(row.votes)} · ${this.formatPercentValue(pct)} · ${this.formatMandateValue(row.mandateEquivalent)} ${i18n.t('seats')}`;
+            return `
+                <div class="mandate-segment ${pct < 8 ? 'is-small' : ''}"
+                     style="flex: 0 0 ${pct}%; background: ${row.color}"
+                     title="${this.escapeHTML(title)}">
+                    <span>${this.escapeHTML(label)}</span>
+                </div>
+            `;
+        }).join('');
+
+        const rowsHTML = rows.map(row => `
+            <tr>
+                <td>
+                    <span class="mandate-source-cell">
+                        <span class="mandate-source-color" style="background: ${row.color}"></span>
+                        <span>${this.escapeHTML(row.sourceDisplay)}</span>
+                    </span>
+                </td>
+                <td class="numeric">${i18n.fmtNum(row.votes)}</td>
+                <td class="numeric">${this.formatPercentValue(row.share * 100)}</td>
+                <td class="numeric mandate-equivalent">${this.formatMandateValue(row.mandateEquivalent)}</td>
+            </tr>
+        `).join('');
+
+        this.mandateBreakdownPanel.innerHTML = `
+            <div class="mandate-header">
+                <div>
+                    <div class="mandate-title-row">
+                        <span class="mandate-color" style="background: ${targetColor}"></span>
+                        <span class="mandate-title">${i18n.t(isFutureTarget ? 'mandate_panel_title_future' : 'mandate_panel_title', { party: this.escapeHTML(targetName) })}</span>
+                    </div>
+                    <div class="mandate-summary">${this.escapeHTML(summaryText)}</div>
+                </div>
+                <div class="mandate-total">${this.escapeHTML(totalText)}</div>
+            </div>
+            <div class="mandate-body">
+                <div class="mandate-bar-wrap">
+                    <div class="mandate-bar">${barHTML}</div>
+                    <div class="mandate-note">${i18n.t(isFutureTarget ? 'mandate_note_future' : 'mandate_note')}</div>
+                </div>
+                <table class="mandate-table">
+                    <thead>
+                        <tr>
+                            <th>${i18n.t('mandate_source_col')}</th>
+                            <th class="numeric">${i18n.t(isFutureTarget ? 'mandate_votes_col_future' : 'mandate_votes_col')}</th>
+                            <th class="numeric">${i18n.t('mandate_share_col')}</th>
+                            <th class="numeric">${i18n.t('mandate_equiv_label')}</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHTML}</tbody>
+                </table>
+            </div>
+        `;
     }
 
     render() {
@@ -782,9 +956,10 @@ class VoteTransferSankey {
                 if (!this.isMobile()) {
                     this.hideTooltip();
                 }
-                d3.select(event.currentTarget).style('stroke-opacity', 0.4);
+                this.applyPersistentSelection();
             })
             .on('click', (event, d) => {
+                this.selectTargetParty(d.target.name);
                 if (this.isMobile()) {
                     this.showBottomSheet(d);
                 }
@@ -812,6 +987,11 @@ class VoteTransferSankey {
                 this.unhighlightAll();
                 if (!this.isMobile()) {
                     this.hideTooltip();
+                }
+            })
+            .on('click', (event, d) => {
+                if (d.side === 'to') {
+                    this.selectTargetParty(d.name);
                 }
             });
 
@@ -876,6 +1056,8 @@ class VoteTransferSankey {
                 .text('i');
         }
 
+        this.updateMandateBreakdown();
+        this.applyPersistentSelection();
         console.log('Render complete');
     }
 
@@ -963,8 +1145,45 @@ class VoteTransferSankey {
     }
 
     unhighlightAll() {
-        this.links.style('stroke-opacity', 0.4);
-        this.nodes.style('opacity', 1);
+        this.applyPersistentSelection();
+    }
+
+    applyPersistentSelection() {
+        const selected = this.selectedTargetName;
+
+        if (this.links) {
+            if (selected) {
+                this.links.style('stroke-opacity', d => d.target.name === selected ? 0.66 : 0.12);
+            } else {
+                this.links.style('stroke-opacity', 0.4);
+            }
+        }
+
+        if (this.nodes) {
+            if (selected) {
+                const connectedNodeIds = new Set();
+                if (this.links) {
+                    this.links.each(d => {
+                        if (d.target.name === selected) {
+                            connectedNodeIds.add(d.source.id);
+                            connectedNodeIds.add(d.target.id);
+                        }
+                    });
+                }
+                this.nodes
+                    .style('opacity', d => connectedNodeIds.has(d.id) ? 1 : 0.32)
+                    .classed('selected-target', d => d.side === 'to' && d.name === selected);
+            } else {
+                this.nodes
+                    .style('opacity', 1)
+                    .classed('selected-target', false);
+            }
+        }
+
+        document.querySelectorAll('.legend-item').forEach(item => {
+            const isSelected = selected && item.dataset.side === 'to' && item.dataset.partyName === selected;
+            item.classList.toggle('selected-target', !!isSelected);
+        });
     }
 
     showNodeTooltip(event, node) {
@@ -1113,6 +1332,8 @@ class VoteTransferSankey {
         sortedParties.forEach(party => {
             const item = document.createElement('div');
             item.className = 'legend-item';
+            item.dataset.partyName = party.name;
+            item.dataset.side = side;
             if (party.seats === 0) {
                 item.classList.add('below-threshold');
             }
@@ -1150,8 +1371,16 @@ class VoteTransferSankey {
                 this.hideTooltip();
             });
 
+            item.addEventListener('click', () => {
+                if (side === 'to') {
+                    this.selectTargetParty(party.name);
+                }
+            });
+
             legend.appendChild(item);
         });
+
+        this.applyPersistentSelection();
     }
 
     showPartyTooltip(event, party) {
