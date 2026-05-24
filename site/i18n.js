@@ -5,8 +5,18 @@
 (function () {
     'use strict';
 
-    /* ── Election 26 feature flag ── */
-    const SHOW_E26 = new URLSearchParams(location.search).has('e26');
+    /* ── Election 26 feature flag (URL ?e26=1 OR localStorage) ── */
+    const _urlE26 = new URLSearchParams(location.search).has('e26');
+    let _storageE26 = false;
+    try { _storageE26 = localStorage.getItem('e26') === '1'; } catch (e) {}
+    // URL takes precedence if present (?e26=0 turns it off; ?e26=1 turns it on)
+    const _urlE26Param = new URLSearchParams(location.search).get('e26');
+    const SHOW_E26 = _urlE26Param === '0' ? false : (_urlE26Param === '1' ? true : _storageE26);
+    // Sync localStorage with URL choice so future pages remember
+    try {
+        if (_urlE26Param === '1') localStorage.setItem('e26', '1');
+        if (_urlE26Param === '0') localStorage.removeItem('e26');
+    } catch (e) {}
 
     /* ── Translation dictionary ─────────────────────────────────── */
     const dict = {
@@ -404,6 +414,36 @@
         regional_methodology_text: { he: 'הסימולטור מחלק את כלל הקלפיות בעלות קואורדינטות גיאוגרפיות למחוזות בחירה באמצעות חלוקה בינארית חוזרת: בכל שלב, המחוז בעל מספר הבוחרים הגדול ביותר נחצה לשניים לאורך הציר שמייצר את החלוקה המרובעת ביותר, כך שמספר הבוחרים מתחלק שווה בשווה. התוצאה היא מחוזות רציפים גיאוגרפית ומאוזנים באוכלוסייה. המנדטים מחולקים למחוזות לפי מכסת הייר (<bdi><a href="https://en.wikipedia.org/wiki/Hare_quota" target="_blank" style="color:var(--accent-primary)">Hare quota</a></bdi>) עם שארית גדולה ביותר. בכל מחוז מוקצים מנדטים לפי שיטת באדר-עופר או לפי זוכה-לוקח-הכל (<bdi>FPTP</bdi>), בהתאם לבחירת המשתמש. במצב מעורב, חלק מהמנדטים מוקצים ארצית (עם אחוז חסימה) והשאר אזורית. ככל שמספר המחוזות עולה ומספר המנדטים לכל מחוז יורד, מפלגות גדולות מרוויחות על חשבון מפלגות קטנות — עד למקרה הקיצוני של מחוזות עם מנדט אחד כל אחד, שהוא למעשה שיטת <bdi>FPTP</bdi> מלאה.', en: 'The simulator partitions all ballot stations with geographic coordinates into electoral districts using recursive binary splitting: at each step, the district with the most eligible voters is split in two along whichever axis produces squarer children, balancing the voter population evenly. This produces geographically contiguous, population-balanced districts. Seats are apportioned to districts using the <a href="https://en.wikipedia.org/wiki/Hare_quota" target="_blank" style="color:var(--accent-primary)">Hare quota</a> with largest remainder. Within each district, seats are allocated using D\'Hondt or winner-takes-all (FPTP), depending on user selection. In mixed mode, some seats are allocated nationally (with an electoral threshold) and the rest regionally. As the number of districts increases and seats per district decreases, large parties gain at the expense of smaller ones — reaching the extreme case of single-seat districts, which is effectively a full FPTP system.' },
         feedback_question:     { he: 'רעיונות? מחשבות? הצעות? דונו כאן', en: 'Ideas? Thoughts? Suggestions? Discuss them here' },
         nav_methodology:       { he: 'מתודולוגיה', en: 'Methodology' },
+        e26_widget_label:      { he: 'מצב כנסת 26 (סימולציה)', en: 'Knesset 26 mode (simulation)' },
+        e26_why_link:          { he: 'מה זה?', en: 'Why?' },
+        e26_modal_title:       { he: 'מצב כנסת 26 — מהי הסימולציה הזו?', en: 'Knesset 26 mode — what is this simulation?' },
+        e26_modal_p1:          {
+            he: 'אתר זה כולל "מצב כנסת 26" אופציונלי, המציג נתונים <strong>סימולטיביים</strong> של הבחירות הקרובות לכנסת ה־26, הצפויות באוקטובר 2026. הנתונים אינם אמיתיים — הם הופקו על ידי שילוב של מספר מקורות:',
+            en: 'This site includes an optional "Knesset 26 mode" that shows <strong>simulated</strong> data for the upcoming Knesset 26 election, expected October 2026. The data is not real — it is produced by combining several sources:'
+        },
+        e26_modal_li1:         {
+            he: '<strong>ממוצעי סקרים:</strong> חלקי ההצבעה הצפויים לכל מפלגה מבוססים על ממוצעי סקרים מעודכנים.',
+            en: '<strong>Polling averages:</strong> expected vote shares per party are based on aggregated current polling.'
+        },
+        e26_modal_li2:         {
+            he: '<strong>מטריצת מעבר על בסיס נתונים:</strong> אומדנים כמותיים של תנועת מצביעים בין מפלגות, שמקורם במטריצות העברה שחישבנו ממעברים היסטוריים (ראו <a href="methodology.html" style="color:var(--accent-primary,#3b82f6)">מתודולוגיה</a>).',
+            en: '<strong>Data-driven transfer matrix:</strong> quantitative estimates of voter movement between parties, derived from the historical transfer matrices we computed (see <a href="methodology.html" style="color:var(--accent-primary,#3b82f6)">Methodology</a>).'
+        },
+        e26_modal_li3:         {
+            he: '<strong>שונות בין־קלפיות מאומדת:</strong> הרעש הסטטיסטי ברמת הקלפי נדגם מהתפלגות דיריכלה עם פרמטר ריכוז שאומד על בסיס בחירות העבר.',
+            en: '<strong>Empirically-estimated inter-precinct variance:</strong> ballot-level noise is sampled from a Dirichlet distribution whose concentration parameter is estimated from past elections.'
+        },
+        e26_modal_li4:         {
+            he: '<strong>אומדן צמיחת אוכלוסייה:</strong> מספר בעלי זכות הבחירה הצפוי בכנסת 26 (~7.3 מיליון) מאומד על פי קצב הגידול ההיסטורי של האוכלוסייה הבוגרת בישראל.',
+            en: '<strong>Population growth estimate:</strong> the expected number of eligible voters in K26 (~7.3 million) is estimated from the historical growth rate of Israel\'s adult population.'
+        },
+        e26_modal_p2:          {
+            he: '<strong>מטרת המצב הזה:</strong> לבדוק את מוכנות האתר לבחירות הקרובות ולהדגים בפני המשתמשים איך עשויה להיראות התפלגות ההצבעה ברחבי הארץ. כל המספרים שתראו ב"מצב כנסת 26" הם <em>תרחיש</em>, לא נתונים אמיתיים.',
+            en: '<strong>Purpose:</strong> to test the site\'s readiness for the upcoming election and to show users what a plausible nationwide vote distribution might look like. All numbers you see in "Knesset 26 mode" are a <em>scenario</em>, not real data.'
+        },
+        e26_modal_dismiss:     { he: 'הבנתי', en: 'Got it' },
+        e26_off_state:         { he: 'מצב כנסת 26: כבוי', en: 'K26 mode: off' },
+        e26_on_state:          { he: 'מצב כנסת 26: דלוק (סימולציה)', en: 'K26 mode: on (simulated)' },
         nav_discussions:       { he: 'דיונים', en: 'Discussions' },
         discussions_title:     { he: 'דיונים', en: 'Discussions' },
         discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
@@ -823,11 +863,206 @@
         applyTranslations();
     }
 
+    /* ── E26 toggle widget ─────────────────────────────────────────
+       Floating bottom-right chip:
+       - shows current K26 mode state (off / on-simulation)
+       - clicking toggles localStorage and reloads the page
+       - "?" link opens the explainer modal
+       - first time the user turns K26 on, modal opens automatically       ──────────────────────────────────────────────────────────────── */
+    function setupE26Widget() {
+        if (document.getElementById('e26-widget')) return;  // already injected
+
+        const css = document.createElement('style');
+        css.textContent = `
+            #e26-widget {
+                position: fixed;
+                bottom: 14px;
+                inset-inline-end: 14px;
+                z-index: 9998;
+                background: rgba(17, 24, 39, 0.92);
+                border: 1px solid rgba(148, 163, 184, 0.25);
+                border-radius: 999px;
+                padding: 5px 12px;
+                font-family: 'Heebo', 'Inter', sans-serif;
+                font-size: 0.78rem;
+                color: #e2e8f0;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                backdrop-filter: blur(8px);
+                user-select: none;
+            }
+            #e26-widget.on { background: rgba(249,115,22,0.18); border-color: #f97316; color: #fed7aa; }
+            #e26-widget .e26-switch {
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+            }
+            #e26-widget .e26-dot {
+                width: 10px;
+                height: 10px;
+                border-radius: 50%;
+                background: #64748b;
+                transition: background 0.15s;
+            }
+            #e26-widget.on .e26-dot { background: #f97316; box-shadow: 0 0 6px #f97316; }
+            #e26-widget .e26-why {
+                color: rgba(226, 232, 240, 0.7);
+                text-decoration: none;
+                font-size: 0.72rem;
+                border-inline-start: 1px solid rgba(148, 163, 184, 0.3);
+                padding-inline-start: 8px;
+                cursor: pointer;
+            }
+            #e26-widget .e26-why:hover { color: #fff; }
+            #e26-modal-overlay {
+                position: fixed; inset: 0;
+                background: rgba(0,0,0,0.85);
+                z-index: 9999;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                padding: 1.5rem;
+            }
+            #e26-modal-overlay.visible { display: flex; }
+            #e26-modal {
+                background: #12121a;
+                color: #f1f5f9;
+                border: 1px solid #2a2a3a;
+                border-radius: 10px;
+                max-width: 640px;
+                max-height: 88vh;
+                overflow-y: auto;
+                padding: 1.8rem 1.6rem 1.2rem;
+                font-family: 'Heebo', 'Inter', sans-serif;
+                line-height: 1.65;
+                font-size: 0.95rem;
+            }
+            #e26-modal h2 { font-size: 1.35rem; margin-bottom: 0.8rem; color: #fed7aa; }
+            #e26-modal p { margin-bottom: 0.7rem; }
+            #e26-modal ul { margin: 0.5rem 1.5rem 0.8rem; line-height: 1.7; }
+            #e26-modal li { margin-bottom: 0.4rem; }
+            #e26-modal .e26-modal-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
+            #e26-modal button {
+                background: #f97316;
+                color: white;
+                border: none;
+                padding: 0.5rem 1.4rem;
+                border-radius: 5px;
+                font-family: inherit;
+                font-size: 0.95rem;
+                cursor: pointer;
+                font-weight: 500;
+            }
+            #e26-modal button:hover { background: #ea580c; }
+        `;
+        document.head.appendChild(css);
+
+        const isOn = SHOW_E26;
+        const widget = document.createElement('div');
+        widget.id = 'e26-widget';
+        widget.className = isOn ? 'on' : '';
+        const labelText = isOn ? t('e26_on_state') : t('e26_off_state');
+        widget.innerHTML = `
+            <span class="e26-switch" role="button" tabindex="0">
+                <span class="e26-dot"></span>
+                <span class="e26-label">${labelText}</span>
+            </span>
+            <span class="e26-why" role="button" tabindex="0">${t('e26_why_link')}</span>
+        `;
+        document.body.appendChild(widget);
+
+        function buildModal() {
+            const overlay = document.createElement('div');
+            overlay.id = 'e26-modal-overlay';
+            overlay.innerHTML = `
+                <div id="e26-modal" role="dialog" aria-modal="true">
+                    <h2>${t('e26_modal_title')}</h2>
+                    <p>${t('e26_modal_p1')}</p>
+                    <ul>
+                        <li>${t('e26_modal_li1')}</li>
+                        <li>${t('e26_modal_li2')}</li>
+                        <li>${t('e26_modal_li3')}</li>
+                        <li>${t('e26_modal_li4')}</li>
+                    </ul>
+                    <p>${t('e26_modal_p2')}</p>
+                    <div class="e26-modal-actions">
+                        <button type="button" id="e26-modal-dismiss">${t('e26_modal_dismiss')}</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) closeModal(); });
+            overlay.querySelector('#e26-modal-dismiss').addEventListener('click', closeModal);
+            return overlay;
+        }
+        function openModal() {
+            let overlay = document.getElementById('e26-modal-overlay');
+            if (!overlay) overlay = buildModal();
+            overlay.classList.add('visible');
+        }
+        function closeModal() {
+            const overlay = document.getElementById('e26-modal-overlay');
+            if (overlay) overlay.classList.remove('visible');
+            try { localStorage.setItem('e26_seen', '1'); } catch (e) {}
+        }
+
+        function toggleE26() {
+            const turningOn = !SHOW_E26;
+            try {
+                if (turningOn) localStorage.setItem('e26', '1');
+                else localStorage.removeItem('e26');
+            } catch (e) {}
+            // If turning on for the first time, mark unseen so the modal opens on the next page load
+            if (turningOn) {
+                try {
+                    if (localStorage.getItem('e26_seen') !== '1') {
+                        // Open immediately; modal will set e26_seen on dismiss
+                    }
+                } catch (e) {}
+            }
+            // Update URL: add or remove ?e26=1
+            const u = new URL(location.href);
+            if (turningOn) u.searchParams.set('e26', '1');
+            else u.searchParams.delete('e26');
+            location.href = u.toString();  // reload so all pages re-init with new state
+        }
+
+        widget.querySelector('.e26-switch').addEventListener('click', toggleE26);
+        widget.querySelector('.e26-switch').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleE26(); }
+        });
+        widget.querySelector('.e26-why').addEventListener('click', openModal);
+        widget.querySelector('.e26-why').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
+        });
+
+        // First-time-on auto-open of the modal
+        if (isOn) {
+            try {
+                if (localStorage.getItem('e26_seen') !== '1') {
+                    openModal();
+                }
+            } catch (e) {}
+        }
+
+        // Re-render widget + modal labels on language change
+        window.addEventListener('langchange', () => {
+            widget.querySelector('.e26-label').textContent = SHOW_E26 ? t('e26_on_state') : t('e26_off_state');
+            widget.querySelector('.e26-why').textContent = t('e26_why_link');
+            const overlay = document.getElementById('e26-modal-overlay');
+            if (overlay) { overlay.remove(); }  // rebuild on next open with new lang
+        });
+    }
+
     // Run init as early as possible
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); });
     } else {
         init();
+        setupE26Widget();
     }
 
     /* ── Public API ── */
