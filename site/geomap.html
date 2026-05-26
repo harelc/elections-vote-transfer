@@ -1326,39 +1326,50 @@
                 tooltip.style.display = 'block';
             }
 
-            showMarkerTooltip(e, station, coordData) {
-                this.cancelHideTooltip();
+            // Single source of truth for a one-ballot card. Used by BOTH the
+            // hover tooltip (positioned at the mouse) and the click popup
+            // (anchored to the marker by Leaflet). Shows every party at or
+            // above 7% of the ballot's valid votes, with a top-3 fallback
+            // when no party crosses that threshold (rare).
+            renderStationCardHTML(station, coordData) {
+                const PARTY_PCT_THRESHOLD = 7;
                 const settlement = station.n || station.settlement_name;
                 const ballot = station.b || station.ballot_number;
                 const location = station.l || coordData.location || '';
                 const voters = station.v || station.total_voters || 0;
                 const eligible = station.e || station.eligible_voters || 0;
-                const turnout = eligible > 0 ? Math.round(voters / eligible * 100) : 0;
+                const turnout = station.t !== undefined
+                    ? station.t
+                    : (eligible > 0 ? Math.round(voters / eligible * 100) : 0);
                 const proportions = station.p || station.proportions || {};
 
+                const sorted = Object.entries(proportions).sort((a, b) => b[1] - a[1]);
+                let displayed = sorted.filter(([, pct]) => pct >= PARTY_PCT_THRESHOLD);
+                if (displayed.length === 0) {
+                    displayed = sorted.slice(0, 3);  // fallback for degenerate ballots
+                }
+                const partyRows = displayed.map(([name, pct]) => {
+                    const party = this.parties.find(p => p.name === name);
+                    const color = party ? party.color : '#64748b';
+                    const displayName = i18n.partyName(party || name);
+                    return `
+                        <div class="station-popup-party">
+                            <span class="station-popup-party-name">
+                                <span class="station-popup-party-color" style="background: ${color}"></span>
+                                ${displayName}
+                            </span>
+                            <span class="station-popup-party-pct">${Math.round(pct)}%</span>
+                        </div>
+                    `;
+                }).join('');
+
                 const seInfo = this.getStationCluster(station);
+                const clusterLabel = i18n.getLang() === 'en' ? 'cluster' : 'אשכול';
+                const areaLabel = i18n.getLang() === 'en' ? 'area' : 'אזור';
+                const clusterText = seInfo
+                    ? ` (${clusterLabel} ${seInfo.cluster}${seInfo.statArea ? `, ${areaLabel} ${seInfo.statArea}` : ''})`
+                    : '';
 
-                // Top 7 parties
-                const topParties = Object.entries(proportions)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 7)
-                    .map(([name, pct]) => ({
-                        name,
-                        pct: Math.round(pct),
-                        color: this.parties.find(p => p.name === name)?.color || '#64748b'
-                    }));
-
-                const partyRows = topParties.map(p => `
-                    <div class="cluster-tooltip-party">
-                        <span class="cluster-tooltip-party-name">
-                            <span class="cluster-tooltip-party-dot" style="background: ${p.color}"></span>
-                            ${i18n.partyName(this.parties.find(pp => pp.name === p.name) || p.name)}
-                        </span>
-                        <span class="cluster-tooltip-party-pct">${p.pct}%</span>
-                    </div>
-                `).join('');
-
-                // Compare diff row
                 let diffRow = '';
                 if (this.compareElection && this.selectedParty) {
                     const curPct = proportions[this.selectedParty.name] || 0;
@@ -1367,38 +1378,42 @@
                         const diff = curPct - cmpPct;
                         const sign = diff >= 0 ? '+' : '';
                         const isEn = i18n.getLang() === 'en';
-                        diffRow = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);font-size:0.8rem;">
+                        diffRow = `<div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border-color);font-size:0.8rem;">
                             <span dir="ltr" style="color:${diff >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${diff.toFixed(1)}%</span>
-                            <span dir="ltr" style="color:var(--text-muted);margin-right:6px;display:inline-block;">${isEn ? 'K.' : 'כ.'}${this.compareElection}: ${cmpPct.toFixed(1)}% ← ${isEn ? 'K.' : 'כ.'}${this.currentElection}: ${curPct.toFixed(1)}%</span>
+                            <span dir="ltr" style="color:var(--text-muted);margin-right:4px;display:inline-block;">${isEn ? 'K.' : 'כ.'}${this.compareElection}: ${cmpPct.toFixed(1)}% ← ${isEn ? 'K.' : 'כ.'}${this.currentElection}: ${curPct.toFixed(1)}%</span>
                         </div>`;
                     }
                 }
 
-                const title = location ? `${i18n.settlementName(settlement)} / ${location}` : i18n.settlementName(settlement);
-                const clusterLabel = i18n.getLang() === 'en' ? 'Cluster:' : 'אשכול:';
-                const areaLabel = i18n.getLang() === 'en' ? 'Area:' : 'אזור סטטיסטי:';
+                return `
+                    <div class="station-popup" style="direction: ${i18n.isRTL() ? 'rtl' : 'ltr'}">
+                        <div class="station-popup-title">${i18n.settlementName(settlement)}${clusterText}</div>
+                        <div class="station-popup-ballot">${i18n.t('ballot')} ${ballot}</div>
+                        ${location ? `<div class="station-popup-location">${location}</div>` : ''}
+                        <div class="station-popup-stats">
+                            <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span>
+                            <span class="station-popup-stat-value">${i18n.fmtNum(eligible)}</span>
+                            <span class="station-popup-stat-label">${i18n.t('voted')}:</span>
+                            <span class="station-popup-stat-value">${i18n.fmtNum(voters)}</span>
+                            <span class="station-popup-stat-label">${i18n.t('turnout')}:</span>
+                            <span class="station-popup-stat-value">${turnout}%</span>
+                        </div>
+                        <div class="station-popup-parties">
+                            ${partyRows}
+                        </div>
+                        ${diffRow}
+                        <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color)">
+                            <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
+                        </div>
+                    </div>
+                `;
+            }
 
+            showMarkerTooltip(e, station, coordData) {
+                this.cancelHideTooltip();
                 const tooltip = document.getElementById('cluster-tooltip');
                 tooltip.style.direction = i18n.isRTL() ? 'rtl' : 'ltr';
-                tooltip.innerHTML = `
-                    <div class="cluster-tooltip-title">${title}</div>
-                    <div class="cluster-tooltip-stats">
-                        <span class="cluster-tooltip-label">${i18n.t('ballot')}:</span>
-                        <span class="cluster-tooltip-value">${ballot}</span>
-                        <span class="cluster-tooltip-label">${i18n.t('voters')}:</span>
-                        <span class="cluster-tooltip-value">${i18n.fmtNum(voters)}</span>
-                        <span class="cluster-tooltip-label">${i18n.t('turnout')}:</span>
-                        <span class="cluster-tooltip-value">${turnout}%</span>
-                        ${seInfo ? `<span class="cluster-tooltip-label">${clusterLabel}</span><span class="cluster-tooltip-value">${seInfo.cluster}</span>` : ''}
-                        ${seInfo?.statArea ? `<span class="cluster-tooltip-label">${areaLabel}</span><span class="cluster-tooltip-value">${seInfo.statArea}</span>` : ''}
-                    </div>
-                    <div class="cluster-tooltip-parties">
-                        ${partyRows}
-                    </div>
-                    ${diffRow}
-                    <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);"><a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.8em;">${i18n.t('go_to_profile')} \u2192</a></div>
-                `;
-
+                tooltip.innerHTML = this.renderStationCardHTML(station, coordData);
                 const pos = this.map.latLngToContainerPoint(e.latlng);
                 tooltip.style.left = (pos.x + 20) + 'px';
                 tooltip.style.top = (pos.y - 20) + 'px';
@@ -2198,78 +2213,7 @@
             }
 
             createPopupContent(station, coordData) {
-                const settlement = station.n || station.settlement_name;
-                const ballot = station.b || station.ballot_number;
-                const location = station.l || coordData.location || '';
-                const voters = station.v || station.total_voters || 0;
-                const eligible = station.e || station.eligible_voters || 0;
-                const turnout = station.t || station.turnout || 0;
-                const proportions = station.p || station.proportions || {};
-
-                // Get top 5 parties
-                const topParties = Object.entries(proportions)
-                    .sort((a, b) => b[1] - a[1])
-                    .slice(0, 5);
-
-                const partyRows = topParties.map(([name, pct]) => {
-                    const party = this.parties.find(p => p.name === name);
-                    const color = party ? party.color : '#64748b';
-                    const displayName = i18n.partyName(party || name);
-                    return `
-                        <div class="station-popup-party">
-                            <span class="station-popup-party-name">
-                                <span class="station-popup-party-color" style="background: ${color}"></span>
-                                ${displayName}
-                            </span>
-                            <span class="station-popup-party-pct">${pct}%</span>
-                        </div>
-                    `;
-                }).join('');
-
-                // Get socioeconomic cluster (per-station first, then settlement)
-                const seInfo = this.getStationCluster(station);
-                const clusterLabel = i18n.getLang() === 'en' ? 'cluster' : 'אשכול';
-                const areaLabel = i18n.getLang() === 'en' ? 'area' : 'אזור';
-                const clusterText = seInfo ? ` (${clusterLabel} ${seInfo.cluster}${seInfo.statArea ? `, ${areaLabel} ${seInfo.statArea}` : ''})` : '';
-
-                // Compare diff for popup
-                let popupDiff = '';
-                if (this.compareElection && this.selectedParty) {
-                    const curPct = proportions[this.selectedParty.name] || 0;
-                    const cmpPct = this.getComparePct(station);
-                    if (cmpPct !== undefined) {
-                        const diff = curPct - cmpPct;
-                        const sign = diff >= 0 ? '+' : '';
-                        const isEn = i18n.getLang() === 'en';
-                        popupDiff = `<div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border-color);font-size:0.8rem;">
-                            <span dir="ltr" style="color:${diff >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${diff.toFixed(1)}%</span>
-                            <span dir="ltr" style="color:var(--text-muted);margin-right:4px;display:inline-block;">${isEn ? 'K.' : 'כ.'}${this.compareElection}: ${cmpPct.toFixed(1)}% ← ${isEn ? 'K.' : 'כ.'}${this.currentElection}: ${curPct.toFixed(1)}%</span>
-                        </div>`;
-                    }
-                }
-
-                return `
-                    <div class="station-popup" style="direction: ${i18n.isRTL() ? 'rtl' : 'ltr'}">
-                        <div class="station-popup-title">${i18n.settlementName(settlement)}${clusterText}</div>
-                        <div class="station-popup-ballot">${i18n.t('ballot')} ${ballot}</div>
-                        ${location ? `<div class="station-popup-location">${location}</div>` : ''}
-                        <div class="station-popup-stats">
-                            <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span>
-                            <span class="station-popup-stat-value">${i18n.fmtNum(eligible)}</span>
-                            <span class="station-popup-stat-label">${i18n.t('voted')}:</span>
-                            <span class="station-popup-stat-value">${i18n.fmtNum(voters)}</span>
-                            <span class="station-popup-stat-label">${i18n.t('turnout')}:</span>
-                            <span class="station-popup-stat-value">${turnout}%</span>
-                        </div>
-                        <div class="station-popup-parties">
-                            ${partyRows}
-                        </div>
-                        ${popupDiff}
-                        <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color)">
-                            <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
-                        </div>
-                    </div>
-                `;
+                return this.renderStationCardHTML(station, coordData);
             }
 
             handleSearch(query) {
