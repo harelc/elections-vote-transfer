@@ -1540,6 +1540,18 @@
                 }
             }
 
+            cecBallotLinkHTML(station) {
+                const sid = station.s || station.settlement_id;
+                const ballot = station.b || station.ballot_number;
+                if (!sid || !ballot) return '';
+                if (this.currentElection === '26') return '';
+                let bn = String(ballot);
+                if (bn.endsWith('.0')) bn = bn.slice(0, -2);
+                const url = `https://votes${this.currentElection}.bechirot.gov.il/ballotresults?cityID=${sid}&BallotNumber=${bn}`;
+                const label = i18n.getLang() === 'en' ? 'CEC' : 'ועדת הבחירות';
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${label}" style="color:#64748b;text-decoration:none;font-size:0.85em;display:inline-flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${label}</a>`;
+            }
+
             async loadElection(electionId) {
                 this.currentElection = electionId;
                 const container = document.querySelector('.visualization-container');
@@ -2012,8 +2024,9 @@
                     <div class="tooltip-votes">
                         ${partyRows}
                     </div>
-                    <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color)">
+                    <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
                         <a href="settlement.html?name=${encodeURIComponent(settlementName)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
+                        ${this.cecBallotLinkHTML(station)}
                     </div>
                 `);
 

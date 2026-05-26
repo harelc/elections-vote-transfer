@@ -75,25 +75,37 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
     vote_data = df[existing_symbols].copy()
     vote_data.columns = existing_names
 
-    # Calculate total votes per station for normalization
-    total_votes = vote_data.sum(axis=1)
+    # Sum of votes for tracked (major) parties — used as t-SNE filter only.
+    major_votes = vote_data.sum(axis=1)
+
+    # True per-station denominator = total valid votes ("כשרים"). Falls back to
+    # major-parties sum when the column is missing or zero so older configs
+    # don't break.
+    if 'כשרים' in df.columns:
+        valid_votes = pd.to_numeric(df['כשרים'], errors='coerce').fillna(0).astype(int)
+        valid_votes = valid_votes.where(valid_votes > 0, major_votes)
+    else:
+        valid_votes = major_votes
 
     # Filter out stations with very few votes (noise)
     min_votes = 50
-    valid_mask = total_votes >= min_votes
+    valid_mask = major_votes >= min_votes
     logger.info(f"Filtering stations with >= {min_votes} votes: {valid_mask.sum()} of {len(df)}")
 
     df_filtered = df[valid_mask].copy()
     vote_data_filtered = vote_data[valid_mask].copy()
-    total_votes_filtered = total_votes[valid_mask]
+    major_votes_filtered = major_votes[valid_mask]
+    valid_votes_filtered = valid_votes[valid_mask]
 
-    # Convert to vote proportions (each row sums to 1)
-    vote_proportions = vote_data_filtered.div(total_votes_filtered, axis=0)
-    vote_proportions = vote_proportions.fillna(0)
+    # Renormalized vector for t-SNE input (sums to 1; preserves clustering signal).
+    tsne_vector = vote_data_filtered.div(major_votes_filtered, axis=0).fillna(0)
+    # Real proportions for output — denominator is total valid votes, so minor
+    # parties (untracked) implicitly take up (1 - sum(major)).
+    vote_proportions = vote_data_filtered.div(valid_votes_filtered, axis=0).fillna(0)
 
     # Standardize for T-SNE (helps with convergence)
     scaler = StandardScaler()
-    vote_scaled = scaler.fit_transform(vote_proportions.values)
+    vote_scaled = scaler.fit_transform(tsne_vector.values)
 
     # Compute T-SNE
     logger.info(f"Computing T-SNE with perplexity={perplexity}...")
@@ -156,7 +168,7 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
             'settlement_name': str(row.get('שם ישוב', '')),
             'settlement_id': int(row.get('סמל ישוב', 0)),
             'ballot_number': raw_ballot,
-            'total_voters': int(total_votes_filtered.iloc[i]),
+            'total_voters': int(valid_votes_filtered.iloc[i]),
             'eligible_voters': eligible,
             'turnout': turnout,
         }
@@ -225,6 +237,7 @@ def generate_tsne_json(election_id, compact=True):
                 'y': round(s['y'], 2),
                 'n': _normalize_settlement_name(s['settlement_name']),  # normalized: single-space, no geresh/hyphens/parens — matches station_coordinates.json keys
                 'b': s['ballot_number'],     # shortened key
+                's': s['settlement_id'],     # settlement code (for CEC deep-links)
                 'v': s['total_voters'],      # shortened key
                 'e': s['eligible_voters'],   # eligible voters
                 't': s['turnout'],           # turnout percentage
