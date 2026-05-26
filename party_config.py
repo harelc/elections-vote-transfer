@@ -765,10 +765,11 @@ ELECTIONS = {
         'valid_votes': 4764742,
         'turnout_percent': 70.63,
         'major_parties': {
-            'symbols': ['מחל', 'פה', 'ט', 'כן', 'שס', 'ג', 'ל', 'עם', 'ום', 'אמת', 'מרצ', 'ד'],
+            'symbols': ['מחל', 'פה', 'ט', 'כן', 'שס', 'ג', 'ל', 'עם', 'ום', 'אמת', 'מרצ', 'ד', 'ב'],
             'names': ['הליכוד', 'יש עתיד', 'הציונות הדתית', 'המחנה הממלכתי', 'ש״ס',
-                     'יהדות התורה', 'ישראל ביתנו', 'רע״ם', 'חד״ש-תע״ל', 'העבודה', 'מרצ', 'בל״ד'],
-            'seats': [32, 24, 14, 12, 11, 7, 6, 5, 5, 4, 0, 0]
+                     'יהדות התורה', 'ישראל ביתנו', 'רע״ם', 'חד״ש-תע״ל', 'העבודה', 'מרצ', 'בל״ד',
+                     'הבית היהודי'],
+            'seats': [32, 24, 14, 12, 11, 7, 6, 5, 5, 4, 0, 0, 0]
         }
     },
     '26': {
@@ -1386,6 +1387,22 @@ PARTY_OVERRIDES = {
         'leader_en': 'Zahava Galon',
         'leader_image': 'images/leaders/galon.jpg',
         'description': 'מפלגת מרצ בהנהגת זהבה גלאון, לא עברה את אחוז החסימה'
+    },
+    # Symbol ב in K25 was הבית היהודי (Bayit Yehudi) — Ayelet Shaked alone
+    # after Bennett retired and Yamina effectively dissolved. Did not pass
+    # the electoral threshold. Distinct from the K24 Yamina (Bennett-led)
+    # under the same symbol.
+    ('25', 'ב'): {
+        'name': 'הבית היהודי',
+        'name_en': 'HaBayit HaYehudi',
+        'color': PARTY_COLORS['yamina'],
+        'leader': 'איילת שקד',
+        'leader_en': 'Ayelet Shaked',
+        'leader_image': 'images/leaders/shaked.jpg',
+        'logo': 'images/logos/bayit_yehudi.png',
+        'ideology': 'ימין דתי-לאומי',
+        'founded': 2008,
+        'description': 'מפלגת ימין דתית-לאומית בהנהגת איילת שקד, לא עברה את אחוז החסימה'
     },
 
     # ===== ELECTION 26 (Simulated) =====

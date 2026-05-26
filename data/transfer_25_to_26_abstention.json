@@ -1,0 +1,901 @@
+{
+  "from_election": {
+    "id": "25",
+    "name": "הכנסת ה-25",
+    "name_en": "25th Knesset",
+    "date": "2022-11-01",
+    "estimated": false,
+    "eligible_voters": 6788804,
+    "votes_cast": 4794593,
+    "valid_votes": 4764742,
+    "turnout_percent": 70.63
+  },
+  "to_election": {
+    "id": "26",
+    "name": "הכנסת ה-26",
+    "name_en": "26th Knesset",
+    "date": "2026-10-27",
+    "estimated": true,
+    "eligible_voters": 7300000,
+    "votes_cast": 5000000,
+    "valid_votes": 4950000,
+    "turnout_percent": 68.5
+  },
+  "nodes_from": [
+    {
+      "name": "הליכוד",
+      "symbol": "מחל",
+      "votes": 1102965,
+      "seats": 32,
+      "color": "#2563eb",
+      "info": {
+        "name": "הליכוד",
+        "name_en": "Likud",
+        "color": "#2563eb",
+        "leader": "בנימין נתניהו",
+        "leader_en": "Benjamin Netanyahu",
+        "leader_image": "images/leaders/netanyahu.jpg",
+        "logo": "images/logos/likud.png",
+        "ideology": "ימין, לאומנות, ליברליזם כלכלי",
+        "founded": 1973,
+        "description": "מפלגת הימין הגדולה בישראל, שולטת בפוליטיקה הישראלית מאז 1977"
+      }
+    },
+    {
+      "name": "יש עתיד",
+      "symbol": "פה",
+      "votes": 838169,
+      "seats": 24,
+      "color": "#06b6d4",
+      "info": {
+        "name": "יש עתיד",
+        "name_en": "Yesh Atid",
+        "color": "#06b6d4",
+        "leader": "יאיר לפיד",
+        "leader_en": "Yair Lapid",
+        "leader_image": "images/leaders/lapid.jpg",
+        "logo": "images/logos/yesh_atid.png",
+        "ideology": "מרכז, ליברליזם, חילוניות",
+        "founded": 2012,
+        "description": "מפלגת מרכז ליברלית, התמקדה בנושאי מעמד הביניים והפרדת דת ומדינה"
+      }
+    },
+    {
+      "name": "הציונות הדתית",
+      "symbol": "ט",
+      "votes": 509356,
+      "seats": 14,
+      "color": "#92400e",
+      "info": {
+        "name": "הציונות הדתית",
+        "name_en": "Religious Zionism",
+        "color": "#92400e",
+        "leader": "בצלאל סמוטריץ׳",
+        "leader_en": "Bezalel Smotrich",
+        "leader_image": "images/leaders/smotrich.jpg",
+        "logo": "images/logos/religious_zionism.png",
+        "ideology": "ימין קיצוני, ציונות דתית, התנחלויות",
+        "founded": 2021,
+        "description": "ברית של הציונות הדתית, עוצמה יהודית ונעם"
+      }
+    },
+    {
+      "name": "המחנה הממלכתי",
+      "symbol": "כן",
+      "votes": 427163,
+      "seats": 12,
+      "color": "#7c3aed",
+      "info": {
+        "name": "המחנה הממלכתי",
+        "name_en": "National Unity",
+        "color": "#7c3aed",
+        "leader": "בני גנץ",
+        "leader_en": "Benny Gantz",
+        "leader_image": "images/leaders/gantz.jpg",
+        "logo": "images/logos/national_unity.png",
+        "ideology": "מרכז-ימין, ביטחוניות, ממלכתיות",
+        "founded": 2022,
+        "description": "מפלגת מרכז-ימין בהנהגת בני גנץ, התמזגה עם כחול לבן"
+      }
+    },
+    {
+      "name": "ש״ס",
+      "symbol": "שס",
+      "votes": 388753,
+      "seats": 11,
+      "color": "#1e3a8a",
+      "info": {
+        "name": "ש״ס",
+        "name_en": "Shas",
+        "color": "#1e3a8a",
+        "leader": "אריה דרעי",
+        "leader_en": "Aryeh Deri",
+        "leader_image": "images/leaders/deri.jpg",
+        "logo": "images/logos/shas.png",
+        "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
+        "founded": 1984,
+        "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי"
+      }
+    },
+    {
+      "name": "יהדות התורה",
+      "symbol": "ג",
+      "votes": 278185,
+      "seats": 7,
+      "color": "#4b5563",
+      "info": {
+        "name": "יהדות התורה",
+        "name_en": "United Torah Judaism",
+        "color": "#4b5563",
+        "leader": "יצחק גולדקנופף",
+        "leader_en": "Yitzhak Goldknopf",
+        "leader_image": "images/leaders/goldknopf.jpg",
+        "logo": "images/logos/utj.png",
+        "ideology": "חרדית אשכנזית, שמרנות דתית",
+        "founded": 1992,
+        "description": "ברית של אגודת ישראל ודגל התורה, מייצגת את הציבור החרדי האשכנזי"
+      }
+    },
+    {
+      "name": "ישראל ביתנו",
+      "symbol": "ל",
+      "votes": 210454,
+      "seats": 6,
+      "color": "#db2777",
+      "info": {
+        "name": "ישראל ביתנו",
+        "name_en": "Yisrael Beiteinu",
+        "color": "#db2777",
+        "leader": "אביגדור ליברמן",
+        "leader_en": "Avigdor Lieberman",
+        "leader_image": "images/leaders/lieberman.jpg",
+        "logo": "images/logos/yisrael_beiteinu.png",
+        "ideology": "ימין חילוני, לאומנות, חילוניות",
+        "founded": 1999,
+        "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר"
+      }
+    },
+    {
+      "name": "רע״ם",
+      "symbol": "עם",
+      "votes": 192660,
+      "seats": 5,
+      "color": "#84cc16",
+      "info": {
+        "name": "רע״ם",
+        "name_en": "Ra'am",
+        "color": "#84cc16",
+        "leader": "מנסור עבאס",
+        "leader_en": "Mansour Abbas",
+        "leader_image": "images/leaders/abbas.jpg",
+        "logo": "images/logos/raam.png",
+        "ideology": "ערבי-אסלאמי, פרגמטיזם, שמרנות חברתית",
+        "founded": 1996,
+        "description": "הרשימה הערבית המאוחדת, המפלגה הערבית הראשונה להצטרף לקואליציה"
+      }
+    },
+    {
+      "name": "חד״ש-תע״ל",
+      "symbol": "ום",
+      "votes": 177233,
+      "seats": 5,
+      "color": "#f43f5e",
+      "info": {
+        "name": "חד״ש-תע״ל",
+        "name_en": "Hadash-Taal",
+        "color": "#f43f5e",
+        "leader": "איימן עודה",
+        "leader_en": "Ayman Odeh",
+        "leader_image": "images/leaders/odeh.jpg",
+        "logo": "images/logos/hadash_taal.png",
+        "ideology": "שמאל, קומוניזם, שוויון יהודי-ערבי",
+        "founded": 1977,
+        "description": "החזית הדמוקרטית לשלום ושוויון, מפלגה יהודית-ערבית משותפת"
+      }
+    },
+    {
+      "name": "העבודה",
+      "symbol": "אמת",
+      "votes": 173156,
+      "seats": 4,
+      "color": "#dc2626",
+      "info": {
+        "name": "העבודה",
+        "name_en": "Labor",
+        "color": "#dc2626",
+        "leader": "מרב מיכאלי",
+        "leader_en": "Merav Michaeli",
+        "leader_image": "images/leaders/michaeli.jpg",
+        "logo": "images/logos/labor.png",
+        "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה, ציונות",
+        "founded": 1968,
+        "description": "מפלגת השמאל הציוני ההיסטורית, הקימה את המדינה והובילה אותה עד 1977"
+      }
+    },
+    {
+      "name": "מרצ",
+      "symbol": "מרצ",
+      "votes": 148819,
+      "seats": 0,
+      "color": "#16a34a",
+      "info": {
+        "name": "מרצ",
+        "name_en": "Meretz",
+        "color": "#16a34a",
+        "leader": "זהבה גלאון",
+        "leader_en": "Zahava Galon",
+        "leader_image": "images/leaders/galon.jpg",
+        "logo": "images/logos/meretz.png",
+        "ideology": "שמאל, סוציאל-דמוקרטיה, ליברליזם חברתי",
+        "founded": 1992,
+        "description": "מפלגת מרצ בהנהגת זהבה גלאון, לא עברה את אחוז החסימה"
+      }
+    },
+    {
+      "name": "בל״ד",
+      "symbol": "ד",
+      "votes": 136761,
+      "seats": 0,
+      "color": "#065f46",
+      "info": {
+        "name": "בל״ד",
+        "name_en": "Balad",
+        "color": "#065f46",
+        "leader": "סמי אבו שחאדה",
+        "leader_en": "Sami Abu Shehadeh",
+        "leader_image": "images/leaders/abu_shehadeh.jpg",
+        "logo": "images/logos/balad.png",
+        "ideology": "לאומנות ערבית, שמאל",
+        "founded": 1995,
+        "description": "ברית לאומית דמוקרטית, מפלגה ערבית לאומית"
+      }
+    },
+    {
+      "name": "לא הצביעו",
+      "symbol": "abstain",
+      "votes": 2453340,
+      "seats": null,
+      "color": "#9ca3af",
+      "info": {
+        "name": "לא הצביעו",
+        "name_en": "Did not vote",
+        "color": "#9ca3af"
+      }
+    }
+  ],
+  "nodes_to": [
+    {
+      "name": "הליכוד",
+      "symbol": "מחל",
+      "votes": 948052,
+      "seats": 25,
+      "color": "#2563eb",
+      "info": {
+        "name": "הליכוד",
+        "name_en": "Likud",
+        "color": "#2563eb",
+        "leader": "בנימין נתניהו",
+        "leader_en": "Benjamin Netanyahu",
+        "leader_image": "images/leaders/netanyahu.jpg",
+        "logo": "images/logos/likud.png",
+        "ideology": "ימין, לאומנות, ליברליזם כלכלי",
+        "founded": 1973,
+        "description": "מפלגת הימין הגדולה בישראל, שולטת בפוליטיקה הישראלית מאז 1977"
+      }
+    },
+    {
+      "name": "ביחד",
+      "symbol": "נב",
+      "votes": 829589,
+      "seats": 22,
+      "color": "#f97316",
+      "info": {
+        "name": "ביחד",
+        "name_en": "Together (Beyachad)",
+        "color": "#f97316",
+        "leader": "נפתלי בנט ויאיר לפיד",
+        "leader_en": "Naftali Bennett and Yair Lapid",
+        "leader_image": "images/leaders/bennett.jpg",
+        "logo": "images/logos/yesh_atid.png",
+        "ideology": "מרכז-ימין, ממלכתיות, ליברליזם",
+        "founded": 2026,
+        "description": "רשימה משותפת של בנט 26 ויש עתיד בראשות נפתלי בנט"
+      }
+    },
+    {
+      "name": "ישר",
+      "symbol": "יר",
+      "votes": 611464,
+      "seats": 16,
+      "color": "#14b8a6",
+      "info": {
+        "name": "ישר",
+        "name_en": "Yashar",
+        "color": "#14b8a6",
+        "leader": "גדי אייזנקוט",
+        "leader_en": "Gadi Eisenkot",
+        "leader_image": "images/leaders/eisenkot.jpg",
+        "ideology": "מרכז, ממלכתיות, ביטחון",
+        "founded": 2026,
+        "description": "מפלגת מרכז חדשה בראשות הרמטכ\"ל לשעבר גדי אייזנקוט, מדגישה ממלכתיות, ביטחון ושיקום האמון במוסדות"
+      }
+    },
+    {
+      "name": "הדמוקרטים",
+      "symbol": "דמ",
+      "votes": 421610,
+      "seats": 11,
+      "color": "#16a34a",
+      "info": {
+        "name": "הדמוקרטים",
+        "name_en": "The Democrats",
+        "color": "#16a34a",
+        "leader": "יאיר גולן",
+        "leader_en": "Yair Golan",
+        "leader_image": "images/leaders/golan.jpg",
+        "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה",
+        "description": "מיזוג של העבודה ומרצ למפלגה דמוקרטית-חברתית"
+      }
+    },
+    {
+      "name": "ש״ס",
+      "symbol": "שס",
+      "votes": 389589,
+      "seats": 10,
+      "color": "#1e3a8a",
+      "info": {
+        "name": "ש״ס",
+        "name_en": "Shas",
+        "color": "#1e3a8a",
+        "leader": "אריה דרעי",
+        "leader_en": "Aryeh Deri",
+        "leader_image": "images/leaders/deri.jpg",
+        "logo": "images/logos/shas.png",
+        "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
+        "founded": 1984,
+        "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי"
+      }
+    },
+    {
+      "name": "עוצמה יהודית",
+      "symbol": "עי",
+      "votes": 355488,
+      "seats": 9,
+      "color": "#7f1d1d",
+      "info": {
+        "name": "עוצמה יהודית",
+        "name_en": "Jewish Power",
+        "color": "#7f1d1d",
+        "leader": "איתמר בן גביר",
+        "leader_en": "Itamar Ben Gvir",
+        "leader_image": "images/leaders/ben_gvir.jpg",
+        "ideology": "ימין קיצוני, לאומנות",
+        "description": "מפלגת ימין קיצוני בראשות איתמר בן גביר"
+      }
+    },
+    {
+      "name": "יהדות התורה",
+      "symbol": "ג",
+      "votes": 305720,
+      "seats": 8,
+      "color": "#4b5563",
+      "info": {
+        "name": "יהדות התורה",
+        "name_en": "United Torah Judaism",
+        "color": "#4b5563",
+        "leader": "יצחק גולדקנופף",
+        "leader_en": "Yitzhak Goldknopf",
+        "leader_image": "images/leaders/goldknopf.jpg",
+        "logo": "images/logos/utj.png",
+        "ideology": "חרדית אשכנזית, שמרנות דתית",
+        "founded": 1992,
+        "description": "ברית של אגודת ישראל ודגל התורה, מייצגת את הציבור החרדי האשכנזי"
+      }
+    },
+    {
+      "name": "ישראל ביתנו",
+      "symbol": "ל",
+      "votes": 299877,
+      "seats": 8,
+      "color": "#db2777",
+      "info": {
+        "name": "ישראל ביתנו",
+        "name_en": "Yisrael Beiteinu",
+        "color": "#db2777",
+        "leader": "אביגדור ליברמן",
+        "leader_en": "Avigdor Lieberman",
+        "leader_image": "images/leaders/lieberman.jpg",
+        "logo": "images/logos/yisrael_beiteinu.png",
+        "ideology": "ימין חילוני, לאומנות, חילוניות",
+        "founded": 1999,
+        "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר"
+      }
+    },
+    {
+      "name": "חד״ש-תע״ל",
+      "symbol": "ום",
+      "votes": 217391,
+      "seats": 6,
+      "color": "#f43f5e",
+      "info": {
+        "name": "חד״ש-תע״ל",
+        "name_en": "Hadash-Taal",
+        "color": "#f43f5e",
+        "leader": "יוסף ג׳בארין",
+        "leader_en": "Yousef Jabarin",
+        "leader_image": "images/leaders/jabarin.jpg",
+        "logo": "images/logos/hadash_taal.png",
+        "ideology": "שמאל, קומוניזם, שוויון יהודי-ערבי",
+        "founded": 1977,
+        "description": "החזית הדמוקרטית לשלום ושוויון, מפלגה יהודית-ערבית משותפת"
+      }
+    },
+    {
+      "name": "רע״ם",
+      "symbol": "עם",
+      "votes": 192419,
+      "seats": 5,
+      "color": "#84cc16",
+      "info": {
+        "name": "הרשימה המשותפת",
+        "name_en": "United Arab List",
+        "color": "#84cc16",
+        "leader": "מנסור עבאס",
+        "leader_en": "Mansour Abbas",
+        "leader_image": "images/leaders/abbas.jpg",
+        "logo": "images/logos/raam.png",
+        "ideology": "ערבי-אסלאמי, פרגמטיזם, שמרנות חברתית",
+        "founded": 1996,
+        "description": "הרשימה הערבית המאוחדת, המפלגה הערבית הראשונה להצטרף לקואליציה"
+      }
+    },
+    {
+      "name": "הציונות הדתית",
+      "symbol": "ט",
+      "votes": 137875,
+      "seats": 0,
+      "color": "#92400e",
+      "info": {
+        "name": "הציונות הדתית",
+        "name_en": "Religious Zionism",
+        "color": "#92400e",
+        "leader": "בצלאל סמוטריץ׳",
+        "leader_en": "Bezalel Smotrich",
+        "leader_image": "images/leaders/smotrich.jpg",
+        "logo": "images/logos/religious_zionism.png",
+        "ideology": "ימין קיצוני, ציונות דתית, התנחלויות",
+        "founded": 2021,
+        "description": "ברית של הציונות הדתית, עוצמה יהודית ונעם"
+      }
+    },
+    {
+      "name": "המילואימניקים",
+      "symbol": "מי",
+      "votes": 120557,
+      "seats": 0,
+      "color": "#a16207",
+      "info": {
+        "name": "המילואימניקים",
+        "name_en": "The Reservists",
+        "color": "#a16207",
+        "leader": "יועז הנדל",
+        "leader_en": "Yoaz Hendel",
+        "leader_image": "images/leaders/hendel.jpg",
+        "ideology": "מרכז-ימין, ביטחון, מילואים",
+        "founded": 2026,
+        "description": "מפלגה חדשה בראשות יועז הנדל המייצגת את ציבור המילואימניקים, מדגישה ערכי ביטחון, ממלכתיות ומחויבות לעורף"
+      }
+    },
+    {
+      "name": "בל״ד",
+      "symbol": "ד",
+      "votes": 72820,
+      "seats": 0,
+      "color": "#065f46",
+      "info": {
+        "name": "בל״ד",
+        "name_en": "Balad",
+        "color": "#065f46",
+        "leader": "סמי אבו שחאדה",
+        "leader_en": "Sami Abu Shehadeh",
+        "leader_image": "images/leaders/abu_shehadeh.jpg",
+        "logo": "images/logos/balad.png",
+        "ideology": "לאומנות ערבית, שמאל",
+        "founded": 1995,
+        "description": "ברית לאומית דמוקרטית, מפלגה ערבית לאומית"
+      }
+    },
+    {
+      "name": "כחול לבן",
+      "symbol": "כל",
+      "votes": 49258,
+      "seats": 0,
+      "color": "#6b7280",
+      "info": {
+        "name": "כל",
+        "name_en": "Other List",
+        "color": "#6b7280",
+        "leader": "",
+        "leader_en": "",
+        "leader_image": "",
+        "logo": "",
+        "ideology": "",
+        "founded": null,
+        "description": "רשימה קטנה"
+      }
+    },
+    {
+      "name": "לא הצביעו",
+      "symbol": "abstain",
+      "votes": 2742950,
+      "seats": null,
+      "color": "#9ca3af",
+      "info": {
+        "name": "לא הצביעו",
+        "name_en": "Did not vote",
+        "color": "#9ca3af"
+      }
+    }
+  ],
+  "transfers": [
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "הליכוד",
+      "target_symbol": "מחל",
+      "votes": 787267,
+      "percentage": 71.4
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "ביחד",
+      "target_symbol": "נב",
+      "votes": 126706,
+      "percentage": 11.5
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "ישר",
+      "target_symbol": "יר",
+      "votes": 61283,
+      "percentage": 5.6
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "עוצמה יהודית",
+      "target_symbol": "עי",
+      "votes": 36758,
+      "percentage": 3.3
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "המילואימניקים",
+      "target_symbol": "מי",
+      "votes": 45903,
+      "percentage": 4.2
+    },
+    {
+      "source": "הליכוד",
+      "source_symbol": "מחל",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 102283,
+      "percentage": 9.3
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "ביחד",
+      "target_symbol": "נב",
+      "votes": 369862,
+      "percentage": 44.1
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "ישר",
+      "target_symbol": "יר",
+      "votes": 285616,
+      "percentage": 34.1
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "הדמוקרטים",
+      "target_symbol": "דמ",
+      "votes": 122705,
+      "percentage": 14.6
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "ישראל ביתנו",
+      "target_symbol": "ל",
+      "votes": 99399,
+      "percentage": 11.9
+    },
+    {
+      "source": "יש עתיד",
+      "source_symbol": "פה",
+      "target": "המילואימניקים",
+      "target_symbol": "מי",
+      "votes": 18377,
+      "percentage": 2.2
+    },
+    {
+      "source": "הציונות הדתית",
+      "source_symbol": "ט",
+      "target": "הליכוד",
+      "target_symbol": "מחל",
+      "votes": 62994,
+      "percentage": 12.4
+    },
+    {
+      "source": "הציונות הדתית",
+      "source_symbol": "ט",
+      "target": "ביחד",
+      "target_symbol": "נב",
+      "votes": 46040,
+      "percentage": 9.0
+    },
+    {
+      "source": "הציונות הדתית",
+      "source_symbol": "ט",
+      "target": "עוצמה יהודית",
+      "target_symbol": "עי",
+      "votes": 264441,
+      "percentage": 51.9
+    },
+    {
+      "source": "הציונות הדתית",
+      "source_symbol": "ט",
+      "target": "הציונות הדתית",
+      "target_symbol": "ט",
+      "votes": 118478,
+      "percentage": 23.3
+    },
+    {
+      "source": "הציונות הדתית",
+      "source_symbol": "ט",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 35343,
+      "percentage": 6.9
+    },
+    {
+      "source": "המחנה הממלכתי",
+      "source_symbol": "כן",
+      "target": "הליכוד",
+      "target_symbol": "מחל",
+      "votes": 26263,
+      "percentage": 6.1
+    },
+    {
+      "source": "המחנה הממלכתי",
+      "source_symbol": "כן",
+      "target": "ביחד",
+      "target_symbol": "נב",
+      "votes": 201910,
+      "percentage": 47.3
+    },
+    {
+      "source": "המחנה הממלכתי",
+      "source_symbol": "כן",
+      "target": "ישר",
+      "target_symbol": "יר",
+      "votes": 154623,
+      "percentage": 36.2
+    },
+    {
+      "source": "המחנה הממלכתי",
+      "source_symbol": "כן",
+      "target": "ישראל ביתנו",
+      "target_symbol": "ל",
+      "votes": 45576,
+      "percentage": 10.7
+    },
+    {
+      "source": "המחנה הממלכתי",
+      "source_symbol": "כן",
+      "target": "המילואימניקים",
+      "target_symbol": "מי",
+      "votes": 26844,
+      "percentage": 6.3
+    },
+    {
+      "source": "ש״ס",
+      "source_symbol": "שס",
+      "target": "ש״ס",
+      "target_symbol": "שס",
+      "votes": 343098,
+      "percentage": 88.3
+    },
+    {
+      "source": "ש״ס",
+      "source_symbol": "שס",
+      "target": "עוצמה יהודית",
+      "target_symbol": "עי",
+      "votes": 29138,
+      "percentage": 7.5
+    },
+    {
+      "source": "ש״ס",
+      "source_symbol": "שס",
+      "target": "יהדות התורה",
+      "target_symbol": "ג",
+      "votes": 21186,
+      "percentage": 5.4
+    },
+    {
+      "source": "ש״ס",
+      "source_symbol": "שס",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 18494,
+      "percentage": 4.8
+    },
+    {
+      "source": "יהדות התורה",
+      "source_symbol": "ג",
+      "target": "יהדות התורה",
+      "target_symbol": "ג",
+      "votes": 269478,
+      "percentage": 96.9
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "הליכוד",
+      "target_symbol": "מחל",
+      "votes": 15702,
+      "percentage": 7.5
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "ביחד",
+      "target_symbol": "נב",
+      "votes": 27025,
+      "percentage": 12.8
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "ישר",
+      "target_symbol": "יר",
+      "votes": 29329,
+      "percentage": 13.9
+    },
+    {
+      "source": "ישראל ביתנו",
+      "source_symbol": "ל",
+      "target": "ישראל ביתנו",
+      "target_symbol": "ל",
+      "votes": 135534,
+      "percentage": 64.4
+    },
+    {
+      "source": "רע״ם",
+      "source_symbol": "עם",
+      "target": "רע״ם",
+      "target_symbol": "עם",
+      "votes": 168890,
+      "percentage": 87.7
+    },
+    {
+      "source": "רע״ם",
+      "source_symbol": "עם",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 25641,
+      "percentage": 13.3
+    },
+    {
+      "source": "חד״ש-תע״ל",
+      "source_symbol": "ום",
+      "target": "חד״ש-תע״ל",
+      "target_symbol": "ום",
+      "votes": 148680,
+      "percentage": 83.9
+    },
+    {
+      "source": "חד״ש-תע״ל",
+      "source_symbol": "ום",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 21576,
+      "percentage": 12.2
+    },
+    {
+      "source": "העבודה",
+      "source_symbol": "אמת",
+      "target": "ביחד",
+      "target_symbol": "נב",
+      "votes": 27162,
+      "percentage": 15.7
+    },
+    {
+      "source": "העבודה",
+      "source_symbol": "אמת",
+      "target": "ישר",
+      "target_symbol": "יר",
+      "votes": 29898,
+      "percentage": 17.3
+    },
+    {
+      "source": "העבודה",
+      "source_symbol": "אמת",
+      "target": "הדמוקרטים",
+      "target_symbol": "דמ",
+      "votes": 124142,
+      "percentage": 71.7
+    },
+    {
+      "source": "מרצ",
+      "source_symbol": "מרצ",
+      "target": "ישר",
+      "target_symbol": "יר",
+      "votes": 21121,
+      "percentage": 14.2
+    },
+    {
+      "source": "מרצ",
+      "source_symbol": "מרצ",
+      "target": "הדמוקרטים",
+      "target_symbol": "דמ",
+      "votes": 123758,
+      "percentage": 83.2
+    },
+    {
+      "source": "בל״ד",
+      "source_symbol": "ד",
+      "target": "חד״ש-תע״ל",
+      "target_symbol": "ום",
+      "votes": 50842,
+      "percentage": 37.2
+    },
+    {
+      "source": "בל״ד",
+      "source_symbol": "ד",
+      "target": "בל״ד",
+      "target_symbol": "ד",
+      "votes": 60251,
+      "percentage": 44.1
+    },
+    {
+      "source": "בל״ד",
+      "source_symbol": "ד",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 19851,
+      "percentage": 14.5
+    },
+    {
+      "source": "לא הצביעו",
+      "source_symbol": "abstain",
+      "target": "הדמוקרטים",
+      "target_symbol": "דמ",
+      "votes": 17518,
+      "percentage": 0.7
+    },
+    {
+      "source": "לא הצביעו",
+      "source_symbol": "abstain",
+      "target": "לא הצביעו",
+      "target_symbol": "abstain",
+      "votes": 2542123,
+      "percentage": 103.6
+    }
+  ],
+  "stats": {
+    "common_precincts": 11690,
+    "r_squared": 0.9156,
+    "total_votes_from": 7037014,
+    "total_votes_to": 7694659,
+    "generated_at": "2026-05-24 08:18:38"
+  }
+}

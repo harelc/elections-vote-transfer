@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git:*)",
+      "Bash(python3:*)",
+      "Bash(tail:*)",
+      "Bash(test:*)",
+      "WebSearch",
+      "WebFetch(domain:www.cbs.gov.il)",
+      "Bash(head:*)",
+      "WebFetch(domain:www.arcgis.com)",
+      "WebFetch(domain:data.gov.il)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(open *)"
+    ]
+  }
+}
