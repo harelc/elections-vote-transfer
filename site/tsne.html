@@ -16,6 +16,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
+        .tooltip { position: fixed; }
+        .tooltip.pinned { border-color: var(--accent-primary); box-shadow: 0 0 0 1px var(--accent-primary), var(--shadow-lg); }
+        .tooltip.pinned .tooltip-close:hover { color: var(--text-primary); }
         :root {
             --bg-primary: #0a0a0f;
             --bg-secondary: #12121a;
@@ -1871,9 +1874,10 @@
                         return hasFilter ? 1 : 0.7;
                     })
                     .each(function() { this.dataset.baseR = d3.select(this).attr('r'); })
-                    .on('mouseenter', (event, d) => this.showTooltip(event, d))
-                    .on('mousemove', (event, d) => this.moveTooltip(event))
-                    .on('mouseleave', () => this.hideTooltip());
+                    .on('mouseenter', (event, d) => { if (!this.pinnedStation) this.showTooltip(event, d); })
+                    .on('mousemove', (event, d) => { if (!this.pinnedStation) this.moveTooltip(event); })
+                    .on('mouseleave', () => { if (!this.pinnedStation) this.hideTooltip(); })
+                    .on('click', (event, d) => { event.stopPropagation(); this.pinTooltip(event, d); });
 
                 // Draw highlight for selected station
                 if (this.selectedStation) {
@@ -2011,7 +2015,12 @@
                     ? `<div class="tooltip-location">${location}</div>`
                     : '';
 
+                const isPinned = this.pinnedStation === station;
+                const closeBtn = isPinned
+                    ? `<button class="tooltip-close" aria-label="close" style="position:absolute;top:4px;${i18n.isRTL() ? 'left' : 'right'}:6px;background:none;border:none;color:var(--text-muted);font-size:1.1rem;cursor:pointer;padding:0;line-height:1;">×</button>`
+                    : '';
                 this.tooltip.html(`
+                    ${closeBtn}
                     <div class="tooltip-title">${i18n.settlementName(settlementName)}${clusterHtml}</div>
                     <div class="tooltip-subtitle">${i18n.t('ballot')} ${ballotNumber}</div>
                     ${locationHtml}
@@ -2057,6 +2066,37 @@
 
             hideTooltip() {
                 this.tooltip.classed('visible', false);
+            }
+
+            pinTooltip(event, station) {
+                this.pinnedStation = station;
+                this.showTooltip(event, station);
+                this.tooltip
+                    .classed('pinned', true)
+                    .style('pointer-events', 'auto')
+                    .style('opacity', 1);
+                const closeBtn = this.tooltip.node().querySelector('.tooltip-close');
+                if (closeBtn) closeBtn.addEventListener('click', (e) => { e.stopPropagation(); this.unpinTooltip(); });
+                // Click anywhere outside the tooltip unpins
+                if (!this._unpinHandler) {
+                    this._unpinHandler = (ev) => {
+                        const tn = this.tooltip.node();
+                        if (tn && !tn.contains(ev.target)) this.unpinTooltip();
+                    };
+                    setTimeout(() => document.addEventListener('click', this._unpinHandler), 0);
+                }
+            }
+
+            unpinTooltip() {
+                this.pinnedStation = null;
+                this.tooltip
+                    .classed('pinned', false)
+                    .style('pointer-events', 'none');
+                this.hideTooltip();
+                if (this._unpinHandler) {
+                    document.removeEventListener('click', this._unpinHandler);
+                    this._unpinHandler = null;
+                }
             }
 
             generateQRCodeDataURL() {
