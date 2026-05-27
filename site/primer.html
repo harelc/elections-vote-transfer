@@ -287,13 +287,13 @@
             // ---- 6. Parties: many running ----
             {
                 title: () => `${DATA.totals.parties_running} רשימות התמודדו`,
-                sub: () => `אבל רובן קיבלו מעט מאוד קולות. רק <b>${DATA.totals.parties_passed_threshold}</b> מתוכן עברו את אחוז החסימה (${pct(DATA.totals.threshold_pct)}, ${num(DATA.totals.threshold_votes)} קולות). 27 הרשימות הקטנות ביותר אספו ביחד פחות מ-2% מהקולות.`,
+                sub: () => `אבל רובן קיבלו מעט מאוד קולות. רק <b>${DATA.totals.parties_passed_threshold}</b> מתוכן עברו את אחוז החסימה (${pct(DATA.totals.threshold_pct, 2)}, ${num(DATA.totals.threshold_votes)} קולות). 27 הרשימות הקטנות ביותר אספו ביחד פחות מ-2% מהקולות.`,
                 draw: drawPartyList,
             },
             // ---- 7. Threshold cliff ----
             {
                 title: 'אחוז החסימה — הקצה שמעבר לו אין מנדטים',
-                sub: () => `כדי לקבל ולו מנדט אחד צריכה רשימה לעבור את ${pct(DATA.totals.threshold_pct)} מהקולות הכשרים (כלומר ${num(DATA.totals.threshold_votes)} קולות בכנסת ה-25). מי שמתחת — לא נכנס. מרצ ובל״ד היו דוגמאות בולטות: שתיהן נשארו מתחת לסף.`,
+                sub: () => `כדי לקבל ולו מנדט אחד צריכה רשימה לעבור את ${pct(DATA.totals.threshold_pct, 2)} מהקולות הכשרים (כלומר ${num(DATA.totals.threshold_votes)} קולות בכנסת ה-25). מי שמתחת — לא נכנס. מרצ ובל״ד היו דוגמאות בולטות: שתיהן נשארו מתחת לסף.`,
                 draw: drawThreshold,
             },
             // ---- 8. Big vs small vs tiny ----
@@ -683,7 +683,7 @@
                 .attr('x', W - pad.r + 4).attr('y', ys(threshold) - 8)
                 .attr('text-anchor', 'end')
                 .attr('fill', '#ef4444').attr('font-size', '0.85rem').attr('font-weight', 600)
-                .text('אחוז החסימה — ' + pctFmt(DATA.totals.threshold_pct) + ' (' + fmt(threshold) + ')')
+                .text('אחוז החסימה — ' + pctFmt(DATA.totals.threshold_pct, 2) + ' (' + fmt(threshold) + ')')
                 .style('opacity', 0)
                 .transition().delay(1200).duration(500).style('opacity', 1);
         }
