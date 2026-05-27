@@ -29,6 +29,8 @@
         nav_tsne:              { he: 'התפלגות קלפיות', en: 'Ballot Clusters' },
         nav_geomap:            { he: 'מפה גיאוגרפית', en: 'Geographic Map' },
         nav_primer:            { he: 'מבוא לנתוני הבחירות', en: 'Elections Data Primer' },
+        explainer_link:        { he: 'הסבר', en: 'Explainer' },
+        explainer_tooltip:     { he: 'איך עובדת שיטת השערוך', en: 'How the estimation method works' },
         nav_scatter:           { he: 'השוואת מפלגות', en: 'Party Comparison' },
         nav_dhondt:            { he: 'מחשבון באדר-עופר', en: 'D\'Hondt Calculator' },
         nav_irregular:         { he: 'קלפיות חריגות', en: 'Irregular Ballots' },
