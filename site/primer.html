@@ -841,6 +841,18 @@
                         .transition().delay(delay).duration(200)
                         .attr('opacity', seat ? 0.92 : 1);
 
+                    if (seat) {
+                        const q = p.votes / k;
+                        svg.append('text')
+                            .attr('x', x + w / 2).attr('y', y + h / 2 + 3)
+                            .attr('text-anchor', 'middle')
+                            .attr('fill', 'rgba(255,255,255,0.85)')
+                            .attr('font-size', '0.52rem')
+                            .attr('font-variant-numeric', 'tabular-nums')
+                            .text(Math.round(q / 1000))
+                            .style('opacity', 0)
+                            .transition().delay(delay + 200).duration(150).style('opacity', 1);
+                    }
                 }
             });
 
