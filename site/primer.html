@@ -78,10 +78,12 @@
         .vis {
             flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             position: relative;
             margin-top: 0.5rem;
+            gap: 0.25rem;
         }
 
         .vis svg {
@@ -803,11 +805,11 @@
             passed.forEach((p, ri) => {
                 const y = pad.t + (ri + 0.5) * rowH + 4;
                 svg.append('rect')
-                    .attr('x', pad.l - 110).attr('y', pad.t + ri * rowH + rowH / 2 - 5)
+                    .attr('x', pad.l - 14).attr('y', pad.t + ri * rowH + rowH / 2 - 5)
                     .attr('width', 8).attr('height', 10)
                     .attr('fill', p.color);
                 svg.append('text')
-                    .attr('x', pad.l - 96).attr('y', y)
+                    .attr('x', pad.l - 20).attr('y', y)
                     .attr('text-anchor', 'start')
                     .attr('fill', 'var(--text)').attr('font-size', '0.72rem')
                     .text(p.name);
@@ -856,14 +858,13 @@
                 }
             });
 
-            // Footer: brief recap of surplus agreements
-            svg.append('text')
-                .attr('x', W / 2).attr('y', H - 10)
-                .attr('text-anchor', 'middle')
-                .attr('fill', 'var(--text3)').attr('font-size', '0.72rem')
-                .text('D′Hondt טהור. בפועל הליכוד קיבל 32 ויה״ת 7 — הסכם העודפים עם הציונות הדתית הזיז את המנדט ה-120.')
-                .style('opacity', 0)
-                .transition().delay(2600).duration(500).style('opacity', 1);
+            // Footer note rendered as HTML below the SVG so it never
+            // collides with the step-indicator pills at the page bottom.
+            const note = document.createElement('div');
+            note.style.cssText = 'text-align:center;color:var(--text3);font-size:0.72rem;padding:0.4rem 1rem 0;opacity:0;transition:opacity 0.5s;';
+            note.textContent = 'D′Hondt טהור. בפועל הליכוד קיבל 32 ויה״ת 7 — הסכם העודפים עם הציונות הדתית הזיז את המנדט ה-120.';
+            visEl.appendChild(note);
+            setTimeout(() => { note.style.opacity = '1'; }, 2600);
         }
 
         function drawOutro() {
