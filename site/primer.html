@@ -861,10 +861,9 @@
             // Footer note rendered as HTML below the SVG so it never
             // collides with the step-indicator pills at the page bottom.
             const note = document.createElement('div');
-            note.style.cssText = 'text-align:center;color:var(--text3);font-size:0.72rem;padding:0.4rem 1rem 0;opacity:0;transition:opacity 0.5s;';
+            note.style.cssText = 'text-align:center;color:var(--text3);font-size:0.78rem;padding:0.4rem 1rem 0;max-width:920px;line-height:1.4;flex-shrink:0;';
             note.textContent = 'D′Hondt טהור. בפועל הליכוד קיבל 32 ויה״ת 7 — הסכם העודפים עם הציונות הדתית הזיז את המנדט ה-120.';
             visEl.appendChild(note);
-            setTimeout(() => { note.style.opacity = '1'; }, 2600);
         }
 
         function drawOutro() {
