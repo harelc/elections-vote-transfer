@@ -204,6 +204,9 @@
             { title: 'למה זה עובד? הטרוגניות בין קלפיות',
               sub: () => `אם כל הקלפיות נראו זהות (אותה התפלגות מפלגות), היו אינסוף פתרונות. <b>השונות</b> בין קלפיות — קלפי בית״ר עילית מול קלפי בתל אביב מול קלפי בכפר ערבי — היא שמאפשרת לזהות אילו מצביעים נדדו לאן.`,
               draw: drawHeterogeneity },
+            { title: 'יותר תצפיות מנעלמים — בעיה מאוד מוגדרת',
+              sub: () => `במעבר טיפוסי: כ-<b>7,000 קלפיות</b> × ~10 עמודות בכנסת החדשה = <b>70,000 משוואות</b>. למטריצה <b>T</b> יש בערך 13×14 ≈ 180 ערכים — היחס בין משוואות לנעלמים גדול מ-300:1. ובכל זאת אפשר לבדוק עמידות בעזרת <b>bootstrap</b>: דוגמים מחדש את הקלפיות, פותרים שוב, ובודקים כמה הערכים זזים. רוב הערכים יושבים בתוך <b>רווח סמך</b> צר של כמה אחוזים — המודל יציב.`,
+              draw: drawRobustness },
             { title: 'איך יודעים שזה ״עובד״? R²',
               sub: () => `אם לא היה לנו מודל, היינו מנחשים שכל קלפי תיתן בכנסת החדשה את <b>הממוצע הארצי</b>. למשל: ממוצע הליכוד הארצי בכנסת ה-25 היה <span class="num">${(DATA && DATA.mean_y) || 23}%</span>. שיערוך כזה נורא — קלפיות חרדיות וכאלה ערביות יחטיאו לחלוטין. נמדוד את הטעות הזו (הריבועים האדומים).`,
               draw: drawR2Mean },
@@ -568,10 +571,133 @@
                 [0.10, 0.10, 0.80],
             ];
 
-            panel(W / 2 + 30, 'הומוגניות → אין סיגנל', homog,
+            panel(W / 2 + 30, 'הומוגניות ← אין סיגנל', homog,
                 'הקלפיות כמעט זהות. אינסוף מטריצות T\nמסבירות את הנתונים — בעיה לא-יחידנית.', '#ef4444');
-            panel(40, 'הטרוגניות → סיגנל חזק', hetero,
+            panel(40, 'הטרוגניות ← סיגנל חזק', hetero,
                 'כל קלפי מספרת סיפור שונה. T יחיד\nשמתאים לכל הקלפיות בו-זמנית.', '#22c55e');
+        }
+
+        function drawRobustness() {
+            const W = 820, H = 380;
+            const svg = makeSvg(W, H);
+
+            // === Left: equations vs unknowns count ===
+            // (in SVG coordinates, lower x = visually right in non-flipped layout)
+            const cxL = W / 4;
+            svg.append('text').attr('x', cxL).attr('y', 30)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.85rem').attr('font-weight', 600)
+                .text('משוואות מול נעלמים');
+
+            // Big number: equations
+            svg.append('text').attr('x', cxL).attr('y', 110)
+                .attr('text-anchor', 'middle').attr('fill', '#22c55e').attr('font-size', '2.6rem').attr('font-weight', 700)
+                .attr('font-variant-numeric', 'tabular-nums')
+                .text('70,000')
+                .style('opacity', 0).transition().delay(200).duration(600).style('opacity', 1);
+            svg.append('text').attr('x', cxL).attr('y', 132)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.78rem')
+                .text('משוואות (קלפיות × עמודות יעד)')
+                .style('opacity', 0).transition().delay(400).duration(400).style('opacity', 1);
+
+            // VS
+            svg.append('text').attr('x', cxL).attr('y', 178)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text3)').attr('font-size', '1rem')
+                .text('מול')
+                .style('opacity', 0).transition().delay(700).duration(400).style('opacity', 1);
+
+            // Big number: unknowns
+            svg.append('text').attr('x', cxL).attr('y', 232)
+                .attr('text-anchor', 'middle').attr('fill', '#f59e0b').attr('font-size', '2.6rem').attr('font-weight', 700)
+                .attr('font-variant-numeric', 'tabular-nums')
+                .text('180')
+                .style('opacity', 0).transition().delay(900).duration(600).style('opacity', 1);
+            svg.append('text').attr('x', cxL).attr('y', 254)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.78rem')
+                .text('ערכים במטריצה T (13×14)')
+                .style('opacity', 0).transition().delay(1100).duration(400).style('opacity', 1);
+
+            // Ratio
+            svg.append('text').attr('x', cxL).attr('y', 305)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--accent)').attr('font-size', '1.1rem').attr('font-weight', 700)
+                .text('יחס מעל 300:1')
+                .style('opacity', 0).transition().delay(1400).duration(500).style('opacity', 1);
+            svg.append('text').attr('x', cxL).attr('y', 328)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text3)').attr('font-size', '0.74rem')
+                .text('overdetermined — הפיתרון יציב')
+                .style('opacity', 0).transition().delay(1600).duration(400).style('opacity', 1);
+
+            // === Right: bootstrap distribution for one cell ===
+            const cxR = 3 * W / 4;
+            svg.append('text').attr('x', cxR).attr('y', 30)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.85rem').attr('font-weight', 600)
+                .text('Bootstrap: שונות בערך בודד של T');
+            svg.append('text').attr('x', cxR).attr('y', 50)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text3)').attr('font-size', '0.72rem')
+                .text('(הליכוד 24 → הליכוד 25 ב-200 דגימות חוזרות)');
+
+            // Synthetic bootstrap distribution — bell around 0.78 with sd~0.012
+            const seed = 17;
+            let rng = (function () { let s = seed; return () => { s = (s * 9301 + 49297) % 233280; return s / 233280; }; })();
+            function randn() {
+                const u = rng(), v = rng();
+                return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
+            }
+            const trueT = 0.78, sd = 0.012;
+            const samples = Array.from({length: 200}, () => trueT + sd * randn());
+
+            const xmin = 0.72, xmax = 0.84;
+            const xs = d3.scaleLinear().domain([xmin, xmax]).range([cxR + 160, cxR - 160]);  // RTL
+            const yBase = 280;
+
+            // Horizontal axis
+            svg.append('line').attr('x1', xs(xmin)).attr('x2', xs(xmax))
+                .attr('y1', yBase).attr('y2', yBase).attr('stroke', 'var(--border)').attr('stroke-width', 1);
+            [0.72, 0.75, 0.78, 0.81, 0.84].forEach(v => {
+                svg.append('line').attr('x1', xs(v)).attr('x2', xs(v))
+                    .attr('y1', yBase).attr('y2', yBase + 4).attr('stroke', 'var(--text3)');
+                svg.append('text').attr('x', xs(v)).attr('y', yBase + 18)
+                    .attr('text-anchor', 'middle').attr('fill', 'var(--text3)').attr('font-size', '0.7rem')
+                    .text(v.toFixed(2));
+            });
+
+            // Dots — strip-plot style
+            const jitter = (i) => ((i % 7) - 3) * 4;
+            samples.forEach((s, i) => {
+                svg.append('circle')
+                    .attr('cx', xs(s)).attr('cy', yBase - 30 + jitter(i))
+                    .attr('r', 0).attr('fill', '#3b82f6').attr('opacity', 0.55)
+                    .transition().delay(200 + i * 6).duration(200)
+                    .attr('r', 2.5);
+            });
+
+            // 95% CI
+            samples.sort((a, b) => a - b);
+            const lo = samples[Math.floor(0.025 * samples.length)];
+            const hi = samples[Math.floor(0.975 * samples.length)];
+            const ciY = yBase - 80;
+            svg.append('line').attr('x1', xs(lo)).attr('x2', xs(hi))
+                .attr('y1', ciY).attr('y2', ciY).attr('stroke', '#22c55e').attr('stroke-width', 3)
+                .style('opacity', 0).transition().delay(1500).duration(500).style('opacity', 1);
+            svg.append('line').attr('x1', xs(lo)).attr('x2', xs(lo))
+                .attr('y1', ciY - 6).attr('y2', ciY + 6).attr('stroke', '#22c55e').attr('stroke-width', 3)
+                .style('opacity', 0).transition().delay(1500).duration(500).style('opacity', 1);
+            svg.append('line').attr('x1', xs(hi)).attr('x2', xs(hi))
+                .attr('y1', ciY - 6).attr('y2', ciY + 6).attr('stroke', '#22c55e').attr('stroke-width', 3)
+                .style('opacity', 0).transition().delay(1500).duration(500).style('opacity', 1);
+            svg.append('text').attr('x', (xs(lo) + xs(hi)) / 2).attr('y', ciY - 12)
+                .attr('text-anchor', 'middle').attr('fill', '#22c55e').attr('font-size', '0.78rem').attr('font-weight', 600)
+                .text(`רווח סמך 95%: ${lo.toFixed(2)}–${hi.toFixed(2)}`)
+                .style('opacity', 0).transition().delay(1700).duration(500).style('opacity', 1);
+
+            // True value marker
+            svg.append('line').attr('x1', xs(trueT)).attr('x2', xs(trueT))
+                .attr('y1', yBase - 60).attr('y2', yBase)
+                .attr('stroke', '#f59e0b').attr('stroke-width', 2).attr('stroke-dasharray', '4 3')
+                .style('opacity', 0).transition().delay(2000).duration(400).style('opacity', 1);
+            svg.append('text').attr('x', xs(trueT)).attr('y', yBase - 65)
+                .attr('text-anchor', 'middle').attr('fill', '#f59e0b').attr('font-size', '0.72rem').attr('font-weight', 600)
+                .text(`הערכה: ${trueT.toFixed(2)}`)
+                .style('opacity', 0).transition().delay(2000).duration(400).style('opacity', 1);
         }
 
         function drawR2Mean() {
