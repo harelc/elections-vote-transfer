@@ -310,12 +310,6 @@
                 sub: () => `כל מפלגה שעברה את הסף מקבלת ״רשימת מנות״: הקולות שלה, אחר כך חלקי 2, חלקי 3, וכן הלאה. ה-120 המנות הגבוהות ביותר בין כל הרשימות זוכות במנדט. השיטה (הקרויה גם <b>D'Hondt</b>) נוטה לטובת מפלגות גדולות. <b>הסכמי עודפים</b>: שתי מפלגות יכולות לחתום הסכם מראש לפיו הקולות העודפים שלהן יספרו יחד — מי שמפסידה במנדט האחרון, מעבירה את עודפיה לבת-בריתה. בכנסת ה-25 היו הסכמים בין הליכוד-הציונות הדתית, יש עתיד-המחנה הממלכתי, ש״ס-יהדות התורה, ישראל ביתנו-העבודה, וחד״ש-תע״ל-רע״ם.`,
                 draw: drawDhondt,
             },
-            // ---- 10. Outro ----
-            {
-                title: 'עכשיו אתם מוכנים — בואו נצלול',
-                sub: () => `כל המספרים האלה זמינים פר-קלפי באתר הוועדה המרכזית. באתר זה אפשר לחקור את התפלגות הקולות, להשוות בין כנסות, לראות אילו קולות נדדו בין מפלגות, ולנתח קלפיות חריגות.`,
-                draw: drawOutro,
-            },
         ];
 
         // ===== Chapter renderers =====
@@ -866,28 +860,6 @@
             visEl.appendChild(note);
         }
 
-        function drawOutro() {
-            const links = [
-                { href: 'geomap.html',   label: '🗺️ מפה גיאוגרפית', desc: 'התפלגות הקולות לפי מיקום' },
-                { href: 'tsne.html',     label: '🔵 פיזור קלפיות',  desc: 'אשכולות התנהגות בחירה' },
-                { href: 'sankey.html',   label: '🔀 תרשים זרימה',   desc: 'מעבר קולות בין כנסות' },
-                { href: 'scatter.html',  label: '📈 השוואת מפלגות', desc: 'תמיכה במפלגה X מול Y' },
-                { href: 'dhondt.html',   label: '🏛️ באדר-עופר',     desc: 'חישוב חלוקת המנדטים' },
-            ];
-            const grid = document.createElement('div');
-            grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;max-width:780px;width:100%;padding:0 1rem;';
-            links.forEach((l, i) => {
-                const a = document.createElement('a');
-                a.href = l.href;
-                a.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;padding:0.9rem 1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:inherit;opacity:0;transform:translateY(8px);transition:opacity 0.35s, transform 0.35s, border-color 0.15s, background 0.15s;';
-                a.onmouseenter = () => { a.style.borderColor = 'var(--accent)'; a.style.background = 'var(--bg3)'; };
-                a.onmouseleave = () => { a.style.borderColor = 'var(--border)'; a.style.background = 'var(--bg2)'; };
-                a.innerHTML = `<span style="font-size:1rem;font-weight:600;color:var(--text);">${l.label}</span><span style="font-size:0.78rem;color:var(--text2);">${l.desc}</span>`;
-                grid.appendChild(a);
-                setTimeout(() => { a.style.opacity = '1'; a.style.transform = 'translateY(0)'; }, 100 + i * 80);
-            });
-            visEl.appendChild(grid);
-        }
 
         // ===== Navigation =====
         function buildSteps() {
@@ -906,7 +878,9 @@
                 d.className = 'step-dot' + (i === chapter ? ' active' : (i < chapter ? ' done' : ''));
             });
             prevBtn.disabled = chapter === 0;
-            nextBtn.disabled = chapter === chapters.length - 1;
+            nextBtn.disabled = false;
+            nextBtn.title = chapter === chapters.length - 1 ? 'לדף הבית' : 'הבא';
+            nextBtn.textContent = chapter === chapters.length - 1 ? '🏠' : '›';
         }
 
         function render() {
@@ -918,7 +892,10 @@
             if (ch.draw) ch.draw();
         }
 
-        function next() { if (chapter < chapters.length - 1) { chapter++; render(); } }
+        function next() {
+            if (chapter < chapters.length - 1) { chapter++; render(); }
+            else { window.location.href = 'index.html'; }
+        }
         function prev() { if (chapter > 0) { chapter--; render(); } }
         function goTo(i) { chapter = i; render(); }
 
