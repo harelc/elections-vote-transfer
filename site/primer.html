@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — מבוא לנתוני הבחירות">
+    <meta property="og:description" content="מדריך מאויר לנתוני הבחירות הישראליות — קלפיות, אחוזי הצבעה, מעטפות כפולות, מפלגות גדולות וקטנות">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>מבוא לנתוני הבחירות</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg2: #12121a;
+            --bg3: #1a1a25;
+            --text: #f8fafc;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --accent: #3b82f6;
+            --border: #2a2a3a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .stage {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 1.25rem 4rem;
+            cursor: pointer;
+        }
+
+        .caption {
+            max-width: 920px;
+            margin: 0 auto;
+            padding: 1rem 0 0.5rem;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .caption-title {
+            font-size: clamp(1.25rem, 3vw, 2rem);
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .caption-sub {
+            font-size: clamp(0.85rem, 1.4vw, 1rem);
+            color: var(--text2);
+            line-height: 1.55;
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .caption-sub b { color: var(--text); font-weight: 600; }
+        .caption-sub .num {
+            color: var(--accent);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .vis {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-top: 0.5rem;
+        }
+
+        .vis svg {
+            max-width: 100%;
+            max-height: 100%;
+            overflow: visible;
+        }
+
+        .step-indicator {
+            position: fixed;
+            bottom: 1.6rem;
+            left: 0; right: 0;
+            display: flex;
+            justify-content: center;
+            gap: 0.45rem;
+            z-index: 30;
+            pointer-events: none;
+        }
+
+        .step-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: var(--border);
+            transition: all 0.3s;
+        }
+
+        .step-dot.done { background: var(--text3); }
+        .step-dot.active {
+            background: var(--accent);
+            transform: scale(1.4);
+            box-shadow: 0 0 12px var(--accent);
+        }
+
+        .click-hint {
+            position: fixed;
+            bottom: 0.4rem;
+            left: 0; right: 0;
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text3);
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .nav-arrows {
+            position: fixed;
+            top: 1rem;
+            inset-inline-start: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            z-index: 30;
+        }
+
+        .nav-btn {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+        .nav-btn:hover { color: var(--text); border-color: var(--text3); }
+        .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+        .home-link {
+            position: fixed;
+            top: 1rem;
+            inset-inline-end: 1rem;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 0.4rem 0.85rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            z-index: 30;
+        }
+        .home-link:hover { color: var(--text); border-color: var(--text3); }
+
+        .final-link {
+            background: var(--accent);
+            color: white !important;
+            border-color: var(--accent);
+            font-weight: 600;
+        }
+        .final-link:hover { background: #2563eb; }
+
+        /* Chart common */
+        .bar { transition: opacity 0.3s; }
+        .bar-label {
+            font-size: 0.75rem;
+            fill: var(--text2);
+            font-variant-numeric: tabular-nums;
+            pointer-events: none;
+        }
+        .axis-label {
+            font-size: 0.78rem;
+            fill: var(--text3);
+        }
+        .axis-tick {
+            stroke: var(--border);
+            stroke-width: 1;
+        }
+
+        @media (max-width: 640px) {
+            .stage { padding: 0.6rem 0.6rem 4rem; }
+            .caption { padding-top: 2.6rem; }
+            .home-link { font-size: 0.75rem; padding: 0.3rem 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">🏠 דף הבית</a>
+
+    <div class="nav-arrows">
+        <button class="nav-btn" id="prev-btn" title="הקודם">‹</button>
+        <button class="nav-btn" id="next-btn" title="הבא">›</button>
+    </div>
+
+    <div class="stage" id="stage">
+        <div class="caption">
+            <div class="caption-title" id="caption-title"></div>
+            <div class="caption-sub" id="caption-sub"></div>
+        </div>
+        <div class="vis" id="vis"></div>
+    </div>
+
+    <div class="step-indicator" id="steps"></div>
+    <div class="click-hint">לחצו, החליקו או הקישו מקש להמשך · ← הקודם · → הבא</div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // ===== State =====
+        let DATA = null;
+        let chapter = 0;
+        const stepsEl = document.getElementById('steps');
+        const titleEl = document.getElementById('caption-title');
+        const subEl = document.getElementById('caption-sub');
+        const visEl = document.getElementById('vis');
+        const stage = document.getElementById('stage');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        // ===== Helpers =====
+        const fmt = (n) => new Intl.NumberFormat('he-IL').format(Math.round(n));
+        const pctFmt = (n, d = 1) => n.toFixed(d) + '%';
+        const num = (n) => `<span class="num">${fmt(n)}</span>`;
+        const pct = (n, d = 1) => `<span class="num">${pctFmt(n, d)}</span>`;
+
+        function clearVis() { visEl.innerHTML = ''; }
+
+        function makeSvg(w, h) {
+            const svg = d3.select(visEl).append('svg')
+                .attr('viewBox', `0 0 ${w} ${h}`)
+                .attr('preserveAspectRatio', 'xMidYMid meet')
+                .style('width', '100%')
+                .style('height', '100%')
+                .style('max-height', 'calc(100vh - 240px)');
+            return svg;
+        }
+
+        // ===== Chapters =====
+        const chapters = [
+            // ---- 1. Intro ----
+            {
+                title: 'בחירות לכנסת ה-25 — בקצרה',
+                sub: () => `ב-1 בנובמבר 2022 הצביעו ${num(DATA.totals.voted)} מתוך ${num(DATA.totals.eligible)} בעלי זכות בחירה — אחוז הצבעה ארצי של ${pct(DATA.totals.turnout_pct)}. בדפים הבאים נכיר את המבנה של הנתונים הציבוריים.`,
+                draw: drawIntro,
+            },
+            // ---- 2. Ballot stations ----
+            {
+                title: `${fmt(11690)} קלפיות, פרושות בכל הארץ`,
+                sub: () => `כל בעל זכות בחירה משויך לקלפי מסוימת, בדרך כלל ליד מקום מגוריו. בכנסת ה-25 פעלו ${num(DATA.totals.ballots_real)} קלפיות, ב-${num(DATA.totals.settlements)} יישובים.`,
+                draw: drawStations,
+            },
+            // ---- 3. Ballot size distribution ----
+            {
+                title: 'כמה בעלי זכות בחירה בקלפי?',
+                sub: () => `החציון: ${num(DATA.eligible_per_ballot_median)} בעלי זכות בחירה לקלפי. רוב הקלפיות נעות בין ${num(DATA.eligible_per_ballot_p10)} ל-${num(DATA.eligible_per_ballot_p90)} בעלי זכות בחירה (העשירונים העליון והתחתון). חוק הבחירות מגביל את גודל הקלפי כדי שתימשך עוצמת הצביעה כל היום.`,
+                draw: drawBallotSize,
+            },
+            // ---- 4. Turnout distribution ----
+            {
+                title: `אחוז הצבעה: ממוצע ${pctFmt(DATA?.totals.turnout_pct ?? 0)} — אבל בין הקלפיות?`,
+                sub: () => `הממוצע הארצי הוא ${pct(DATA.totals.turnout_pct)}, אך השונות עצומה: יש קלפיות עם פחות מ-30% הצבעה, ויש כאלה עם מעל 90%. המרכז (החציון) נמצא סביב ${pct(DATA.turnout_per_ballot_median)}.`,
+                draw: drawTurnout,
+            },
+            // ---- 5. 9999 double envelopes ----
+            {
+                title: 'יישוב מספר 9999: המעטפות הכפולות',
+                sub: () => `חיילים, אסירים, מאושפזים, נציגים דיפלומטיים ובעלי מוגבלויות הצביעו בקלפיות מיוחדות. הקולות שלהם — ${num(DATA.totals.double_voted)} בסך הכל (${pct(100 * DATA.totals.double_voted / DATA.totals.voted)} מהצבעות בארץ) — נספרים בנפרד ומסתכמים תחת ״יישוב 9999״ ביישובי הוועדה המרכזית.`,
+                draw: drawDoubleEnvelopes,
+            },
+            // ---- 6. Parties: many running ----
+            {
+                title: `${DATA?.totals.parties_running ?? 0} רשימות התמודדו`,
+                sub: () => `אבל רובן קיבלו מעט מאוד קולות. רק <b>${DATA.totals.parties_passed_threshold}</b> מתוכן עברו את אחוז החסימה (${pct(DATA.totals.threshold_pct)}, ${num(DATA.totals.threshold_votes)} קולות). 27 הרשימות הקטנות ביותר אספו ביחד פחות מ-2% מהקולות.`,
+                draw: drawPartyList,
+            },
+            // ---- 7. Threshold cliff ----
+            {
+                title: 'אחוז החסימה — הקצה שמעבר לו אין מנדטים',
+                sub: () => `כדי לקבל ולו מנדט אחד צריכה רשימה לעבור את ${pct(DATA.totals.threshold_pct)} מהקולות הכשרים (כלומר ${num(DATA.totals.threshold_votes)} קולות בכנסת ה-25). מי שמתחת — לא נכנס. מרצ ובל״ד היו דוגמאות בולטות: שתיהן נשארו מתחת לסף.`,
+                draw: drawThreshold,
+            },
+            // ---- 8. Big vs small vs tiny ----
+            {
+                title: 'גדולים, בינוניים, קטנים, זעירים',
+                sub: () => `המפלגות נחלקות בערך לארבע קבוצות: שתיים-שלוש גדולות (מעל 10% הקולות), מספר בינוניות, כמה קטנות שפספסו את הסף, וזנב ארוך של רשימות זעירות שאספו אלפי קולות בודדים.`,
+                draw: drawBuckets,
+            },
+            // ---- 9. Outro ----
+            {
+                title: 'עכשיו אתם מוכנים — בואו נצלול',
+                sub: () => `כל המספרים האלה זמינים פר-קלפי באתר הוועדה המרכזית. באתר זה אפשר לחקור את התפלגות הקולות, להשוות בין כנסות, לראות אילו קולות נדדו בין מפלגות, ולנתח קלפיות חריגות.`,
+                draw: drawOutro,
+            },
+        ];
+
+        // ===== Chapter renderers =====
+
+        function drawIntro() {
+            const svg = makeSvg(700, 280);
+            const stats = [
+                { label: 'בעלי זכות בחירה', value: DATA.totals.eligible, color: '#3b82f6' },
+                { label: 'מימשו את זכותם', value: DATA.totals.voted,    color: '#22c55e' },
+                { label: 'קולות כשרים',    value: DATA.totals.kosher,    color: '#f59e0b' },
+            ];
+            const W = 700, H = 280, pad = 60;
+            const xs = d3.scaleBand().domain(stats.map(s => s.label)).range([pad, W - pad]).padding(0.35);
+            const yMax = d3.max(stats, s => s.value);
+            const ys = d3.scaleLinear().domain([0, yMax]).range([H - 60, 30]);
+
+            const groups = svg.selectAll('g.bar-group').data(stats).enter().append('g').attr('class', 'bar-group');
+            groups.append('rect').attr('class', 'bar')
+                .attr('x', d => xs(d.label))
+                .attr('width', xs.bandwidth())
+                .attr('y', H - 60)
+                .attr('height', 0)
+                .attr('fill', d => d.color)
+                .attr('opacity', 0.85)
+                .transition().duration(900).delay((d, i) => i * 200)
+                .attr('y', d => ys(d.value))
+                .attr('height', d => (H - 60) - ys(d.value));
+
+            groups.append('text').attr('class', 'bar-label')
+                .attr('x', d => xs(d.label) + xs.bandwidth() / 2)
+                .attr('y', d => ys(d.value) - 8)
+                .attr('text-anchor', 'middle')
+                .style('opacity', 0)
+                .text(d => fmt(d.value))
+                .transition().delay((d, i) => 900 + i * 200).duration(500).style('opacity', 1);
+
+            groups.append('text').attr('class', 'axis-label')
+                .attr('x', d => xs(d.label) + xs.bandwidth() / 2)
+                .attr('y', H - 35)
+                .attr('text-anchor', 'middle')
+                .text(d => d.label);
+        }
+
+        async function drawStations() {
+            const svg = makeSvg(600, 600);
+            // Lazy-load station coordinates for the dot map
+            if (!DATA._stations) {
+                try {
+                    const [tsne, coords] = await Promise.all([
+                        fetch('data/tsne_25.json').then(r => r.json()),
+                        fetch('data/station_coordinates.json').then(r => r.json()),
+                    ]);
+                    const map = coords.stations;
+                    const pts = [];
+                    for (const s of tsne.stations) {
+                        const c = map[s.n + '|' + s.b];
+                        if (!c || c.lat == null || c.lng == null) continue;
+                        pts.push({ lat: c.lat, lng: c.lng, e: s.e || 0 });
+                    }
+                    DATA._stations = pts;
+                } catch (e) { DATA._stations = []; }
+            }
+            const pts = DATA._stations;
+            if (!pts.length) {
+                svg.append('text').attr('x', 300).attr('y', 300).attr('text-anchor', 'middle')
+                    .attr('fill', 'var(--text2)').text('טוען מפה...');
+                return;
+            }
+            const minLat = d3.min(pts, p => p.lat), maxLat = d3.max(pts, p => p.lat);
+            const minLng = d3.min(pts, p => p.lng), maxLng = d3.max(pts, p => p.lng);
+            // Use approximate equirectangular projection
+            const meanLat = (minLat + maxLat) / 2;
+            const W = 600, H = 600, pad = 40;
+            const dy = (maxLat - minLat), dx = (maxLng - minLng) * Math.cos(meanLat * Math.PI / 180);
+            const scale = Math.min((W - 2 * pad) / dx, (H - 2 * pad) / dy);
+            const cx = (minLng + maxLng) / 2, cy = (minLat + maxLat) / 2;
+            function proj(p) {
+                const x = W / 2 + (p.lng - cx) * Math.cos(meanLat * Math.PI / 180) * scale;
+                const y = H / 2 - (p.lat - cy) * scale;
+                return [x, y];
+            }
+
+            const order = d3.shuffle(pts.slice());
+            const totalDur = 2200;
+            svg.selectAll('circle').data(order).enter().append('circle')
+                .attr('cx', d => proj(d)[0])
+                .attr('cy', d => proj(d)[1])
+                .attr('r', 0)
+                .attr('fill', '#3b82f6')
+                .attr('opacity', 0)
+                .transition().delay((d, i) => (i / order.length) * totalDur).duration(300)
+                .attr('r', 1.6).attr('opacity', 0.65);
+        }
+
+        function drawBallotSize() {
+            const W = 720, H = 360, pad = { l: 50, r: 30, t: 30, b: 50 };
+            const svg = makeSvg(W, H);
+            const data = DATA.ballot_size_histogram;
+            // Drop trailing empty bins for cleaner display
+            let lastNonZero = data.counts.length;
+            while (lastNonZero > 0 && data.counts[lastNonZero - 1] === 0) lastNonZero--;
+            const edges = data.edges.slice(0, lastNonZero + 1);
+            const counts = data.counts.slice(0, lastNonZero);
+            const bins = counts.map((c, i) => ({ lo: edges[i], hi: edges[i + 1], c }));
+
+            const xs = d3.scaleLinear().domain([0, edges[edges.length - 1]]).range([pad.l, W - pad.r]);
+            const yMax = d3.max(bins, b => b.c);
+            const ys = d3.scaleLinear().domain([0, yMax]).range([H - pad.b, pad.t]);
+
+            const median = DATA.eligible_per_ballot_median;
+
+            svg.selectAll('rect.bar').data(bins).enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', b => xs(b.lo) + 2)
+                .attr('width', b => Math.max(0, xs(b.hi) - xs(b.lo) - 4))
+                .attr('y', H - pad.b)
+                .attr('height', 0)
+                .attr('fill', '#3b82f6').attr('opacity', 0.85)
+                .transition().duration(800).delay((d, i) => i * 100)
+                .attr('y', b => ys(b.c))
+                .attr('height', b => (H - pad.b) - ys(b.c));
+
+            svg.selectAll('text.bar-label').data(bins).enter().append('text')
+                .attr('class', 'bar-label')
+                .attr('x', b => (xs(b.lo) + xs(b.hi)) / 2)
+                .attr('y', b => ys(b.c) - 5)
+                .attr('text-anchor', 'middle')
+                .style('opacity', 0)
+                .text(b => fmt(b.c) + ' קלפיות')
+                .transition().delay((d, i) => 800 + i * 100).duration(300).style('opacity', 1);
+
+            // x-axis
+            edges.forEach((e, i) => {
+                svg.append('text').attr('class', 'axis-label')
+                    .attr('x', xs(e)).attr('y', H - pad.b + 18)
+                    .attr('text-anchor', 'middle').text(fmt(e));
+            });
+            svg.append('text').attr('class', 'axis-label')
+                .attr('x', W / 2).attr('y', H - 8)
+                .attr('text-anchor', 'middle').text('בעלי זכות בחירה בקלפי');
+
+            // Median line
+            svg.append('line')
+                .attr('x1', xs(median)).attr('x2', xs(median))
+                .attr('y1', pad.t).attr('y2', H - pad.b)
+                .attr('stroke', '#f59e0b').attr('stroke-width', 2).attr('stroke-dasharray', '4,4')
+                .style('opacity', 0)
+                .transition().delay(1400).duration(500).style('opacity', 1);
+            svg.append('text')
+                .attr('x', xs(median)).attr('y', pad.t - 8)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#f59e0b').attr('font-size', '0.85rem').attr('font-weight', 600)
+                .text('חציון')
+                .style('opacity', 0)
+                .transition().delay(1400).duration(500).style('opacity', 1);
+        }
+
+        function drawTurnout() {
+            const W = 720, H = 360, pad = { l: 50, r: 30, t: 30, b: 50 };
+            const svg = makeSvg(W, H);
+            const data = DATA.turnout_histogram;
+            const edges = data.edges, counts = data.counts;
+            const bins = counts.map((c, i) => ({ lo: edges[i], hi: edges[i + 1], c }));
+
+            const xs = d3.scaleLinear().domain([0, 100]).range([pad.l, W - pad.r]);
+            const yMax = d3.max(bins, b => b.c);
+            const ys = d3.scaleLinear().domain([0, yMax]).range([H - pad.b, pad.t]);
+
+            // Use a color scale: red→amber→green
+            const colorScale = d3.scaleLinear()
+                .domain([20, 60, 90])
+                .range(['#ef4444', '#f59e0b', '#22c55e']);
+
+            svg.selectAll('rect.bar').data(bins).enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', b => xs(b.lo) + 2)
+                .attr('width', b => Math.max(0, xs(b.hi) - xs(b.lo) - 4))
+                .attr('y', H - pad.b)
+                .attr('height', 0)
+                .attr('fill', b => colorScale((b.lo + b.hi) / 2))
+                .attr('opacity', 0.9)
+                .transition().duration(800).delay((d, i) => i * 80)
+                .attr('y', b => ys(b.c))
+                .attr('height', b => (H - pad.b) - ys(b.c));
+
+            svg.selectAll('text.bar-label').data(bins).enter().append('text')
+                .attr('class', 'bar-label')
+                .attr('x', b => (xs(b.lo) + xs(b.hi)) / 2)
+                .attr('y', b => ys(b.c) - 5)
+                .attr('text-anchor', 'middle')
+                .style('opacity', 0)
+                .text(b => fmt(b.c))
+                .transition().delay((d, i) => 800 + i * 80).duration(300).style('opacity', 1);
+
+            [0, 20, 40, 60, 80, 100].forEach(e => {
+                svg.append('text').attr('class', 'axis-label')
+                    .attr('x', xs(e)).attr('y', H - pad.b + 18)
+                    .attr('text-anchor', 'middle').text(e + '%');
+            });
+            svg.append('text').attr('class', 'axis-label')
+                .attr('x', W / 2).attr('y', H - 8)
+                .attr('text-anchor', 'middle').text('אחוז הצבעה בקלפי');
+
+            // National average line
+            const avg = DATA.totals.turnout_pct;
+            svg.append('line')
+                .attr('x1', xs(avg)).attr('x2', xs(avg))
+                .attr('y1', pad.t).attr('y2', H - pad.b)
+                .attr('stroke', '#3b82f6').attr('stroke-width', 2).attr('stroke-dasharray', '4,4')
+                .style('opacity', 0)
+                .transition().delay(1400).duration(500).style('opacity', 1);
+            svg.append('text')
+                .attr('x', xs(avg)).attr('y', pad.t - 8)
+                .attr('text-anchor', 'middle')
+                .attr('fill', '#3b82f6').attr('font-size', '0.85rem').attr('font-weight', 600)
+                .text('ממוצע ארצי ' + pctFmt(avg))
+                .style('opacity', 0)
+                .transition().delay(1400).duration(500).style('opacity', 1);
+        }
+
+        function drawDoubleEnvelopes() {
+            const W = 700, H = 360, pad = 50;
+            const svg = makeSvg(W, H);
+            const regular = DATA.totals.voted - DATA.totals.double_voted;
+            const dub = DATA.totals.double_voted;
+            const total = regular + dub;
+
+            // Two-rectangle proportional display + a callout for the 9999 envelope
+            const xs = d3.scaleLinear().domain([0, total]).range([pad, W - pad]);
+            const y0 = 140, bh = 70;
+
+            svg.append('rect').attr('x', pad).attr('y', y0)
+                .attr('width', 0).attr('height', bh).attr('fill', '#3b82f6').attr('opacity', 0.85)
+                .transition().duration(900).attr('width', xs(regular) - pad);
+            svg.append('rect').attr('x', xs(regular)).attr('y', y0)
+                .attr('width', 0).attr('height', bh).attr('fill', '#f59e0b').attr('opacity', 0.95)
+                .transition().delay(900).duration(700).attr('width', xs(dub + regular) - xs(regular));
+
+            svg.append('text')
+                .attr('x', (pad + xs(regular)) / 2).attr('y', y0 + bh / 2 + 5)
+                .attr('text-anchor', 'middle').attr('fill', '#fff').attr('font-size', '0.95rem').attr('font-weight', 600)
+                .text('קלפיות רגילות')
+                .style('opacity', 0)
+                .transition().delay(900).duration(400).style('opacity', 1);
+
+            svg.append('text')
+                .attr('x', xs(regular) + (xs(total) - xs(regular)) / 2).attr('y', y0 - 8)
+                .attr('text-anchor', 'middle').attr('fill', '#f59e0b').attr('font-size', '0.85rem').attr('font-weight', 600)
+                .text('9999')
+                .style('opacity', 0)
+                .transition().delay(1600).duration(500).style('opacity', 1);
+            svg.append('text')
+                .attr('x', xs(regular) + (xs(total) - xs(regular)) / 2).attr('y', y0 + bh + 22)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.8rem')
+                .text(fmt(dub) + ' קולות (' + pctFmt(100 * dub / total) + ')')
+                .style('opacity', 0)
+                .transition().delay(1600).duration(500).style('opacity', 1);
+            svg.append('text')
+                .attr('x', (pad + xs(regular)) / 2).attr('y', y0 + bh + 22)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.8rem')
+                .text(fmt(regular) + ' קולות')
+                .style('opacity', 0)
+                .transition().delay(900).duration(400).style('opacity', 1);
+
+            // Sub-list: who's in 9999
+            const items = [
+                'חיילים בשירות', 'אסירים', 'מאושפזים', 'נציגויות בחו״ל', 'אנשים עם מוגבלות'
+            ];
+            const sx = xs(regular) + (xs(total) - xs(regular)) / 2;
+            const sy = y0 + bh + 50;
+            svg.append('text')
+                .attr('x', sx).attr('y', sy)
+                .attr('text-anchor', 'middle').attr('fill', 'var(--text3)').attr('font-size', '0.8rem')
+                .text('מי במעטפה הכפולה?')
+                .style('opacity', 0)
+                .transition().delay(2200).duration(400).style('opacity', 1);
+            items.forEach((it, i) => {
+                svg.append('text')
+                    .attr('x', sx).attr('y', sy + 20 + i * 18)
+                    .attr('text-anchor', 'middle').attr('fill', 'var(--text)').attr('font-size', '0.82rem')
+                    .text(it)
+                    .style('opacity', 0)
+                    .transition().delay(2200 + i * 150).duration(400).style('opacity', 1);
+            });
+        }
+
+        function drawPartyList() {
+            const W = 800, H = 460, pad = { l: 110, r: 40, t: 20, b: 40 };
+            const svg = makeSvg(W, H);
+            const all = DATA.parties.slice();
+            const total = DATA.total_valid;
+            const top = all.slice(0, 13);  // show top 13 — the ones with names
+            const rest = all.slice(13);
+
+            const restGroup = {
+                symbol: '— זנב ארוך —',
+                name: rest.length + ' רשימות נוספות',
+                votes: d3.sum(rest, p => p.votes),
+                color: '#475569',
+            };
+            const display = top.concat([restGroup]);
+            const ys = d3.scaleBand().domain(display.map(d => d.name)).range([pad.t, H - pad.b]).padding(0.18);
+            const xMax = top[0].votes;
+            const xs = d3.scaleLinear().domain([0, xMax]).range([pad.l, W - pad.r]);
+
+            svg.selectAll('rect.bar').data(display).enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', pad.l)
+                .attr('y', d => ys(d.name))
+                .attr('width', 0)
+                .attr('height', ys.bandwidth())
+                .attr('fill', d => d.color || '#64748b')
+                .attr('opacity', 0.9)
+                .transition().duration(800).delay((d, i) => i * 60)
+                .attr('width', d => Math.max(2, xs(d.votes) - pad.l));
+
+            svg.selectAll('text.party-name').data(display).enter().append('text')
+                .attr('class', 'party-name')
+                .attr('x', pad.l - 8)
+                .attr('y', d => ys(d.name) + ys.bandwidth() / 2 + 4)
+                .attr('text-anchor', 'start')
+                .attr('fill', 'var(--text)').attr('font-size', '0.78rem')
+                .text(d => d.name);
+
+            svg.selectAll('text.party-val').data(display).enter().append('text')
+                .attr('class', 'party-val')
+                .attr('x', d => xs(d.votes) + 6)
+                .attr('y', d => ys(d.name) + ys.bandwidth() / 2 + 4)
+                .attr('fill', 'var(--text2)').attr('font-size', '0.72rem')
+                .style('opacity', 0)
+                .text(d => fmt(d.votes) + ' (' + pctFmt(100 * d.votes / total) + ')')
+                .transition().delay((d, i) => 800 + i * 60).duration(300).style('opacity', 1);
+        }
+
+        function drawThreshold() {
+            const W = 800, H = 420, pad = { l: 50, r: 40, t: 40, b: 50 };
+            const svg = makeSvg(W, H);
+            const top = DATA.parties.slice(0, 13);
+            const total = DATA.total_valid;
+            const threshold = DATA.totals.threshold_votes;
+            const xs = d3.scaleBand().domain(top.map(d => d.symbol)).range([pad.l, W - pad.r]).padding(0.3);
+            const yMax = top[0].votes;
+            const ys = d3.scaleLinear().domain([0, yMax]).range([H - pad.b, pad.t]);
+
+            svg.selectAll('rect.bar').data(top).enter().append('rect')
+                .attr('class', 'bar')
+                .attr('x', d => xs(d.symbol))
+                .attr('width', xs.bandwidth())
+                .attr('y', H - pad.b)
+                .attr('height', 0)
+                .attr('fill', d => d.color || '#64748b')
+                .attr('opacity', d => d.votes >= threshold ? 0.95 : 0.35)
+                .transition().duration(800).delay((d, i) => i * 70)
+                .attr('y', d => ys(d.votes))
+                .attr('height', d => (H - pad.b) - ys(d.votes));
+
+            svg.selectAll('text.sym').data(top).enter().append('text')
+                .attr('class', 'sym')
+                .attr('x', d => xs(d.symbol) + xs.bandwidth() / 2)
+                .attr('y', H - pad.b + 18)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text2)').attr('font-size', '0.78rem')
+                .text(d => d.name);
+
+            // Threshold line
+            svg.append('line')
+                .attr('x1', pad.l - 8).attr('x2', W - pad.r + 8)
+                .attr('y1', ys(threshold)).attr('y2', ys(threshold))
+                .attr('stroke', '#ef4444').attr('stroke-width', 2).attr('stroke-dasharray', '6,4')
+                .style('opacity', 0)
+                .transition().delay(1200).duration(500).style('opacity', 1);
+            svg.append('text')
+                .attr('x', W - pad.r + 4).attr('y', ys(threshold) - 8)
+                .attr('text-anchor', 'end')
+                .attr('fill', '#ef4444').attr('font-size', '0.85rem').attr('font-weight', 600)
+                .text('אחוז החסימה — ' + pctFmt(DATA.totals.threshold_pct) + ' (' + fmt(threshold) + ')')
+                .style('opacity', 0)
+                .transition().delay(1200).duration(500).style('opacity', 1);
+        }
+
+        function drawBuckets() {
+            const W = 800, H = 420, pad = { l: 30, r: 30, t: 30, b: 30 };
+            const svg = makeSvg(W, H);
+            const buckets = [
+                { key: 'big',    title: 'גדולות',  desc: 'מעל 10% מהקולות', color: '#3b82f6' },
+                { key: 'medium', title: 'בינוניות', desc: 'עברו את אחוז החסימה', color: '#22c55e' },
+                { key: 'small_below_threshold', title: 'קטנות', desc: 'מתחת לחסימה אך מעל 0.5%', color: '#f59e0b' },
+                { key: 'tiny',   title: 'זעירות',  desc: 'מתחת ל-0.5%', color: '#64748b' },
+            ];
+            const all = DATA.parties;
+            const total = DATA.total_valid;
+
+            // Group parties per bucket
+            buckets.forEach(b => {
+                b.parties = all.filter(p => p.bucket === b.key);
+                b.total = d3.sum(b.parties, p => p.votes);
+            });
+
+            const colW = (W - pad.l - pad.r) / 4;
+            buckets.forEach((b, i) => {
+                const x0 = pad.l + i * colW;
+                const g = svg.append('g').attr('transform', `translate(${x0},${pad.t})`);
+                g.append('text').attr('x', colW / 2).attr('y', 18)
+                    .attr('text-anchor', 'middle').attr('fill', b.color)
+                    .attr('font-size', '1rem').attr('font-weight', 700).text(b.title);
+                g.append('text').attr('x', colW / 2).attr('y', 40)
+                    .attr('text-anchor', 'middle').attr('fill', 'var(--text2)')
+                    .attr('font-size', '0.72rem').text(b.desc);
+                g.append('text').attr('x', colW / 2).attr('y', 62)
+                    .attr('text-anchor', 'middle').attr('fill', 'var(--text)')
+                    .attr('font-size', '0.85rem').attr('font-weight', 600)
+                    .text(b.parties.length + ' רשימות · ' + pctFmt(100 * b.total / total) + ' מהקולות')
+                    .style('opacity', 0)
+                    .transition().delay(400 + i * 200).duration(400).style('opacity', 1);
+
+                // Stack of mini bars per party — show up to 12 names
+                const showList = b.parties.slice(0, 12);
+                const rowH = 18;
+                showList.forEach((p, j) => {
+                    const y = 90 + j * rowH;
+                    const barW = Math.max(4, (p.votes / all[0].votes) * (colW - 30));
+                    g.append('rect').attr('x', 0).attr('y', y).attr('width', 0).attr('height', rowH - 4)
+                        .attr('fill', p.color || b.color).attr('opacity', 0.85)
+                        .transition().delay(700 + i * 200 + j * 60).duration(400)
+                        .attr('width', barW);
+                    g.append('text').attr('x', barW + 4).attr('y', y + (rowH - 4) / 2 + 4)
+                        .attr('fill', 'var(--text2)').attr('font-size', '0.66rem')
+                        .text(p.name && p.name.length < 16 ? p.name : (p.symbol || ''))
+                        .style('opacity', 0)
+                        .transition().delay(900 + i * 200 + j * 60).duration(300).style('opacity', 1);
+                });
+                if (b.parties.length > showList.length) {
+                    g.append('text').attr('x', 0).attr('y', 90 + showList.length * rowH + 10)
+                        .attr('fill', 'var(--text3)').attr('font-size', '0.7rem')
+                        .text('ועוד ' + (b.parties.length - showList.length) + '...')
+                        .style('opacity', 0)
+                        .transition().delay(1500).duration(300).style('opacity', 1);
+                }
+            });
+        }
+
+        function drawOutro() {
+            const W = 700, H = 360;
+            const svg = makeSvg(W, H);
+            const links = [
+                { href: 'geomap.html', label: '🗺️ מפה גיאוגרפית', desc: 'התפלגות הקולות לפי מיקום' },
+                { href: 'sankey.html', label: '🔀 תרשים זרימה', desc: 'מעבר קולות בין כנסות' },
+                { href: 'tsne.html',   label: '🔵 פיזור קלפיות', desc: 'אשכולות התנהגות בחירה' },
+                { href: 'irregular.html', label: '🔍 קלפיות חריגות', desc: 'אנומליות סטטיסטיות' },
+            ];
+            const colW = 320, rowH = 70;
+            const x0 = (W - 2 * colW - 20) / 2;
+            links.forEach((l, i) => {
+                const col = i % 2, row = Math.floor(i / 2);
+                const x = x0 + col * (colW + 20);
+                const y = 40 + row * (rowH + 20);
+                const g = svg.append('a').attr('href', l.href).style('cursor', 'pointer');
+                g.append('rect').attr('x', x).attr('y', y).attr('width', colW).attr('height', rowH)
+                    .attr('rx', 10).attr('fill', 'var(--bg2)').attr('stroke', 'var(--border)').attr('stroke-width', 1)
+                    .style('opacity', 0)
+                    .transition().delay(200 + i * 100).duration(400).style('opacity', 1);
+                g.append('text').attr('x', x + colW / 2).attr('y', y + 28)
+                    .attr('text-anchor', 'middle').attr('fill', 'var(--text)').attr('font-size', '1rem').attr('font-weight', 600)
+                    .text(l.label)
+                    .style('opacity', 0)
+                    .transition().delay(300 + i * 100).duration(400).style('opacity', 1);
+                g.append('text').attr('x', x + colW / 2).attr('y', y + 50)
+                    .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.78rem')
+                    .text(l.desc)
+                    .style('opacity', 0)
+                    .transition().delay(400 + i * 100).duration(400).style('opacity', 1);
+            });
+        }
+
+        // ===== Navigation =====
+        function buildSteps() {
+            stepsEl.innerHTML = '';
+            chapters.forEach((c, i) => {
+                const d = document.createElement('div');
+                d.className = 'step-dot';
+                d.onclick = (e) => { e.stopPropagation(); goTo(i); };
+                d.style.pointerEvents = 'auto';
+                stepsEl.appendChild(d);
+            });
+        }
+
+        function updateSteps() {
+            stepsEl.querySelectorAll('.step-dot').forEach((d, i) => {
+                d.className = 'step-dot' + (i === chapter ? ' active' : (i < chapter ? ' done' : ''));
+            });
+            prevBtn.disabled = chapter === 0;
+            nextBtn.disabled = chapter === chapters.length - 1;
+        }
+
+        function render() {
+            const ch = chapters[chapter];
+            titleEl.textContent = ch.title;
+            subEl.innerHTML = ch.sub();
+            clearVis();
+            updateSteps();
+            if (ch.draw) ch.draw();
+        }
+
+        function next() { if (chapter < chapters.length - 1) { chapter++; render(); } }
+        function prev() { if (chapter > 0) { chapter--; render(); } }
+        function goTo(i) { chapter = i; render(); }
+
+        stage.addEventListener('click', (e) => {
+            // Don't advance if user clicked on a link
+            if (e.target.closest('a')) return;
+            next();
+        });
+        document.addEventListener('keydown', (e) => {
+            // In RTL, visual-left means "next page" (reading direction).
+            if (e.key === 'ArrowLeft' || e.key === ' ' || e.key === 'Enter') next();
+            else if (e.key === 'ArrowRight') prev();
+            else if (e.key === 'Escape') goTo(0);
+        });
+        // Swipe support: in RTL, swipe-left reveals the next page (content follows finger).
+        let touchStartX = null;
+        stage.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        stage.addEventListener('touchend', (e) => {
+            if (touchStartX == null) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+            touchStartX = null;
+        });
+        nextBtn.addEventListener('click', (e) => { e.stopPropagation(); next(); });
+        prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prev(); });
+
+        // ===== Boot =====
+        async function boot() {
+            try {
+                DATA = await fetch('data/primer_25.json').then(r => r.json());
+            } catch (e) {
+                document.body.innerHTML = '<div style="padding:2rem;color:#f87171">שגיאה בטעינת הנתונים. ודאו שאתם מריצים מתוך שרת מקומי.</div>';
+                return;
+            }
+            buildSteps();
+            render();
+        }
+        boot();
+    })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,347 @@
+{
+ "totals": {
+  "ballots_real": 11690,
+  "double_envelope_rows": 750,
+  "eligible": 6778651,
+  "voted": 4740556,
+  "kosher": 4711055,
+  "invalid": 29501,
+  "turnout_pct": 69.93,
+  "double_voted": 415245,
+  "double_kosher": 411451,
+  "settlements": 1214,
+  "parties_running": 40,
+  "parties_passed_threshold": 10,
+  "threshold_votes": 153109,
+  "threshold_pct": 3.25
+ },
+ "ballot_size_histogram": {
+  "edges": [
+   0,
+   200,
+   400,
+   600,
+   800,
+   1000,
+   1500
+  ],
+  "counts": [
+   76,
+   760,
+   4861,
+   5993,
+   0,
+   0
+  ]
+ },
+ "turnout_histogram": {
+  "edges": [
+   0,
+   30,
+   40,
+   50,
+   60,
+   70,
+   80,
+   90,
+   100
+  ],
+  "counts": [
+   132,
+   371,
+   1095,
+   2346,
+   3499,
+   3517,
+   724,
+   6
+  ]
+ },
+ "parties": [
+  {
+   "symbol": "מחל",
+   "votes": 1102965,
+   "bucket": "big",
+   "name": "הליכוד",
+   "color": "#2563eb"
+  },
+  {
+   "symbol": "פה",
+   "votes": 838169,
+   "bucket": "big",
+   "name": "יש עתיד",
+   "color": "#06b6d4"
+  },
+  {
+   "symbol": "ט",
+   "votes": 509356,
+   "bucket": "big",
+   "name": "הציונות הדתית",
+   "color": "#92400e"
+  },
+  {
+   "symbol": "כן",
+   "votes": 427163,
+   "bucket": "medium",
+   "name": "המחנה הממלכתי",
+   "color": "#7c3aed"
+  },
+  {
+   "symbol": "שס",
+   "votes": 388753,
+   "bucket": "medium",
+   "name": "ש״ס",
+   "color": "#1e3a8a"
+  },
+  {
+   "symbol": "ג",
+   "votes": 278185,
+   "bucket": "medium",
+   "name": "יהדות התורה",
+   "color": "#4b5563"
+  },
+  {
+   "symbol": "ל",
+   "votes": 210454,
+   "bucket": "medium",
+   "name": "ישראל ביתנו",
+   "color": "#db2777"
+  },
+  {
+   "symbol": "עם",
+   "votes": 192660,
+   "bucket": "medium",
+   "name": "רע״ם",
+   "color": "#84cc16"
+  },
+  {
+   "symbol": "ום",
+   "votes": 177233,
+   "bucket": "medium",
+   "name": "חד״ש-תע״ל",
+   "color": "#f43f5e"
+  },
+  {
+   "symbol": "אמת",
+   "votes": 173156,
+   "bucket": "medium",
+   "name": "העבודה",
+   "color": "#dc2626"
+  },
+  {
+   "symbol": "מרצ",
+   "votes": 148819,
+   "bucket": "small_below_threshold",
+   "name": "מרצ",
+   "color": "#16a34a"
+  },
+  {
+   "symbol": "ד",
+   "votes": 136761,
+   "bucket": "small_below_threshold",
+   "name": "בל״ד",
+   "color": "#065f46"
+  },
+  {
+   "symbol": "ב",
+   "votes": 56102,
+   "bucket": "small_below_threshold",
+   "name": "הבית היהודי",
+   "color": "#ea580c"
+  },
+  {
+   "symbol": "אצ",
+   "votes": 15463,
+   "bucket": "tiny",
+   "name": "אצ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "קץ",
+   "votes": 14627,
+   "bucket": "tiny",
+   "name": "קץ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "יז",
+   "votes": 13720,
+   "bucket": "tiny",
+   "name": "יז",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "צ",
+   "votes": 8622,
+   "bucket": "tiny",
+   "name": "צ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ף",
+   "votes": 1683,
+   "bucket": "tiny",
+   "name": "ף",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ת",
+   "votes": 1643,
+   "bucket": "tiny",
+   "name": "ת",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ק",
+   "votes": 1598,
+   "bucket": "tiny",
+   "name": "ק",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ני",
+   "votes": 1322,
+   "bucket": "tiny",
+   "name": "ני",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ך",
+   "votes": 1303,
+   "bucket": "tiny",
+   "name": "ך",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "קנ",
+   "votes": 1279,
+   "bucket": "tiny",
+   "name": "קנ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "נק",
+   "votes": 1178,
+   "bucket": "tiny",
+   "name": "נק",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "י",
+   "votes": 1139,
+   "bucket": "tiny",
+   "name": "י",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "קך",
+   "votes": 1063,
+   "bucket": "tiny",
+   "name": "קך",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "נץ",
+   "votes": 1004,
+   "bucket": "tiny",
+   "name": "נץ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ץ",
+   "votes": 958,
+   "bucket": "tiny",
+   "name": "ץ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "רז",
+   "votes": 931,
+   "bucket": "tiny",
+   "name": "רז",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "נז",
+   "votes": 529,
+   "bucket": "tiny",
+   "name": "נז",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ז",
+   "votes": 517,
+   "bucket": "tiny",
+   "name": "ז",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "יק",
+   "votes": 423,
+   "bucket": "tiny",
+   "name": "יק",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "קי",
+   "votes": 407,
+   "bucket": "tiny",
+   "name": "קי",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "נר",
+   "votes": 406,
+   "bucket": "tiny",
+   "name": "נר",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "זץ",
+   "votes": 369,
+   "bucket": "tiny",
+   "name": "זץ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "יץ",
+   "votes": 259,
+   "bucket": "tiny",
+   "name": "יץ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "נף",
+   "votes": 253,
+   "bucket": "tiny",
+   "name": "נף",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "ינ",
+   "votes": 230,
+   "bucket": "tiny",
+   "name": "ינ",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "זך",
+   "votes": 202,
+   "bucket": "tiny",
+   "name": "זך",
+   "color": "#64748b"
+  },
+  {
+   "symbol": "זנ",
+   "votes": 151,
+   "bucket": "tiny",
+   "name": "זנ",
+   "color": "#64748b"
+  }
+ ],
+ "total_valid": 4711055,
+ "eligible_per_ballot_median": 602,
+ "eligible_per_ballot_p10": 452,
+ "eligible_per_ballot_p90": 680,
+ "turnout_per_ballot_median": 65.7
+}
