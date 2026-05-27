@@ -262,7 +262,7 @@
             },
             // ---- 2. Ballot stations ----
             {
-                title: `${fmt(11690)} קלפיות, פרושות בכל הארץ`,
+                title: () => `${fmt(DATA.totals.ballots_real)} קלפיות, פרושות בכל הארץ`,
                 sub: () => `כל בעל זכות בחירה משויך לקלפי מסוימת, בדרך כלל ליד מקום מגוריו. בכנסת ה-25 פעלו ${num(DATA.totals.ballots_real)} קלפיות, ב-${num(DATA.totals.settlements)} יישובים.`,
                 draw: drawStations,
             },
@@ -274,7 +274,7 @@
             },
             // ---- 4. Turnout distribution ----
             {
-                title: `אחוז הצבעה: ממוצע ${pctFmt(DATA?.totals.turnout_pct ?? 0)} — אבל בין הקלפיות?`,
+                title: () => `אחוז הצבעה: ממוצע ${pctFmt(DATA.totals.turnout_pct)} — אבל בין הקלפיות?`,
                 sub: () => `הממוצע הארצי הוא ${pct(DATA.totals.turnout_pct)}, אך השונות עצומה: יש קלפיות עם פחות מ-30% הצבעה, ויש כאלה עם מעל 90%. המרכז (החציון) נמצא סביב ${pct(DATA.turnout_per_ballot_median)}.`,
                 draw: drawTurnout,
             },
@@ -286,7 +286,7 @@
             },
             // ---- 6. Parties: many running ----
             {
-                title: `${DATA?.totals.parties_running ?? 0} רשימות התמודדו`,
+                title: () => `${DATA.totals.parties_running} רשימות התמודדו`,
                 sub: () => `אבל רובן קיבלו מעט מאוד קולות. רק <b>${DATA.totals.parties_passed_threshold}</b> מתוכן עברו את אחוז החסימה (${pct(DATA.totals.threshold_pct)}, ${num(DATA.totals.threshold_votes)} קולות). 27 הרשימות הקטנות ביותר אספו ביחד פחות מ-2% מהקולות.`,
                 draw: drawPartyList,
             },
@@ -804,7 +804,7 @@
 
         function render() {
             const ch = chapters[chapter];
-            titleEl.textContent = ch.title;
+            titleEl.textContent = typeof ch.title === 'function' ? ch.title() : ch.title;
             subEl.innerHTML = ch.sub();
             clearVis();
             updateSteps();
