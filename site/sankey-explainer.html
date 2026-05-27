@@ -717,7 +717,7 @@
         }
         function render() {
             const ch = chapters[chapter];
-            titleEl.textContent = typeof ch.title === 'function' ? ch.title() : ch.title;
+            titleEl.innerHTML = typeof ch.title === 'function' ? ch.title() : ch.title;
             subEl.innerHTML = ch.sub();
             clearVis();
             updateSteps();
