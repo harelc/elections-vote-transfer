@@ -501,7 +501,8 @@
             svg.append('text').attr('x', W / 2).attr('y', 280)
                 .attr('text-anchor', 'middle').attr('fill', accent).attr('font-size', '1.4rem').attr('font-weight', 700)
                 .attr('font-family', "'Cambria Math', serif").attr('font-style', 'italic')
-                .text('‖ B₁·T − B₂ ‖²')
+                .attr('direction', 'ltr').attr('unicode-bidi', 'bidi-override')
+                .text('⁦‖ B₁·T − B₂ ‖²⁩')
                 .style('opacity', 0).transition().delay(1600).duration(400).style('opacity', 1);
 
             // Constraints
