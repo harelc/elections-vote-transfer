@@ -305,7 +305,7 @@
             // ---- 9. Bader-Ofer / D'Hondt ----
             {
                 title: 'איך 120 המנדטים מתחלקים? שיטת באדר-עופר',
-                sub: () => `כל מפלגה שעברה את הסף מקבלת ״רשימת מנות״: הקולות שלה, אחר כך חלקי 2, חלקי 3, וכן הלאה. ה-120 המנות הגבוהות ביותר בכל הרשימות יחד — הן המנדטים. השיטה (הקרויה גם <b>D'Hondt</b>) מעניקה יתרון קל למפלגות גדולות, מה שמעודד התאחדויות. בישראל נוסף לכך מנגנון <b>הסכמי עודפים</b> בין שתי מפלגות, שמאפשר לאחד מהן לקבל את ״המנדט האחרון״.`,
+                sub: () => `כל מפלגה שעברה את הסף מקבלת ״רשימת מנות״: הקולות שלה, אחר כך חלקי 2, חלקי 3, וכן הלאה. ה-120 המנות הגבוהות ביותר בין כל הרשימות זוכות במנדט. השיטה (הקרויה גם <b>D'Hondt</b>) נוטה לטובת מפלגות גדולות. <b>הסכמי עודפים</b>: שתי מפלגות יכולות לחתום הסכם מראש לפיו הקולות העודפים שלהן יספרו יחד — מי שמפסידה במנדט האחרון, מעבירה את עודפיה לבת-בריתה. בכנסת ה-25 היו הסכמים בין הליכוד-הציונות הדתית, יש עתיד-המחנה הממלכתי, ש״ס-יהדות התורה, ישראל ביתנו-העבודה, וחד״ש-תע״ל-רע״ם.`,
                 draw: drawDhondt,
             },
             // ---- 10. Outro ----
@@ -757,14 +757,15 @@
         }
 
         function drawDhondt() {
-            // Show the divisor table for the parties that passed the threshold.
-            // Highlight the top-30 quotients across the whole table; this is
-            // enough to show the "highest averages" idea without the visual
-            // mess of marking all 120 seats.
+            // Full 120-seat allocation. Run plain D'Hondt over the parties
+            // that passed the threshold. Note: this is the plain divisor
+            // method — surplus-vote agreements (Bader-Ofer) can shift one
+            // marginal seat in either direction and are described in the
+            // caption rather than animated here.
             const passed = DATA.parties.filter(p => p.bucket === 'big' || p.bucket === 'medium')
                 .slice().sort((a, b) => b.votes - a.votes);
-            const NCOLS = 12;
-            const SEATS_TO_MARK = 30;
+            const NCOLS = 34;   // enough headroom for Likud-sized winners
+            const TOTAL_SEATS = 120;
             const quotients = [];
             passed.forEach((p, pi) => {
                 for (let k = 1; k <= NCOLS; k++) {
@@ -772,91 +773,95 @@
                 }
             });
             quotients.sort((a, b) => b.q - a.q);
-            const seatRank = new Map();   // cellKey -> seat number (1..SEATS_TO_MARK)
-            for (let i = 0; i < SEATS_TO_MARK && i < quotients.length; i++) {
-                seatRank.set(quotients[i].pi + ',' + quotients[i].k, i + 1);
+            const seatRank = new Map();   // "pi,k" -> seat number
+            const seatsPerParty = new Map();
+            for (let i = 0; i < TOTAL_SEATS && i < quotients.length; i++) {
+                const c = quotients[i];
+                seatRank.set(c.pi + ',' + c.k, i + 1);
+                seatsPerParty.set(c.pi, (seatsPerParty.get(c.pi) || 0) + 1);
             }
 
-            const W = 860, H = 460;
-            const pad = { l: 110, r: 20, t: 50, b: 30 };
+            const W = 920, H = 460;
+            const pad = { l: 120, r: 70, t: 50, b: 36 };
             const svg = makeSvg(W, H);
             const colW = (W - pad.l - pad.r) / NCOLS;
             const rowH = (H - pad.t - pad.b) / passed.length;
 
-            // Column headers ÷1..÷NCOLS
+            // Column headers: every 5th + 1
             for (let k = 1; k <= NCOLS; k++) {
-                svg.append('text')
-                    .attr('x', pad.l + (k - 0.5) * colW)
-                    .attr('y', pad.t - 14)
-                    .attr('text-anchor', 'middle')
-                    .attr('fill', 'var(--text2)').attr('font-size', '0.74rem')
-                    .text('÷' + k);
+                if (k === 1 || k % 5 === 0) {
+                    svg.append('text')
+                        .attr('x', pad.l + (k - 0.5) * colW)
+                        .attr('y', pad.t - 10)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', 'var(--text2)').attr('font-size', '0.65rem')
+                        .text('÷' + k);
+                }
             }
 
-            // Row labels (party names on the right since RTL)
+            // Row labels + color swatch + final seat total
             passed.forEach((p, ri) => {
-                svg.append('text')
-                    .attr('x', pad.l - 8)
-                    .attr('y', pad.t + (ri + 0.5) * rowH + 4)
-                    .attr('text-anchor', 'start')
-                    .attr('fill', 'var(--text)').attr('font-size', '0.75rem')
-                    .text(p.name);
+                const y = pad.t + (ri + 0.5) * rowH + 4;
                 svg.append('rect')
-                    .attr('x', pad.l - 22).attr('y', pad.t + ri * rowH + rowH / 2 - 4)
-                    .attr('width', 8).attr('height', 8)
+                    .attr('x', pad.l - 110).attr('y', pad.t + ri * rowH + rowH / 2 - 5)
+                    .attr('width', 8).attr('height', 10)
                     .attr('fill', p.color);
+                svg.append('text')
+                    .attr('x', pad.l - 96).attr('y', y)
+                    .attr('text-anchor', 'start')
+                    .attr('fill', 'var(--text)').attr('font-size', '0.72rem')
+                    .text(p.name);
+                // Total seats badge on the right
+                const total = seatsPerParty.get(ri) || 0;
+                svg.append('text')
+                    .attr('x', W - pad.r + 6).attr('y', y)
+                    .attr('text-anchor', 'start')
+                    .attr('fill', p.color).attr('font-size', '0.95rem').attr('font-weight', 700)
+                    .text(total + ' מנדטים')
+                    .style('opacity', 0)
+                    .transition().delay(2400).duration(400).style('opacity', 1);
             });
 
-            // Cells
+            // Cells — animate seat-by-seat (every 4 seats shown together to keep total under ~2s)
+            const ANIM_DUR = 2200;
             passed.forEach((p, ri) => {
                 for (let k = 1; k <= NCOLS; k++) {
-                    const q = p.votes / k;
                     const seat = seatRank.get(ri + ',' + k);
-                    const x = pad.l + (k - 1) * colW + 1;
-                    const y = pad.t + ri * rowH + 1;
-                    const w = colW - 2, h = rowH - 2;
-                    const delay = 200 + (seat ? seat * 60 : 800 + ri * 30 + k * 10);
+                    const x = pad.l + (k - 1) * colW + 0.5;
+                    const y = pad.t + ri * rowH + 0.5;
+                    const w = colW - 1, h = rowH - 1;
+                    const isPossible = k <= (seatsPerParty.get(ri) || 0) + 1;  // light grid hint
+                    const delay = seat ? (seat / TOTAL_SEATS) * ANIM_DUR : 0;
 
                     svg.append('rect')
                         .attr('x', x).attr('y', y).attr('width', w).attr('height', h)
                         .attr('fill', seat ? p.color : 'transparent')
-                        .attr('stroke', 'var(--border)').attr('stroke-width', 0.5)
-                        .attr('opacity', 0)
-                        .transition().delay(delay).duration(250)
-                        .attr('opacity', seat ? 0.9 : 1);
+                        .attr('stroke', isPossible ? 'var(--border)' : 'transparent').attr('stroke-width', 0.5)
+                        .attr('opacity', seat ? 0 : 1)
+                        .transition().delay(delay).duration(200)
+                        .attr('opacity', seat ? 0.92 : 1);
 
-                    // Quotient text (in K — rounded)
-                    svg.append('text')
-                        .attr('x', x + w / 2).attr('y', y + h / 2 + 4)
-                        .attr('text-anchor', 'middle')
-                        .attr('fill', seat ? '#fff' : 'var(--text3)')
-                        .attr('font-size', '0.66rem')
-                        .attr('font-weight', seat ? 600 : 400)
-                        .text(Math.round(q / 1000) + 'K')
-                        .style('opacity', 0)
-                        .transition().delay(delay + 100).duration(250).style('opacity', 1);
-
-                    // Seat number badge for the highlighted cells
-                    if (seat) {
+                    // Tiny seat-number label for milestones (#1, every 10th, last seat)
+                    if (seat && (seat === 1 || seat % 10 === 0 || seat === TOTAL_SEATS)) {
                         svg.append('text')
-                            .attr('x', x + 4).attr('y', y + 11)
-                            .attr('text-anchor', 'start')
+                            .attr('x', x + w / 2).attr('y', y + h / 2 + 3)
+                            .attr('text-anchor', 'middle')
                             .attr('fill', '#fff').attr('font-size', '0.58rem').attr('font-weight', 700)
                             .text('#' + seat)
                             .style('opacity', 0)
-                            .transition().delay(delay + 250).duration(200).style('opacity', 0.85);
+                            .transition().delay(delay + 200).duration(150).style('opacity', 0.95);
                     }
                 }
             });
 
-            // Footer: explain that this continues to seat 120
+            // Footer: brief recap of surplus agreements
             svg.append('text')
-                .attr('x', W / 2).attr('y', H - 6)
+                .attr('x', W / 2).attr('y', H - 10)
                 .attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text3)').attr('font-size', '0.72rem')
-                .text('30 המנות הראשונות מסומנות — אותו תהליך נמשך עד 120 מנדטים')
+                .text('D′Hondt טהור. בפועל הליכוד קיבל 32 ויה״ת 7 — הסכם העודפים עם הציונות הדתית הזיז את המנדט ה-120.')
                 .style('opacity', 0)
-                .transition().delay(2200).duration(500).style('opacity', 1);
+                .transition().delay(2600).duration(500).style('opacity', 1);
         }
 
         function drawOutro() {
