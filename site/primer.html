@@ -269,7 +269,7 @@
             // ---- 3. Ballot size distribution ----
             {
                 title: 'כמה בעלי זכות בחירה בקלפי?',
-                sub: () => `החציון: ${num(DATA.eligible_per_ballot_median)} בעלי זכות בחירה לקלפי. רוב הקלפיות נעות בין ${num(DATA.eligible_per_ballot_p10)} ל-${num(DATA.eligible_per_ballot_p90)} בעלי זכות בחירה (העשירונים העליון והתחתון). חוק הבחירות מגביל את גודל הקלפי כדי שתימשך עוצמת הצביעה כל היום.`,
+                sub: () => `החציון: ${num(DATA.eligible_per_ballot_median)} בעלי זכות בחירה לקלפי. רוב הקלפיות נעות בין ${num(DATA.eligible_per_ballot_p10)} ל-${num(DATA.eligible_per_ballot_p90)} בעלי זכות בחירה (העשירונים העליון והתחתון). הקלפיות הקטנות מאוד הן בדרך כלל בקיבוצים ויישובים מבודדים.`,
                 draw: drawBallotSize,
             },
             // ---- 4. Turnout distribution ----
@@ -643,7 +643,7 @@
         }
 
         function drawThreshold() {
-            const W = 800, H = 420, pad = { l: 50, r: 40, t: 40, b: 50 };
+            const W = 800, H = 440, pad = { l: 50, r: 40, t: 40, b: 90 };
             const svg = makeSvg(W, H);
             const top = DATA.parties.slice(0, 13);
             const total = DATA.total_valid;
@@ -667,9 +667,10 @@
             svg.selectAll('text.sym').data(top).enter().append('text')
                 .attr('class', 'sym')
                 .attr('x', d => xs(d.symbol) + xs.bandwidth() / 2)
-                .attr('y', H - pad.b + 18)
-                .attr('text-anchor', 'middle')
-                .attr('fill', 'var(--text2)').attr('font-size', '0.78rem')
+                .attr('y', H - pad.b + 14)
+                .attr('text-anchor', 'end')
+                .attr('fill', 'var(--text2)').attr('font-size', '0.72rem')
+                .attr('transform', d => `rotate(-35,${xs(d.symbol) + xs.bandwidth() / 2},${H - pad.b + 14})`)
                 .text(d => d.name);
 
             // Threshold line
@@ -750,36 +751,27 @@
         }
 
         function drawOutro() {
-            const W = 700, H = 360;
-            const svg = makeSvg(W, H);
             const links = [
-                { href: 'geomap.html', label: '🗺️ מפה גיאוגרפית', desc: 'התפלגות הקולות לפי מיקום' },
-                { href: 'sankey.html', label: '🔀 תרשים זרימה', desc: 'מעבר קולות בין כנסות' },
-                { href: 'tsne.html',   label: '🔵 פיזור קלפיות', desc: 'אשכולות התנהגות בחירה' },
+                { href: 'geomap.html',   label: '🗺️ מפה גיאוגרפית', desc: 'התפלגות הקולות לפי מיקום' },
+                { href: 'tsne.html',     label: '🔵 פיזור קלפיות',  desc: 'אשכולות התנהגות בחירה' },
+                { href: 'sankey.html',   label: '🔀 תרשים זרימה',   desc: 'מעבר קולות בין כנסות' },
+                { href: 'scatter.html',  label: '📈 השוואת מפלגות', desc: 'תמיכה במפלגה X מול Y' },
+                { href: 'dhondt.html',   label: '🏛️ באדר-עופר',     desc: 'חישוב חלוקת המנדטים' },
                 { href: 'irregular.html', label: '🔍 קלפיות חריגות', desc: 'אנומליות סטטיסטיות' },
             ];
-            const colW = 320, rowH = 70;
-            const x0 = (W - 2 * colW - 20) / 2;
+            const grid = document.createElement('div');
+            grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0.75rem;max-width:780px;width:100%;padding:0 1rem;';
             links.forEach((l, i) => {
-                const col = i % 2, row = Math.floor(i / 2);
-                const x = x0 + col * (colW + 20);
-                const y = 40 + row * (rowH + 20);
-                const g = svg.append('a').attr('href', l.href).style('cursor', 'pointer');
-                g.append('rect').attr('x', x).attr('y', y).attr('width', colW).attr('height', rowH)
-                    .attr('rx', 10).attr('fill', 'var(--bg2)').attr('stroke', 'var(--border)').attr('stroke-width', 1)
-                    .style('opacity', 0)
-                    .transition().delay(200 + i * 100).duration(400).style('opacity', 1);
-                g.append('text').attr('x', x + colW / 2).attr('y', y + 28)
-                    .attr('text-anchor', 'middle').attr('fill', 'var(--text)').attr('font-size', '1rem').attr('font-weight', 600)
-                    .text(l.label)
-                    .style('opacity', 0)
-                    .transition().delay(300 + i * 100).duration(400).style('opacity', 1);
-                g.append('text').attr('x', x + colW / 2).attr('y', y + 50)
-                    .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.78rem')
-                    .text(l.desc)
-                    .style('opacity', 0)
-                    .transition().delay(400 + i * 100).duration(400).style('opacity', 1);
+                const a = document.createElement('a');
+                a.href = l.href;
+                a.style.cssText = 'display:flex;flex-direction:column;gap:0.3rem;padding:0.9rem 1rem;background:var(--bg2);border:1px solid var(--border);border-radius:10px;text-decoration:none;color:inherit;opacity:0;transform:translateY(8px);transition:opacity 0.35s, transform 0.35s, border-color 0.15s, background 0.15s;';
+                a.onmouseenter = () => { a.style.borderColor = 'var(--accent)'; a.style.background = 'var(--bg3)'; };
+                a.onmouseleave = () => { a.style.borderColor = 'var(--border)'; a.style.background = 'var(--bg2)'; };
+                a.innerHTML = `<span style="font-size:1rem;font-weight:600;color:var(--text);">${l.label}</span><span style="font-size:0.78rem;color:var(--text2);">${l.desc}</span>`;
+                grid.appendChild(a);
+                setTimeout(() => { a.style.opacity = '1'; a.style.transform = 'translateY(0)'; }, 100 + i * 80);
             });
+            visEl.appendChild(grid);
         }
 
         // ===== Navigation =====
