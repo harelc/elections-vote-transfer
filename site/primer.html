@@ -841,16 +841,6 @@
                         .transition().delay(delay).duration(200)
                         .attr('opacity', seat ? 0.92 : 1);
 
-                    // Tiny seat-number label for milestones (#1, every 10th, last seat)
-                    if (seat && (seat === 1 || seat % 10 === 0 || seat === TOTAL_SEATS)) {
-                        svg.append('text')
-                            .attr('x', x + w / 2).attr('y', y + h / 2 + 3)
-                            .attr('text-anchor', 'middle')
-                            .attr('fill', '#fff').attr('font-size', '0.58rem').attr('font-weight', 700)
-                            .text('#' + seat)
-                            .style('opacity', 0)
-                            .transition().delay(delay + 200).duration(150).style('opacity', 0.95);
-                    }
                 }
             });
 
