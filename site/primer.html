@@ -852,10 +852,11 @@
                 }
             });
 
-            // Footer note rendered as HTML below the SVG so it never
-            // collides with the step-indicator pills at the page bottom.
+            // Footer note absolutely positioned above the step pills,
+            // independent of the SVG layout so it stays visible whatever
+            // the viewport size.
             const note = document.createElement('div');
-            note.style.cssText = 'text-align:center;color:var(--text3);font-size:0.78rem;padding:0.4rem 1rem 0;max-width:920px;line-height:1.4;flex-shrink:0;';
+            note.style.cssText = 'position:fixed;left:1rem;right:1rem;bottom:3.2rem;text-align:center;color:var(--text2);font-size:0.82rem;line-height:1.4;pointer-events:none;z-index:25;';
             note.textContent = 'D′Hondt טהור. בפועל הליכוד קיבל 32 ויה״ת 7 — הסכם העודפים עם הציונות הדתית הזיז את המנדט ה-120.';
             visEl.appendChild(note);
         }
