@@ -292,7 +292,7 @@
             },
             // ---- 7. Threshold cliff ----
             {
-                title: 'אחוז החסימה — הקצה שמעבר לו אין מנדטים',
+                title: 'אחוז החסימה — הסף שמתחת לו אין מנדטים',
                 sub: () => `כדי לקבל ולו מנדט אחד צריכה רשימה לעבור את ${pct(DATA.totals.threshold_pct, 2)} מהקולות הכשרים (כלומר ${num(DATA.totals.threshold_votes)} קולות בכנסת ה-25). מי שמתחת — לא נכנס. מרצ ובל״ד היו דוגמאות בולטות: שתיהן נשארו מתחת לסף.`,
                 draw: drawThreshold,
             },
@@ -302,7 +302,13 @@
                 sub: () => `המפלגות נחלקות בערך לארבע קבוצות: שתיים-שלוש גדולות (מעל 10% הקולות), מספר בינוניות, כמה קטנות שפספסו את הסף, וזנב ארוך של רשימות זעירות שאספו אלפי קולות בודדים.`,
                 draw: drawBuckets,
             },
-            // ---- 9. Outro ----
+            // ---- 9. Bader-Ofer / D'Hondt ----
+            {
+                title: 'איך 120 המנדטים מתחלקים? שיטת באדר-עופר',
+                sub: () => `כל מפלגה שעברה את הסף מקבלת ״רשימת מנות״: הקולות שלה, אחר כך חלקי 2, חלקי 3, וכן הלאה. ה-120 המנות הגבוהות ביותר בכל הרשימות יחד — הן המנדטים. השיטה (הקרויה גם <b>D'Hondt</b>) מעניקה יתרון קל למפלגות גדולות, מה שמעודד התאחדויות. בישראל נוסף לכך מנגנון <b>הסכמי עודפים</b> בין שתי מפלגות, שמאפשר לאחד מהן לקבל את ״המנדט האחרון״.`,
+                draw: drawDhondt,
+            },
+            // ---- 10. Outro ----
             {
                 title: 'עכשיו אתם מוכנים — בואו נצלול',
                 sub: () => `כל המספרים האלה זמינים פר-קלפי באתר הוועדה המרכזית. באתר זה אפשר לחקור את התפלגות הקולות, להשוות בין כנסות, לראות אילו קולות נדדו בין מפלגות, ולנתח קלפיות חריגות.`,
@@ -748,6 +754,109 @@
                         .transition().delay(1500).duration(300).style('opacity', 1);
                 }
             });
+        }
+
+        function drawDhondt() {
+            // Show the divisor table for the parties that passed the threshold.
+            // Highlight the top-30 quotients across the whole table; this is
+            // enough to show the "highest averages" idea without the visual
+            // mess of marking all 120 seats.
+            const passed = DATA.parties.filter(p => p.bucket === 'big' || p.bucket === 'medium')
+                .slice().sort((a, b) => b.votes - a.votes);
+            const NCOLS = 12;
+            const SEATS_TO_MARK = 30;
+            const quotients = [];
+            passed.forEach((p, pi) => {
+                for (let k = 1; k <= NCOLS; k++) {
+                    quotients.push({ p, pi, k, q: p.votes / k });
+                }
+            });
+            quotients.sort((a, b) => b.q - a.q);
+            const seatRank = new Map();   // cellKey -> seat number (1..SEATS_TO_MARK)
+            for (let i = 0; i < SEATS_TO_MARK && i < quotients.length; i++) {
+                seatRank.set(quotients[i].pi + ',' + quotients[i].k, i + 1);
+            }
+
+            const W = 860, H = 460;
+            const pad = { l: 110, r: 20, t: 50, b: 30 };
+            const svg = makeSvg(W, H);
+            const colW = (W - pad.l - pad.r) / NCOLS;
+            const rowH = (H - pad.t - pad.b) / passed.length;
+
+            // Column headers ÷1..÷NCOLS
+            for (let k = 1; k <= NCOLS; k++) {
+                svg.append('text')
+                    .attr('x', pad.l + (k - 0.5) * colW)
+                    .attr('y', pad.t - 14)
+                    .attr('text-anchor', 'middle')
+                    .attr('fill', 'var(--text2)').attr('font-size', '0.74rem')
+                    .text('÷' + k);
+            }
+
+            // Row labels (party names on the right since RTL)
+            passed.forEach((p, ri) => {
+                svg.append('text')
+                    .attr('x', pad.l - 8)
+                    .attr('y', pad.t + (ri + 0.5) * rowH + 4)
+                    .attr('text-anchor', 'start')
+                    .attr('fill', 'var(--text)').attr('font-size', '0.75rem')
+                    .text(p.name);
+                svg.append('rect')
+                    .attr('x', pad.l - 22).attr('y', pad.t + ri * rowH + rowH / 2 - 4)
+                    .attr('width', 8).attr('height', 8)
+                    .attr('fill', p.color);
+            });
+
+            // Cells
+            passed.forEach((p, ri) => {
+                for (let k = 1; k <= NCOLS; k++) {
+                    const q = p.votes / k;
+                    const seat = seatRank.get(ri + ',' + k);
+                    const x = pad.l + (k - 1) * colW + 1;
+                    const y = pad.t + ri * rowH + 1;
+                    const w = colW - 2, h = rowH - 2;
+                    const delay = 200 + (seat ? seat * 60 : 800 + ri * 30 + k * 10);
+
+                    svg.append('rect')
+                        .attr('x', x).attr('y', y).attr('width', w).attr('height', h)
+                        .attr('fill', seat ? p.color : 'transparent')
+                        .attr('stroke', 'var(--border)').attr('stroke-width', 0.5)
+                        .attr('opacity', 0)
+                        .transition().delay(delay).duration(250)
+                        .attr('opacity', seat ? 0.9 : 1);
+
+                    // Quotient text (in K — rounded)
+                    svg.append('text')
+                        .attr('x', x + w / 2).attr('y', y + h / 2 + 4)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', seat ? '#fff' : 'var(--text3)')
+                        .attr('font-size', '0.66rem')
+                        .attr('font-weight', seat ? 600 : 400)
+                        .text(Math.round(q / 1000) + 'K')
+                        .style('opacity', 0)
+                        .transition().delay(delay + 100).duration(250).style('opacity', 1);
+
+                    // Seat number badge for the highlighted cells
+                    if (seat) {
+                        svg.append('text')
+                            .attr('x', x + 4).attr('y', y + 11)
+                            .attr('text-anchor', 'start')
+                            .attr('fill', '#fff').attr('font-size', '0.58rem').attr('font-weight', 700)
+                            .text('#' + seat)
+                            .style('opacity', 0)
+                            .transition().delay(delay + 250).duration(200).style('opacity', 0.85);
+                    }
+                }
+            });
+
+            // Footer: explain that this continues to seat 120
+            svg.append('text')
+                .attr('x', W / 2).attr('y', H - 6)
+                .attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text3)').attr('font-size', '0.72rem')
+                .text('30 המנות הראשונות מסומנות — אותו תהליך נמשך עד 120 מנדטים')
+                .style('opacity', 0)
+                .transition().delay(2200).duration(500).style('opacity', 1);
         }
 
         function drawOutro() {
