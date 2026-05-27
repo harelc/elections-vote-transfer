@@ -213,6 +213,7 @@
         source_code:           { he: 'קוד מקור', en: 'Source code' },
         bmc_text:              { he: 'אהבתם? עזרו לתמוך בפיתוח האתר ובעלויות שלו - קנו לי קפה', en: 'Like it? Help support the site\'s development – buy me a coffee' },
         bmc_title:             { he: 'קנו לי כוס קפה ☕', en: 'Buy me a coffee ☕' },
+        bmc_short:             { he: 'קנו לי קפה', en: 'Buy me a coffee' },
         bmc_line1:             { he: 'אהבתם? רוצים לתמוך בפיתוח האתר?', en: 'Enjoying this? Want to support development?' },
         bmc_line2:             { he: 'קנו לי כוס קפה ☕', en: 'Buy me a coffee ☕' },
 

@@ -178,6 +178,13 @@
         .dashboard-footer a:hover {
             text-decoration: underline;
         }
+        .dashboard-footer .bmc-footer-link {
+            color: #d97706;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .dashboard-footer .bmc-footer-link:hover { color: #f59e0b; }
 
         /* Language toggle + discussions on dashboard */
         .dashboard-lang {
@@ -324,7 +331,11 @@
             <p>
                 <span data-i18n="credits_line">© הראל קין</span> |
                 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
-                <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
+                <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a> |
+                <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-footer-link" rel="noopener noreferrer">
+                    <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="" style="width:14px;height:14px;vertical-align:middle">
+                    <span data-i18n="bmc_short">Buy me a coffee</span>
+                </a>
             </p>
         </footer>
     </div>
