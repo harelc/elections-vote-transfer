@@ -731,7 +731,9 @@
 
         function renderROCs(rocs, opPoint) {
             const W = 320, H = 320, pad = 36;
-            const xs = (v) => W - pad - v * (W - 2 * pad);    // RTL — flip x
+            // Plot axes are LTR (FPR grows rightward) per ROC convention,
+            // independent of the page's RTL direction.
+            const xs = (v) => pad + v * (W - 2 * pad);
             const ys = (v) => H - pad - v * (H - 2 * pad);
 
             const svgNS = 'http://www.w3.org/2000/svg';
@@ -739,6 +741,7 @@
             svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
             svg.setAttribute('width', W);
             svg.setAttribute('height', H);
+            svg.setAttribute('direction', 'ltr');
             svg.style.flexShrink = '0';
 
             // Axes
