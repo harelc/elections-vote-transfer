@@ -302,6 +302,16 @@
                 </select>
             </div>
 
+            <div class="control-group" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.55rem 0.7rem">
+                <label style="display:flex;align-items:center;gap:0.5rem;font-size:0.8rem;color:var(--text);cursor:pointer;margin:0">
+                    <input type="checkbox" id="exclude-druze" style="accent-color:var(--accent)">
+                    <span>החרגת יישובים דרוזים</span>
+                </label>
+                <div style="font-size:0.7rem;color:var(--text3);margin-top:0.3rem;line-height:1.45">
+                    הצבעה דרוזית מאופיינת בתנודתיות גבוהה משיקולי משפחה/חמולה ועלולה לייצר זיהוי שגוי. רשימה: <span id="druze-count">14</span> יישובים.
+                </div>
+            </div>
+
             <div class="control-group">
                 <div class="row">
                     <div>
@@ -363,6 +373,17 @@
         let BLOCS = {};
         let SCENARIOS = [];
 
+        // Druze localities (normalized to the CEC names that appear in the
+        // ballot data). Pure-Druze + Druze-majority + significant Druze
+        // minority. Excludes Shfar'am (Druze only ~30%) and Golan Druze (most
+        // hold Syrian citizenship and don't vote). Edit list in code if you
+        // disagree with any inclusion.
+        const DRUZE_NAMES = new Set([
+            "ג'וליס", "ירכא", "בית גן", "חורפיש", "כסראסמיע",
+            "דאלית אלכרמל", "סאגור", "עין אלאסד", "עספיא", "מגאר",
+            "ראמה", "אבו סנאן", "פקיעין חדשה", "פקיעין בוקיעה",
+        ]);
+
         // ?t=24_25 or ?t=25_26. Default to 25_26 so the existing irregular-page
         // link (no query string) still loads the K26 view.
         function currentTransition() {
@@ -417,10 +438,12 @@
                 const n = parseInt($('#nb').value, 10);
                 const mag = parseInt($('#mag').value, 10) / 100;
                 const dir = getDirection();
+                const excludeDruze = $('#exclude-druze').checked;
                 // Viable = source bloc ≥ 10% of ballot. Per-ballot votes moved
                 // = mag × source-bloc votes on that ballot (paper definition).
                 let viableSrcVotes = 0, viableCount = 0;
                 for (const b of DATA.ballots) {
+                    if (excludeDruze && DRUZE_NAMES.has(b.n)) continue;
                     let sBlocShare = 0;
                     for (const c of dir.srcCols) sBlocShare += b.b26[c] / 1000;
                     if (sBlocShare >= VIABILITY) {
@@ -441,7 +464,12 @@
                 }
             }
             ['nb', 'mag'].forEach(id => document.getElementById(id).addEventListener('input', updateBudget));
+            $('#exclude-druze').addEventListener('change', () => { updateBudget(); run(); });
 
+            // Count Druze localities actually present in this transition's data
+            const presentDruze = new Set();
+            for (const b of DATA.ballots) if (DRUZE_NAMES.has(b.n)) presentDruze.add(b.n);
+            $('#druze-count').textContent = presentDruze.size;
             updateScenarioDetail();
             updateBudget();
 
@@ -453,7 +481,7 @@
                 const detector = $('#detector').value;
                 const scores = detector === 'l2' ? LAST.scoresL2 : LAST.scoresMatched;
                 const N = DATA.ballots.length;
-                const order = orderByScore(scores, N);
+                const order = orderByScore(scores, N, LAST.keptMask);
                 const topSet = new Set(order.slice(0, LAST.topK));
                 let tp = 0;
                 for (const i of topSet) if (LAST.tamperedIdx.has(i)) tp++;
@@ -595,10 +623,20 @@
             const N = ballots.length;
             const rng = mulberry32(seed);
 
+            const excludeDruze = $('#exclude-druze').checked;
+            // keptMask[i] = should this ballot enter the experiment at all?
+            const keptMask = new Uint8Array(N);
+            let nExcluded = 0;
+            for (let i = 0; i < N; i++) {
+                if (excludeDruze && DRUZE_NAMES.has(ballots[i].n)) { nExcluded++; continue; }
+                keptMask[i] = 1;
+            }
+
             // Viability: source bloc must hold ≥10% of ballot (paper's
-            // SOURCE_VIABILITY_SHARE).
+            // SOURCE_VIABILITY_SHARE). Also: only kept ballots are viable.
             const viable = [];
             for (let i = 0; i < N; i++) {
+                if (!keptMask[i]) continue;
                 let s = 0;
                 for (const c of dir.srcCols) s += ballots[i].b26[c] / 1000;
                 if (s >= VIABILITY) viable.push(i);
@@ -662,9 +700,10 @@
             const detector = $('#detector').value;
             const scores = detector === 'l2' ? scoresL2 : scoresMatched;
 
-            // Sort indices by selected score desc
-            const order = new Array(N);
-            for (let i = 0; i < N; i++) order[i] = i;
+            // Sort kept indices by selected score desc — masked ballots are
+            // dropped from ranking, ROC, and the suspect list entirely.
+            const order = [];
+            for (let i = 0; i < N; i++) if (keptMask[i]) order.push(i);
             order.sort((a, b) => scores[b] - scores[a]);
 
             const topSet = new Set(order.slice(0, topK));
@@ -677,6 +716,7 @@
             LAST = {
                 dir, nBallots, mag, topK, seed, actualVotesMoved, detector,
                 tamperedIdx, observed, original, scores, scoresMatched, scoresL2, order, tp, fp, precision, recall,
+                keptMask, nExcluded,
             };
 
             // Update summary
@@ -693,7 +733,8 @@
         }
 
         // Compute ROC curve: walk down score-sorted ballots, accumulating TP/FP.
-        // Returns { points: [[fpr, tpr]], auc }
+        // Returns { points: [[fpr, tpr]], auc }. N here is the size of the
+        // active (kept) population, not the full ballot count.
         function computeROC(order, tamperedIdx, N) {
             const P = tamperedIdx.size;
             const Neg = N - P;
@@ -713,10 +754,10 @@
             return { points, auc };
         }
 
-        // Order the ballots by an arbitrary score array (descending).
-        function orderByScore(scores, N) {
-            const idx = new Array(N);
-            for (let i = 0; i < N; i++) idx[i] = i;
+        // Order the kept ballots by an arbitrary score array (descending).
+        function orderByScore(scores, N, keptMask) {
+            const idx = [];
+            for (let i = 0; i < N; i++) if (!keptMask || keptMask[i]) idx.push(i);
             idx.sort((a, b) => scores[b] - scores[a]);
             return idx;
         }
@@ -813,14 +854,16 @@
             if (!LAST) return;
             const wrap = $('#roc-chart');
             wrap.innerHTML = '';
-            const { tamperedIdx, topK, fp, tp, scoresMatched, scoresL2, detector } = LAST;
-            const N = DATA.ballots.length;
-            const orderM = orderByScore(scoresMatched, N);
-            const orderL = orderByScore(scoresL2, N);
-            const rocM = computeROC(orderM, tamperedIdx, N);
-            const rocL = computeROC(orderL, tamperedIdx, N);
+            const { tamperedIdx, topK, fp, tp, scoresMatched, scoresL2, detector, keptMask } = LAST;
+            // Population is the kept ballots, not the raw total
+            let Nkept = 0;
+            for (let i = 0; i < keptMask.length; i++) if (keptMask[i]) Nkept++;
+            const orderM = orderByScore(scoresMatched, keptMask.length, keptMask);
+            const orderL = orderByScore(scoresL2, keptMask.length, keptMask);
+            const rocM = computeROC(orderM, tamperedIdx, Nkept);
+            const rocL = computeROC(orderL, tamperedIdx, Nkept);
 
-            const Neg = N - tamperedIdx.size;
+            const Neg = Nkept - tamperedIdx.size;
             const opPoint = (tamperedIdx.size > 0 && Neg > 0)
                 ? [fp / Neg, tp / tamperedIdx.size]
                 : null;
