@@ -255,8 +255,9 @@
 <body>
     <div class="top-bar">
         <a href="index.html">🏠 דף הבית</a>
-        <span class="title">סימולציית זיופים — כנסת 26</span>
-        <span class="badge">סימולציה</span>
+        <span class="title" id="top-title">סימולציית זיופים</span>
+        <div id="transition-pills" style="display:flex;gap:0.4rem"></div>
+        <span class="badge" id="sim-badge" style="display:none">סימולציה</span>
     </div>
 
     <div class="container">
@@ -355,29 +356,19 @@
     (function () {
         'use strict';
 
-        // K26 bloc definitions (mirrored from fraud-detection/fraud_detection_e26.py)
-        // — symbols from K26 parties_to_26 in the transfer file.
-        const BLOCS = {
-            right:      ['מחל', 'שס', 'ג', 'ט', 'עי', 'מי'],          // ליכוד, ש״ס, יה״ת, ציונות הדתית, עוצמה, מילואימניקים
-            leftcenter: ['נב', 'ל', 'דמ', 'יר', 'כל'],                 // ביחד, ישראל ביתנו, הדמוקרטים, ישר, כחול לבן
-            arab:       ['ום', 'עם', 'ד'],                              // חד״ש-תע״ל, רע״ם, בל״ד
-        };
+        // BLOCS + SCENARIOS are loaded per-transition from DATA.meta (set in
+        // prepare_fraud_sim.py). See BLOC_DEFINITIONS / SCENARIOS_BY_YEAR there.
+        // Note on RTL arrows: in scenario labels we use ← (visual-left) so the
+        // arrow points in the reading direction of Hebrew.
+        let BLOCS = {};
+        let SCENARIOS = [];
 
-        // Attack scenarios. kind=bloc takes mag% of each source-bloc party's votes
-        // and redistributes proportional to the dst-bloc's existing weights;
-        // kind=pair is the simpler single-party→single-party shift.
-        // Note on arrows: in RTL Hebrew, the "leads to" arrow is ← (visual-left,
-        // matching reading direction) — NOT →. Using → here would point the
-        // arrow away from the source visually.
-        const SCENARIOS = [
-            { id: 'right_to_left',   kind: 'bloc', src: 'right',      dst: 'leftcenter', label: 'גוש הימין ← גוש שמאל-מרכז' },
-            { id: 'left_to_right',   kind: 'bloc', src: 'leftcenter', dst: 'right',      label: 'גוש שמאל-מרכז ← גוש הימין' },
-            { id: 'jewish_to_arab',  kind: 'bloc', src: 'right',      dst: 'arab',       label: 'הימין ← המפלגות הערביות' },
-            { id: 'intra_right',     kind: 'pair', src: 'מחל',         dst: 'ט',          label: 'בתוך הימין: ליכוד ← הציונות הדתית' },
-            { id: 'intra_arab',      kind: 'pair', src: 'עם',          dst: 'ום',         label: 'בתוך הערביות: רע״ם ← חד״ש-תע״ל' },
-            { id: 'lapid_likud',     kind: 'pair', src: 'נב',          dst: 'מחל',        label: 'ביחד ← ליכוד' },
-            { id: 'custom',          kind: 'pair', src: null, dst: null,                  label: 'התאמה אישית (זוג מפלגות)' },
-        ];
+        // ?t=24_25 or ?t=25_26. Default to 25_26 so the existing irregular-page
+        // link (no query string) still loads the K26 view.
+        function currentTransition() {
+            const t = new URLSearchParams(location.search).get('t');
+            return (t === '24_25' || t === '25_26') ? t : '25_26';
+        }
 
         let DATA = null;
         let LAST = null;
@@ -912,12 +903,17 @@
                 const meta = document.createElement('div');
                 meta.className = 'ballot-meta';
                 const scoreLabel = LAST.detector === 'matched' ? 'MF' : 'L2';
+                const toYear = DATA.meta.to_year;
+                const settlementQuery = toYear === '26' ? '&e26=1' : '';
                 meta.innerHTML =
                     `<span class="rank">#${order.indexOf(idx) + 1}</span>` +
-                    `<span class="name"><a href="settlement.html?name=${encodeURIComponent(b.n)}&e26=1">${b.n}</a></span>` +
+                    `<span class="name"><a href="settlement.html?name=${encodeURIComponent(b.n)}${settlementQuery}">${b.n}</a></span>` +
                     `<span class="ballot-num">קלפי ${b.b}</span>` +
                     `<span class="badge ${isTP ? 'tp' : 'fp'}">${isTP ? '✓ זיהוי נכון' : '✗ זיהוי שגוי'}</span>` +
-                    `<span class="score"><bdi dir="ltr">${scoreLabel} = ${scores[idx].toFixed(3)}</bdi> · ${fmt(b.v || 0)} קולות</span>`;
+                    `<span class="score"><bdi dir="ltr">${scoreLabel} = ${scores[idx].toFixed(3)}</bdi> · ${fmt(b.v || 0)} קולות</span>` +
+                    (b.sid && !DATA.meta.is_simulated
+                        ? ` <a href="https://votes${toYear}.bechirot.gov.il/ballotresults?cityID=${b.sid}&BallotNumber=${b.b}" target="_blank" rel="noopener" style="margin-inline-start:auto;color:#475569" title="ועדת הבחירות">CEC ↗</a>`
+                        : '');
 
                 // Stacked bars
                 const bars = document.createElement('div');
@@ -945,15 +941,35 @@
             if (!indices.length) list.innerHTML = '<div class="loading">אין קלפיות העונות לסינון</div>';
         }
 
+        function renderTransitionPills() {
+            const t = currentTransition();
+            const pills = document.getElementById('transition-pills');
+            pills.innerHTML = '';
+            for (const [tid, label] of [['24_25', '24→25 (אמת)'], ['25_26', '25→26 (סימולציה)']]) {
+                const a = document.createElement('a');
+                a.href = '?t=' + tid;
+                a.textContent = label;
+                a.style.cssText = `padding:0.2rem 0.55rem;border-radius:999px;font-size:0.72rem;text-decoration:none;border:1px solid ${tid === t ? 'var(--accent)' : 'var(--border)'};color:${tid === t ? '#fff' : 'var(--text2)'};background:${tid === t ? 'var(--accent)' : 'transparent'}`;
+                pills.appendChild(a);
+            }
+        }
+
         async function boot() {
+            const t = currentTransition();
             try {
-                DATA = await fetch('data/fraud_sim_25_26.json').then(r => r.json());
+                DATA = await fetch(`data/fraud_sim_${t}.json`).then(r => r.json());
             } catch (e) {
                 document.body.innerHTML = '<div style="padding:2rem;color:#f87171">שגיאה בטעינת הנתונים.</div>';
                 return;
             }
+            BLOCS = DATA.meta.blocs;
+            SCENARIOS = DATA.meta.scenarios;
+            const toYear = DATA.meta.to_year;
+            document.getElementById('top-title').textContent = `סימולציית זיופים — כנסת ${toYear}`;
+            if (DATA.meta.is_simulated) document.getElementById('sim-badge').style.display = 'inline-block';
+            document.title = `סימולציית זיוף ${toYear} — קולות נודדים`;
+            renderTransitionPills();
             initControls();
-            // Auto-run with defaults so the page shows something
             run();
         }
         boot();
