@@ -308,7 +308,7 @@
                     <span>החרגת יישובים דרוזים</span>
                 </label>
                 <div style="font-size:0.7rem;color:var(--text3);margin-top:0.3rem;line-height:1.45">
-                    הצבעה דרוזית מאופיינת בתנודתיות גבוהה משיקולי משפחה/חמולה ועלולה לייצר זיהוי שגוי. רשימה: <span id="druze-count">17</span> יישובים.
+                    הצבעה דרוזית מאופיינת בתנודתיות גבוהה משיקולי משפחה/חמולה ועלולה לייצר זיהוי שגוי. רשימה: <span id="druze-count">19</span> יישובים.
                 </div>
             </div>
 
@@ -383,6 +383,8 @@
             "דאלית אלכרמל", "סאגור", "עין אלאסד", "עספיא", "מגאר",
             "ראמה", "אבו סנאן", "פקיעין חדשה", "פקיעין בוקיעה",
             "נין", "עגר", "יאנוחגת",
+            // Golan Druze
+            "מגדל שמס", "מסעדה",
         ]);
 
         // ?t=24_25 or ?t=25_26. Default to 25_26 so the existing irregular-page
@@ -946,7 +948,10 @@
                 // Meta line
                 const meta = document.createElement('div');
                 meta.className = 'ballot-meta';
-                const scoreLabel = LAST.detector === 'matched' ? 'MF' : 'L2';
+                const isMF = LAST.detector === 'matched';
+                const scoreTitle = isMF
+                    ? 'ציון מסנן מותאם (Matched Filter) — היטל השארית על ציר התרחיש'
+                    : 'ציון L2 (לא-מותאם) — נורמת השארית המלאה';
                 const toYear = DATA.meta.to_year;
                 const settlementQuery = toYear === '26' ? '&e26=1' : '';
                 meta.innerHTML =
@@ -954,7 +959,7 @@
                     `<span class="name"><a href="settlement.html?name=${encodeURIComponent(b.n)}${settlementQuery}">${b.n}</a></span>` +
                     `<span class="ballot-num">קלפי ${b.b}</span>` +
                     `<span class="badge ${isTP ? 'tp' : 'fp'}">${isTP ? '✓ זיהוי נכון' : '✗ זיהוי שגוי'}</span>` +
-                    `<span class="score"><bdi dir="ltr">${scoreLabel} = ${scores[idx].toFixed(3)}</bdi> · ${fmt(b.v || 0)} קולות</span>` +
+                    `<span class="score" title="${scoreTitle}">ציון <bdi dir="ltr">${scores[idx].toFixed(3)}</bdi> · ${fmt(b.v || 0)} קולות</span>` +
                     (b.sid && !DATA.meta.is_simulated
                         ? ` <a href="https://votes${toYear}.bechirot.gov.il/ballotresults?cityID=${b.sid}&BallotNumber=${b.b}" target="_blank" rel="noopener" style="margin-inline-start:auto;color:#475569" title="ועדת הבחירות">CEC ↗</a>`
                         : '');
