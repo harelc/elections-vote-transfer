@@ -765,7 +765,7 @@
             return idx;
         }
 
-        function renderROCs(rocs, opPoint) {
+        function renderROCs(rocs, opPoint, activeMarkers) {
             const W = 320, H = 320, pad = 36;
             // Plot axes are LTR (FPR grows rightward) per ROC convention,
             // independent of the page's RTL direction.
@@ -838,7 +838,20 @@
                 svg.appendChild(path);
             });
 
-            // Operating point on the active detector
+            // Rank markers on the ACTIVE curve — small dots at #25, #50, #100,
+            // #200, #500 so the user can read off list-rank ↔ ROC-position.
+            if (activeMarkers) {
+                activeMarkers.forEach(m => {
+                    const cx = xs(m.fpr), cy = ys(m.tpr);
+                    const dot = document.createElementNS(svgNS, 'circle');
+                    dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+                    dot.setAttribute('r', 2.5);
+                    dot.setAttribute('fill', 'var(--accent)');
+                    svg.appendChild(dot);
+                    text(cx + 5, cy + 3, '#' + m.rank, 'var(--text2)', 9, 'start');
+                });
+            }
+            // Operating point on the active detector (current Top-K)
             if (opPoint) {
                 const cx = xs(opPoint[0]), cy = ys(opPoint[1]);
                 const dot = document.createElementNS(svgNS, 'circle');
@@ -848,7 +861,7 @@
                 dot.setAttribute('stroke', '#fff');
                 dot.setAttribute('stroke-width', 1.5);
                 svg.appendChild(dot);
-                text(cx, cy - 10, `Top-K`, '#22c55e', 10);
+                text(cx + 7, cy - 4, `Top-K`, '#22c55e', 10, 'start');
             }
             return svg;
         }
@@ -877,7 +890,30 @@
                 { points: rocM.points, color: COLOR_M, dim: !isMatched },
                 { points: rocL.points, color: COLOR_L, dim: isMatched },
             ];
-            wrap.appendChild(renderROCs(rocs, opPoint));
+            // The active ROC's points[k] corresponds to "after ranking the
+            // top-k ballots" — so points[K] is the operating point at Top-K.
+            const activeRoc = isMatched ? rocM : rocL;
+            const RANK_MARKS = [25, 50, 100, 200, 500];
+            const activeMarkers = RANK_MARKS
+                .filter(k => k !== topK && k < activeRoc.points.length)
+                .map(k => {
+                    const [fpr, tpr] = activeRoc.points[k];
+                    return { rank: k, fpr, tpr };
+                });
+            wrap.appendChild(renderROCs(rocs, opPoint, activeMarkers));
+
+            // Sanity check: operating point must equal activeRoc.points[topK]
+            if (opPoint && topK < activeRoc.points.length) {
+                const [fpr, tpr] = activeRoc.points[topK];
+                const dx = Math.abs(fpr - opPoint[0]);
+                const dy = Math.abs(tpr - opPoint[1]);
+                if (dx > 1e-6 || dy > 1e-6) {
+                    console.warn('ROC operating point mismatch — bug?', {
+                        topK, opPoint, curvePoint: [fpr, tpr], dx, dy,
+                        Nkept, P: tamperedIdx.size, fp, tp, detector,
+                    });
+                }
+            }
 
             const info = document.createElement('div');
             info.style.cssText = 'min-width:230px;font-size:0.85rem;color:var(--text2);line-height:1.7';
