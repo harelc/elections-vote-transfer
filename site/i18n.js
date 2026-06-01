@@ -29,6 +29,7 @@
         nav_tsne:              { he: 'התפלגות קלפיות', en: 'Ballot Clusters' },
         nav_geomap:            { he: 'מפה גיאוגרפית', en: 'Geographic Map' },
         nav_primer:            { he: 'מבוא לנתוני הבחירות', en: 'Elections Data Primer' },
+        nav_fraud_sim:         { he: 'סימולציית זיוף', en: 'Fraud Simulator' },
         explainer_link:        { he: 'הסבר', en: 'Explainer' },
         explainer_tooltip:     { he: 'איך עובדת שיטת השערוך', en: 'How the estimation method works' },
         nav_scatter:           { he: 'השוואת מפלגות', en: 'Party Comparison' },
@@ -267,6 +268,7 @@
         card_tsne_desc:            { he: 'מיפוי קלפיות לפי דמיון דפוסי הצבעה', en: 'Ballot box mapping by voting pattern similarity' },
         card_geomap_desc:          { he: 'מפה גיאוגרפית של קלפיות הצבעה', en: 'Geographic map of polling stations' },
         card_primer_desc:          { he: 'מדריך מאויר לקלפיות, אחוזי הצבעה, ומפלגות', en: 'Animated guide to ballots, turnout, and parties' },
+        card_fraud_sim_desc:       { he: 'הזרקת זיוף סינתטי לתוצאות וגלאי גלובלי', en: 'Inject synthetic fraud and rank suspect ballots' },
         card_scatter_desc:         { he: 'השוואת תמיכה בין מפלגות לפי קלפיות', en: 'Compare party support across ballot boxes' },
         card_dhondt_desc:          { he: 'חלוקת מנדטים בשיטת באדר-עופר', en: 'Seat allocation using the D\'Hondt method' },
         card_irregular_desc:       { he: 'זיהוי קלפיות עם דפוסי הצבעה חריגים', en: 'Identifying ballot boxes with irregular voting patterns' },
@@ -745,6 +747,7 @@
         { id: 'dhondt',    href: 'dhondt.html',    i18n: 'nav_dhondt',   text: 'מחשבון באדר-עופר' },
         { id: 'regional',  href: 'regional.html',  i18n: 'nav_regional', text: 'בחירות אזוריות' },
         { id: 'irregular', href: 'irregular.html',  i18n: 'nav_irregular', text: 'קלפיות חריגות' },
+        { id: 'fraud-sim', href: 'fraud-sim.html?t=24_25', i18n: 'nav_fraud_sim', text: 'סימולציית זיוף' },
     ];
 
     function renderNav(activeId) {
