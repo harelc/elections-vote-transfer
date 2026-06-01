@@ -323,6 +323,11 @@
                 </div>
             </div>
 
+            <div class="panel" style="margin-bottom:1rem;">
+                <h2>עקומת ROC — ביצועי הגלאי על פני כל הסיפים האפשריים</h2>
+                <div id="roc-chart" style="display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap"></div>
+            </div>
+
             <div class="panel">
                 <div class="list-header">
                     <span class="label">הקלפיות החשודות ביותר</span>
@@ -644,7 +649,140 @@
             $('#s-precision').textContent = pctFmt(precision, 1);
             $('#s-recall').textContent = pctFmt(recall, 1);
 
+            renderROCPanel();
             renderList();
+        }
+
+        // Compute ROC curve: walk down score-sorted ballots, accumulating TP/FP.
+        // Returns { points: [[fpr, tpr]], auc }
+        function computeROC(order, tamperedIdx, N) {
+            const P = tamperedIdx.size;
+            const Neg = N - P;
+            if (P === 0 || Neg === 0) return { points: [[0, 0], [1, 1]], auc: 0.5 };
+            const points = [[0, 0]];
+            let tp = 0, fp = 0;
+            for (let i = 0; i < order.length; i++) {
+                if (tamperedIdx.has(order[i])) tp++; else fp++;
+                points.push([fp / Neg, tp / P]);
+            }
+            // Trapezoidal AUC
+            let auc = 0;
+            for (let i = 1; i < points.length; i++) {
+                const [x1, y1] = points[i - 1], [x2, y2] = points[i];
+                auc += (x2 - x1) * (y1 + y2) / 2;
+            }
+            return { points, auc };
+        }
+
+        function renderROC(roc, opPoint) {
+            const W = 320, H = 320, pad = 36;
+            const xs = (v) => W - pad - v * (W - 2 * pad);    // RTL — flip x
+            const ys = (v) => H - pad - v * (H - 2 * pad);
+
+            const svgNS = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(svgNS, 'svg');
+            svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+            svg.setAttribute('width', W);
+            svg.setAttribute('height', H);
+            svg.style.flexShrink = '0';
+
+            // Axes
+            function line(x1, y1, x2, y2, stroke, w, dash) {
+                const l = document.createElementNS(svgNS, 'line');
+                l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+                l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+                l.setAttribute('stroke', stroke);
+                l.setAttribute('stroke-width', w);
+                if (dash) l.setAttribute('stroke-dasharray', dash);
+                svg.appendChild(l);
+            }
+            function text(x, y, str, fill, size, anchor) {
+                const t = document.createElementNS(svgNS, 'text');
+                t.setAttribute('x', x); t.setAttribute('y', y);
+                t.setAttribute('fill', fill); t.setAttribute('font-size', size);
+                t.setAttribute('text-anchor', anchor || 'middle');
+                t.setAttribute('font-family', 'Heebo, sans-serif');
+                t.textContent = str;
+                svg.appendChild(t);
+            }
+            line(xs(0), ys(0), xs(1), ys(0), 'var(--border)', 1);
+            line(xs(0), ys(0), xs(0), ys(1), 'var(--border)', 1);
+            for (const v of [0, 0.25, 0.5, 0.75, 1]) {
+                line(xs(v), ys(0), xs(v), ys(0) + 4, 'var(--text3)', 1);
+                text(xs(v), ys(0) + 16, v.toFixed(2), 'var(--text3)', 9);
+                line(xs(0), ys(v), xs(0) - 4, ys(v), 'var(--text3)', 1);
+                text(xs(0) - 7, ys(v) + 3, v.toFixed(2), 'var(--text3)', 9, 'end');
+            }
+            text(W / 2, H - 4, 'FPR (זיהוי חיובי שגוי)', 'var(--text2)', 10);
+            const yLabel = document.createElementNS(svgNS, 'text');
+            yLabel.setAttribute('x', 10); yLabel.setAttribute('y', H / 2);
+            yLabel.setAttribute('fill', 'var(--text2)'); yLabel.setAttribute('font-size', 10);
+            yLabel.setAttribute('text-anchor', 'middle');
+            yLabel.setAttribute('font-family', 'Heebo, sans-serif');
+            yLabel.setAttribute('transform', `rotate(-90 10,${H / 2})`);
+            yLabel.textContent = 'TPR (זיהוי חיובי נכון)';
+            svg.appendChild(yLabel);
+
+            // Diagonal (random baseline)
+            line(xs(0), ys(0), xs(1), ys(1), 'var(--text3)', 1, '4 4');
+
+            // ROC curve
+            const path = document.createElementNS(svgNS, 'path');
+            // Down-sample for SVG path size: keep at most ~300 points
+            const pts = roc.points;
+            const stride = Math.max(1, Math.floor(pts.length / 300));
+            let d = `M ${xs(pts[0][0])} ${ys(pts[0][1])}`;
+            for (let i = stride; i < pts.length; i += stride) {
+                d += ` L ${xs(pts[i][0])} ${ys(pts[i][1])}`;
+            }
+            const last = pts[pts.length - 1];
+            d += ` L ${xs(last[0])} ${ys(last[1])}`;
+            path.setAttribute('d', d);
+            path.setAttribute('stroke', 'var(--accent)');
+            path.setAttribute('stroke-width', 2);
+            path.setAttribute('fill', 'none');
+            svg.appendChild(path);
+
+            // Operating point (current top-K)
+            if (opPoint) {
+                const cx = xs(opPoint[0]), cy = ys(opPoint[1]);
+                const dot = document.createElementNS(svgNS, 'circle');
+                dot.setAttribute('cx', cx); dot.setAttribute('cy', cy);
+                dot.setAttribute('r', 5);
+                dot.setAttribute('fill', '#22c55e');
+                dot.setAttribute('stroke', '#fff');
+                dot.setAttribute('stroke-width', 1.5);
+                svg.appendChild(dot);
+                // Label
+                text(cx, cy - 10, `Top-K`, '#22c55e', 10);
+            }
+            return svg;
+        }
+
+        function renderROCPanel() {
+            if (!LAST) return;
+            const wrap = $('#roc-chart');
+            wrap.innerHTML = '';
+            const { order, tamperedIdx, topK, fp, tp } = LAST;
+            const N = DATA.ballots.length;
+            const roc = computeROC(order, tamperedIdx, N);
+            const Neg = N - tamperedIdx.size;
+            const opPoint = (tamperedIdx.size > 0 && Neg > 0)
+                ? [fp / Neg, tp / tamperedIdx.size]
+                : null;
+            wrap.appendChild(renderROC(roc, opPoint));
+            const info = document.createElement('div');
+            info.style.cssText = 'min-width:200px;font-size:0.85rem;color:var(--text2);line-height:1.7';
+            const aucColor = roc.auc > 0.85 ? '#22c55e' : (roc.auc > 0.65 ? '#f59e0b' : '#ef4444');
+            info.innerHTML =
+                `<div style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">שטח מתחת לעקומה (AUC)</div>` +
+                `<div style="font-size:2.2rem;font-weight:700;color:${aucColor};line-height:1">${roc.auc.toFixed(3)}</div>` +
+                `<div style="margin-top:0.7rem;font-size:0.78rem">` +
+                `1.0 = הפרדה מושלמת בין קלפיות מזוייפות לנקיות.<br>` +
+                `0.5 = הגלאי שווה לניחוש אקראי.<br>` +
+                `</div>` +
+                `<div style="margin-top:0.7rem;font-size:0.78rem;color:var(--text3)">הנקודה הירוקה: הסף בו אתם נמצאים כעת (Top-K=${fmt(topK)}).</div>`;
+            wrap.appendChild(info);
         }
 
         function stackedBar(vec, totalVoters) {
