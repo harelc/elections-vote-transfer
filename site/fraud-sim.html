@@ -289,8 +289,16 @@
             </div>
 
             <div class="control-group" id="budget-display" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.55rem 0.7rem;font-size:0.78rem;color:var(--text2);line-height:1.5">
-                <div>תקציב מוערך: <b style="color:var(--accent)" id="budget-votes">—</b> קולות</div>
-                <div>(<b id="budget-pct">—</b> מסך הקולות הכשרים ב-26)</div>
+                <div>תקציב מוערך: <b style="color:var(--accent)" id="budget-votes">—</b> קולות <span id="budget-pct" style="color:var(--text3)"></span></div>
+                <div style="font-size:0.72rem;color:var(--text3);margin-top:0.2rem"><span id="viable-info"></span></div>
+            </div>
+
+            <div class="control-group">
+                <label for="detector">גלאי</label>
+                <select id="detector">
+                    <option value="matched">מסנן מותאם (1-D על ציר התרחיש)</option>
+                    <option value="l2">L2 — שארית מלאה (לא-מותאם)</option>
+                </select>
             </div>
 
             <div class="control-group">
@@ -432,9 +440,12 @@
                 const nUsed = Math.min(n, viableCount);
                 const votes = Math.round(nUsed * avg * mag);
                 $('#budget-votes').textContent = fmt(votes);
-                $('#budget-pct').textContent = (100 * votes / totalV).toFixed(2) + '%';
+                $('#budget-pct').textContent = '(' + (100 * votes / totalV).toFixed(2) + '%' + ')';
+                const viableInfo = $('#viable-info');
                 if (nUsed < n) {
-                    $('#budget-votes').title = `רק ${fmt(viableCount)} קלפיות עוברות סף הכשרות (≥${(VIABILITY*100)|0}% מהקולות בגוש המקור)`;
+                    viableInfo.innerHTML = `⚠ רק <b style="color:#fbbf24">${fmt(viableCount)}</b> קלפיות עוברות את סף הכשרות (≥${(VIABILITY*100)|0}% קולות במקור) — ה-${fmt(n - nUsed)} הנוספות יישמטו`;
+                } else {
+                    viableInfo.innerHTML = `קלפיות כשירות לזיוף בתרחיש זה: <b>${fmt(viableCount)}</b>`;
                 }
             }
             ['nb', 'mag'].forEach(id => document.getElementById(id).addEventListener('input', updateBudget));
@@ -444,6 +455,31 @@
 
             $('#run').addEventListener('click', run);
             $('#filter').addEventListener('change', renderList);
+            $('#detector').addEventListener('change', () => {
+                if (!LAST) return;
+                // Re-rank with the newly-selected detector and refresh everything
+                const detector = $('#detector').value;
+                const scores = detector === 'l2' ? LAST.scoresL2 : LAST.scoresMatched;
+                const N = DATA.ballots.length;
+                const order = orderByScore(scores, N);
+                const topSet = new Set(order.slice(0, LAST.topK));
+                let tp = 0;
+                for (const i of topSet) if (LAST.tamperedIdx.has(i)) tp++;
+                const fp = LAST.topK - tp;
+                LAST.detector = detector;
+                LAST.scores = scores;
+                LAST.order = order;
+                LAST.tp = tp;
+                LAST.fp = fp;
+                LAST.precision = LAST.topK > 0 ? tp / LAST.topK : 0;
+                LAST.recall = LAST.tamperedIdx.size > 0 ? tp / LAST.tamperedIdx.size : 0;
+                $('#s-tp').textContent = fmt(tp);
+                $('#s-fp').textContent = fmt(fp);
+                $('#s-precision').textContent = pctFmt(LAST.precision, 1);
+                $('#s-recall').textContent = pctFmt(LAST.recall, 1);
+                renderROCPanel();
+                renderList();
+            });
 
             // Legend
             const leg = $('#legend');
@@ -609,21 +645,32 @@
                 observed[i] = v;
             }
 
-            // Score = L2 norm of residual (observed - pred)
-            const pred = new Float32Array(P26);
-            const scores = new Float32Array(N);
+            // Build the matched-filter direction for the current scenario:
+            //   +1 on each source column, -1 on each destination column.
+            // Score: |residual · direction|. AUC is invariant to scaling so we
+            // skip normalization. The L2 score is the full residual norm.
+            const direction = new Float32Array(P26);
+            for (const c of dir.srcCols) direction[c] = +1;
+            for (const c of dir.dstCols) direction[c] = -1;
+
+            const scoresMatched = new Float32Array(N);
+            const scoresL2 = new Float32Array(N);
             for (let i = 0; i < N; i++) {
                 const o = observed[i];
                 const p = ballots[i].pred;
-                let ss = 0;
+                let dot = 0, ss = 0;
                 for (let j = 0; j < P26; j++) {
-                    const d = o[j] - p[j] / 1000;
-                    ss += d * d;
+                    const r = o[j] - p[j] / 1000;
+                    dot += r * direction[j];
+                    ss += r * r;
                 }
-                scores[i] = Math.sqrt(ss);
+                scoresMatched[i] = Math.abs(dot);
+                scoresL2[i] = Math.sqrt(ss);
             }
+            const detector = $('#detector').value;
+            const scores = detector === 'l2' ? scoresL2 : scoresMatched;
 
-            // Sort indices by score desc
+            // Sort indices by selected score desc
             const order = new Array(N);
             for (let i = 0; i < N; i++) order[i] = i;
             order.sort((a, b) => scores[b] - scores[a]);
@@ -636,8 +683,8 @@
             const recall = tamperedIdx.size > 0 ? tp / tamperedIdx.size : 0;
 
             LAST = {
-                dir, nBallots, mag, topK, seed, actualVotesMoved,
-                tamperedIdx, observed, original, pred, scores, order, tp, fp, precision, recall,
+                dir, nBallots, mag, topK, seed, actualVotesMoved, detector,
+                tamperedIdx, observed, original, scores, scoresMatched, scoresL2, order, tp, fp, precision, recall,
             };
 
             // Update summary
@@ -674,7 +721,15 @@
             return { points, auc };
         }
 
-        function renderROC(roc, opPoint) {
+        // Order the ballots by an arbitrary score array (descending).
+        function orderByScore(scores, N) {
+            const idx = new Array(N);
+            for (let i = 0; i < N; i++) idx[i] = i;
+            idx.sort((a, b) => scores[b] - scores[a]);
+            return idx;
+        }
+
+        function renderROCs(rocs, opPoint) {
             const W = 320, H = 320, pad = 36;
             const xs = (v) => W - pad - v * (W - 2 * pad);    // RTL — flip x
             const ys = (v) => H - pad - v * (H - 2 * pad);
@@ -726,24 +781,25 @@
             // Diagonal (random baseline)
             line(xs(0), ys(0), xs(1), ys(1), 'var(--text3)', 1, '4 4');
 
-            // ROC curve
-            const path = document.createElementNS(svgNS, 'path');
-            // Down-sample for SVG path size: keep at most ~300 points
-            const pts = roc.points;
-            const stride = Math.max(1, Math.floor(pts.length / 300));
-            let d = `M ${xs(pts[0][0])} ${ys(pts[0][1])}`;
-            for (let i = stride; i < pts.length; i += stride) {
-                d += ` L ${xs(pts[i][0])} ${ys(pts[i][1])}`;
-            }
-            const last = pts[pts.length - 1];
-            d += ` L ${xs(last[0])} ${ys(last[1])}`;
-            path.setAttribute('d', d);
-            path.setAttribute('stroke', 'var(--accent)');
-            path.setAttribute('stroke-width', 2);
-            path.setAttribute('fill', 'none');
-            svg.appendChild(path);
+            // Draw each ROC curve
+            rocs.forEach(({ points, color, dim }) => {
+                const path = document.createElementNS(svgNS, 'path');
+                const stride = Math.max(1, Math.floor(points.length / 300));
+                let d = `M ${xs(points[0][0])} ${ys(points[0][1])}`;
+                for (let i = stride; i < points.length; i += stride) {
+                    d += ` L ${xs(points[i][0])} ${ys(points[i][1])}`;
+                }
+                const last = points[points.length - 1];
+                d += ` L ${xs(last[0])} ${ys(last[1])}`;
+                path.setAttribute('d', d);
+                path.setAttribute('stroke', color);
+                path.setAttribute('stroke-width', dim ? 1.5 : 2.5);
+                path.setAttribute('stroke-opacity', dim ? 0.5 : 1);
+                path.setAttribute('fill', 'none');
+                svg.appendChild(path);
+            });
 
-            // Operating point (current top-K)
+            // Operating point on the active detector
             if (opPoint) {
                 const cx = xs(opPoint[0]), cy = ys(opPoint[1]);
                 const dot = document.createElementNS(svgNS, 'circle');
@@ -753,7 +809,6 @@
                 dot.setAttribute('stroke', '#fff');
                 dot.setAttribute('stroke-width', 1.5);
                 svg.appendChild(dot);
-                // Label
                 text(cx, cy - 10, `Top-K`, '#22c55e', 10);
             }
             return svg;
@@ -763,25 +818,45 @@
             if (!LAST) return;
             const wrap = $('#roc-chart');
             wrap.innerHTML = '';
-            const { order, tamperedIdx, topK, fp, tp } = LAST;
+            const { tamperedIdx, topK, fp, tp, scoresMatched, scoresL2, detector } = LAST;
             const N = DATA.ballots.length;
-            const roc = computeROC(order, tamperedIdx, N);
+            const orderM = orderByScore(scoresMatched, N);
+            const orderL = orderByScore(scoresL2, N);
+            const rocM = computeROC(orderM, tamperedIdx, N);
+            const rocL = computeROC(orderL, tamperedIdx, N);
+
             const Neg = N - tamperedIdx.size;
             const opPoint = (tamperedIdx.size > 0 && Neg > 0)
                 ? [fp / Neg, tp / tamperedIdx.size]
                 : null;
-            wrap.appendChild(renderROC(roc, opPoint));
+
+            const COLOR_M = '#3b82f6', COLOR_L = '#f59e0b';
+            const isMatched = detector === 'matched';
+            const rocs = [
+                { points: rocM.points, color: COLOR_M, dim: !isMatched },
+                { points: rocL.points, color: COLOR_L, dim: isMatched },
+            ];
+            wrap.appendChild(renderROCs(rocs, opPoint));
+
             const info = document.createElement('div');
-            info.style.cssText = 'min-width:200px;font-size:0.85rem;color:var(--text2);line-height:1.7';
-            const aucColor = roc.auc > 0.85 ? '#22c55e' : (roc.auc > 0.65 ? '#f59e0b' : '#ef4444');
+            info.style.cssText = 'min-width:230px;font-size:0.85rem;color:var(--text2);line-height:1.7';
+            const colorize = (v) => v > 0.85 ? '#22c55e' : (v > 0.65 ? '#f59e0b' : '#ef4444');
+            function aucRow(label, value, color, active) {
+                return `<div style="display:flex;align-items:center;gap:0.5rem;margin:0.3rem 0;${active ? 'font-weight:700' : 'opacity:0.7'}">
+                    <span style="width:18px;height:3px;background:${color};display:inline-block"></span>
+                    <span style="font-size:0.78rem;color:var(--text)">${label}</span>
+                    <span style="font-size:1rem;color:${colorize(value)};margin-inline-start:auto">${value.toFixed(3)}</span>
+                </div>`;
+            }
             info.innerHTML =
-                `<div style="font-size:0.8rem;color:var(--text3);margin-bottom:0.3rem">שטח מתחת לעקומה (AUC)</div>` +
-                `<div style="font-size:2.2rem;font-weight:700;color:${aucColor};line-height:1">${roc.auc.toFixed(3)}</div>` +
-                `<div style="margin-top:0.7rem;font-size:0.78rem">` +
-                `1.0 = הפרדה מושלמת בין קלפיות מזוייפות לנקיות.<br>` +
-                `0.5 = הגלאי שווה לניחוש אקראי.<br>` +
+                `<div style="font-size:0.78rem;color:var(--text3);margin-bottom:0.3rem">AUC לפי גלאי</div>` +
+                aucRow('מסנן מותאם', rocM.auc, COLOR_M, isMatched) +
+                aucRow('L2 לא-מותאם', rocL.auc, COLOR_L, !isMatched) +
+                `<div style="margin-top:0.7rem;font-size:0.74rem;color:var(--text3);line-height:1.5">` +
+                `1.0 = הפרדה מושלמת. 0.5 = ניחוש אקראי.<br>` +
+                `המסנן המותאם משתמש בכיוון התרחיש (מקור +1, יעד −1) ובדרך-כלל ינצח את ה-L2 שמטפל בכל הרשארית שווה.` +
                 `</div>` +
-                `<div style="margin-top:0.7rem;font-size:0.78rem;color:var(--text3)">הנקודה הירוקה: הסף בו אתם נמצאים כעת (Top-K=${fmt(topK)}).</div>`;
+                `<div style="margin-top:0.7rem;font-size:0.74rem;color:var(--text3)">הנקודה הירוקה: הסף בו אתם נמצאים כעת (Top-K=${fmt(topK)}) על העקומה הפעילה.</div>`;
             wrap.appendChild(info);
         }
 
