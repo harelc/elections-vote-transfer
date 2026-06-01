@@ -270,6 +270,7 @@
                 <label for="scenario">תרחיש</label>
                 <select id="scenario"></select>
             </div>
+            <div id="scenario-detail" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.55rem 0.7rem;font-size:0.74rem;color:var(--text2);line-height:1.55;margin-bottom:0.9rem"></div>
             <div class="control-group" id="custom-group" style="display:none">
                 <div class="row">
                     <select id="src"></select>
@@ -315,8 +316,8 @@
                     <div class="stat"><div class="label">קלפיות שזוייפו</div><div class="num" id="s-tampered">—</div></div>
                     <div class="stat"><div class="label">תקציב בפועל</div><div class="num" id="s-budget">—</div></div>
                     <div class="stat"><div class="label">Top-K מסומנות</div><div class="num" id="s-topk">—</div></div>
-                    <div class="stat"><div class="label">True Positives</div><div class="num tp" id="s-tp">—</div></div>
-                    <div class="stat"><div class="label">False Positives</div><div class="num fp" id="s-fp">—</div></div>
+                    <div class="stat"><div class="label">זיהוי חיובי נכון</div><div class="num tp" id="s-tp">—</div></div>
+                    <div class="stat"><div class="label">זיהוי חיובי שגוי</div><div class="num fp" id="s-fp">—</div></div>
                     <div class="stat"><div class="label">Precision @ K</div><div class="num" id="s-precision">—</div></div>
                     <div class="stat"><div class="label">Recall @ K</div><div class="num" id="s-recall">—</div></div>
                 </div>
@@ -341,14 +342,28 @@
     (function () {
         'use strict';
 
-        // Predefined attack scenarios (source K26 party → destination K26 party)
+        // K26 bloc definitions (mirrored from fraud-detection/fraud_detection_e26.py)
+        // — symbols from K26 parties_to_26 in the transfer file.
+        const BLOCS = {
+            right:      ['מחל', 'שס', 'ג', 'ט', 'עי', 'מי'],          // ליכוד, ש״ס, יה״ת, ציונות הדתית, עוצמה, מילואימניקים
+            leftcenter: ['נב', 'ל', 'דמ', 'יר', 'כל'],                 // ביחד, ישראל ביתנו, הדמוקרטים, ישר, כחול לבן
+            arab:       ['ום', 'עם', 'ד'],                              // חד״ש-תע״ל, רע״ם, בל״ד
+        };
+
+        // Attack scenarios. kind=bloc takes mag% of each source-bloc party's votes
+        // and redistributes proportional to the dst-bloc's existing weights;
+        // kind=pair is the simpler single-party→single-party shift.
+        // Note on arrows: in RTL Hebrew, the "leads to" arrow is ← (visual-left,
+        // matching reading direction) — NOT →. Using → here would point the
+        // arrow away from the source visually.
         const SCENARIOS = [
-            { id: 'right_to_left',   label: 'ימין → שמאל-מרכז (ליכוד → הדמוקרטים)', src: 'הליכוד', dst: 'הדמוקרטים' },
-            { id: 'haredi_to_sec',   label: 'חרדים → חילוני-מרכז (ש״ס → ישר)',       src: 'ש״ס',    dst: 'ישר' },
-            { id: 'far_to_arab',     label: 'ימין קיצוני → ערבי (עוצמה → רע״ם)',     src: 'עוצמה יהודית', dst: 'רע״ם' },
-            { id: 'intra_right',     label: 'בתוך הימין (ליכוד → הציונות הדתית)',     src: 'הליכוד', dst: 'הציונות הדתית' },
-            { id: 'lib_to_dem',      label: 'יש עתיד → הדמוקרטים (ביחד → הדמוקרטים)', src: 'ביחד',  dst: 'הדמוקרטים' },
-            { id: 'custom',          label: 'התאמה אישית',                            src: null,     dst: null },
+            { id: 'right_to_left',   kind: 'bloc', src: 'right',      dst: 'leftcenter', label: 'גוש הימין ← גוש שמאל-מרכז' },
+            { id: 'left_to_right',   kind: 'bloc', src: 'leftcenter', dst: 'right',      label: 'גוש שמאל-מרכז ← גוש הימין' },
+            { id: 'jewish_to_arab',  kind: 'bloc', src: 'right',      dst: 'arab',       label: 'הימין ← המפלגות הערביות' },
+            { id: 'intra_right',     kind: 'pair', src: 'מחל',         dst: 'ט',          label: 'בתוך הימין: ליכוד ← הציונות הדתית' },
+            { id: 'intra_arab',      kind: 'pair', src: 'עם',          dst: 'ום',         label: 'בתוך הערביות: רע״ם ← חד״ש-תע״ל' },
+            { id: 'lapid_likud',     kind: 'pair', src: 'נב',          dst: 'מחל',        label: 'ביחד ← ליכוד' },
+            { id: 'custom',          kind: 'pair', src: null, dst: null,                  label: 'התאמה אישית (זוג מפלגות)' },
         ];
 
         let DATA = null;
@@ -374,6 +389,8 @@
             });
             scen.addEventListener('change', () => {
                 $('#custom-group').style.display = scen.value === 'custom' ? 'block' : 'none';
+                updateScenarioDetail();
+                updateBudget();
             });
 
             // Populate src/dst dropdowns from K26 parties
@@ -383,22 +400,41 @@
                 const o2 = document.createElement('option'); o2.value = i; o2.textContent = 'יעד: ' + p.name; dstSel.appendChild(o2);
             });
             srcSel.value = 0; dstSel.value = 3;
+            srcSel.addEventListener('change', () => { updateScenarioDetail(); updateBudget(); });
+            dstSel.addEventListener('change', () => { updateScenarioDetail(); updateBudget(); });
 
             bindControl('nb', 'nb-val', v => fmt(v));
             bindControl('mag', 'mag-val', v => v + '%');
             bindControl('topk', 'topk-val', v => fmt(v));
 
-            // Live budget readout (n_ballots × magnitude × mean voters)
-            const meanV = DATA.ballots.reduce((a, b) => a + (b.v || 0), 0) / DATA.ballots.length;
+            // Live budget readout — accounts for source bloc share
             const totalV = DATA.ballots.reduce((a, b) => a + (b.v || 0), 0);
             function updateBudget() {
                 const n = parseInt($('#nb').value, 10);
                 const mag = parseInt($('#mag').value, 10) / 100;
-                const votes = Math.round(n * meanV * mag);
+                const dir = getDirection();
+                // Average per-ballot source-bloc vote count among viable ballots
+                let viableSum = 0, viableCount = 0;
+                for (const b of DATA.ballots) {
+                    let sBlocShare = 0;
+                    for (const c of dir.srcCols) sBlocShare += b.b26[c] / 1000;
+                    if (sBlocShare >= VIABILITY) {
+                        viableSum += sBlocShare * (b.v || 0);
+                        viableCount++;
+                    }
+                }
+                const avg = viableCount > 0 ? viableSum / viableCount : 0;
+                const nUsed = Math.min(n, viableCount);
+                const votes = Math.round(nUsed * avg * mag);
                 $('#budget-votes').textContent = fmt(votes);
                 $('#budget-pct').textContent = (100 * votes / totalV).toFixed(2) + '%';
+                if (nUsed < n) {
+                    $('#budget-votes').title = `רק ${fmt(viableCount)} קלפיות עוברות סף הכשרות (≥${(VIABILITY*100)|0}% מהקולות בגוש המקור)`;
+                }
             }
             ['nb', 'mag'].forEach(id => document.getElementById(id).addEventListener('input', updateBudget));
+
+            updateScenarioDetail();
             updateBudget();
 
             $('#run').addEventListener('click', run);
@@ -437,17 +473,59 @@
             return arr.slice(0, k);
         }
 
+        const VIABILITY = 0.10;   // source bloc must hold ≥10% of ballot to be tampered
+
+        // Resolve symbols to indices in parties_26
+        function symsToCols(syms) {
+            return syms.map(sym => DATA.parties_26.findIndex(p => p.symbol === sym))
+                       .filter(i => i >= 0);
+        }
+
         function getDirection() {
             const sid = $('#scenario').value;
             const s = SCENARIOS.find(x => x.id === sid);
-            if (s.id !== 'custom') {
-                const si = DATA.parties_26.findIndex(p => p.name === s.src);
-                const di = DATA.parties_26.findIndex(p => p.name === s.dst);
-                return { src: si, dst: di, label: s.label };
+            if (s.kind === 'bloc') {
+                return {
+                    kind: 'bloc',
+                    srcCols: symsToCols(BLOCS[s.src]),
+                    dstCols: symsToCols(BLOCS[s.dst]),
+                    srcLabel: BLOCS[s.src].join('/'),
+                    dstLabel: BLOCS[s.dst].join('/'),
+                };
             }
-            const si = parseInt($('#src').value, 10);
-            const di = parseInt($('#dst').value, 10);
-            return { src: si, dst: di, label: `${DATA.parties_26[si].name} → ${DATA.parties_26[di].name}` };
+            // pair (preset or custom)
+            let srcCol, dstCol;
+            if (s.id === 'custom') {
+                srcCol = parseInt($('#src').value, 10);
+                dstCol = parseInt($('#dst').value, 10);
+            } else {
+                srcCol = DATA.parties_26.findIndex(p => p.symbol === s.src);
+                dstCol = DATA.parties_26.findIndex(p => p.symbol === s.dst);
+            }
+            return {
+                kind: 'pair',
+                srcCols: [srcCol],
+                dstCols: [dstCol],
+                srcLabel: DATA.parties_26[srcCol]?.name || '?',
+                dstLabel: DATA.parties_26[dstCol]?.name || '?',
+            };
+        }
+
+        function partyChip(idx) {
+            const p = DATA.parties_26[idx];
+            return `<span style="display:inline-flex;align-items:center;gap:3px;background:var(--bg2);padding:1px 6px;border-radius:999px;font-size:0.72rem;color:var(--text);margin:1px 2px"><span style="width:8px;height:8px;border-radius:50%;background:${p.color}"></span>${p.name}</span>`;
+        }
+
+        function updateScenarioDetail() {
+            const dir = getDirection();
+            const srcChips = dir.srcCols.map(partyChip).join('');
+            const dstChips = dir.dstCols.map(partyChip).join('');
+            $('#scenario-detail').innerHTML =
+                `<div><b style="color:var(--text)">מקור:</b> ${srcChips}</div>` +
+                `<div style="margin-top:0.3rem"><b style="color:var(--text)">יעד:</b> ${dstChips}</div>` +
+                (dir.kind === 'bloc'
+                    ? `<div style="margin-top:0.35rem;color:var(--text3);font-size:0.7rem">הזיוף מצמצם פרו-רטה את כל מפלגות גוש המקור בכל קלפי שזוייפה, והקולות שנלקחו מתחלקים פרו-רטה לפי המשקל הקיים של מפלגות גוש היעד באותה קלפי.</div>`
+                    : '');
         }
 
         function run() {
@@ -464,7 +542,12 @@
 
         function runSim() {
             const dir = getDirection();
-            if (dir.src === dir.dst || dir.src < 0 || dir.dst < 0) {
+            if (dir.srcCols.length === 0 || dir.dstCols.length === 0) {
+                alert('בחירת מקור/יעד לא תקינה');
+                return;
+            }
+            // Disallow same-party overlap (e.g., custom Likud → Likud)
+            if (dir.srcCols.length === 1 && dir.dstCols.length === 1 && dir.srcCols[0] === dir.dstCols[0]) {
                 alert('מקור ויעד חייבים להיות שונים');
                 return;
             }
@@ -478,21 +561,45 @@
             const N = ballots.length;
             const rng = mulberry32(seed);
 
-            // Pick tampered indices and apply the direction
-            const tamperedIdx = new Set(pickIndices(N, Math.min(nBallots, N), rng));
+            // Build viable-ballot pool: source bloc must hold ≥ VIABILITY of valid votes.
+            // Without this filter, tampering on a ballot with ~0 source-bloc votes
+            // is a no-op (nothing to move) and wastes a slot.
+            const viable = [];
+            for (let i = 0; i < N; i++) {
+                let s = 0;
+                for (const c of dir.srcCols) s += ballots[i].b26[c] / 1000;
+                if (s >= VIABILITY) viable.push(i);
+            }
+            const nToTamper = Math.min(nBallots, viable.length);
+            // Pick from viable pool, not all ballots
+            const pickedFromPool = pickIndices(viable.length, nToTamper, rng);
+            const tamperedIdx = new Set(pickedFromPool.map(k => viable[k]));
+
             const observed = new Array(N);   // post-fraud b26 (as Float32 array of P26)
             const original = {};              // sparse: original b26 only for tampered ballots
             let actualVotesMoved = 0;
             for (let i = 0; i < N; i++) {
                 const raw = ballots[i].b26;
                 const v = new Float32Array(P26);
-                for (let j = 0; j < P26; j++) v[j] = raw[j] / 1000;  // un-quantize
+                for (let j = 0; j < P26; j++) v[j] = raw[j] / 1000;
                 if (tamperedIdx.has(i)) {
                     original[i] = v.slice();
-                    const move = Math.min(v[dir.src], mag);   // can't move more than source has
-                    v[dir.src] -= move;
-                    v[dir.dst] += move;
-                    actualVotesMoved += move * (ballots[i].v || 0);
+                    // Pro-rata reduction across source bloc
+                    let srcTotal = 0;
+                    for (const c of dir.srcCols) srcTotal += v[c];
+                    const moved = mag * srcTotal;
+                    for (const c of dir.srcCols) v[c] *= (1 - mag);
+                    // Pro-rata distribution across destination bloc by existing weights
+                    let dstTotal = 0;
+                    for (const c of dir.dstCols) dstTotal += v[c];
+                    if (dstTotal > 0) {
+                        for (const c of dir.dstCols) v[c] += moved * (v[c] / dstTotal);
+                    } else {
+                        // Edge case: dest bloc is all zeros → split equally
+                        const eq = moved / dir.dstCols.length;
+                        for (const c of dir.dstCols) v[c] += eq;
+                    }
+                    actualVotesMoved += moved * (ballots[i].v || 0);
                 }
                 observed[i] = v;
             }
@@ -540,18 +647,23 @@
             renderList();
         }
 
-        function stackedBar(vec) {
+        function stackedBar(vec, totalVoters) {
             // vec: Float32Array of length P26 (proportions summing to ~1)
+            // totalVoters: number of voters in this ballot — for absolute count tooltips
             const div = document.createElement('div');
             div.className = 'stacked';
             DATA.parties_26.forEach((p, i) => {
-                const w = (vec[i] || 0) * 100;
+                const frac = vec[i] || 0;
+                const w = frac * 100;
                 if (w < 0.4) return;   // skip near-zero segments for cleanliness
                 const s = document.createElement('div');
                 s.className = 'seg';
                 s.style.background = p.color;
                 s.style.width = w + '%';
-                s.title = `${p.name}: ${w.toFixed(1)}%`;
+                const votes = totalVoters ? Math.round(frac * totalVoters) : null;
+                s.title = votes != null
+                    ? `${p.name}: ${w.toFixed(1)}% (${fmt(votes)} קולות)`
+                    : `${p.name}: ${w.toFixed(1)}%`;
                 div.appendChild(s);
             });
             return div;
@@ -586,9 +698,8 @@
                     `<span class="rank">#${order.indexOf(idx) + 1}</span>` +
                     `<span class="name"><a href="settlement.html?name=${encodeURIComponent(b.n)}&e26=1">${b.n}</a></span>` +
                     `<span class="ballot-num">קלפי ${b.b}</span>` +
-                    `<span class="badge ${isTP ? 'tp' : 'fp'}">${isTP ? '✓ זוייף' : '✗ נקי'}</span>` +
-                    `<span class="score">L2 = ${scores[idx].toFixed(3)}</span>` +
-                    (b.sid ? `<a href="https://votes26.bechirot.gov.il/ballotresults?cityID=${b.sid}&BallotNumber=${b.b}" target="_blank" rel="noopener" title="ועדת הבחירות (לא קיים בעתיד)" style="margin-inline-start:auto;color:#475569">CEC ↗</a>` : '');
+                    `<span class="badge ${isTP ? 'tp' : 'fp'}">${isTP ? '✓ זיהוי נכון' : '✗ זיהוי שגוי'}</span>` +
+                    `<span class="score">L2 = ${scores[idx].toFixed(3)} · ${fmt(b.v || 0)} קולות</span>`;
 
                 // Stacked bars
                 const bars = document.createElement('div');
@@ -602,7 +713,7 @@
                     l.className = 'bar-label';
                     l.textContent = label;
                     bars.appendChild(l);
-                    bars.appendChild(stackedBar(vec));
+                    bars.appendChild(stackedBar(vec, b.v || 0));
                 }
                 addRow('צפי המודל', predVec);
                 addRow('תוצאה בפועל', observed[idx]);
