@@ -1015,7 +1015,9 @@
             SCENARIOS = DATA.meta.scenarios;
             const toYear = DATA.meta.to_year;
             document.getElementById('top-title').textContent = `סימולציית זיופים — כנסת ${toYear}`;
-            if (DATA.meta.is_simulated) document.getElementById('sim-badge').style.display = 'inline-block';
+            const simBadge = document.getElementById('sim-badge');
+            simBadge.textContent = DATA.meta.is_simulated ? 'סימולציה' : 'סימולציה מעל נתוני אמת';
+            simBadge.style.display = 'inline-block';
             document.title = `סימולציית זיוף ${toYear} — קולות נודדים`;
             renderTransitionPills();
             initControls();
