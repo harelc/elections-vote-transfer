@@ -284,7 +284,7 @@
             </div>
 
             <div class="control-group">
-                <label for="mag">עוצמת — אחוז קולות מועברים בכל קלפי <span class="val" id="mag-val">8%</span></label>
+                <label for="mag">עוצמה — אחוז מקולות הקלפי שיועברו <span class="val" id="mag-val">8%</span></label>
                 <input type="range" id="mag" min="1" max="25" step="1" value="8">
             </div>
 
@@ -426,26 +426,28 @@
                 const n = parseInt($('#nb').value, 10);
                 const mag = parseInt($('#mag').value, 10) / 100;
                 const dir = getDirection();
-                // Average per-ballot source-bloc vote count among viable ballots
-                let viableSum = 0, viableCount = 0;
+                const gate = viabilityThreshold(mag);
+                // Viable = ballots whose source bloc holds at least `gate` of valid votes
+                let viableV = 0, viableCount = 0;
                 for (const b of DATA.ballots) {
                     let sBlocShare = 0;
                     for (const c of dir.srcCols) sBlocShare += b.b26[c] / 1000;
-                    if (sBlocShare >= VIABILITY) {
-                        viableSum += sBlocShare * (b.v || 0);
+                    if (sBlocShare >= gate) {
+                        viableV += (b.v || 0);
                         viableCount++;
                     }
                 }
-                const avg = viableCount > 0 ? viableSum / viableCount : 0;
+                const avgV = viableCount > 0 ? viableV / viableCount : 0;
                 const nUsed = Math.min(n, viableCount);
-                const votes = Math.round(nUsed * avg * mag);
+                // Magnitude is now fraction of BALLOT total — votes moved per ballot = mag × ballot_voters
+                const votes = Math.round(nUsed * avgV * mag);
                 $('#budget-votes').textContent = fmt(votes);
                 $('#budget-pct').textContent = '(' + (100 * votes / totalV).toFixed(2) + '%' + ')';
                 const viableInfo = $('#viable-info');
                 if (nUsed < n) {
-                    viableInfo.innerHTML = `⚠ רק <b style="color:#fbbf24">${fmt(viableCount)}</b> קלפיות עוברות את סף הכשרות (≥${(VIABILITY*100)|0}% קולות במקור) — ה-${fmt(n - nUsed)} הנוספות יישמטו`;
+                    viableInfo.innerHTML = `⚠ רק <b style="color:#fbbf24">${fmt(viableCount)}</b> קלפיות עוברות את סף הכשרות (גוש המקור מחזיק ב-≥${(gate*100).toFixed(0)}% מקולות הקלפי) — ה-${fmt(n - nUsed)} הנוספות יישמטו`;
                 } else {
-                    viableInfo.innerHTML = `קלפיות כשירות לזיוף בתרחיש זה: <b>${fmt(viableCount)}</b>`;
+                    viableInfo.innerHTML = `קלפיות כשירות לזיוף בתרחיש זה: <b>${fmt(viableCount)}</b> (מקור ≥${(gate*100).toFixed(0)}% מהקלפי)`;
                 }
             }
             ['nb', 'mag'].forEach(id => document.getElementById(id).addEventListener('input', updateBudget));
@@ -514,7 +516,10 @@
             return arr.slice(0, k);
         }
 
-        const VIABILITY = 0.10;   // source bloc must hold ≥10% of ballot to be tampered
+        const VIABILITY_MIN = 0.10;   // floor: source bloc must hold ≥10% of ballot
+        // Actual viability gate is max(VIABILITY_MIN, mag) — the source bloc
+        // must hold at least the magnitude we plan to take out of the ballot.
+        function viabilityThreshold(mag) { return Math.max(VIABILITY_MIN, mag); }
 
         // Resolve symbols to indices in parties_26
         function symsToCols(syms) {
@@ -602,17 +607,17 @@
             const N = ballots.length;
             const rng = mulberry32(seed);
 
-            // Build viable-ballot pool: source bloc must hold ≥ VIABILITY of valid votes.
-            // Without this filter, tampering on a ballot with ~0 source-bloc votes
-            // is a no-op (nothing to move) and wastes a slot.
+            // Viability: source bloc must hold at least `mag` of the ballot's
+            // valid votes (we can't take out more than the bloc has), with a
+            // 10% floor below which the ballot has too little signal to bother.
+            const gate = viabilityThreshold(mag);
             const viable = [];
             for (let i = 0; i < N; i++) {
                 let s = 0;
                 for (const c of dir.srcCols) s += ballots[i].b26[c] / 1000;
-                if (s >= VIABILITY) viable.push(i);
+                if (s >= gate) viable.push(i);
             }
             const nToTamper = Math.min(nBallots, viable.length);
-            // Pick from viable pool, not all ballots
             const pickedFromPool = pickIndices(viable.length, nToTamper, rng);
             const tamperedIdx = new Set(pickedFromPool.map(k => viable[k]));
 
@@ -625,18 +630,23 @@
                 for (let j = 0; j < P26; j++) v[j] = raw[j] / 1000;
                 if (tamperedIdx.has(i)) {
                     original[i] = v.slice();
-                    // Pro-rata reduction across source bloc
-                    let srcTotal = 0;
-                    for (const c of dir.srcCols) srcTotal += v[c];
-                    const moved = mag * srcTotal;
-                    for (const c of dir.srcCols) v[c] *= (1 - mag);
+                    // `mag` is fraction of BALLOT's total votes to move (matches
+                    // the user's mental model: "10% intervention" = 10% of the
+                    // ballot is rerouted, regardless of how big the source bloc
+                    // happens to be on this ballot).
+                    let srcShare = 0;
+                    for (const c of dir.srcCols) srcShare += v[c];
+                    const moved = mag;   // ballot is normalized to sum 1
+                    // Pro-rata reduction across source bloc — each src party
+                    // loses (moved/srcShare) of its share, so total taken == moved.
+                    const reductionFactor = moved / srcShare;   // safe: viable ⇒ srcShare ≥ moved
+                    for (const c of dir.srcCols) v[c] *= (1 - reductionFactor);
                     // Pro-rata distribution across destination bloc by existing weights
                     let dstTotal = 0;
                     for (const c of dir.dstCols) dstTotal += v[c];
                     if (dstTotal > 0) {
                         for (const c of dir.dstCols) v[c] += moved * (v[c] / dstTotal);
                     } else {
-                        // Edge case: dest bloc is all zeros → split equally
                         const eq = moved / dir.dstCols.length;
                         for (const c of dir.dstCols) v[c] += eq;
                     }
@@ -910,12 +920,13 @@
                 // Meta line
                 const meta = document.createElement('div');
                 meta.className = 'ballot-meta';
+                const scoreLabel = LAST.detector === 'matched' ? 'MF' : 'L2';
                 meta.innerHTML =
                     `<span class="rank">#${order.indexOf(idx) + 1}</span>` +
                     `<span class="name"><a href="settlement.html?name=${encodeURIComponent(b.n)}&e26=1">${b.n}</a></span>` +
                     `<span class="ballot-num">קלפי ${b.b}</span>` +
                     `<span class="badge ${isTP ? 'tp' : 'fp'}">${isTP ? '✓ זיהוי נכון' : '✗ זיהוי שגוי'}</span>` +
-                    `<span class="score">L2 = ${scores[idx].toFixed(3)} · ${fmt(b.v || 0)} קולות</span>`;
+                    `<span class="score"><bdi dir="ltr">${scoreLabel} = ${scores[idx].toFixed(3)}</bdi> · ${fmt(b.v || 0)} קולות</span>`;
 
                 // Stacked bars
                 const bars = document.createElement('div');
