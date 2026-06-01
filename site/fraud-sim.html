@@ -264,7 +264,7 @@
         <aside class="panel controls">
             <h2>הגדרות התקפה</h2>
             <div class="intro">
-                בחרו <b style="color:var(--text)">תרחיש זיוף</b> וכמה קלפיות לשתול. הסימולציה תזיז אחוז קולות מ-״מקור״ ל-״יעד״ באותן קלפיות, ואז הגלאי הגלובלי (L2 על השארית) ידרג את כל הקלפיות לפי חשד.
+                בחרו <b style="color:var(--text)">תרחיש זיוף</b> וכמה קלפיות לזייף. הסימולציה תזיז אחוז קולות מ-״מקור״ ל-״יעד״ באותן קלפיות, ואז הגלאי הגלובלי (L2 על השארית) ידרג את כל הקלפיות לפי חשד.
             </div>
 
             <div class="control-group">
@@ -290,7 +290,7 @@
             </div>
 
             <div class="control-group" id="budget-display" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.55rem 0.7rem;font-size:0.78rem;color:var(--text2);line-height:1.5">
-                <div>תקציב מוערך: <b style="color:var(--accent)" id="budget-votes">—</b> קולות <span id="budget-pct" style="color:var(--text3)"></span></div>
+                <div>קולות שיזויפו (הערכה): <b style="color:var(--accent)" id="budget-votes">—</b> <span id="budget-pct" style="color:var(--text3)"></span></div>
                 <div style="font-size:0.72rem;color:var(--text3);margin-top:0.2rem"><span id="viable-info"></span></div>
             </div>
 
@@ -333,7 +333,7 @@
                 <h2>סיכום</h2>
                 <div class="summary" id="summary">
                     <div class="stat"><div class="label">קלפיות שזוייפו</div><div class="num" id="s-tampered">—</div></div>
-                    <div class="stat"><div class="label">תקציב בפועל</div><div class="num" id="s-budget">—</div></div>
+                    <div class="stat"><div class="label">קולות שזויפו בפועל</div><div class="num" id="s-budget">—</div></div>
                     <div class="stat"><div class="label">Top-K מסומנות</div><div class="num" id="s-topk">—</div></div>
                     <div class="stat"><div class="label">זיהוי חיובי נכון</div><div class="num tp" id="s-tp">—</div></div>
                     <div class="stat"><div class="label">זיהוי חיובי שגוי</div><div class="num fp" id="s-fp">—</div></div>
@@ -461,9 +461,9 @@
                 $('#budget-pct').textContent = '(' + (100 * votes / totalV).toFixed(2) + '%' + ')';
                 const viableInfo = $('#viable-info');
                 if (nUsed < n) {
-                    viableInfo.innerHTML = `⚠ רק <b style="color:#fbbf24">${fmt(viableCount)}</b> קלפיות עוברות את סף הכשרות (≥${(VIABILITY*100)|0}% מהקולות בגוש המקור) — ה-${fmt(n - nUsed)} הנוספות יישמטו`;
+                    viableInfo.innerHTML = `⚠ רק <b style="color:#fbbf24">${fmt(viableCount)}</b> קלפיות מתאימות לזיוף (≥${(VIABILITY*100)|0}% מהקולות בגוש המקור) — ה-${fmt(n - nUsed)} הנוספות יישמטו`;
                 } else {
-                    viableInfo.innerHTML = `קלפיות כשירות לזיוף בתרחיש זה: <b>${fmt(viableCount)}</b>`;
+                    viableInfo.innerHTML = `קלפיות מתאימות לזיוף בתרחיש זה: <b>${fmt(viableCount)}</b>`;
                 }
             }
             ['nb', 'mag'].forEach(id => document.getElementById(id).addEventListener('input', updateBudget));
@@ -589,7 +589,7 @@
                 `<div><b style="color:var(--text)">מקור:</b> ${srcChips}</div>` +
                 `<div style="margin-top:0.3rem"><b style="color:var(--text)">יעד:</b> ${dstChips}</div>` +
                 (dir.kind === 'bloc'
-                    ? `<div style="margin-top:0.35rem;color:var(--text3);font-size:0.7rem">הזיוף מצמצם פרו-רטה את כל מפלגות גוש המקור בכל קלפי שזוייפה, והקולות שנלקחו מתחלקים פרו-רטה לפי המשקל הקיים של מפלגות גוש היעד באותה קלפי.</div>`
+                    ? `<div style="margin-top:0.35rem;color:var(--text3);font-size:0.7rem">הזיוף מצמצם את כל מפלגות גוש המקור בכל קלפי שזוייפה לפי משקלן היחסי, והקולות שנלקחו מתחלקים בין מפלגות גוש היעד לפי משקלן היחסי באותה קלפי.</div>`
                     : '');
         }
 
