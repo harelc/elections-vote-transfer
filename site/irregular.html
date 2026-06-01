@@ -833,7 +833,11 @@
         <header class="main-header">
             <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="irregular_subtitle">זיהוי קלפיות עם דפוסי הצבעה חריגים</p>
-            <nav class="view-switcher"><button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button></nav>
+            <nav class="view-switcher">
+                <a href="fraud-sim.html" class="export-btn header-export" id="fraud-sim-link" style="display:none;text-decoration:none;margin-inline-end:0.5rem" title="סימולציית זיופים על נתוני כנסת 26">🕵️ סימולציית זיוף</a>
+                <button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button>
+            </nav>
+            <script>if(i18n.SHOW_E26){document.getElementById('fraud-sim-link').style.display='inline-block';}</script>
         </header>
 
         <main class="main-content">

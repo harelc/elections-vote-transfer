@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — סימולציית זיופים">
+    <meta property="og:description" content="הזרקת זיוף סינתטי לתוצאות כנסת 26 ודירוג הקלפיות החשודות לפי גלאי גלובלי">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>סימולציית זיוף — קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg2: #12121a;
+            --bg3: #1a1a25;
+            --text: #f8fafc;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --accent: #3b82f6;
+            --border: #2a2a3a;
+            --tp: #22c55e;
+            --fp: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
+        }
+        .top-bar a { color: var(--text2); text-decoration: none; }
+        .top-bar a:hover { color: var(--text); }
+        .top-bar .title { flex: 1; font-weight: 600; font-size: 1rem; }
+        .top-bar .badge {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1.5rem 1.25rem 4rem;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 1.5rem;
+        }
+        @media (max-width: 900px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .panel {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.1rem;
+        }
+        .panel h2 {
+            font-size: 0.9rem;
+            color: var(--text2);
+            margin-bottom: 0.6rem;
+            font-weight: 600;
+            text-transform: none;
+        }
+        .panel .intro {
+            font-size: 0.82rem;
+            color: var(--text3);
+            line-height: 1.55;
+            margin-bottom: 1rem;
+        }
+
+        .controls { position: sticky; top: 1rem; }
+        .control-group { margin-bottom: 0.9rem; }
+        .control-group label {
+            display: block;
+            font-size: 0.78rem;
+            color: var(--text2);
+            margin-bottom: 0.3rem;
+        }
+        .control-group label .val {
+            color: var(--accent);
+            font-weight: 700;
+            float: left;
+        }
+        .control-group select, .control-group input[type="number"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 0.4rem 0.6rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        .control-group input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent);
+        }
+        .control-group .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .run-btn {
+            width: 100%;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 0.7rem;
+            border-radius: 6px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.4rem;
+        }
+        .run-btn:hover { background: #2563eb; }
+        .run-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .summary .stat {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6rem 0.8rem;
+        }
+        .summary .stat .label { font-size: 0.7rem; color: var(--text3); margin-bottom: 0.15rem; }
+        .summary .stat .num { font-size: 1.35rem; font-weight: 700; color: var(--text); }
+        .summary .stat .num.tp { color: var(--tp); }
+        .summary .stat .num.fp { color: var(--fp); }
+
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .list-header .label { font-size: 0.85rem; color: var(--text2); font-weight: 600; }
+        .list-header select {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.78rem;
+            font-family: inherit;
+        }
+
+        .ballot-row {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 0.9rem;
+            margin-bottom: 0.5rem;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.6rem 1rem;
+        }
+        .ballot-row.tp { border-color: rgba(34, 197, 94, 0.4); background: rgba(34, 197, 94, 0.04); }
+        .ballot-row.fp { border-color: rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.03); }
+
+        .ballot-meta { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; font-size: 0.85rem; }
+        .ballot-meta .rank {
+            color: var(--text3);
+            font-size: 0.78rem;
+            min-width: 28px;
+            text-align: end;
+        }
+        .ballot-meta .name { color: var(--text); font-weight: 600; }
+        .ballot-meta .ballot-num { color: var(--text2); }
+        .ballot-meta .score { color: var(--text3); font-size: 0.78rem; margin-inline-start: auto; }
+        .ballot-meta .badge {
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+        .badge.tp { background: rgba(34, 197, 94, 0.15); color: var(--tp); }
+        .badge.fp { background: rgba(239, 68, 68, 0.15); color: var(--fp); }
+
+        .ballot-meta a {
+            color: var(--text3);
+            text-decoration: none;
+            font-size: 0.78rem;
+        }
+        .ballot-meta a:hover { color: var(--accent); }
+
+        .bars { grid-column: 1 / -1; display: grid; grid-template-columns: 70px 1fr; gap: 0.3rem 0.6rem; align-items: center; }
+        .bars .bar-label { color: var(--text3); font-size: 0.72rem; text-align: end; }
+        .bars .stacked {
+            display: flex;
+            height: 14px;
+            border-radius: 3px;
+            overflow: hidden;
+            background: var(--bg2);
+        }
+        .bars .stacked .seg {
+            height: 100%;
+            transition: width 0.15s;
+        }
+        .bars .stacked .seg[title] { cursor: help; }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.4rem;
+            margin-top: 1rem;
+        }
+        .pagination button {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+        .pagination button:hover:not(:disabled) { color: var(--text); border-color: var(--text3); }
+        .pagination button:disabled { opacity: 0.4; cursor: default; }
+
+        .loading {
+            text-align: center;
+            color: var(--text3);
+            padding: 4rem 0;
+        }
+        .legend-row { display: flex; flex-wrap: wrap; gap: 0.8rem 1rem; font-size: 0.7rem; color: var(--text3); margin-top: 0.3rem; }
+        .legend-row .item { display: inline-flex; align-items: center; gap: 0.25rem; }
+        .legend-row .swatch { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="index.html">🏠 דף הבית</a>
+        <span class="title">סימולציית זיופים — כנסת 26</span>
+        <span class="badge">סימולציה</span>
+    </div>
+
+    <div class="container">
+        <aside class="panel controls">
+            <h2>הגדרות התקפה</h2>
+            <div class="intro">
+                בחרו <b style="color:var(--text)">תרחיש זיוף</b> וכמה קלפיות לשתול. הסימולציה תזיז אחוז קולות מ-״מקור״ ל-״יעד״ באותן קלפיות, ואז הגלאי הגלובלי (L2 על השארית) ידרג את כל הקלפיות לפי חשד.
+            </div>
+
+            <div class="control-group">
+                <label for="scenario">תרחיש</label>
+                <select id="scenario"></select>
+            </div>
+            <div class="control-group" id="custom-group" style="display:none">
+                <div class="row">
+                    <select id="src"></select>
+                    <select id="dst"></select>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label for="nb">מספר קלפיות מזוייפות <span class="val" id="nb-val">200</span></label>
+                <input type="range" id="nb" min="10" max="2000" step="10" value="200">
+            </div>
+
+            <div class="control-group">
+                <label for="mag">עוצמת — אחוז קולות מועברים בכל קלפי <span class="val" id="mag-val">8%</span></label>
+                <input type="range" id="mag" min="1" max="25" step="1" value="8">
+            </div>
+
+            <div class="control-group" id="budget-display" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.55rem 0.7rem;font-size:0.78rem;color:var(--text2);line-height:1.5">
+                <div>תקציב מוערך: <b style="color:var(--accent)" id="budget-votes">—</b> קולות</div>
+                <div>(<b id="budget-pct">—</b> מסך הקולות הכשרים ב-26)</div>
+            </div>
+
+            <div class="control-group">
+                <div class="row">
+                    <div>
+                        <label for="topk">Top-K לדירוג <span class="val" id="topk-val">100</span></label>
+                        <input type="range" id="topk" min="20" max="500" step="10" value="100">
+                    </div>
+                    <div>
+                        <label for="seed">Seed</label>
+                        <input type="number" id="seed" value="42" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <button class="run-btn" id="run">הפעל סימולציה</button>
+        </aside>
+
+        <main>
+            <div class="panel" style="margin-bottom:1rem;">
+                <h2>סיכום</h2>
+                <div class="summary" id="summary">
+                    <div class="stat"><div class="label">קלפיות שזוייפו</div><div class="num" id="s-tampered">—</div></div>
+                    <div class="stat"><div class="label">תקציב בפועל</div><div class="num" id="s-budget">—</div></div>
+                    <div class="stat"><div class="label">Top-K מסומנות</div><div class="num" id="s-topk">—</div></div>
+                    <div class="stat"><div class="label">True Positives</div><div class="num tp" id="s-tp">—</div></div>
+                    <div class="stat"><div class="label">False Positives</div><div class="num fp" id="s-fp">—</div></div>
+                    <div class="stat"><div class="label">Precision @ K</div><div class="num" id="s-precision">—</div></div>
+                    <div class="stat"><div class="label">Recall @ K</div><div class="num" id="s-recall">—</div></div>
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="list-header">
+                    <span class="label">הקלפיות החשודות ביותר</span>
+                    <select id="filter">
+                        <option value="all">כולן</option>
+                        <option value="tp">רק TP (זוייפו)</option>
+                        <option value="fp">רק FP (נקיות)</option>
+                    </select>
+                </div>
+                <div id="list" class="loading">לחצו על ״הפעל סימולציה״ כדי להתחיל</div>
+                <div class="legend-row" id="legend"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        // Predefined attack scenarios (source K26 party → destination K26 party)
+        const SCENARIOS = [
+            { id: 'right_to_left',   label: 'ימין → שמאל-מרכז (ליכוד → הדמוקרטים)', src: 'הליכוד', dst: 'הדמוקרטים' },
+            { id: 'haredi_to_sec',   label: 'חרדים → חילוני-מרכז (ש״ס → ישר)',       src: 'ש״ס',    dst: 'ישר' },
+            { id: 'far_to_arab',     label: 'ימין קיצוני → ערבי (עוצמה → רע״ם)',     src: 'עוצמה יהודית', dst: 'רע״ם' },
+            { id: 'intra_right',     label: 'בתוך הימין (ליכוד → הציונות הדתית)',     src: 'הליכוד', dst: 'הציונות הדתית' },
+            { id: 'lib_to_dem',      label: 'יש עתיד → הדמוקרטים (ביחד → הדמוקרטים)', src: 'ביחד',  dst: 'הדמוקרטים' },
+            { id: 'custom',          label: 'התאמה אישית',                            src: null,     dst: null },
+        ];
+
+        let DATA = null;
+        let LAST = null;
+
+        const $ = (s) => document.querySelector(s);
+        const fmt = (n) => new Intl.NumberFormat('he-IL').format(Math.round(n));
+        const pctFmt = (n, d = 1) => (n * 100).toFixed(d) + '%';
+
+        function bindControl(rangeId, valId, format) {
+            const r = document.getElementById(rangeId);
+            const v = document.getElementById(valId);
+            const update = () => { v.textContent = format(r.value); };
+            r.addEventListener('input', update);
+            update();
+        }
+
+        function initControls() {
+            const scen = $('#scenario');
+            SCENARIOS.forEach(s => {
+                const o = document.createElement('option');
+                o.value = s.id; o.textContent = s.label; scen.appendChild(o);
+            });
+            scen.addEventListener('change', () => {
+                $('#custom-group').style.display = scen.value === 'custom' ? 'block' : 'none';
+            });
+
+            // Populate src/dst dropdowns from K26 parties
+            const srcSel = $('#src'), dstSel = $('#dst');
+            DATA.parties_26.forEach((p, i) => {
+                const o1 = document.createElement('option'); o1.value = i; o1.textContent = 'מקור: ' + p.name; srcSel.appendChild(o1);
+                const o2 = document.createElement('option'); o2.value = i; o2.textContent = 'יעד: ' + p.name; dstSel.appendChild(o2);
+            });
+            srcSel.value = 0; dstSel.value = 3;
+
+            bindControl('nb', 'nb-val', v => fmt(v));
+            bindControl('mag', 'mag-val', v => v + '%');
+            bindControl('topk', 'topk-val', v => fmt(v));
+
+            // Live budget readout (n_ballots × magnitude × mean voters)
+            const meanV = DATA.ballots.reduce((a, b) => a + (b.v || 0), 0) / DATA.ballots.length;
+            const totalV = DATA.ballots.reduce((a, b) => a + (b.v || 0), 0);
+            function updateBudget() {
+                const n = parseInt($('#nb').value, 10);
+                const mag = parseInt($('#mag').value, 10) / 100;
+                const votes = Math.round(n * meanV * mag);
+                $('#budget-votes').textContent = fmt(votes);
+                $('#budget-pct').textContent = (100 * votes / totalV).toFixed(2) + '%';
+            }
+            ['nb', 'mag'].forEach(id => document.getElementById(id).addEventListener('input', updateBudget));
+            updateBudget();
+
+            $('#run').addEventListener('click', run);
+            $('#filter').addEventListener('change', renderList);
+
+            // Legend
+            const leg = $('#legend');
+            DATA.parties_26.forEach(p => {
+                const span = document.createElement('span');
+                span.className = 'item';
+                span.innerHTML = `<span class="swatch" style="background:${p.color}"></span>${p.name}`;
+                leg.appendChild(span);
+            });
+        }
+
+        // Deterministic pseudo-RNG (mulberry32)
+        function mulberry32(seed) {
+            let a = seed >>> 0;
+            return function () {
+                a |= 0; a = (a + 0x6D2B79F5) | 0;
+                let t = a;
+                t = Math.imul(t ^ (t >>> 15), t | 1);
+                t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+                return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+            };
+        }
+
+        function pickIndices(n, k, rng) {
+            // Fisher-Yates partial shuffle for unique selection
+            const arr = new Array(n);
+            for (let i = 0; i < n; i++) arr[i] = i;
+            for (let i = 0; i < k; i++) {
+                const j = i + Math.floor(rng() * (n - i));
+                const t = arr[i]; arr[i] = arr[j]; arr[j] = t;
+            }
+            return arr.slice(0, k);
+        }
+
+        function getDirection() {
+            const sid = $('#scenario').value;
+            const s = SCENARIOS.find(x => x.id === sid);
+            if (s.id !== 'custom') {
+                const si = DATA.parties_26.findIndex(p => p.name === s.src);
+                const di = DATA.parties_26.findIndex(p => p.name === s.dst);
+                return { src: si, dst: di, label: s.label };
+            }
+            const si = parseInt($('#src').value, 10);
+            const di = parseInt($('#dst').value, 10);
+            return { src: si, dst: di, label: `${DATA.parties_26[si].name} → ${DATA.parties_26[di].name}` };
+        }
+
+        function run() {
+            $('#run').disabled = true;
+            $('#run').textContent = '…';
+            // Defer to next frame so UI updates first
+            setTimeout(() => {
+                try { runSim(); } finally {
+                    $('#run').disabled = false;
+                    $('#run').textContent = 'הפעל סימולציה';
+                }
+            }, 30);
+        }
+
+        function runSim() {
+            const dir = getDirection();
+            if (dir.src === dir.dst || dir.src < 0 || dir.dst < 0) {
+                alert('מקור ויעד חייבים להיות שונים');
+                return;
+            }
+            const nBallots = parseInt($('#nb').value, 10);
+            const mag = parseInt($('#mag').value, 10) / 100;
+            const topK = parseInt($('#topk').value, 10);
+            const seed = parseInt($('#seed').value, 10) || 42;
+
+            const ballots = DATA.ballots;
+            const P26 = DATA.parties_26.length;
+            const N = ballots.length;
+            const rng = mulberry32(seed);
+
+            // Pick tampered indices and apply the direction
+            const tamperedIdx = new Set(pickIndices(N, Math.min(nBallots, N), rng));
+            const observed = new Array(N);   // post-fraud b26 (as Float32 array of P26)
+            const original = {};              // sparse: original b26 only for tampered ballots
+            let actualVotesMoved = 0;
+            for (let i = 0; i < N; i++) {
+                const raw = ballots[i].b26;
+                const v = new Float32Array(P26);
+                for (let j = 0; j < P26; j++) v[j] = raw[j] / 1000;  // un-quantize
+                if (tamperedIdx.has(i)) {
+                    original[i] = v.slice();
+                    const move = Math.min(v[dir.src], mag);   // can't move more than source has
+                    v[dir.src] -= move;
+                    v[dir.dst] += move;
+                    actualVotesMoved += move * (ballots[i].v || 0);
+                }
+                observed[i] = v;
+            }
+
+            // Score = L2 norm of residual (observed - pred)
+            const pred = new Float32Array(P26);
+            const scores = new Float32Array(N);
+            for (let i = 0; i < N; i++) {
+                const o = observed[i];
+                const p = ballots[i].pred;
+                let ss = 0;
+                for (let j = 0; j < P26; j++) {
+                    const d = o[j] - p[j] / 1000;
+                    ss += d * d;
+                }
+                scores[i] = Math.sqrt(ss);
+            }
+
+            // Sort indices by score desc
+            const order = new Array(N);
+            for (let i = 0; i < N; i++) order[i] = i;
+            order.sort((a, b) => scores[b] - scores[a]);
+
+            const topSet = new Set(order.slice(0, topK));
+            let tp = 0;
+            for (const i of topSet) if (tamperedIdx.has(i)) tp++;
+            const fp = topK - tp;
+            const precision = topK > 0 ? tp / topK : 0;
+            const recall = tamperedIdx.size > 0 ? tp / tamperedIdx.size : 0;
+
+            LAST = {
+                dir, nBallots, mag, topK, seed, actualVotesMoved,
+                tamperedIdx, observed, original, pred, scores, order, tp, fp, precision, recall,
+            };
+
+            // Update summary
+            $('#s-tampered').textContent = fmt(tamperedIdx.size);
+            $('#s-budget').textContent = fmt(actualVotesMoved);
+            $('#s-topk').textContent = fmt(topK);
+            $('#s-tp').textContent = fmt(tp);
+            $('#s-fp').textContent = fmt(fp);
+            $('#s-precision').textContent = pctFmt(precision, 1);
+            $('#s-recall').textContent = pctFmt(recall, 1);
+
+            renderList();
+        }
+
+        function stackedBar(vec) {
+            // vec: Float32Array of length P26 (proportions summing to ~1)
+            const div = document.createElement('div');
+            div.className = 'stacked';
+            DATA.parties_26.forEach((p, i) => {
+                const w = (vec[i] || 0) * 100;
+                if (w < 0.4) return;   // skip near-zero segments for cleanliness
+                const s = document.createElement('div');
+                s.className = 'seg';
+                s.style.background = p.color;
+                s.style.width = w + '%';
+                s.title = `${p.name}: ${w.toFixed(1)}%`;
+                div.appendChild(s);
+            });
+            return div;
+        }
+
+        function renderList() {
+            if (!LAST) return;
+            const list = $('#list');
+            list.classList.remove('loading');
+            list.innerHTML = '';
+
+            const filter = $('#filter').value;
+            const { order, topK, tamperedIdx, scores, observed, original } = LAST;
+
+            const indices = order.slice(0, topK).filter(i => {
+                if (filter === 'all') return true;
+                if (filter === 'tp') return tamperedIdx.has(i);
+                return !tamperedIdx.has(i);
+            });
+
+            indices.forEach((idx, rank) => {
+                const b = DATA.ballots[idx];
+                const isTP = tamperedIdx.has(idx);
+
+                const row = document.createElement('div');
+                row.className = 'ballot-row ' + (isTP ? 'tp' : 'fp');
+
+                // Meta line
+                const meta = document.createElement('div');
+                meta.className = 'ballot-meta';
+                meta.innerHTML =
+                    `<span class="rank">#${order.indexOf(idx) + 1}</span>` +
+                    `<span class="name"><a href="settlement.html?name=${encodeURIComponent(b.n)}&e26=1">${b.n}</a></span>` +
+                    `<span class="ballot-num">קלפי ${b.b}</span>` +
+                    `<span class="badge ${isTP ? 'tp' : 'fp'}">${isTP ? '✓ זוייף' : '✗ נקי'}</span>` +
+                    `<span class="score">L2 = ${scores[idx].toFixed(3)}</span>` +
+                    (b.sid ? `<a href="https://votes26.bechirot.gov.il/ballotresults?cityID=${b.sid}&BallotNumber=${b.b}" target="_blank" rel="noopener" title="ועדת הבחירות (לא קיים בעתיד)" style="margin-inline-start:auto;color:#475569">CEC ↗</a>` : '');
+
+                // Stacked bars
+                const bars = document.createElement('div');
+                bars.className = 'bars';
+
+                const predVec = new Float32Array(b.pred.length);
+                for (let j = 0; j < b.pred.length; j++) predVec[j] = b.pred[j] / 1000;
+
+                function addRow(label, vec) {
+                    const l = document.createElement('div');
+                    l.className = 'bar-label';
+                    l.textContent = label;
+                    bars.appendChild(l);
+                    bars.appendChild(stackedBar(vec));
+                }
+                addRow('צפי המודל', predVec);
+                addRow('תוצאה בפועל', observed[idx]);
+                if (isTP) addRow('לפני זיוף', original[idx]);
+
+                row.appendChild(meta);
+                row.appendChild(bars);
+                list.appendChild(row);
+            });
+
+            if (!indices.length) list.innerHTML = '<div class="loading">אין קלפיות העונות לסינון</div>';
+        }
+
+        async function boot() {
+            try {
+                DATA = await fetch('data/fraud_sim_25_26.json').then(r => r.json());
+            } catch (e) {
+                document.body.innerHTML = '<div style="padding:2rem;color:#f87171">שגיאה בטעינת הנתונים.</div>';
+                return;
+            }
+            initControls();
+            // Auto-run with defaults so the page shows something
+            run();
+        }
+        boot();
+    })();
+    </script>
+</body>
+</html>
