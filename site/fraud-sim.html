@@ -409,8 +409,8 @@
             </div>
 
             <div class="control-group">
-                <label for="mag">עוצמה — אחוז מקולות גוש המקור בקלפי שיועברו <span class="val" id="mag-val">8%</span></label>
-                <input type="range" id="mag" min="1" max="35" step="1" value="8">
+                <label for="mag">עוצמה — אחוז מקולות גוש המקור בקלפי שיועברו <span class="val" id="mag-val">15%</span></label>
+                <input type="range" id="mag" min="1" max="35" step="1" value="15">
                 <div style="font-size:0.7rem;color:var(--text3);margin-top:0.25rem;line-height:1.45">
                     הקולות שנגרעו ממפלגות גוש המקור עוברים <b>אל מפלגות גוש היעד</b> באותה הקלפי, מחולקים לפי משקלן היחסי.
                 </div>
@@ -426,8 +426,9 @@
                 <select id="detector">
                     <option value="matched">גלובלי, מסנן מותאם (חד-מימדי)</option>
                     <option value="l2">גלובלי, L2 (לא-מותאם)</option>
-                    <option value="geo">גאוגרפי (Z-score בקרב שכנים)</option>
-                    <option value="manifold">מנהיגות t-SNE (Z-score בקרב דומים)</option>
+                    <option value="geo">גאוגרפי (Z-score בקרב שכנות)</option>
+                    <option value="manifold">שכני t-SNE (Z-score בקרב דומות)</option>
+                    <option value="fusion">פורטפוליו (Min-rank על ארבעת הגלאים)</option>
                 </select>
             </div>
 
@@ -560,7 +561,7 @@
             const vps = DATA && DATA.meta && DATA.meta.total_valid_votes_to
                 ? DATA.meta.total_valid_votes_to / 120 : 0;
             if (!vps) return '';
-            return ` <span style="color:var(--text3);font-size:0.85em">(≈ ${(votes / vps).toFixed(2)} מנדטים)</span>`;
+            return ` <span style="color:var(--text3);font-size:0.7em">≈ ${(votes / vps).toFixed(2)} מנד׳</span>`;
         }
 
         function bindControl(rangeId, valId, format) {
@@ -642,6 +643,7 @@
                 if (detector === 'l2') scores = LAST.scoresL2;
                 else if (detector === 'geo' && LAST.scoresGeo) scores = LAST.scoresGeo;
                 else if (detector === 'manifold' && LAST.scoresManifold) scores = LAST.scoresManifold;
+                else if (detector === 'fusion') scores = LAST.scoresFusion;
                 else scores = LAST.scoresMatched;
                 const N = DATA.ballots.length;
                 const order = orderByScore(scores, N, LAST.keptMask);
@@ -906,11 +908,35 @@
             const scoresGeo = DATA.geo_n ? localBlocZ(DATA.geo_n) : null;
             const scoresManifold = DATA.manifold_n ? localBlocZ(DATA.manifold_n) : null;
 
+            // Portfolio fusion: min-rank aggregator (paper §Min-rank-percentile).
+            // For each kept ballot, take its best (lowest) rank across all four
+            // detectors. A ballot is "suspicious to the portfolio" iff at least
+            // one member flags it. Fusion score = -min_rank so higher = worse,
+            // matching our descending-sort convention.
+            function ranksOf(scoreArr) {
+                if (!scoreArr) return null;
+                const ord = orderByScore(scoreArr, N, keptMask);
+                const rank = new Float32Array(N);
+                for (let r = 0; r < ord.length; r++) rank[ord[r]] = r + 1;
+                for (let i = 0; i < N; i++) if (!keptMask[i]) rank[i] = ord.length + 1;
+                return rank;
+            }
+            const allRanks = [scoresMatched, scoresL2, scoresGeo, scoresManifold]
+                .map(ranksOf).filter(Boolean);
+            const scoresFusion = new Float32Array(N);
+            for (let i = 0; i < N; i++) {
+                if (!keptMask[i]) continue;
+                let m = Infinity;
+                for (const r of allRanks) if (r[i] < m) m = r[i];
+                scoresFusion[i] = -m;
+            }
+
             const detector = $('#detector').value;
             let scores;
             if (detector === 'l2') scores = scoresL2;
             else if (detector === 'geo' && scoresGeo) scores = scoresGeo;
             else if (detector === 'manifold' && scoresManifold) scores = scoresManifold;
+            else if (detector === 'fusion') scores = scoresFusion;
             else scores = scoresMatched;
 
             // Sort kept indices by selected score desc — masked ballots are
@@ -929,7 +955,7 @@
             LAST = {
                 dir, nBallots, mag, topK, seed, actualVotesMoved, detector,
                 tamperedIdx, observed, original,
-                scores, scoresMatched, scoresL2, scoresGeo, scoresManifold,
+                scores, scoresMatched, scoresL2, scoresGeo, scoresManifold, scoresFusion,
                 order, tp, fp, precision, recall,
                 keptMask, nExcluded,
             };
@@ -1082,7 +1108,7 @@
             if (!LAST) return;
             const wrap = $('#roc-chart');
             wrap.innerHTML = '';
-            const { tamperedIdx, topK, fp, tp, scoresMatched, scoresL2, scoresGeo, scoresManifold, detector, keptMask } = LAST;
+            const { tamperedIdx, topK, fp, tp, scoresMatched, scoresL2, scoresGeo, scoresManifold, scoresFusion, detector, keptMask } = LAST;
             let Nkept = 0;
             for (let i = 0; i < keptMask.length; i++) if (keptMask[i]) Nkept++;
 
@@ -1090,7 +1116,8 @@
                 { id: 'matched',  scores: scoresMatched,  color: '#3b82f6', label: 'גלובלי MF' },
                 { id: 'l2',       scores: scoresL2,       color: '#f59e0b', label: 'גלובלי L2' },
                 { id: 'geo',      scores: scoresGeo,      color: '#a855f7', label: 'גאוגרפי' },
-                { id: 'manifold', scores: scoresManifold, color: '#10b981', label: 'מנהיגות t-SNE' },
+                { id: 'manifold', scores: scoresManifold, color: '#10b981', label: 'שכני t-SNE' },
+                { id: 'fusion',   scores: scoresFusion,   color: '#ef4444', label: 'פורטפוליו' },
             ];
             const detResults = detectorSpecs
                 .filter(s => s.scores)
