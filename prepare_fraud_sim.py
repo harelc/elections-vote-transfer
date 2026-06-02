@@ -17,6 +17,7 @@ import argparse
 import json
 import os
 import numpy as np
+from scipy.spatial import cKDTree
 
 # Bloc definitions, lifted from fraud-detection/fraud_detection_e26.py.
 # Symbols here are the *destination-year* symbols (in our scoring the
@@ -74,10 +75,58 @@ def normalize_or_uniform(v):
     return v / s
 
 
+GEO_K_FALLBACK = 8
+MANIFOLD_K = 25
+
+
+def build_geo_neighborhoods(coords):
+    """Same-coord siblings if any; else k-NN by geographic distance."""
+    n = len(coords)
+    has = ~np.isnan(coords[:, 0])
+    rounded = np.round(coords, 5)
+    groups = {}
+    for i in range(n):
+        if not has[i]:
+            continue
+        key = (float(rounded[i, 0]), float(rounded[i, 1]))
+        groups.setdefault(key, []).append(i)
+    valid_idx = np.where(has)[0]
+    tree = cKDTree(coords[has]) if has.sum() else None
+    neighbors = []
+    for i in range(n):
+        if not has[i]:
+            neighbors.append([])
+            continue
+        key = (float(rounded[i, 0]), float(rounded[i, 1]))
+        sib = [j for j in groups[key] if j != i]
+        if len(sib) < 1:
+            _, neigh = tree.query(coords[i], k=GEO_K_FALLBACK + 1)
+            sib = [int(valid_idx[j]) for j in neigh if int(valid_idx[j]) != i][:GEO_K_FALLBACK]
+        neighbors.append(sib)
+    return neighbors
+
+
+def build_manifold_neighborhoods(coords, k=MANIFOLD_K):
+    """k-NN in 2-D t-SNE space."""
+    n = len(coords)
+    has = ~np.isnan(coords[:, 0])
+    valid_idx = np.where(has)[0]
+    tree = cKDTree(coords[has])
+    neighbors = []
+    for i in range(n):
+        if not has[i]:
+            neighbors.append([])
+            continue
+        _, neigh = tree.query(coords[i], k=k + 1)
+        neighbors.append([int(valid_idx[j]) for j in neigh if int(valid_idx[j]) != i][:k])
+    return neighbors
+
+
 def prepare_transition(from_year, to_year):
     t_from = json.load(open(f'site/data/tsne_{from_year}.json', encoding='utf-8'))
     t_to = json.load(open(f'site/data/tsne_{to_year}.json', encoding='utf-8'))
     T_obj = json.load(open(f'site/data/transfer_{from_year}_to_{to_year}.json', encoding='utf-8'))
+    coords_obj = json.load(open('site/data/station_coordinates.json', encoding='utf-8'))['stations']
 
     parties_from = T_obj['nodes_from']
     parties_to = T_obj['nodes_to']
@@ -100,6 +149,8 @@ def prepare_transition(from_year, to_year):
     print(f"[{from_year}→{to_year}] common ballots: {len(common)}")
 
     ballots = []
+    tsne_coords = []   # in t_to space — that's where the "current election" lives
+    geo_coords = []
     skipped = 0
     for key in common:
         sf, st = i_from[key], i_to[key]
@@ -118,10 +169,27 @@ def prepare_transition(from_year, to_year):
             'b': sf.get('b', ''),
             'sid': sf.get('s'),
             'v': st.get('v', 0),
-            'b26': [int(round(x * 1000)) for x in bt],     # kept name 'b26' for compactness across both files
+            'b26': [int(round(x * 1000)) for x in bt],
             'pred': [int(round(x * 1000)) for x in pred],
         })
+        # t-SNE coords (in the destination-year embedding)
+        tsne_coords.append([float(st.get('x', np.nan)), float(st.get('y', np.nan))])
+        # Geographic coords from station_coordinates.json
+        coord_key = sf.get('n', '') + '|' + sf.get('b', '')
+        c = coords_obj.get(coord_key) or coords_obj.get(key)
+        if c and c.get('lat') is not None:
+            geo_coords.append([float(c['lat']), float(c['lng'])])
+        else:
+            geo_coords.append([np.nan, np.nan])
     print(f"[{from_year}→{to_year}] kept: {len(ballots)} (skipped {skipped})")
+
+    # Build neighborhoods (indices into the ballots array)
+    print(f"[{from_year}→{to_year}] building geo + manifold neighborhoods...")
+    geo_n = build_geo_neighborhoods(np.array(geo_coords))
+    manifold_n = build_manifold_neighborhoods(np.array(tsne_coords))
+    geo_cov = sum(1 for n in geo_n if n) / len(geo_n)
+    manifold_cov = sum(1 for n in manifold_n if n) / len(manifold_n)
+    print(f"[{from_year}→{to_year}]   geo coverage: {geo_cov:.1%}, manifold coverage: {manifold_cov:.1%}")
 
     def party_lite(p):
         return {'name': p['name'], 'symbol': p['symbol'], 'color': p.get('color', '#64748b')}
@@ -133,11 +201,14 @@ def prepare_transition(from_year, to_year):
             'is_simulated': to_year in SIMULATED_TARGETS,
             'blocs': BLOC_DEFINITIONS[to_year],
             'scenarios': SCENARIOS_BY_YEAR[to_year],
+            'total_valid_votes_to': int(T_obj.get('stats', {}).get('total_votes_to', 0)),
         },
         'parties_25': [party_lite(p) for p in parties_from],   # kept name for backward compat
         'parties_26': [party_lite(p) for p in parties_to],
         'T': [[round(float(v), 5) for v in row] for row in T],
         'ballots': ballots,
+        'geo_n': geo_n,
+        'manifold_n': manifold_n,
     }
     path = f'site/data/fraud_sim_{from_year}_{to_year}.json'
     with open(path, 'w', encoding='utf-8') as f:

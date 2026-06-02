@@ -396,10 +396,11 @@
             </div>
             <div id="scenario-detail" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:0.55rem 0.7rem;font-size:0.74rem;color:var(--text2);line-height:1.55;margin-bottom:0.9rem"></div>
             <div class="control-group" id="custom-group" style="display:none">
-                <div class="row">
-                    <select id="src"></select>
-                    <select id="dst"></select>
-                </div>
+                <div style="font-size:0.74rem;color:var(--text2);margin-bottom:0.3rem">בחרו אחת או יותר ככל קבוצה. לחיצה משלבת/מוציאה.</div>
+                <div style="font-size:0.7rem;color:var(--text3);margin-bottom:0.2rem">מקור</div>
+                <div id="src-chips" style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:0.5rem"></div>
+                <div style="font-size:0.7rem;color:var(--text3);margin-bottom:0.2rem">יעד</div>
+                <div id="dst-chips" style="display:flex;flex-wrap:wrap;gap:3px"></div>
             </div>
 
             <div class="control-group">
@@ -423,8 +424,10 @@
             <div class="control-group">
                 <label for="detector">גלאי</label>
                 <select id="detector">
-                    <option value="matched">מסנן מותאם (חד-מימדי, על ציר התרחיש)</option>
-                    <option value="l2">L2 — שארית מלאה (לא-מותאם)</option>
+                    <option value="matched">גלובלי, מסנן מותאם (חד-מימדי)</option>
+                    <option value="l2">גלובלי, L2 (לא-מותאם)</option>
+                    <option value="geo">גאוגרפי (Z-score בקרב שכנים)</option>
+                    <option value="manifold">מנהיגות t-SNE (Z-score בקרב דומים)</option>
                 </select>
             </div>
 
@@ -525,10 +528,40 @@
 
         let DATA = null;
         let LAST = null;
+        let customSrc = new Set();   // K_to party indices
+        let customDst = new Set();
+
+        function renderCustomChips() {
+            ['src', 'dst'].forEach(role => {
+                const box = document.getElementById(role + '-chips');
+                box.innerHTML = '';
+                const sel = role === 'src' ? customSrc : customDst;
+                DATA.parties_26.forEach((p, i) => {
+                    const on = sel.has(i);
+                    const chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.style.cssText = `display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:999px;border:1px solid ${on ? p.color : 'var(--border)'};background:${on ? p.color + '33' : 'var(--bg2)'};color:${on ? 'var(--text)' : 'var(--text2)'};font-size:0.7rem;cursor:pointer;font-family:inherit`;
+                    chip.innerHTML = `<span style="width:7px;height:7px;border-radius:50%;background:${p.color}"></span>${p.name}`;
+                    chip.onclick = () => {
+                        if (sel.has(i)) sel.delete(i); else sel.add(i);
+                        renderCustomChips();
+                        updateScenarioDetail();
+                        updateBudget();
+                    };
+                    box.appendChild(chip);
+                });
+            });
+        }
 
         const $ = (s) => document.querySelector(s);
         const fmt = (n) => new Intl.NumberFormat('he-IL').format(Math.round(n));
         const pctFmt = (n, d = 1) => (n * 100).toFixed(d) + '%';
+        function seatsHTML(votes) {
+            const vps = DATA && DATA.meta && DATA.meta.total_valid_votes_to
+                ? DATA.meta.total_valid_votes_to / 120 : 0;
+            if (!vps) return '';
+            return ` <span style="color:var(--text3);font-size:0.85em">(≈ ${(votes / vps).toFixed(2)} מנדטים)</span>`;
+        }
 
         function bindControl(rangeId, valId, format) {
             const r = document.getElementById(rangeId);
@@ -550,15 +583,10 @@
                 updateBudget();
             });
 
-            // Populate src/dst dropdowns from K26 parties
-            const srcSel = $('#src'), dstSel = $('#dst');
-            DATA.parties_26.forEach((p, i) => {
-                const o1 = document.createElement('option'); o1.value = i; o1.textContent = 'מקור: ' + p.name; srcSel.appendChild(o1);
-                const o2 = document.createElement('option'); o2.value = i; o2.textContent = 'יעד: ' + p.name; dstSel.appendChild(o2);
-            });
-            srcSel.value = 0; dstSel.value = 3;
-            srcSel.addEventListener('change', () => { updateScenarioDetail(); updateBudget(); });
-            dstSel.addEventListener('change', () => { updateScenarioDetail(); updateBudget(); });
+            // Custom scenario: multi-select chips for source and destination
+            customSrc = new Set([0]);   // default: Likud → Hadash-Taal (just so something is picked)
+            customDst = new Set([3]);
+            renderCustomChips();
 
             bindControl('nb', 'nb-val', v => fmt(v));
             bindControl('mag', 'mag-val', v => v + '%');
@@ -586,7 +614,7 @@
                 const avgSrcVotes = viableCount > 0 ? viableSrcVotes / viableCount : 0;
                 const nUsed = Math.min(n, viableCount);
                 const votes = Math.round(nUsed * avgSrcVotes * mag);
-                $('#budget-votes').textContent = fmt(votes);
+                $('#budget-votes').innerHTML = fmt(votes) + seatsHTML(votes);
                 $('#budget-pct').textContent = '(' + (100 * votes / totalV).toFixed(2) + '%' + ')';
                 const viableInfo = $('#viable-info');
                 if (nUsed < n) {
@@ -609,9 +637,12 @@
             $('#filter').addEventListener('change', renderList);
             $('#detector').addEventListener('change', () => {
                 if (!LAST) return;
-                // Re-rank with the newly-selected detector and refresh everything
                 const detector = $('#detector').value;
-                const scores = detector === 'l2' ? LAST.scoresL2 : LAST.scoresMatched;
+                let scores;
+                if (detector === 'l2') scores = LAST.scoresL2;
+                else if (detector === 'geo' && LAST.scoresGeo) scores = LAST.scoresGeo;
+                else if (detector === 'manifold' && LAST.scoresManifold) scores = LAST.scoresManifold;
+                else scores = LAST.scoresMatched;
                 const N = DATA.ballots.length;
                 const order = orderByScore(scores, N, LAST.keptMask);
                 const topSet = new Set(order.slice(0, LAST.topK));
@@ -687,15 +718,18 @@
                     dstLabel: BLOCS[s.dst].join('/'),
                 };
             }
-            // pair (preset or custom)
-            let srcCol, dstCol;
             if (s.id === 'custom') {
-                srcCol = parseInt($('#src').value, 10);
-                dstCol = parseInt($('#dst').value, 10);
-            } else {
-                srcCol = DATA.parties_26.findIndex(p => p.symbol === s.src);
-                dstCol = DATA.parties_26.findIndex(p => p.symbol === s.dst);
+                const srcCols = Array.from(customSrc);
+                const dstCols = Array.from(customDst);
+                return {
+                    kind: srcCols.length > 1 || dstCols.length > 1 ? 'bloc' : 'pair',
+                    srcCols, dstCols,
+                    srcLabel: srcCols.map(i => DATA.parties_26[i].name).join('/'),
+                    dstLabel: dstCols.map(i => DATA.parties_26[i].name).join('/'),
+                };
             }
+            const srcCol = DATA.parties_26.findIndex(p => p.symbol === s.src);
+            const dstCol = DATA.parties_26.findIndex(p => p.symbol === s.dst);
             return {
                 kind: 'pair',
                 srcCols: [srcCol],
@@ -817,20 +851,67 @@
 
             const scoresMatched = new Float32Array(N);
             const scoresL2 = new Float32Array(N);
+            // Lean = (observed_proportions) · bloc_direction. Used by the
+            // local detectors (geo, manifold) to compute z-scores within
+            // each ballot's neighborhood. Note this is the POST-TAMPER lean.
+            const lean = new Float32Array(N);
             for (let i = 0; i < N; i++) {
                 const o = observed[i];
                 const p = ballots[i].pred;
-                let dot = 0, ss = 0;
+                let dot = 0, ss = 0, ln = 0;
                 for (let j = 0; j < P26; j++) {
                     const r = o[j] - p[j] / 1000;
                     dot += r * direction[j];
                     ss += r * r;
+                    ln += o[j] * direction[j];
                 }
                 scoresMatched[i] = Math.abs(dot);
                 scoresL2[i] = Math.sqrt(ss);
+                lean[i] = ln;
             }
+
+            // Local detectors: z-score of lean against neighborhood,
+            // with shrinkage of σ_local toward σ_global (SIGMA_SHRINK_PSEUDO=5)
+            // and a floor at SIGMA_FLOOR=0.005. Matches detector_local_bloc_z
+            // in fraud_detection_e26.py. Computed over kept ballots only —
+            // a Druze ballot would otherwise pollute its neighbors.
+            const SIGMA_SHRINK = 5, SIGMA_FLOOR = 0.005;
+            let sumL = 0, sumL2 = 0, nKept = 0;
+            for (let i = 0; i < N; i++) {
+                if (!keptMask[i]) continue;
+                sumL += lean[i]; sumL2 += lean[i] * lean[i]; nKept++;
+            }
+            const globalMu = nKept > 0 ? sumL / nKept : 0;
+            const globalVar = nKept > 0 ? sumL2 / nKept - globalMu * globalMu : 0;
+            const globalSigma = Math.sqrt(Math.max(globalVar, 0));
+            function localBlocZ(neigh) {
+                const scores = new Float32Array(N);
+                for (let i = 0; i < N; i++) {
+                    const nbrs = neigh[i];
+                    if (!nbrs || !nbrs.length) continue;
+                    let s = 0, s2 = 0, n = 0;
+                    for (const j of nbrs) {
+                        if (!keptMask[j]) continue;
+                        s += lean[j]; s2 += lean[j] * lean[j]; n++;
+                    }
+                    if (n === 0) continue;
+                    const mu = s / n;
+                    const sigmaLocal = n >= 2 ? Math.sqrt(Math.max(0, s2 / n - mu * mu) * n / (n - 1)) : 0;
+                    let sigma = (sigmaLocal * n + globalSigma * SIGMA_SHRINK) / (n + SIGMA_SHRINK);
+                    if (sigma < SIGMA_FLOOR) sigma = SIGMA_FLOOR;
+                    scores[i] = Math.abs(lean[i] - mu) / sigma;
+                }
+                return scores;
+            }
+            const scoresGeo = DATA.geo_n ? localBlocZ(DATA.geo_n) : null;
+            const scoresManifold = DATA.manifold_n ? localBlocZ(DATA.manifold_n) : null;
+
             const detector = $('#detector').value;
-            const scores = detector === 'l2' ? scoresL2 : scoresMatched;
+            let scores;
+            if (detector === 'l2') scores = scoresL2;
+            else if (detector === 'geo' && scoresGeo) scores = scoresGeo;
+            else if (detector === 'manifold' && scoresManifold) scores = scoresManifold;
+            else scores = scoresMatched;
 
             // Sort kept indices by selected score desc — masked ballots are
             // dropped from ranking, ROC, and the suspect list entirely.
@@ -847,13 +928,15 @@
 
             LAST = {
                 dir, nBallots, mag, topK, seed, actualVotesMoved, detector,
-                tamperedIdx, observed, original, scores, scoresMatched, scoresL2, order, tp, fp, precision, recall,
+                tamperedIdx, observed, original,
+                scores, scoresMatched, scoresL2, scoresGeo, scoresManifold,
+                order, tp, fp, precision, recall,
                 keptMask, nExcluded,
             };
 
             // Update summary
             $('#s-tampered').textContent = fmt(tamperedIdx.size);
-            $('#s-budget').textContent = fmt(actualVotesMoved);
+            $('#s-budget').innerHTML = fmt(actualVotesMoved) + seatsHTML(actualVotesMoved);
             $('#s-topk').textContent = fmt(topK);
             $('#s-tp').textContent = fmt(tp);
             $('#s-fp').textContent = fmt(fp);
@@ -999,29 +1082,34 @@
             if (!LAST) return;
             const wrap = $('#roc-chart');
             wrap.innerHTML = '';
-            const { tamperedIdx, topK, fp, tp, scoresMatched, scoresL2, detector, keptMask } = LAST;
-            // Population is the kept ballots, not the raw total
+            const { tamperedIdx, topK, fp, tp, scoresMatched, scoresL2, scoresGeo, scoresManifold, detector, keptMask } = LAST;
             let Nkept = 0;
             for (let i = 0; i < keptMask.length; i++) if (keptMask[i]) Nkept++;
-            const orderM = orderByScore(scoresMatched, keptMask.length, keptMask);
-            const orderL = orderByScore(scoresL2, keptMask.length, keptMask);
-            const rocM = computeROC(orderM, tamperedIdx, Nkept);
-            const rocL = computeROC(orderL, tamperedIdx, Nkept);
+
+            const detectorSpecs = [
+                { id: 'matched',  scores: scoresMatched,  color: '#3b82f6', label: 'גלובלי MF' },
+                { id: 'l2',       scores: scoresL2,       color: '#f59e0b', label: 'גלובלי L2' },
+                { id: 'geo',      scores: scoresGeo,      color: '#a855f7', label: 'גאוגרפי' },
+                { id: 'manifold', scores: scoresManifold, color: '#10b981', label: 'מנהיגות t-SNE' },
+            ];
+            const detResults = detectorSpecs
+                .filter(s => s.scores)
+                .map(s => {
+                    const ord = orderByScore(s.scores, keptMask.length, keptMask);
+                    const roc = computeROC(ord, tamperedIdx, Nkept);
+                    return { ...s, order: ord, roc };
+                });
 
             const Neg = Nkept - tamperedIdx.size;
             const opPoint = (tamperedIdx.size > 0 && Neg > 0)
                 ? [fp / Neg, tp / tamperedIdx.size]
                 : null;
 
-            const COLOR_M = '#3b82f6', COLOR_L = '#f59e0b';
-            const isMatched = detector === 'matched';
-            const rocs = [
-                { points: rocM.points, color: COLOR_M, dim: !isMatched },
-                { points: rocL.points, color: COLOR_L, dim: isMatched },
-            ];
-            // The active ROC's points[k] corresponds to "after ranking the
-            // top-k ballots" — so points[K] is the operating point at Top-K.
-            const activeRoc = isMatched ? rocM : rocL;
+            const rocs = detResults.map(r => ({
+                points: r.roc.points, color: r.color, dim: r.id !== detector,
+            }));
+            const activeResult = detResults.find(r => r.id === detector) || detResults[0];
+            const activeRoc = activeResult.roc;
             const RANK_MARKS = [25, 50, 100, 200, 500];
             const activeMarkers = RANK_MARKS
                 .filter(k => k !== topK && k < activeRoc.points.length)
@@ -1045,10 +1133,10 @@
             }
 
             const info = document.createElement('div');
-            info.style.cssText = 'min-width:230px;font-size:0.85rem;color:var(--text2);line-height:1.7';
+            info.style.cssText = 'min-width:240px;font-size:0.85rem;color:var(--text2);line-height:1.7';
             const colorize = (v) => v > 0.85 ? '#22c55e' : (v > 0.65 ? '#f59e0b' : '#ef4444');
             function aucRow(label, value, color, active) {
-                return `<div style="display:flex;align-items:center;gap:0.5rem;margin:0.3rem 0;${active ? 'font-weight:700' : 'opacity:0.7'}">
+                return `<div style="display:flex;align-items:center;gap:0.5rem;margin:0.25rem 0;${active ? 'font-weight:700' : 'opacity:0.7'}">
                     <span style="width:18px;height:3px;background:${color};display:inline-block"></span>
                     <span style="font-size:0.78rem;color:var(--text)">${label}</span>
                     <span style="font-size:1rem;color:${colorize(value)};margin-inline-start:auto">${value.toFixed(3)}</span>
@@ -1056,13 +1144,12 @@
             }
             info.innerHTML =
                 `<div style="font-size:0.78rem;color:var(--text3);margin-bottom:0.3rem">AUC לפי גלאי</div>` +
-                aucRow('מסנן מותאם', rocM.auc, COLOR_M, isMatched) +
-                aucRow('L2 לא-מותאם', rocL.auc, COLOR_L, !isMatched) +
-                `<div style="margin-top:0.7rem;font-size:0.74rem;color:var(--text3);line-height:1.5">` +
+                detResults.map(r => aucRow(r.label, r.roc.auc, r.color, r.id === detector)).join('') +
+                `<div style="margin-top:0.6rem;font-size:0.72rem;color:var(--text3);line-height:1.5">` +
                 `1.0 = הפרדה מושלמת. 0.5 = ניחוש אקראי.<br>` +
-                `המסנן המותאם משתמש בכיוון התרחיש (מקור +1, יעד −1) ובדרך-כלל ינצח את ה-L2 שמטפל בכל הרשארית שווה.` +
+                `<b style="color:var(--text2)">גלובלי</b> משווה את הקלפי לחיזוי הארצי; <b style="color:var(--text2)">גאוגרפי / מנהיגות</b> משוו אותה לשכניה.` +
                 `</div>` +
-                `<div style="margin-top:0.7rem;font-size:0.74rem;color:var(--text3)">הנקודה הירוקה: הסף בו אתם נמצאים כעת (Top-K=${fmt(topK)}) על העקומה הפעילה.</div>`;
+                `<div style="margin-top:0.6rem;font-size:0.72rem;color:var(--text3)">הנקודה הירוקה: Top-K=${fmt(topK)} על העקומה הפעילה.</div>`;
             wrap.appendChild(info);
         }
 
