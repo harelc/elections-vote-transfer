@@ -561,7 +561,7 @@
             const vps = DATA && DATA.meta && DATA.meta.total_valid_votes_to
                 ? DATA.meta.total_valid_votes_to / 120 : 0;
             if (!vps) return '';
-            return ` <span style="color:var(--text3);font-size:0.7em">≈ ${(votes / vps).toFixed(2)} מנד׳</span>`;
+            return `<div style="color:var(--text3);font-size:0.72rem;font-weight:400;margin-top:0.1rem">≈ ${(votes / vps).toFixed(2)} מנדטים</div>`;
         }
 
         function bindControl(rangeId, valId, format) {
