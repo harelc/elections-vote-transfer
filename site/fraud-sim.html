@@ -1174,7 +1174,7 @@
                 detResults.map(r => aucRow(r.label, r.roc.auc, r.color, r.id === detector)).join('') +
                 `<div style="margin-top:0.6rem;font-size:0.72rem;color:var(--text3);line-height:1.5">` +
                 `1.0 = הפרדה מושלמת. 0.5 = ניחוש אקראי.<br>` +
-                `<b style="color:var(--text2)">גלובלי</b> משווה את הקלפי לחיזוי הארצי; <b style="color:var(--text2)">גאוגרפי / מנהיגות</b> משוו אותה לשכניה.` +
+                `<b style="color:var(--text2)">גלובלי</b> משווה את הקלפי לחיזוי הארצי; <b style="color:var(--text2)">גאוגרפי / שכני t-SNE</b> משווים אותה לשכניה.` +
                 `</div>` +
                 `<div style="margin-top:0.6rem;font-size:0.72rem;color:var(--text3)">הנקודה הירוקה: Top-K=${fmt(topK)} על העקומה הפעילה.</div>`;
             wrap.appendChild(info);
