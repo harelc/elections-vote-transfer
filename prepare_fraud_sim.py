@@ -46,7 +46,7 @@ SCENARIOS_BY_YEAR = {
         {'id': 'intra_right',    'kind': 'pair', 'src': 'מחל',         'dst': 'ט',          'label': 'בתוך הימין: ליכוד ← הציונות הדתית'},
         {'id': 'intra_arab',     'kind': 'pair', 'src': 'עם',          'dst': 'ום',         'label': 'בתוך הערביות: רע״ם ← חד״ש-תע״ל'},
         {'id': 'lapid_likud',    'kind': 'pair', 'src': 'פה',          'dst': 'מחל',        'label': 'יש עתיד ← ליכוד'},
-        {'id': 'custom',         'kind': 'pair', 'src': None,         'dst': None,         'label': 'התאמה אישית (זוג מפלגות)'},
+        {'id': 'custom',         'kind': 'pair', 'src': None,         'dst': None,         'label': 'התאמה אישית (קבוצות מפלגות)'},
     ],
     '26': [
         {'id': 'right_to_left',  'kind': 'bloc', 'src': 'right',      'dst': 'leftcenter', 'label': 'גוש הימין ← גוש שמאל-מרכז'},
@@ -55,7 +55,7 @@ SCENARIOS_BY_YEAR = {
         {'id': 'intra_right',    'kind': 'pair', 'src': 'מחל',         'dst': 'ט',          'label': 'בתוך הימין: ליכוד ← הציונות הדתית'},
         {'id': 'intra_arab',     'kind': 'pair', 'src': 'עם',          'dst': 'ום',         'label': 'בתוך הערביות: רע״ם ← חד״ש-תע״ל'},
         {'id': 'lapid_likud',    'kind': 'pair', 'src': 'נב',          'dst': 'מחל',        'label': 'ביחד ← ליכוד'},
-        {'id': 'custom',         'kind': 'pair', 'src': None,         'dst': None,         'label': 'התאמה אישית (זוג מפלגות)'},
+        {'id': 'custom',         'kind': 'pair', 'src': None,         'dst': None,         'label': 'התאמה אישית (קבוצות מפלגות)'},
     ],
 }
 
