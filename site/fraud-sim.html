@@ -1231,8 +1231,8 @@
                     bars.appendChild(stackedBar(vec, b.v || 0));
                 }
                 addRow('צפי המודל', predVec);
-                addRow('תוצאה בפועל', observed[idx]);
-                if (isTP) addRow('לפני זיוף', original[idx]);
+                addRow(isTP ? 'אחרי הזיוף' : 'תוצאה בפועל', observed[idx]);
+                if (isTP) addRow('לפני הזיוף', original[idx]);
 
                 row.appendChild(meta);
                 row.appendChild(bars);
