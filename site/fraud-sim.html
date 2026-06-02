@@ -404,13 +404,13 @@
             </div>
 
             <div class="control-group">
-                <label for="nb">מספר קלפיות מזוייפות <span class="val" id="nb-val">200</span></label>
-                <input type="range" id="nb" min="10" max="2500" step="10" value="200">
+                <label for="nb">מספר קלפיות מזוייפות <span class="val" id="nb-val">400</span></label>
+                <input type="range" id="nb" min="10" max="2500" step="10" value="400">
             </div>
 
             <div class="control-group">
-                <label for="mag">עוצמה — אחוז מקולות גוש המקור בקלפי שיועברו <span class="val" id="mag-val">15%</span></label>
-                <input type="range" id="mag" min="1" max="35" step="1" value="15">
+                <label for="mag">עוצמה — אחוז מקולות גוש המקור בקלפי שיועברו <span class="val" id="mag-val">17%</span></label>
+                <input type="range" id="mag" min="1" max="35" step="1" value="17">
                 <div style="font-size:0.7rem;color:var(--text3);margin-top:0.25rem;line-height:1.45">
                     הקולות שנגרעו ממפלגות גוש המקור עוברים <b>אל מפלגות גוש היעד</b> באותה הקלפי, מחולקים לפי משקלן היחסי.
                 </div>
@@ -520,11 +520,10 @@
             "מגדל שמס", "מסעדה",
         ]);
 
-        // ?t=24_25 or ?t=25_26. Default to 25_26 so the existing irregular-page
-        // link (no query string) still loads the K26 view.
+        // ?t=24_25 or ?t=25_26. Default to 24_25 (real data, no e26 flag needed).
         function currentTransition() {
             const t = new URLSearchParams(location.search).get('t');
-            return (t === '24_25' || t === '25_26') ? t : '25_26';
+            return (t === '24_25' || t === '25_26') ? t : '24_25';
         }
 
         let DATA = null;
