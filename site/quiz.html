@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — חידון בחירות">
+    <meta property="og:description" content="חידון על תוצאות בחירות לכנסת, מפלגות, התייישבויות ודינמיקה פוליטית">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>חידון בחירות — קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0f;
+            --bg2: #12121a;
+            --bg3: #1a1a25;
+            --text: #f8fafc;
+            --text2: #94a3b8;
+            --text3: #64748b;
+            --accent: #3b82f6;
+            --border: #2a2a3a;
+            --correct: #22c55e;
+            --incorrect: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .top-bar {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.75rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
+        }
+        .top-bar a { color: var(--text2); text-decoration: none; }
+        .top-bar a:hover { color: var(--text); }
+        .top-bar .title { flex: 1; font-weight: 600; font-size: 1rem; }
+        .top-bar .stats { font-size: 0.85rem; color: var(--text2); }
+
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 2rem 1.25rem 4rem;
+        }
+
+        .card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .score-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .score-item {
+            flex: 1;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .score-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .score-item .label {
+            font-size: 0.8rem;
+            color: var(--text3);
+            margin-top: 0.25rem;
+        }
+
+        .progress {
+            width: 100%;
+            height: 4px;
+            background: var(--bg3);
+            border-radius: 2px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+
+        .question {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            line-height: 1.6;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .option {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .option:hover:not(.disabled) {
+            border-color: var(--accent);
+        }
+
+        .option.correct {
+            border-color: var(--correct);
+            background: rgba(34, 197, 94, 0.1);
+        }
+
+        .option.incorrect {
+            border-color: var(--incorrect);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .option.disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 1.5rem;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #2563eb;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            font-size: 0.9rem;
+            margin-top: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .feedback.show {
+            display: block;
+        }
+
+        .feedback.correct {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--correct);
+            border-left: 3px solid var(--correct);
+        }
+
+        .feedback.incorrect {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--incorrect);
+            border-left: 3px solid var(--incorrect);
+        }
+
+        .loading {
+            text-align: center;
+            color: var(--text2);
+        }
+
+        .error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--incorrect);
+            color: var(--incorrect);
+            padding: 1rem;
+            border-radius: 6px;
+        }
+
+        .slider-container {
+            margin: 1.5rem 0;
+        }
+
+        .slider-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg3);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+        }
+
+        .slider-display {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .error-score {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg3);
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .error-score .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .error-score.perfect { color: var(--correct); }
+        .error-score.good { color: #10b981; }
+        .error-score.fair { color: #f59e0b; }
+        .error-score.poor { color: var(--incorrect); }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="./">🏠</a>
+        <div class="title">חידון בחירות</div>
+        <div class="stats"><span id="qNum">1</span>/<span id="qTotal">20</span></div>
+    </div>
+
+    <div class="container">
+        <div class="score-bar">
+            <div class="score-item">
+                <div class="value" id="correct">0</div>
+                <div class="label">נכונות</div>
+            </div>
+            <div class="score-item">
+                <div class="value" id="streak">0</div>
+                <div class="label">סדרה</div>
+            </div>
+            <div class="score-item">
+                <div class="value" id="pct">0%</div>
+                <div class="label">ממוצע</div>
+            </div>
+        </div>
+
+        <div class="progress">
+            <div class="progress-bar" id="bar"></div>
+        </div>
+
+        <div id="main" class="card">
+            <div class="loading">טוען...</div>
+        </div>
+    </div>
+
+    <script>
+        class Quiz {
+            constructor() {
+                this.questions = [];
+                this.idx = 0;
+                this.correct = 0;
+                this.streak = 0;
+                this.answered = [];
+                this.data = {};
+            }
+
+            async init() {
+                try {
+                    const [m21, m22, m23, m24, m25, official, transfers_24_25] = await Promise.all([
+                        fetch('data/map_21.json').then(r => r.json()),
+                        fetch('data/map_22.json').then(r => r.json()),
+                        fetch('data/map_23.json').then(r => r.json()),
+                        fetch('data/map_24.json').then(r => r.json()),
+                        fetch('data/map_25.json').then(r => r.json()),
+                        fetch('data/wiki_official_results.json').then(r => r.json()),
+                        fetch('data/transfer_24_to_25.json').then(r => r.json()).catch(() => null),
+                    ]);
+
+                    this.data = { 21: m21, 22: m22, 23: m23, 24: m24, 25: m25 };
+                    this.official = official;
+                    this.transfers = transfers_24_25;
+
+                    this.gen();
+                    this.render();
+                } catch (e) {
+                    document.getElementById('main').innerHTML = `<div class="error">שגיאה: ${e.message}</div>`;
+                }
+            }
+
+            gen() {
+                const multiChoice = [
+                    () => this.qPartyPeak(),
+                    () => this.qPartyDecline(),
+                    () => this.qThresholdNear(),
+                    () => this.qPartyVolatility(),
+                    () => this.qMajorityBuilder(),
+                    () => this.qHeadToHead(),
+                    () => this.qPartyNational(),
+                ];
+
+                const sliderGen = () => {
+                    this.qGuessSupport();
+                    return this.questions[this.questions.length - 1];
+                };
+
+                let count = 0;
+                for (let i = 0; i < 25 && count < 20; i++) {
+                    const useSlider = Math.random() < 0.7;
+
+                    if (useSlider) {
+                        const before = this.questions.length;
+                        sliderGen();
+                        if (this.questions.length > before) count++;
+                    } else {
+                        const fn = multiChoice[Math.floor(Math.random() * multiChoice.length)];
+                        fn.call(this);
+                        count++;
+                    }
+                }
+
+                if (this.questions.length === 0) {
+                    document.getElementById('main').innerHTML = `<div class="error">שגיאה: לא נוצרו שאלות</div>`;
+                    return;
+                }
+
+                document.getElementById('qTotal').textContent = this.questions.length;
+            }
+
+            pickElection(exclude = null) {
+                const weights = { 25: 40, 24: 25, 23: 15, 22: 12, 21: 8 };
+                const pool = [];
+                for (const [e, w] of Object.entries(weights)) {
+                    if (parseInt(e) !== exclude) {
+                        for (let i = 0; i < w; i++) pool.push(parseInt(e));
+                    }
+                }
+                return pool[Math.floor(Math.random() * pool.length)];
+            }
+
+            addQ(text, opts, correct) {
+                this.questions.push({
+                    type: 'choice',
+                    text,
+                    opts: opts.sort(() => Math.random() - 0.5),
+                    correct
+                });
+            }
+
+            qPartyPeak() {
+                const es = [21, 22, 23, 24, 25];
+                const party = this.randomParty();
+                if (!party) return null;
+
+                const es_valid = es.filter(e => this.official[e] && Array.isArray(this.official[e]) && this.official[e].find(p => p?.name === party));
+                if (es_valid.length < 2) return null;
+
+                const seats_by_e = {};
+                es_valid.forEach(e => {
+                    const p = this.official[e]?.find(x => x?.name === party);
+                    seats_by_e[e] = p?.seats || 0;
+                });
+
+                const peak = Object.entries(seats_by_e).reduce((a, b) => a[1] > b[1] ? a : b)?.[0];
+                if (!peak) return null;
+
+                const wrong = es_valid.filter(e => e !== parseInt(peak)).map(e => `בחירות ${e}`);
+
+                this.addQ(
+                    `באיזו שנת בחירות ל${party} היו מספר המושבים הגבוה ביותר?`,
+                    [`בחירות ${peak}`, ...wrong.slice(0, 3)],
+                    `בחירות ${peak}`
+                );
+            }
+
+            qPartyDecline() {
+                const es = [21, 22, 23, 24];
+                const party = this.randomParty();
+                if (!party) return null;
+
+                let biggest_drop = null, biggest_drop_val = 0;
+                for (let i = 0; i < es.length - 1; i++) {
+                    const e1 = es[i], e2 = es[i + 1];
+                    if (!this.official[e1] || !this.official[e2]) continue;
+                    const s1 = this.official[e1]?.find(p => p?.name === party)?.seats || 0;
+                    const s2 = this.official[e2]?.find(p => p?.name === party)?.seats || 0;
+                    if (s1 - s2 > biggest_drop_val) {
+                        biggest_drop_val = s1 - s2;
+                        biggest_drop = `בחירות ${e1}`;
+                    }
+                }
+
+                if (!biggest_drop || biggest_drop_val <= 0) return null;
+
+                const wrong = es.filter(e => `בחירות ${e}` !== biggest_drop).map(e => `בחירות ${e}`);
+
+                this.addQ(
+                    `בין אילו בחירות ל${party} היה הירידה הגדולה ביותר במושבים?`,
+                    [biggest_drop, ...wrong.slice(0, 3)],
+                    biggest_drop
+                );
+            }
+
+            qSettlementDominance() {
+                const settlement = this.randomSettlement(this.data[25]);
+                const party = this.randomParty();
+                if (!settlement || !party || !this.data[25]) return null;
+
+                const top_for_party = Object.values(this.data).map(m => {
+                    if (!m?.settlements || !Array.isArray(m.settlements)) return null;
+                    const valid = m.settlements.filter(s => s?.proportions?.[party] > 0);
+                    if (valid.length === 0) return null;
+                    return valid.reduce((a, b) =>
+                        (a?.proportions?.[party] || 0) > (b?.proportions?.[party] || 0) ? a : b, null);
+                }).filter(Boolean);
+
+                if (top_for_party.length === 0) return null;
+
+                const correct = top_for_party[Math.floor(Math.random() * top_for_party.length)];
+                if (!correct?.name) return null;
+
+                const wrong = this.data[25].settlements.filter(s => s?.proportions?.[party] > 0 && s?.name !== correct.name).slice(0, 3).map(s => s.name);
+
+                this.addQ(
+                    `באיזה יישוב היתה התמיכה הגבוהה ביותר ל${party} בחירות 25?`,
+                    [correct.name, ...wrong.slice(0, 3)],
+                    correct.name
+                );
+            }
+
+            qPartyTrajectoryAggregate() {
+                const party = this.randomParty();
+                if (!party || !this.official[25] || !this.official[21]) return null;
+
+                const seats_25 = this.official[25]?.find(p => p?.name === party)?.seats;
+                const seats_21 = this.official[21]?.find(p => p?.name === party)?.seats;
+
+                if (seats_25 === undefined || seats_21 === undefined) return null;
+
+                const direction = seats_25 > seats_21 ? 'עלתה' : 'ירדה';
+
+                this.addQ(
+                    `בהשוואה בחירות 21 וחירות 25, האם התמיכה ל${party} ${direction}?`,
+                    [direction, direction === 'עלתה' ? 'ירדה' : 'עלתה', 'נשארה זהה'],
+                    direction
+                );
+            }
+
+            qVoteTransferFlow() {
+                if (!this.transfers || !this.transfers.transfer_matrix) return null;
+
+                const nodes_from = this.transfers.nodes_from;
+                const nodes_to = this.transfers.nodes_to;
+                const matrix = this.transfers.transfer_matrix;
+
+                if (nodes_from.length === 0) return null;
+
+                const src_idx = Math.floor(Math.random() * Math.min(5, nodes_from.length));
+                const src_party = nodes_from[src_idx].name;
+
+                const row = matrix[src_idx];
+                const max_flow_idx = row.indexOf(Math.max(...row));
+
+                if (max_flow_idx < 0 || max_flow_idx >= nodes_to.length) return null;
+
+                const correct = nodes_to[max_flow_idx].name;
+                const wrong = nodes_to.filter((_, i) => i !== max_flow_idx && i < nodes_to.length).slice(0, 3).map(p => p.name);
+
+                this.addQ(
+                    `מבוחרי ${src_party} בחירות 24, לאיזו מפלגה עברו רוב הקולות בחירות 25?`,
+                    [correct, ...wrong],
+                    correct
+                );
+            }
+
+            qThresholdNear() {
+                const parties_25 = this.official[25];
+                if (!parties_25 || !Array.isArray(parties_25)) return null;
+
+                const near = parties_25.filter(p => (p?.seats || 0) <= 3 && (p?.seats || 0) > 0).slice(0, 1)[0];
+                if (!near?.name) return null;
+
+                const wrong = parties_25.filter(p => (p?.seats || 0) !== (near?.seats || 0) && (p?.seats || 0) > 0).slice(0, 3).map(p => p.name).filter(Boolean);
+
+                this.addQ(
+                    `איזו מפלגה בחירות 25 היתה קרובה ביותר לסף ההצבעה (3.25%)?`,
+                    [near.name, ...wrong.slice(0, 3)],
+                    near.name
+                );
+            }
+
+            qPartyVolatility() {
+                const party = this.randomParty();
+                if (!party) return null;
+
+                const pcts = [];
+                [21, 22, 23, 24, 25].forEach(e => {
+                    if (!this.official[e] || !Array.isArray(this.official[e])) return;
+                    const total = this.official[e].reduce((s, p) => s + (p?.votes || 0), 0);
+                    const p_votes = this.official[e].find(x => x?.name === party)?.votes || 0;
+                    if (total > 0) pcts.push(p_votes / total);
+                });
+
+                if (pcts.length < 3) return null;
+
+                const mean = pcts.reduce((a, b) => a + b) / pcts.length;
+                const variance = pcts.reduce((s, p) => s + (p - mean) ** 2, 0) / pcts.length;
+
+                const wrong = this.randomParties(party, 3);
+
+                this.addQ(
+                    `איזו מפלגה הראתה את התנודתיות הגבוהה ביותר (שינוי בתמיכה) מ21-25?`,
+                    [party, ...wrong],
+                    party
+                );
+            }
+
+            qSettlementShift() {
+                if (!this.data[21]?.settlements || !this.data[25]?.settlements) return null;
+
+                const s_21 = this.data[21].settlements[Math.floor(Math.random() * Math.min(30, this.data[21].settlements.length))];
+                if (!s_21 || !s_21.proportions) return null;
+
+                const s_25 = this.data[25].settlements.find(x => x?.name === s_21.name);
+                if (!s_25 || !s_25.proportions) return null;
+
+                const entries_21 = Object.entries(s_21.proportions || {});
+                const entries_25 = Object.entries(s_25.proportions || {});
+
+                if (entries_21.length === 0 || entries_25.length === 0) return null;
+
+                const p_21 = entries_21.reduce((a, b) => a[1] > b[1] ? a : b)[0];
+                const p_25 = entries_25.reduce((a, b) => a[1] > b[1] ? a : b)[0];
+
+                const shifted = p_21 !== p_25;
+                const direction = shifted ? 'כן, שונה' : 'לא, זהה';
+
+                this.addQ(
+                    `בין בחירות 21-25, האם המפלגה השלטת ב${s_21.name} התחלפה?`,
+                    ['כן, שונה', 'לא, זהה'],
+                    direction
+                );
+            }
+
+            qHeadToHead() {
+                const e = this.pickElection();
+                const settlement = this.data[e]?.settlements[Math.floor(Math.random() * Math.min(25, this.data[e]?.settlements?.length || 0))];
+
+                if (!settlement || !settlement.proportions) return null;
+
+                const top2 = Object.entries(settlement.proportions)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 2)
+                    .map(x => x[0]);
+
+                if (top2.length < 2) return null;
+
+                this.addQ(
+                    `ב${settlement.name} בחירות ${e}, איזו מפלגה קיבלה יותר קולות: ${top2[0]} או ${top2[1]}?`,
+                    [top2[0], top2[1]],
+                    top2[0]
+                );
+            }
+
+            qPartyNational() {
+                const e = this.pickElection();
+                const parties = this.official[e];
+                if (!parties || !Array.isArray(parties) || parties.length < 2) return null;
+
+                const p1 = parties[Math.floor(Math.random() * Math.min(5, parties.length))];
+                const p2 = parties[Math.floor(Math.random() * Math.min(5, parties.length))];
+
+                if (!p1?.name || !p2?.name || p1.name === p2.name) return null;
+
+                const winner = (p1?.votes || 0) > (p2?.votes || 0) ? p1 : p2;
+                const loser = (p1?.votes || 0) > (p2?.votes || 0) ? p2 : p1;
+
+                this.addQ(
+                    `בחירות ${e}, איזו מפלגה קיבלה יותר קולות כלל: ${p1.name} או ${p2.name}?`,
+                    [winner.name, loser.name],
+                    winner.name
+                );
+            }
+
+            qSettlementCompare() {
+                const e = this.pickElection();
+                const settlements = this.data[e]?.settlements;
+                if (!settlements || settlements.length < 2) return null;
+
+                const s1 = settlements[Math.floor(Math.random() * Math.min(20, settlements.length))];
+                const s2 = settlements[Math.floor(Math.random() * Math.min(20, settlements.length))];
+
+                if (!s1 || !s2 || s1.name === s2.name) return null;
+
+                const winner = s1.turnout > s2.turnout ? s1 : s2;
+                const loser = s1.turnout > s2.turnout ? s2 : s1;
+
+                this.addQ(
+                    `בחירות ${e}, באיזה יישוב היה שיעור הצבעה גבוה יותר: ${s1.name} או ${s2.name}?`,
+                    [winner.name, loser.name],
+                    winner.name
+                );
+            }
+
+            qBlocSeats() {
+                const e = this.pickElection();
+                const parties = this.official[e];
+                if (!parties || !Array.isArray(parties) || parties.length === 0) return null;
+
+                const right_names = ['הליכוד', 'כחול לבן', 'יש עתיד', 'הבית היהודי', 'עוצמה יהודית', 'תקומה', 'הציונות הדתית', 'יהדות התורה', 'שס', 'ימינה'];
+                const left_names = ['מרצ', 'אביבית', 'תל"ם', 'חד"ש', 'בל"ד', 'רע"ם', 'תנו"ע'];
+
+                let right = 0, left = 0;
+                right_names.forEach(p => {
+                    const party = parties.find(x => x?.name === p);
+                    right += party?.seats || 0;
+                });
+                left_names.forEach(p => {
+                    const party = parties.find(x => x?.name === p);
+                    left += party?.seats || 0;
+                });
+
+                const winner = right > left ? 'ימין' : 'מרכז-שמאל';
+
+                this.addQ(
+                    `בחירות ${e}, איזה בלוק קיבל יותר מושבים: ימין או מרכז-שמאל?`,
+                    ['ימין', 'מרכז-שמאל'],
+                    winner
+                );
+            }
+
+            qConsecutiveGain() {
+                const party = this.randomParty();
+                if (!party) return null;
+
+                let gained_both = false;
+                const es = [21, 22, 23, 24, 25];
+                for (let i = 0; i < es.length - 1; i++) {
+                    const s1 = this.official[es[i]]?.find(p => p.name === party)?.seats || 0;
+                    const s2 = this.official[es[i + 1]]?.find(p => p.name === party)?.seats || 0;
+                    if (i + 1 < es.length - 1) {
+                        const s3 = this.official[es[i + 2]]?.find(p => p.name === party)?.seats || 0;
+                        if (s2 > s1 && s3 > s2) {
+                            gained_both = true;
+                            break;
+                        }
+                    }
+                }
+
+                const answer = gained_both ? 'כן' : 'לא';
+
+                this.addQ(
+                    `בין בחירות 21-25, האם ${party} קיבלה יותר מושבים בשתי בחירות רצופות?`,
+                    ['כן', 'לא'],
+                    answer
+                );
+            }
+
+            qMajorityBuilder() {
+                const e = this.pickElection();
+                const parties = this.official[e];
+                if (!parties || !Array.isArray(parties) || parties.length === 0) return null;
+
+                const valid = parties.filter(p => p?.seats > 0 && p?.seats < 61);
+                if (valid.length === 0) return null;
+
+                const closest = valid.reduce((a, b) => (a?.seats || 0) > (b?.seats || 0) ? a : b, null);
+                if (!closest || !closest.name || (closest?.seats || 0) < 20) return null;
+
+                const wrong = parties.filter(p => p?.seats !== closest.seats && p?.seats > 10).slice(0, 3).map(p => p.name).filter(Boolean);
+
+                this.addQ(
+                    `בחירות ${e}, איזו מפלגה הייתה הקרובה ביותר לרוב (61 מושבים)?`,
+                    [closest.name, ...wrong.slice(0, 3)],
+                    closest.name
+                );
+            }
+
+            qPartyInTopK() {
+                const e = this.pickElection();
+                const settlement = this.data[e]?.settlements?.[Math.floor(Math.random() * Math.min(25, this.data[e]?.settlements?.length || 0))];
+                const party = this.randomParty();
+
+                if (!settlement || !settlement.proportions || !party) return null;
+
+                const top3 = Object.entries(settlement.proportions)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 3)
+                    .map(x => x[0]);
+
+                const in_top3 = top3.includes(party) ? 'כן' : 'לא';
+
+                this.addQ(
+                    `ב${settlement.name} בחירות ${e}, האם ${party} הייתה בשלוש המפלגות המובילות?`,
+                    ['כן', 'לא'],
+                    in_top3
+                );
+            }
+
+            qTurnoutExtreme() {
+                const e = this.pickElection();
+                const settlements = this.data[e]?.settlements;
+                if (!settlements || settlements.length === 0) return null;
+
+                const lowest = settlements.reduce((a, b) => (a?.turnout || 1) < (b?.turnout || 1) ? a : b, null);
+                if (!lowest || !lowest.name) return null;
+
+                const wrong = settlements.filter(s => s?.name !== lowest.name && (s?.turnout || 0) > 0.5).slice(0, 3).map(s => s.name);
+
+                this.addQ(
+                    `בחירות ${e}, באיזה יישוב היה שיעור ההצבעה הנמוך ביותר?`,
+                    [lowest.name, ...wrong.slice(0, 3)],
+                    lowest.name
+                );
+            }
+
+            qPartySymbol() {
+                const e = this.pickElection();
+                const parties = this.official[e];
+                if (!parties || !Array.isArray(parties) || parties.length < 2) return null;
+
+                const p = parties[Math.floor(Math.random() * Math.min(6, parties.length))];
+                if (!p?.name || p?.seats === undefined) return null;
+
+                const wrong = parties.filter(x => x?.name !== p.name && x?.seats > 0).slice(0, 3).map(x => x.name).filter(Boolean);
+
+                this.addQ(
+                    `בחירות ${e}, איזו מפלגה קיבלה ${p.seats} מושבים?`,
+                    [p.name, ...wrong.slice(0, 3)],
+                    p.name
+                );
+            }
+
+            qGuessSupport() {
+                const e = this.pickElection();
+                const settlement = this.data[e]?.settlements?.[Math.floor(Math.random() * Math.min(40, this.data[e]?.settlements?.length || 0))];
+                const party = this.randomParty();
+
+                if (!settlement?.name || !party || !settlement?.proportions?.[party]) return null;
+
+                const actual = Math.round(settlement.proportions[party]);
+
+                this.questions.push({
+                    type: 'slider',
+                    text: `מה אחוז הבוחרים ל${party} ב${settlement.name}, בחירות ${e}?`,
+                    actual,
+                    party,
+                    settlement: settlement.name,
+                    election: e,
+                });
+            }
+
+            randomParty(exclude = null) {
+                if (!this.official[25]) return null;
+                const all = this.official[25].filter(p => p?.name !== exclude).slice(0, 10);
+                return all[Math.floor(Math.random() * all.length)]?.name;
+            }
+
+            randomParties(exclude = null, count = 3) {
+                if (!this.official[25]) return [];
+                const all = this.official[25].filter(p => p?.name !== exclude).slice(0, 10);
+                const result = [];
+                for (let i = 0; i < count && all.length > 0; i++) {
+                    const p = all[Math.floor(Math.random() * all.length)];
+                    if (p?.name && !result.includes(p.name)) {
+                        result.push(p.name);
+                    }
+                }
+                return result;
+            }
+
+            randomSettlement(map) {
+                return map.settlements[Math.floor(Math.random() * Math.min(30, map.settlements.length))];
+            }
+
+            render() {
+                const q = this.questions[this.idx];
+                const bar = ((this.idx + 1) / this.questions.length) * 100;
+                document.getElementById('bar').style.width = bar + '%';
+
+                let html = `<div class="question">${q.text}</div>`;
+
+                if (q.type === 'slider') {
+                    html += this.renderSlider(q);
+                } else {
+                    html += this.renderMultipleChoice(q);
+                }
+
+                document.getElementById('main').innerHTML = html;
+
+                if (q.type === 'slider') {
+                    const slider = document.getElementById('slider');
+                    const display = document.getElementById('sliderVal');
+                    slider.addEventListener('input', (e) => {
+                        display.textContent = e.target.value + '%';
+                    });
+                    const submitBtn = document.getElementById('submitBtn');
+                    if (submitBtn) submitBtn.addEventListener('click', () => this.answerSlider(q));
+                    const nextBtn = document.getElementById('nextBtn');
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', () => {
+                            if (this.idx < this.questions.length - 1) {
+                                this.next();
+                            } else {
+                                this.finish();
+                            }
+                        });
+                    }
+                } else {
+                    document.querySelectorAll('.option:not(.disabled)').forEach(el => {
+                        el.addEventListener('click', (e) => this.answer(e.target.dataset.opt));
+                    });
+                    const btn = document.getElementById('nextBtn');
+                    if (btn) btn.addEventListener('click', () => {
+                        if (this.idx < this.questions.length - 1) {
+                            this.next();
+                        } else {
+                            this.finish();
+                        }
+                    });
+                }
+
+                document.getElementById('qNum').textContent = this.idx + 1;
+            }
+
+            renderSlider(q) {
+                const answered = this.answered[this.idx];
+                let html = `
+                    <div class="slider-container">
+                        <div class="slider-row">
+                            <input type="range" id="slider" min="0" max="100" value="50" ${answered ? 'disabled' : ''}>
+                            <div class="slider-display" id="sliderVal">50%</div>
+                        </div>
+                `;
+
+                if (!answered) {
+                    html += `<button class="btn" id="submitBtn">שלח תשובה</button>`;
+                } else {
+                    const error = this.answered[this.idx];
+                    const quality = error < 5 ? 'perfect' : error < 15 ? 'good' : error < 30 ? 'fair' : 'poor';
+                    const label = error < 5 ? '⭐ מעולה!' : error < 15 ? '✓ טוב' : error < 30 ? '~ סביר' : '✗ רחוק';
+                    html += `
+                        <div class="error-score ${quality}">
+                            <div>התשובה הנכונה: ${q.actual}%</div>
+                            <div class="value">${label}</div>
+                            <div>הפרש: ${error}%</div>
+                        </div>
+                    `;
+                    const isLast = this.idx >= this.questions.length - 1;
+                    const btnText = isLast ? 'סיום' : 'הבא';
+                    html += `<button class="btn" id="nextBtn" style="margin-top: 1rem;">${btnText}</button>`;
+                }
+
+                html += `</div>`;
+                return html;
+            }
+
+            renderMultipleChoice(q) {
+                let html = `<div class="options">`;
+
+                q.opts.forEach(opt => {
+                    const answered = this.answered[this.idx];
+                    let cls = '';
+                    if (answered) {
+                        cls = opt === q.correct ? 'correct' : opt === answered ? 'incorrect' : '';
+                    }
+                    const dis = answered ? 'disabled' : '';
+                    html += `<div class="option ${cls} ${dis}" data-opt="${opt}">${opt}</div>`;
+                });
+
+                html += `</div>`;
+
+                if (this.answered[this.idx]) {
+                    const is_correct = this.answered[this.idx] === q.correct;
+                    html += `<div class="feedback show ${is_correct ? 'correct' : 'incorrect'}">
+                        ${is_correct ? '✓ נכון!' : '✗ שגוי. התשובה: ' + q.correct}
+                    </div>`;
+                }
+
+                const next_btn = this.idx < this.questions.length - 1;
+                html += `<button class="btn" id="nextBtn" ${this.answered[this.idx] ? '' : 'disabled'}>
+                    ${next_btn ? 'הבא' : 'סיום'}
+                </button>`;
+
+                return html;
+            }
+
+            answerSlider(q) {
+                const guess = parseInt(document.getElementById('slider').value);
+                const error = Math.abs(guess - q.actual);
+                this.answered[this.idx] = error;
+
+                if (error < 15) {
+                    this.correct++;
+                    this.streak++;
+                } else {
+                    this.streak = 0;
+                }
+
+                this.update();
+                this.render();
+            }
+
+            answer(selected) {
+                const q = this.questions[this.idx];
+                this.answered[this.idx] = selected;
+
+                if (selected === q.correct) {
+                    this.correct++;
+                    this.streak++;
+                } else {
+                    this.streak = 0;
+                }
+
+                this.update();
+                this.render();
+            }
+
+            update() {
+                const pct = Math.round((this.correct / Math.max(1, this.answered.filter(Boolean).length)) * 100);
+                document.getElementById('correct').textContent = this.correct;
+                document.getElementById('streak').textContent = this.streak;
+                document.getElementById('pct').textContent = pct + '%';
+            }
+
+            next() {
+                if (this.idx < this.questions.length - 1) {
+                    this.idx++;
+                    this.render();
+                }
+            }
+
+            finish() {
+                const sliderQs = this.questions.filter((q, i) => q.type === 'slider' && this.answered[i]);
+                const avgError = sliderQs.length > 0
+                    ? Math.round(sliderQs.reduce((s, q, i) => s + this.answered[this.questions.indexOf(q)], 0) / sliderQs.length)
+                    : 0;
+
+                const pct = Math.round((this.correct / this.questions.length) * 100);
+                document.getElementById('main').innerHTML = `
+                    <div style="text-align: center;">
+                        <h2 style="font-size: 1.8rem; margin-bottom: 1rem;">סיום!</h2>
+                        <div class="score-bar">
+                            <div class="score-item">
+                                <div class="value" style="color: var(--correct);">${this.correct}/${this.questions.length}</div>
+                                <div class="label">תשובות נכונות</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="value">${pct}%</div>
+                                <div class="label">ממוצע</div>
+                            </div>
+                            <div class="score-item">
+                                <div class="value">±${avgError}%</div>
+                                <div class="label">הפרש ממוצע</div>
+                            </div>
+                        </div>
+                        <button class="btn" onclick="location.reload()">שוב</button>
+                        <button class="btn" style="background: var(--text2); margin-right: 0.5rem;" onclick="location.href='./'">בחזרה</button>
+                    </div>
+                `;
+            }
+        }
+
+        const quiz = new Quiz();
+        quiz.init();
+    </script>
+</body>
+</html>

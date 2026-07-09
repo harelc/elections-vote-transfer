@@ -1,0 +1,8 @@
+[build]
+command = "echo 'Static site'"
+publish = "site"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
