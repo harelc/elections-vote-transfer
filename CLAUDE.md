@@ -39,6 +39,7 @@ Live site: https://kolot-nodedim.netlify.app/
 │   ├── scatter.html               # Party support scatter plot (X vs Y axis)
 │   ├── dhondt.html                # D'Hondt/Bader-Ofer seat allocation calculator
 │   ├── irregular.html             # Irregular ballot analysis
+│   ├── fraud-sim.html             # Election fraud detection simulator (K24→K25, K25→K26)
 │   ├── regional.html              # Regional elections simulator (Voronoi + D'Hondt)
 │   ├── settlement.html            # Settlement profile page (?name=...)
 │   ├── party.html                 # Party profile page (?name=...)
@@ -382,6 +383,18 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 
 ### irregular.html (Anomaly Detection)
 - Identifies statistically unusual ballot boxes
+
+### fraud-sim.html (Election Fraud Detection Simulator)
+- Interactive fraud detector sandbox for K24→K25 (real data) and K25→K26 (simulated scenario)
+- **Fraud injection**: Parametric controls inject synthetic ballot-level fraud — select target settlement, number of ballots, intervention strength (% of ballot votes to reassign)
+- **Attack scenarios**: Predefined templates for party-to-party fraud (e.g., Likud→Shas redirections, bloc-to-bloc shifts)
+- **Multiple detectors**: Geo (geographic isolation), manifold (t-SNE neighbor distance), matched-filter (1D variance detection)
+- **Portfolio fusion**: Combines detector scores via weighted combination; optimizable threshold shown on dynamic ROC curve with AUC
+- **Output**: Ranked ballot list with before/after vote distributions, seat-equivalent impact, per-detector anomaly scores
+- **Druze exclusion**: 14 specified Druze settlements excluded by default (settlement-level checkbox to re-include)
+- **Visualization modes**: ROC plot (dual curves for current vs population level), side-by-side tampered ballot comparison
+- **First-time intro modal**: Explains concepts (detector types, fraud scenarios, ROC interpretation)
+- **Default state**: K24→K25 transition, top-100 ballots, 400-ballot injection, 17% intervention strength
 
 ### regional.html (Regional Elections Simulator)
 - Voronoi-based regional election simulation with D'Hondt allocation
