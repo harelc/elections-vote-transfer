@@ -4,6 +4,7 @@
     "name": "הכנסת ה-21",
     "name_en": "21st Knesset",
     "date": "2019-04-09",
+    "estimated": false,
     "eligible_voters": 6339279,
     "votes_cast": 4340253,
     "valid_votes": 4268929,
@@ -14,6 +15,7 @@
     "name": "הכנסת ה-22",
     "name_en": "22nd Knesset",
     "date": "2019-09-17",
+    "estimated": false,
     "eligible_voters": 6394030,
     "votes_cast": 4465168,
     "valid_votes": 4421448,
@@ -280,7 +282,7 @@
     {
       "name": "כחול לבן",
       "symbol": "פה",
-      "votes": 1065030,
+      "votes": 1148700,
       "seats": 33,
       "color": "#8b5cf6",
       "info": {
@@ -299,7 +301,7 @@
     {
       "name": "הליכוד",
       "symbol": "מחל",
-      "votes": 1034439,
+      "votes": 1111535,
       "seats": 32,
       "color": "#2563eb",
       "info": {
@@ -318,7 +320,7 @@
     {
       "name": "הרשימה המשותפת",
       "symbol": "ודעם",
-      "votes": 458753,
+      "votes": 470611,
       "seats": 13,
       "color": "#0d9488",
       "info": {
@@ -337,7 +339,7 @@
     {
       "name": "ש״ס",
       "symbol": "שס",
-      "votes": 312400,
+      "votes": 329834,
       "seats": 9,
       "color": "#1e3a8a",
       "info": {
@@ -356,7 +358,7 @@
     {
       "name": "ישראל ביתנו",
       "symbol": "ל",
-      "votes": 295809,
+      "votes": 309688,
       "seats": 8,
       "color": "#db2777",
       "info": {
@@ -375,7 +377,7 @@
     {
       "name": "יהדות התורה",
       "symbol": "ג",
-      "votes": 257129,
+      "votes": 268688,
       "seats": 7,
       "color": "#4b5563",
       "info": {
@@ -394,7 +396,7 @@
     {
       "name": "ימינה",
       "symbol": "טב",
-      "votes": 235796,
+      "votes": 260339,
       "seats": 7,
       "color": "#ea580c",
       "info": {
@@ -413,7 +415,7 @@
     {
       "name": "העבודה-גשר",
       "symbol": "אמת",
-      "votes": 199455,
+      "votes": 212529,
       "seats": 6,
       "color": "#dc2626",
       "info": {
@@ -432,7 +434,7 @@
     {
       "name": "המחנה הדמוקרטי",
       "symbol": "מרצ",
-      "votes": 178550,
+      "votes": 192261,
       "seats": 5,
       "color": "#16a34a",
       "info": {
@@ -477,14 +479,6 @@
       "target_symbol": "שס",
       "votes": 25227,
       "percentage": 2.2
-    },
-    {
-      "source": "הליכוד",
-      "source_symbol": "מחל",
-      "target": "העבודה-גשר",
-      "target_symbol": "אמת",
-      "votes": 6014,
-      "percentage": 0.5
     },
     {
       "source": "הליכוד",
@@ -601,34 +595,10 @@
     {
       "source": "הבית היהודי",
       "source_symbol": "טב",
-      "target": "ש״ס",
-      "target_symbol": "שס",
-      "votes": 9948,
-      "percentage": 6.2
-    },
-    {
-      "source": "הבית היהודי",
-      "source_symbol": "טב",
-      "target": "יהדות התורה",
-      "target_symbol": "ג",
-      "votes": 13072,
-      "percentage": 8.2
-    },
-    {
-      "source": "הבית היהודי",
-      "source_symbol": "טב",
       "target": "ימינה",
       "target_symbol": "טב",
       "votes": 116474,
       "percentage": 73.0
-    },
-    {
-      "source": "הבית היהודי",
-      "source_symbol": "טב",
-      "target": "לא הצביעו",
-      "target_symbol": "abstain",
-      "votes": 11838,
-      "percentage": 7.4
     },
     {
       "source": "מרצ",
@@ -685,14 +655,6 @@
       "target_symbol": "ל",
       "votes": 31879,
       "percentage": 20.9
-    },
-    {
-      "source": "כולנו",
-      "source_symbol": "כ",
-      "target": "העבודה-גשר",
-      "target_symbol": "אמת",
-      "votes": 12980,
-      "percentage": 8.5
     },
     {
       "source": "כולנו",
@@ -785,14 +747,6 @@
     {
       "source": "לא הצביעו",
       "source_symbol": "abstain",
-      "target": "יהדות התורה",
-      "target_symbol": "ג",
-      "votes": 8900,
-      "percentage": 0.4
-    },
-    {
-      "source": "לא הצביעו",
-      "source_symbol": "abstain",
       "target": "העבודה-גשר",
       "target_symbol": "אמת",
       "votes": 30882,
@@ -811,7 +765,7 @@
     "common_precincts": 9870,
     "r_squared": 0.9233,
     "total_votes_from": 6440142,
-    "total_votes_to": 6241948,
-    "generated_at": "2026-02-17 08:49:58"
+    "total_votes_to": 6508772,
+    "generated_at": "2026-07-11 22:52:00"
   }
 }

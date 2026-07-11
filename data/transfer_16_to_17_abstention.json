@@ -4,6 +4,7 @@
     "name": "הכנסת ה-16",
     "name_en": "16th Knesset",
     "date": "2003-01-28",
+    "estimated": false,
     "eligible_voters": 4720075,
     "votes_cast": 3200773,
     "valid_votes": 3148364,
@@ -14,6 +15,7 @@
     "name": "הכנסת ה-17",
     "name_en": "17th Knesset",
     "date": "2006-03-28",
+    "estimated": false,
     "eligible_voters": 5014622,
     "votes_cast": 3186739,
     "valid_votes": 3137064,
@@ -284,7 +286,7 @@
     {
       "name": "קדימה",
       "symbol": "כן",
-      "votes": 647213,
+      "votes": 650696,
       "seats": 29,
       "color": "#f59e0b",
       "info": {
@@ -303,7 +305,7 @@
     {
       "name": "העבודה-מימד",
       "symbol": "אמת",
-      "votes": 447085,
+      "votes": 449010,
       "seats": 19,
       "color": "#dc2626",
       "info": {
@@ -322,7 +324,7 @@
     {
       "name": "ש״ס",
       "symbol": "שס",
-      "votes": 285234,
+      "votes": 286452,
       "seats": 12,
       "color": "#1e3a8a",
       "info": {
@@ -341,7 +343,7 @@
     {
       "name": "הליכוד",
       "symbol": "מחל",
-      "votes": 262894,
+      "votes": 264486,
       "seats": 12,
       "color": "#2563eb",
       "info": {
@@ -360,7 +362,7 @@
     {
       "name": "ישראל ביתנו",
       "symbol": "ל",
-      "votes": 266882,
+      "votes": 267515,
       "seats": 11,
       "color": "#db2777",
       "info": {
@@ -379,7 +381,7 @@
     {
       "name": "האיחוד הלאומי-מפד״ל",
       "symbol": "טב",
-      "votes": 205605,
+      "votes": 206402,
       "seats": 9,
       "color": "#ea580c",
       "info": {
@@ -398,7 +400,7 @@
     {
       "name": "גיל",
       "symbol": "זך",
-      "votes": 176664,
+      "votes": 177924,
       "seats": 7,
       "color": "#a3a3a3",
       "info": {
@@ -415,7 +417,7 @@
     {
       "name": "יהדות התורה",
       "symbol": "ג",
-      "votes": 141938,
+      "votes": 143149,
       "seats": 6,
       "color": "#4b5563",
       "info": {
@@ -434,7 +436,7 @@
     {
       "name": "מרצ",
       "symbol": "מרצ",
-      "votes": 109006,
+      "votes": 109474,
       "seats": 5,
       "color": "#16a34a",
       "info": {
@@ -453,7 +455,7 @@
     {
       "name": "הרשימה הערבית המאוחדת-התחדשות ערבית",
       "symbol": "עם",
-      "votes": 93675,
+      "votes": 93721,
       "seats": 4,
       "color": "#84cc16",
       "info": {
@@ -472,7 +474,7 @@
     {
       "name": "חד״ש",
       "symbol": "ו",
-      "votes": 84770,
+      "votes": 85204,
       "seats": 3,
       "color": "#f43f5e",
       "info": {
@@ -491,7 +493,7 @@
     {
       "name": "בל״ד",
       "symbol": "ד",
-      "votes": 71131,
+      "votes": 71336,
       "seats": 3,
       "color": "#065f46",
       "info": {
@@ -762,14 +764,6 @@
       "percentage": 80.2
     },
     {
-      "source": "הרשימה הערבית המאוחדת",
-      "source_symbol": "עם",
-      "target": "לא הצביעו",
-      "target_symbol": "abstain",
-      "votes": 12288,
-      "percentage": 18.9
-    },
-    {
       "source": "לא הצביעו",
       "source_symbol": "abstain",
       "target": "קדימה",
@@ -878,7 +872,7 @@
     "common_precincts": 7553,
     "r_squared": 0.6063,
     "total_votes_from": 4550085,
-    "total_votes_to": 4808732,
-    "generated_at": "2026-02-17 08:47:05"
+    "total_votes_to": 4822004,
+    "generated_at": "2026-07-11 22:52:49"
   }
 }
