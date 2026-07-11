@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-05-24 08:17:14",
+  "generated_at": "2026-07-11 22:47:45",
   "transitions": {
     "16_to_17": {
       "from_election": {
@@ -7,6 +7,7 @@
         "name": "הכנסת ה-16",
         "name_en": "16th Knesset",
         "date": "2003-01-28",
+        "estimated": false,
         "eligible_voters": 4720075,
         "votes_cast": 3200773,
         "valid_votes": 3148364,
@@ -17,6 +18,7 @@
         "name": "הכנסת ה-17",
         "name_en": "17th Knesset",
         "date": "2006-03-28",
+        "estimated": false,
         "eligible_voters": 5014622,
         "votes_cast": 3186739,
         "valid_votes": 3137064,
@@ -275,7 +277,7 @@
         {
           "name": "קדימה",
           "symbol": "כן",
-          "votes": 647213,
+          "votes": 650696,
           "seats": 29,
           "color": "#f59e0b",
           "info": {
@@ -294,7 +296,7 @@
         {
           "name": "העבודה-מימד",
           "symbol": "אמת",
-          "votes": 447085,
+          "votes": 449010,
           "seats": 19,
           "color": "#dc2626",
           "info": {
@@ -313,7 +315,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 285234,
+          "votes": 286452,
           "seats": 12,
           "color": "#1e3a8a",
           "info": {
@@ -332,7 +334,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 262894,
+          "votes": 264486,
           "seats": 12,
           "color": "#2563eb",
           "info": {
@@ -351,7 +353,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 266882,
+          "votes": 267515,
           "seats": 11,
           "color": "#db2777",
           "info": {
@@ -370,7 +372,7 @@
         {
           "name": "האיחוד הלאומי-מפד״ל",
           "symbol": "טב",
-          "votes": 205605,
+          "votes": 206402,
           "seats": 9,
           "color": "#ea580c",
           "info": {
@@ -389,7 +391,7 @@
         {
           "name": "גיל",
           "symbol": "זך",
-          "votes": 176664,
+          "votes": 177924,
           "seats": 7,
           "color": "#a3a3a3",
           "info": {
@@ -406,7 +408,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 141938,
+          "votes": 143149,
           "seats": 6,
           "color": "#4b5563",
           "info": {
@@ -425,7 +427,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 109006,
+          "votes": 109474,
           "seats": 5,
           "color": "#16a34a",
           "info": {
@@ -444,7 +446,7 @@
         {
           "name": "הרשימה הערבית המאוחדת-התחדשות ערבית",
           "symbol": "עם",
-          "votes": 93675,
+          "votes": 93721,
           "seats": 4,
           "color": "#84cc16",
           "info": {
@@ -463,7 +465,7 @@
         {
           "name": "חד״ש",
           "symbol": "ו",
-          "votes": 84770,
+          "votes": 85204,
           "seats": 3,
           "color": "#f43f5e",
           "info": {
@@ -482,7 +484,7 @@
         {
           "name": "בל״ד",
           "symbol": "ד",
-          "votes": 71131,
+          "votes": 71336,
           "seats": 3,
           "color": "#065f46",
           "info": {
@@ -575,26 +577,10 @@
         {
           "source": "הליכוד",
           "source_symbol": "מחל",
-          "target": "הרשימה הערבית המאוחדת-התחדשות ערבית",
-          "target_symbol": "עם",
-          "votes": 14118,
-          "percentage": 1.6
-        },
-        {
-          "source": "הליכוד",
-          "source_symbol": "מחל",
           "target": "חד״ש",
           "target_symbol": "ו",
           "votes": 22523,
           "percentage": 2.6
-        },
-        {
-          "source": "הליכוד",
-          "source_symbol": "מחל",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 14994,
-          "percentage": 1.7
         },
         {
           "source": "העבודה",
@@ -655,14 +641,6 @@
         {
           "source": "האיחוד הלאומי",
           "source_symbol": "ל",
-          "target": "הליכוד",
-          "target_symbol": "מחל",
-          "votes": 6409,
-          "percentage": 3.9
-        },
-        {
-          "source": "האיחוד הלאומי",
-          "source_symbol": "ל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
           "votes": 109750,
@@ -711,34 +689,10 @@
         {
           "source": "חד״ש",
           "source_symbol": "ו",
-          "target": "הרשימה הערבית המאוחדת-התחדשות ערבית",
-          "target_symbol": "עם",
-          "votes": 14393,
-          "percentage": 15.5
-        },
-        {
-          "source": "חד״ש",
-          "source_symbol": "ו",
           "target": "חד״ש",
           "target_symbol": "ו",
           "votes": 68900,
           "percentage": 74.0
-        },
-        {
-          "source": "חד״ש",
-          "source_symbol": "ו",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 8807,
-          "percentage": 9.5
-        },
-        {
-          "source": "עם אחד",
-          "source_symbol": "ם",
-          "target": "קדימה",
-          "target_symbol": "כן",
-          "votes": 7878,
-          "percentage": 9.4
         },
         {
           "source": "עם אחד",
@@ -747,46 +701,6 @@
           "target_symbol": "אמת",
           "votes": 47146,
           "percentage": 56.0
-        },
-        {
-          "source": "עם אחד",
-          "source_symbol": "ם",
-          "target": "ישראל ביתנו",
-          "target_symbol": "ל",
-          "votes": 6228,
-          "percentage": 7.4
-        },
-        {
-          "source": "עם אחד",
-          "source_symbol": "ם",
-          "target": "הרשימה הערבית המאוחדת-התחדשות ערבית",
-          "target_symbol": "עם",
-          "votes": 5778,
-          "percentage": 6.9
-        },
-        {
-          "source": "עם אחד",
-          "source_symbol": "ם",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 11363,
-          "percentage": 13.5
-        },
-        {
-          "source": "בל״ד",
-          "source_symbol": "ד",
-          "target": "העבודה-מימד",
-          "target_symbol": "אמת",
-          "votes": 5657,
-          "percentage": 8.0
-        },
-        {
-          "source": "בל״ד",
-          "source_symbol": "ד",
-          "target": "חד״ש",
-          "target_symbol": "ו",
-          "votes": 5930,
-          "percentage": 8.4
         },
         {
           "source": "בל״ד",
@@ -817,8 +731,8 @@
         "common_precincts": 7553,
         "r_squared": 0.8138,
         "total_votes_from": 2872487,
-        "total_votes_to": 2792097,
-        "generated_at": "2026-02-17 23:24:13"
+        "total_votes_to": 2805369,
+        "generated_at": "2026-07-11 22:44:00"
       }
     },
     "17_to_18": {
@@ -827,6 +741,7 @@
         "name": "הכנסת ה-17",
         "name_en": "17th Knesset",
         "date": "2006-03-28",
+        "estimated": false,
         "eligible_voters": 5014622,
         "votes_cast": 3186739,
         "valid_votes": 3137064,
@@ -837,6 +752,7 @@
         "name": "הכנסת ה-18",
         "name_en": "18th Knesset",
         "date": "2009-02-10",
+        "estimated": false,
         "eligible_voters": 5278985,
         "votes_cast": 3416587,
         "valid_votes": 3373490,
@@ -846,7 +762,7 @@
         {
           "name": "קדימה",
           "symbol": "כן",
-          "votes": 647213,
+          "votes": 650696,
           "seats": 29,
           "color": "#f59e0b",
           "info": {
@@ -865,7 +781,7 @@
         {
           "name": "העבודה-מימד",
           "symbol": "אמת",
-          "votes": 447085,
+          "votes": 449010,
           "seats": 19,
           "color": "#dc2626",
           "info": {
@@ -884,7 +800,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 285234,
+          "votes": 286452,
           "seats": 12,
           "color": "#1e3a8a",
           "info": {
@@ -903,7 +819,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 262894,
+          "votes": 264486,
           "seats": 12,
           "color": "#2563eb",
           "info": {
@@ -922,7 +838,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 266882,
+          "votes": 267515,
           "seats": 11,
           "color": "#db2777",
           "info": {
@@ -941,7 +857,7 @@
         {
           "name": "האיחוד הלאומי-מפד״ל",
           "symbol": "טב",
-          "votes": 205605,
+          "votes": 206402,
           "seats": 9,
           "color": "#ea580c",
           "info": {
@@ -960,7 +876,7 @@
         {
           "name": "גיל",
           "symbol": "זך",
-          "votes": 176664,
+          "votes": 177924,
           "seats": 7,
           "color": "#a3a3a3",
           "info": {
@@ -977,7 +893,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 141938,
+          "votes": 143149,
           "seats": 6,
           "color": "#4b5563",
           "info": {
@@ -996,7 +912,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 109006,
+          "votes": 109474,
           "seats": 5,
           "color": "#16a34a",
           "info": {
@@ -1015,7 +931,7 @@
         {
           "name": "הרשימה הערבית המאוחדת-התחדשות ערבית",
           "symbol": "עם",
-          "votes": 93675,
+          "votes": 93721,
           "seats": 4,
           "color": "#84cc16",
           "info": {
@@ -1034,7 +950,7 @@
         {
           "name": "חד״ש",
           "symbol": "ו",
-          "votes": 84770,
+          "votes": 85204,
           "seats": 3,
           "color": "#f43f5e",
           "info": {
@@ -1053,7 +969,7 @@
         {
           "name": "בל״ד",
           "symbol": "ד",
-          "votes": 71131,
+          "votes": 71336,
           "seats": 3,
           "color": "#065f46",
           "info": {
@@ -1074,7 +990,7 @@
         {
           "name": "קדימה",
           "symbol": "כן",
-          "votes": 718972,
+          "votes": 719029,
           "seats": 28,
           "color": "#f59e0b",
           "info": {
@@ -1093,7 +1009,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 682588,
+          "votes": 682649,
           "seats": 27,
           "color": "#2563eb",
           "info": {
@@ -1112,7 +1028,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 370038,
+          "votes": 370053,
           "seats": 15,
           "color": "#db2777",
           "info": {
@@ -1131,7 +1047,7 @@
         {
           "name": "העבודה",
           "symbol": "אמת",
-          "votes": 314149,
+          "votes": 314191,
           "seats": 13,
           "color": "#dc2626",
           "info": {
@@ -1150,7 +1066,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 272199,
+          "votes": 272514,
           "seats": 11,
           "color": "#1e3a8a",
           "info": {
@@ -1169,7 +1085,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 142452,
+          "votes": 142555,
           "seats": 5,
           "color": "#4b5563",
           "info": {
@@ -1207,7 +1123,7 @@
         {
           "name": "האיחוד הלאומי",
           "symbol": "ט",
-          "votes": 104554,
+          "votes": 104628,
           "seats": 4,
           "color": "#ea580c",
           "info": {
@@ -1245,7 +1161,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 93622,
+          "votes": 93631,
           "seats": 3,
           "color": "#16a34a",
           "info": {
@@ -1264,7 +1180,7 @@
         {
           "name": "הבית היהודי",
           "symbol": "ב",
-          "votes": 90256,
+          "votes": 90286,
           "seats": 3,
           "color": "#92400e",
           "info": {
@@ -1306,7 +1222,7 @@
           "source_symbol": "כן",
           "target": "קדימה",
           "target_symbol": "כן",
-          "votes": 394410,
+          "votes": 396533,
           "percentage": 60.9
         },
         {
@@ -1314,7 +1230,7 @@
           "source_symbol": "כן",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 149458,
+          "votes": 150262,
           "percentage": 23.1
         },
         {
@@ -1322,7 +1238,7 @@
           "source_symbol": "כן",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 39285,
+          "votes": 39497,
           "percentage": 6.1
         },
         {
@@ -1330,7 +1246,7 @@
           "source_symbol": "כן",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 67014,
+          "votes": 67374,
           "percentage": 10.4
         },
         {
@@ -1338,7 +1254,7 @@
           "source_symbol": "אמת",
           "target": "קדימה",
           "target_symbol": "כן",
-          "votes": 104701,
+          "votes": 105151,
           "percentage": 23.4
         },
         {
@@ -1346,7 +1262,7 @@
           "source_symbol": "אמת",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 19047,
+          "votes": 19129,
           "percentage": 4.3
         },
         {
@@ -1354,7 +1270,7 @@
           "source_symbol": "אמת",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 17327,
+          "votes": 17401,
           "percentage": 3.9
         },
         {
@@ -1362,47 +1278,15 @@
           "source_symbol": "אמת",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 216731,
+          "votes": 217665,
           "percentage": 48.5
-        },
-        {
-          "source": "העבודה-מימד",
-          "source_symbol": "אמת",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 8463,
-          "percentage": 1.9
-        },
-        {
-          "source": "העבודה-מימד",
-          "source_symbol": "אמת",
-          "target": "יהדות התורה",
-          "target_symbol": "ג",
-          "votes": 6320,
-          "percentage": 1.4
-        },
-        {
-          "source": "העבודה-מימד",
-          "source_symbol": "אמת",
-          "target": "רע״ם-תע״ל",
-          "target_symbol": "עם",
-          "votes": 9804,
-          "percentage": 2.2
-        },
-        {
-          "source": "העבודה-מימד",
-          "source_symbol": "אמת",
-          "target": "חד״ש",
-          "target_symbol": "ו",
-          "votes": 14263,
-          "percentage": 3.2
         },
         {
           "source": "העבודה-מימד",
           "source_symbol": "אמת",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 26489,
+          "votes": 26603,
           "percentage": 5.9
         },
         {
@@ -1410,39 +1294,23 @@
           "source_symbol": "אמת",
           "target": "הבית היהודי",
           "target_symbol": "ב",
-          "votes": 15648,
+          "votes": 15715,
           "percentage": 3.5
-        },
-        {
-          "source": "העבודה-מימד",
-          "source_symbol": "אמת",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 8438,
-          "percentage": 1.9
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 52058,
+          "votes": 52281,
           "percentage": 18.3
-        },
-        {
-          "source": "ש״ס",
-          "source_symbol": "שס",
-          "target": "ישראל ביתנו",
-          "target_symbol": "ל",
-          "votes": 9096,
-          "percentage": 3.2
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 224124,
+          "votes": 225081,
           "percentage": 78.6
         },
         {
@@ -1450,23 +1318,15 @@
           "source_symbol": "מחל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 260910,
+          "votes": 262490,
           "percentage": 99.2
-        },
-        {
-          "source": "הליכוד",
-          "source_symbol": "מחל",
-          "target": "ישראל ביתנו",
-          "target_symbol": "ל",
-          "votes": 13573,
-          "percentage": 5.2
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 19537,
+          "votes": 19583,
           "percentage": 7.3
         },
         {
@@ -1474,7 +1334,7 @@
           "source_symbol": "ל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 247625,
+          "votes": 248212,
           "percentage": 92.8
         },
         {
@@ -1482,7 +1342,7 @@
           "source_symbol": "טב",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 40404,
+          "votes": 40560,
           "percentage": 19.7
         },
         {
@@ -1490,7 +1350,7 @@
           "source_symbol": "טב",
           "target": "האיחוד הלאומי",
           "target_symbol": "ט",
-          "votes": 95823,
+          "votes": 96194,
           "percentage": 46.6
         },
         {
@@ -1498,7 +1358,7 @@
           "source_symbol": "טב",
           "target": "הבית היהודי",
           "target_symbol": "ב",
-          "votes": 68381,
+          "votes": 68646,
           "percentage": 33.3
         },
         {
@@ -1506,7 +1366,7 @@
           "source_symbol": "זך",
           "target": "קדימה",
           "target_symbol": "כן",
-          "votes": 122718,
+          "votes": 123593,
           "percentage": 69.5
         },
         {
@@ -1514,23 +1374,15 @@
           "source_symbol": "זך",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 53967,
+          "votes": 54352,
           "percentage": 30.5
-        },
-        {
-          "source": "יהדות התורה",
-          "source_symbol": "ג",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 12578,
-          "percentage": 8.9
         },
         {
           "source": "יהדות התורה",
           "source_symbol": "ג",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 120982,
+          "votes": 122014,
           "percentage": 85.2
         },
         {
@@ -1538,7 +1390,7 @@
           "source_symbol": "מרצ",
           "target": "קדימה",
           "target_symbol": "כן",
-          "votes": 27339,
+          "votes": 27457,
           "percentage": 25.1
         },
         {
@@ -1546,7 +1398,7 @@
           "source_symbol": "מרצ",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 16515,
+          "votes": 16586,
           "percentage": 15.2
         },
         {
@@ -1554,7 +1406,7 @@
           "source_symbol": "מרצ",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 64868,
+          "votes": 65146,
           "percentage": 59.5
         },
         {
@@ -1562,64 +1414,32 @@
           "source_symbol": "עם",
           "target": "רע״ם-תע״ל",
           "target_symbol": "עם",
-          "votes": 76163,
+          "votes": 76201,
           "percentage": 81.3
-        },
-        {
-          "source": "הרשימה הערבית המאוחדת-התחדשות ערבית",
-          "source_symbol": "עם",
-          "target": "חד״ש",
-          "target_symbol": "ו",
-          "votes": 5691,
-          "percentage": 6.1
-        },
-        {
-          "source": "הרשימה הערבית המאוחדת-התחדשות ערבית",
-          "source_symbol": "עם",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 11598,
-          "percentage": 12.4
         },
         {
           "source": "חד״ש",
           "source_symbol": "ו",
           "target": "חד״ש",
           "target_symbol": "ו",
-          "votes": 77072,
+          "votes": 77466,
           "percentage": 90.9
-        },
-        {
-          "source": "בל״ד",
-          "source_symbol": "ד",
-          "target": "רע״ם-תע״ל",
-          "target_symbol": "עם",
-          "votes": 10699,
-          "percentage": 15.0
-        },
-        {
-          "source": "בל״ד",
-          "source_symbol": "ד",
-          "target": "חד״ש",
-          "target_symbol": "ו",
-          "votes": 5656,
-          "percentage": 8.0
         },
         {
           "source": "בל״ד",
           "source_symbol": "ד",
           "target": "בל״ד",
           "target_symbol": "ד",
-          "votes": 54319,
+          "votes": 54475,
           "percentage": 76.4
         }
       ],
       "stats": {
         "common_precincts": 8133,
         "r_squared": 0.8048,
-        "total_votes_from": 2792097,
-        "total_votes_to": 3094539,
-        "generated_at": "2026-02-17 23:24:43"
+        "total_votes_from": 2805369,
+        "total_votes_to": 3095245,
+        "generated_at": "2026-07-11 22:44:31"
       }
     },
     "18_to_19": {
@@ -1628,6 +1448,7 @@
         "name": "הכנסת ה-18",
         "name_en": "18th Knesset",
         "date": "2009-02-10",
+        "estimated": false,
         "eligible_voters": 5278985,
         "votes_cast": 3416587,
         "valid_votes": 3373490,
@@ -1638,6 +1459,7 @@
         "name": "הכנסת ה-19",
         "name_en": "19th Knesset",
         "date": "2013-01-22",
+        "estimated": false,
         "eligible_voters": 5656705,
         "votes_cast": 3834136,
         "valid_votes": 3792742,
@@ -1647,7 +1469,7 @@
         {
           "name": "קדימה",
           "symbol": "כן",
-          "votes": 718972,
+          "votes": 719029,
           "seats": 28,
           "color": "#f59e0b",
           "info": {
@@ -1666,7 +1488,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 682588,
+          "votes": 682649,
           "seats": 27,
           "color": "#2563eb",
           "info": {
@@ -1685,7 +1507,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 370038,
+          "votes": 370053,
           "seats": 15,
           "color": "#db2777",
           "info": {
@@ -1704,7 +1526,7 @@
         {
           "name": "העבודה",
           "symbol": "אמת",
-          "votes": 314149,
+          "votes": 314191,
           "seats": 13,
           "color": "#dc2626",
           "info": {
@@ -1723,7 +1545,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 272199,
+          "votes": 272514,
           "seats": 11,
           "color": "#1e3a8a",
           "info": {
@@ -1742,7 +1564,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 142452,
+          "votes": 142555,
           "seats": 5,
           "color": "#4b5563",
           "info": {
@@ -1780,7 +1602,7 @@
         {
           "name": "האיחוד הלאומי",
           "symbol": "ט",
-          "votes": 104554,
+          "votes": 104628,
           "seats": 4,
           "color": "#ea580c",
           "info": {
@@ -1818,7 +1640,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 93622,
+          "votes": 93631,
           "seats": 3,
           "color": "#16a34a",
           "info": {
@@ -1837,7 +1659,7 @@
         {
           "name": "הבית היהודי",
           "symbol": "ב",
-          "votes": 90256,
+          "votes": 90286,
           "seats": 3,
           "color": "#92400e",
           "info": {
@@ -1877,7 +1699,7 @@
         {
           "name": "הליכוד ישראל ביתנו",
           "symbol": "מחל",
-          "votes": 885092,
+          "votes": 885163,
           "seats": 31,
           "color": "#2563eb",
           "info": {
@@ -1896,7 +1718,7 @@
         {
           "name": "יש עתיד",
           "symbol": "פה",
-          "votes": 543376,
+          "votes": 543458,
           "seats": 19,
           "color": "#06b6d4",
           "info": {
@@ -1915,7 +1737,7 @@
         {
           "name": "העבודה",
           "symbol": "אמת",
-          "votes": 432007,
+          "votes": 432118,
           "seats": 15,
           "color": "#dc2626",
           "info": {
@@ -1934,7 +1756,7 @@
         {
           "name": "הבית היהודי",
           "symbol": "טב",
-          "votes": 345959,
+          "votes": 345985,
           "seats": 12,
           "color": "#ea580c",
           "info": {
@@ -1953,7 +1775,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 331865,
+          "votes": 331868,
           "seats": 11,
           "color": "#1e3a8a",
           "info": {
@@ -1991,7 +1813,7 @@
         {
           "name": "התנועה",
           "symbol": "צפ",
-          "votes": 189137,
+          "votes": 189167,
           "seats": 6,
           "color": "#fde68a",
           "info": {
@@ -2010,7 +1832,7 @@
         {
           "name": "מרצ",
           "symbol": "מרץ",
-          "votes": 172366,
+          "votes": 172403,
           "seats": 6,
           "color": "#16a34a",
           "info": {
@@ -2048,7 +1870,7 @@
         {
           "name": "חד״ש",
           "symbol": "ו",
-          "votes": 113433,
+          "votes": 113439,
           "seats": 4,
           "color": "#f43f5e",
           "info": {
@@ -2086,7 +1908,7 @@
         {
           "name": "קדימה",
           "symbol": "כן",
-          "votes": 78964,
+          "votes": 78974,
           "seats": 2,
           "color": "#f59e0b",
           "info": {
@@ -2109,7 +1931,7 @@
           "source_symbol": "כן",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 453587,
+          "votes": 453623,
           "percentage": 63.1
         },
         {
@@ -2117,7 +1939,7 @@
           "source_symbol": "כן",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 145258,
+          "votes": 145270,
           "percentage": 20.2
         },
         {
@@ -2125,7 +1947,7 @@
           "source_symbol": "כן",
           "target": "התנועה",
           "target_symbol": "צפ",
-          "votes": 114139,
+          "votes": 114148,
           "percentage": 15.9
         },
         {
@@ -2133,7 +1955,7 @@
           "source_symbol": "כן",
           "target": "מרצ",
           "target_symbol": "מרץ",
-          "votes": 25763,
+          "votes": 25765,
           "percentage": 3.6
         },
         {
@@ -2141,7 +1963,7 @@
           "source_symbol": "מחל",
           "target": "הליכוד ישראל ביתנו",
           "target_symbol": "מחל",
-          "votes": 511836,
+          "votes": 511882,
           "percentage": 75.0
         },
         {
@@ -2149,7 +1971,7 @@
           "source_symbol": "מחל",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 15783,
+          "votes": 15784,
           "percentage": 2.3
         },
         {
@@ -2157,7 +1979,7 @@
           "source_symbol": "מחל",
           "target": "הבית היהודי",
           "target_symbol": "טב",
-          "votes": 113704,
+          "votes": 113714,
           "percentage": 16.7
         },
         {
@@ -2165,7 +1987,7 @@
           "source_symbol": "מחל",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 17055,
+          "votes": 17056,
           "percentage": 2.5
         },
         {
@@ -2173,7 +1995,7 @@
           "source_symbol": "מחל",
           "target": "קדימה",
           "target_symbol": "כן",
-          "votes": 25876,
+          "votes": 25878,
           "percentage": 3.8
         },
         {
@@ -2181,31 +2003,15 @@
           "source_symbol": "ל",
           "target": "הליכוד ישראל ביתנו",
           "target_symbol": "מחל",
-          "votes": 260256,
+          "votes": 260267,
           "percentage": 70.3
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "העבודה",
-          "target_symbol": "אמת",
-          "votes": 14914,
-          "percentage": 4.0
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "הבית היהודי",
-          "target_symbol": "טב",
-          "votes": 9641,
-          "percentage": 2.6
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 21106,
+          "votes": 21107,
           "percentage": 5.7
         },
         {
@@ -2217,51 +2023,11 @@
           "percentage": 5.0
         },
         {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "רע״ם-תע״ל",
-          "target_symbol": "עם",
-          "votes": 9834,
-          "percentage": 2.7
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "חד״ש",
-          "target_symbol": "ו",
-          "votes": 12296,
-          "percentage": 3.3
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 9378,
-          "percentage": 2.5
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "קדימה",
-          "target_symbol": "כן",
-          "votes": 11514,
-          "percentage": 3.1
-        },
-        {
-          "source": "העבודה",
-          "source_symbol": "אמת",
-          "target": "יש עתיד",
-          "target_symbol": "פה",
-          "votes": 14677,
-          "percentage": 4.7
-        },
-        {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 207593,
+          "votes": 207621,
           "percentage": 66.1
         },
         {
@@ -2269,7 +2035,7 @@
           "source_symbol": "אמת",
           "target": "התנועה",
           "target_symbol": "צפ",
-          "votes": 32633,
+          "votes": 32638,
           "percentage": 10.4
         },
         {
@@ -2277,7 +2043,7 @@
           "source_symbol": "אמת",
           "target": "מרצ",
           "target_symbol": "מרץ",
-          "votes": 34309,
+          "votes": 34314,
           "percentage": 10.9
         },
         {
@@ -2285,7 +2051,7 @@
           "source_symbol": "אמת",
           "target": "קדימה",
           "target_symbol": "כן",
-          "votes": 26891,
+          "votes": 26894,
           "percentage": 8.6
         },
         {
@@ -2293,7 +2059,7 @@
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 256396,
+          "votes": 256692,
           "percentage": 94.2
         },
         {
@@ -2301,7 +2067,7 @@
           "source_symbol": "שס",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 18085,
+          "votes": 18106,
           "percentage": 6.6
         },
         {
@@ -2309,7 +2075,7 @@
           "source_symbol": "ג",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 142058,
+          "votes": 142161,
           "percentage": 99.7
         },
         {
@@ -2321,28 +2087,12 @@
           "percentage": 88.8
         },
         {
-          "source": "רע״ם-תע״ל",
-          "source_symbol": "עם",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 11929,
-          "percentage": 10.6
-        },
-        {
           "source": "האיחוד הלאומי",
           "source_symbol": "ט",
           "target": "הבית היהודי",
           "target_symbol": "טב",
-          "votes": 86823,
+          "votes": 86885,
           "percentage": 83.0
-        },
-        {
-          "source": "האיחוד הלאומי",
-          "source_symbol": "ט",
-          "target": "יהדות התורה",
-          "target_symbol": "ג",
-          "votes": 9940,
-          "percentage": 9.5
         },
         {
           "source": "חד״ש",
@@ -2353,19 +2103,11 @@
           "percentage": 84.9
         },
         {
-          "source": "חד״ש",
-          "source_symbol": "ו",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 11125,
-          "percentage": 10.1
-        },
-        {
           "source": "מרצ",
           "source_symbol": "מרצ",
           "target": "מרצ",
           "target_symbol": "מרץ",
-          "votes": 90106,
+          "votes": 90114,
           "percentage": 96.2
         },
         {
@@ -2373,16 +2115,8 @@
           "source_symbol": "ב",
           "target": "הבית היהודי",
           "target_symbol": "טב",
-          "votes": 90147,
+          "votes": 90177,
           "percentage": 99.9
-        },
-        {
-          "source": "בל״ד",
-          "source_symbol": "ד",
-          "target": "רע״ם-תע״ל",
-          "target_symbol": "עם",
-          "votes": 9650,
-          "percentage": 11.7
         },
         {
           "source": "בל״ד",
@@ -2396,9 +2130,9 @@
       "stats": {
         "common_precincts": 9186,
         "r_squared": 0.8482,
-        "total_votes_from": 3094539,
-        "total_votes_to": 3523571,
-        "generated_at": "2026-02-17 23:25:18"
+        "total_votes_from": 3095245,
+        "total_votes_to": 3523947,
+        "generated_at": "2026-07-11 22:45:06"
       }
     },
     "19_to_20": {
@@ -2407,6 +2141,7 @@
         "name": "הכנסת ה-19",
         "name_en": "19th Knesset",
         "date": "2013-01-22",
+        "estimated": false,
         "eligible_voters": 5656705,
         "votes_cast": 3834136,
         "valid_votes": 3792742,
@@ -2417,6 +2152,7 @@
         "name": "הכנסת ה-20",
         "name_en": "20th Knesset",
         "date": "2015-03-17",
+        "estimated": false,
         "eligible_voters": 5881696,
         "votes_cast": 4254738,
         "valid_votes": 4210884,
@@ -2426,7 +2162,7 @@
         {
           "name": "הליכוד ישראל ביתנו",
           "symbol": "מחל",
-          "votes": 885092,
+          "votes": 885163,
           "seats": 31,
           "color": "#2563eb",
           "info": {
@@ -2445,7 +2181,7 @@
         {
           "name": "יש עתיד",
           "symbol": "פה",
-          "votes": 543376,
+          "votes": 543458,
           "seats": 19,
           "color": "#06b6d4",
           "info": {
@@ -2464,7 +2200,7 @@
         {
           "name": "העבודה",
           "symbol": "אמת",
-          "votes": 432007,
+          "votes": 432118,
           "seats": 15,
           "color": "#dc2626",
           "info": {
@@ -2483,7 +2219,7 @@
         {
           "name": "הבית היהודי",
           "symbol": "טב",
-          "votes": 345959,
+          "votes": 345985,
           "seats": 12,
           "color": "#ea580c",
           "info": {
@@ -2502,7 +2238,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 331865,
+          "votes": 331868,
           "seats": 11,
           "color": "#1e3a8a",
           "info": {
@@ -2540,7 +2276,7 @@
         {
           "name": "התנועה",
           "symbol": "צפ",
-          "votes": 189137,
+          "votes": 189167,
           "seats": 6,
           "color": "#fde68a",
           "info": {
@@ -2559,7 +2295,7 @@
         {
           "name": "מרצ",
           "symbol": "מרץ",
-          "votes": 172366,
+          "votes": 172403,
           "seats": 6,
           "color": "#16a34a",
           "info": {
@@ -2597,7 +2333,7 @@
         {
           "name": "חד״ש",
           "symbol": "ו",
-          "votes": 113433,
+          "votes": 113439,
           "seats": 4,
           "color": "#f43f5e",
           "info": {
@@ -2635,7 +2371,7 @@
         {
           "name": "קדימה",
           "symbol": "כן",
-          "votes": 78964,
+          "votes": 78974,
           "seats": 2,
           "color": "#f59e0b",
           "info": {
@@ -2656,7 +2392,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 983366,
+          "votes": 985408,
           "seats": 30,
           "color": "#2563eb",
           "info": {
@@ -2675,7 +2411,7 @@
         {
           "name": "המחנה הציוני",
           "symbol": "אמת",
-          "votes": 784343,
+          "votes": 786313,
           "seats": 24,
           "color": "#dc2626",
           "info": {
@@ -2694,7 +2430,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 446452,
+          "votes": 446583,
           "seats": 13,
           "color": "#059669",
           "info": {
@@ -2713,7 +2449,7 @@
         {
           "name": "יש עתיד",
           "symbol": "פה",
-          "votes": 370831,
+          "votes": 371602,
           "seats": 11,
           "color": "#06b6d4",
           "info": {
@@ -2732,7 +2468,7 @@
         {
           "name": "כולנו",
           "symbol": "כ",
-          "votes": 314825,
+          "votes": 315360,
           "seats": 10,
           "color": "#f472b6",
           "info": {
@@ -2751,7 +2487,7 @@
         {
           "name": "הבית היהודי",
           "symbol": "טב",
-          "votes": 283048,
+          "votes": 283910,
           "seats": 8,
           "color": "#ea580c",
           "info": {
@@ -2770,7 +2506,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 240555,
+          "votes": 241613,
           "seats": 7,
           "color": "#1e3a8a",
           "info": {
@@ -2789,7 +2525,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 214580,
+          "votes": 214906,
           "seats": 6,
           "color": "#db2777",
           "info": {
@@ -2808,7 +2544,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 207538,
+          "votes": 210143,
           "seats": 6,
           "color": "#4b5563",
           "info": {
@@ -2827,7 +2563,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 164935,
+          "votes": 165529,
           "seats": 5,
           "color": "#16a34a",
           "info": {
@@ -2850,23 +2586,15 @@
           "source_symbol": "מחל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 682989,
+          "votes": 683044,
           "percentage": 77.2
-        },
-        {
-          "source": "הליכוד ישראל ביתנו",
-          "source_symbol": "מחל",
-          "target": "המחנה הציוני",
-          "target_symbol": "אמת",
-          "votes": 9215,
-          "percentage": 1.0
         },
         {
           "source": "הליכוד ישראל ביתנו",
           "source_symbol": "מחל",
           "target": "כולנו",
           "target_symbol": "כ",
-          "votes": 58900,
+          "votes": 58905,
           "percentage": 6.7
         },
         {
@@ -2874,7 +2602,7 @@
           "source_symbol": "מחל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 151722,
+          "votes": 151734,
           "percentage": 17.1
         },
         {
@@ -2882,7 +2610,7 @@
           "source_symbol": "פה",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 45561,
+          "votes": 45568,
           "percentage": 8.4
         },
         {
@@ -2890,7 +2618,7 @@
           "source_symbol": "פה",
           "target": "המחנה הציוני",
           "target_symbol": "אמת",
-          "votes": 139051,
+          "votes": 139072,
           "percentage": 25.6
         },
         {
@@ -2898,7 +2626,7 @@
           "source_symbol": "פה",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 283479,
+          "votes": 283521,
           "percentage": 52.2
         },
         {
@@ -2906,39 +2634,23 @@
           "source_symbol": "פה",
           "target": "כולנו",
           "target_symbol": "כ",
-          "votes": 88711,
+          "votes": 88725,
           "percentage": 16.3
-        },
-        {
-          "source": "יש עתיד",
-          "source_symbol": "פה",
-          "target": "ישראל ביתנו",
-          "target_symbol": "ל",
-          "votes": 5944,
-          "percentage": 1.1
         },
         {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "המחנה הציוני",
           "target_symbol": "אמת",
-          "votes": 409574,
+          "votes": 409679,
           "percentage": 94.8
-        },
-        {
-          "source": "העבודה",
-          "source_symbol": "אמת",
-          "target": "ישראל ביתנו",
-          "target_symbol": "ל",
-          "votes": 5713,
-          "percentage": 1.3
         },
         {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 25287,
+          "votes": 25294,
           "percentage": 5.9
         },
         {
@@ -2946,23 +2658,15 @@
           "source_symbol": "טב",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 76197,
+          "votes": 76203,
           "percentage": 22.0
-        },
-        {
-          "source": "הבית היהודי",
-          "source_symbol": "טב",
-          "target": "כולנו",
-          "target_symbol": "כ",
-          "votes": 7234,
-          "percentage": 2.1
         },
         {
           "source": "הבית היהודי",
           "source_symbol": "טב",
           "target": "הבית היהודי",
           "target_symbol": "טב",
-          "votes": 262728,
+          "votes": 262748,
           "percentage": 75.9
         },
         {
@@ -2970,7 +2674,7 @@
           "source_symbol": "שס",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 80312,
+          "votes": 80313,
           "percentage": 24.2
         },
         {
@@ -2986,16 +2690,8 @@
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 225403,
+          "votes": 225405,
           "percentage": 67.9
-        },
-        {
-          "source": "יהדות התורה",
-          "source_symbol": "ג",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 10037,
-          "percentage": 5.1
         },
         {
           "source": "יהדות התורה",
@@ -3010,7 +2706,7 @@
           "source_symbol": "צפ",
           "target": "המחנה הציוני",
           "target_symbol": "אמת",
-          "votes": 139090,
+          "votes": 139112,
           "percentage": 73.5
         },
         {
@@ -3018,7 +2714,7 @@
           "source_symbol": "צפ",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 30491,
+          "votes": 30496,
           "percentage": 16.1
         },
         {
@@ -3026,7 +2722,7 @@
           "source_symbol": "צפ",
           "target": "כולנו",
           "target_symbol": "כ",
-          "votes": 16875,
+          "votes": 16878,
           "percentage": 8.9
         },
         {
@@ -3034,7 +2730,7 @@
           "source_symbol": "מרץ",
           "target": "המחנה הציוני",
           "target_symbol": "אמת",
-          "votes": 64425,
+          "votes": 64439,
           "percentage": 37.4
         },
         {
@@ -3042,7 +2738,7 @@
           "source_symbol": "מרץ",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 106788,
+          "votes": 106811,
           "percentage": 62.0
         },
         {
@@ -3058,7 +2754,7 @@
           "source_symbol": "ו",
           "target": "הרשימה המשותפת",
           "target_symbol": "ודעם",
-          "votes": 113678,
+          "votes": 113684,
           "percentage": 100.2
         },
         {
@@ -3072,34 +2768,18 @@
         {
           "source": "קדימה",
           "source_symbol": "כן",
-          "target": "הליכוד",
-          "target_symbol": "מחל",
-          "votes": 7240,
-          "percentage": 9.2
-        },
-        {
-          "source": "קדימה",
-          "source_symbol": "כן",
-          "target": "הרשימה המשותפת",
-          "target_symbol": "ודעם",
-          "votes": 11824,
-          "percentage": 15.0
-        },
-        {
-          "source": "קדימה",
-          "source_symbol": "כן",
           "target": "כולנו",
           "target_symbol": "כ",
-          "votes": 55614,
+          "votes": 55621,
           "percentage": 70.4
         }
       ],
       "stats": {
         "common_precincts": 10068,
         "r_squared": 0.8564,
-        "total_votes_from": 3523571,
-        "total_votes_to": 4010473,
-        "generated_at": "2026-02-17 23:25:50"
+        "total_votes_from": 3523947,
+        "total_votes_to": 4021367,
+        "generated_at": "2026-07-11 22:45:39"
       }
     },
     "20_to_21": {
@@ -3108,6 +2788,7 @@
         "name": "הכנסת ה-20",
         "name_en": "20th Knesset",
         "date": "2015-03-17",
+        "estimated": false,
         "eligible_voters": 5881696,
         "votes_cast": 4254738,
         "valid_votes": 4210884,
@@ -3118,6 +2799,7 @@
         "name": "הכנסת ה-21",
         "name_en": "21st Knesset",
         "date": "2019-04-09",
+        "estimated": false,
         "eligible_voters": 6339279,
         "votes_cast": 4340253,
         "valid_votes": 4268929,
@@ -3127,7 +2809,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 983366,
+          "votes": 985408,
           "seats": 30,
           "color": "#2563eb",
           "info": {
@@ -3146,7 +2828,7 @@
         {
           "name": "המחנה הציוני",
           "symbol": "אמת",
-          "votes": 784343,
+          "votes": 786313,
           "seats": 24,
           "color": "#dc2626",
           "info": {
@@ -3165,7 +2847,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 446452,
+          "votes": 446583,
           "seats": 13,
           "color": "#059669",
           "info": {
@@ -3184,7 +2866,7 @@
         {
           "name": "יש עתיד",
           "symbol": "פה",
-          "votes": 370831,
+          "votes": 371602,
           "seats": 11,
           "color": "#06b6d4",
           "info": {
@@ -3203,7 +2885,7 @@
         {
           "name": "כולנו",
           "symbol": "כ",
-          "votes": 314825,
+          "votes": 315360,
           "seats": 10,
           "color": "#f472b6",
           "info": {
@@ -3222,7 +2904,7 @@
         {
           "name": "הבית היהודי",
           "symbol": "טב",
-          "votes": 283048,
+          "votes": 283910,
           "seats": 8,
           "color": "#ea580c",
           "info": {
@@ -3241,7 +2923,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 240555,
+          "votes": 241613,
           "seats": 7,
           "color": "#1e3a8a",
           "info": {
@@ -3260,7 +2942,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 214580,
+          "votes": 214906,
           "seats": 6,
           "color": "#db2777",
           "info": {
@@ -3279,7 +2961,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 207538,
+          "votes": 210143,
           "seats": 6,
           "color": "#4b5563",
           "info": {
@@ -3298,7 +2980,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 164935,
+          "votes": 165529,
           "seats": 5,
           "color": "#16a34a",
           "info": {
@@ -3566,7 +3248,7 @@
           "source_symbol": "מחל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 968757,
+          "votes": 970769,
           "percentage": 98.5
         },
         {
@@ -3574,7 +3256,7 @@
           "source_symbol": "מחל",
           "target": "זהות",
           "target_symbol": "ז",
-          "votes": 20502,
+          "votes": 20545,
           "percentage": 2.1
         },
         {
@@ -3582,7 +3264,7 @@
           "source_symbol": "אמת",
           "target": "כחול לבן",
           "target_symbol": "פה",
-          "votes": 630950,
+          "votes": 632534,
           "percentage": 80.4
         },
         {
@@ -3590,135 +3272,47 @@
           "source_symbol": "אמת",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 151499,
+          "votes": 151880,
           "percentage": 19.3
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "הליכוד",
-          "target_symbol": "מחל",
-          "votes": 7623,
-          "percentage": 1.7
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "כחול לבן",
-          "target_symbol": "פה",
-          "votes": 9793,
-          "percentage": 2.2
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 10391,
-          "percentage": 2.3
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "יהדות התורה",
-          "target_symbol": "ג",
-          "votes": 8163,
-          "percentage": 1.8
         },
         {
           "source": "הרשימה המשותפת",
           "source_symbol": "ודעם",
           "target": "חד״ש-תע״ל",
           "target_symbol": "ום",
-          "votes": 185518,
+          "votes": 185573,
           "percentage": 41.6
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "העבודה",
-          "target_symbol": "אמת",
-          "votes": 8120,
-          "percentage": 1.8
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "ישראל ביתנו",
-          "target_symbol": "ל",
-          "votes": 7728,
-          "percentage": 1.7
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "הבית היהודי",
-          "target_symbol": "טב",
-          "votes": 8385,
-          "percentage": 1.9
         },
         {
           "source": "הרשימה המשותפת",
           "source_symbol": "ודעם",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 30840,
+          "votes": 30849,
           "percentage": 6.9
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "כולנו",
-          "target_symbol": "כ",
-          "votes": 12130,
-          "percentage": 2.7
         },
         {
           "source": "הרשימה המשותפת",
           "source_symbol": "ודעם",
           "target": "רע״ם-בל״ד",
           "target_symbol": "דעם",
-          "votes": 141624,
+          "votes": 141665,
           "percentage": 31.7
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "זהות",
-          "target_symbol": "ז",
-          "votes": 7692,
-          "percentage": 1.7
-        },
-        {
-          "source": "הרשימה המשותפת",
-          "source_symbol": "ודעם",
-          "target": "הימין החדש",
-          "target_symbol": "נ",
-          "votes": 8441,
-          "percentage": 1.9
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "כחול לבן",
           "target_symbol": "פה",
-          "votes": 339277,
+          "votes": 339982,
           "percentage": 91.5
-        },
-        {
-          "source": "יש עתיד",
-          "source_symbol": "פה",
-          "target": "זהות",
-          "target_symbol": "ז",
-          "votes": 10014,
-          "percentage": 2.7
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "הימין החדש",
           "target_symbol": "נ",
-          "votes": 22033,
+          "votes": 22078,
           "percentage": 5.9
         },
         {
@@ -3726,7 +3320,7 @@
           "source_symbol": "כ",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 103306,
+          "votes": 103482,
           "percentage": 32.8
         },
         {
@@ -3734,7 +3328,7 @@
           "source_symbol": "כ",
           "target": "כחול לבן",
           "target_symbol": "פה",
-          "votes": 51771,
+          "votes": 51859,
           "percentage": 16.4
         },
         {
@@ -3742,7 +3336,7 @@
           "source_symbol": "כ",
           "target": "כולנו",
           "target_symbol": "כ",
-          "votes": 125102,
+          "votes": 125315,
           "percentage": 39.7
         },
         {
@@ -3750,7 +3344,7 @@
           "source_symbol": "כ",
           "target": "זהות",
           "target_symbol": "ז",
-          "votes": 34907,
+          "votes": 34966,
           "percentage": 11.1
         },
         {
@@ -3758,23 +3352,15 @@
           "source_symbol": "טב",
           "target": "הבית היהודי",
           "target_symbol": "טב",
-          "votes": 168743,
+          "votes": 169257,
           "percentage": 59.6
-        },
-        {
-          "source": "הבית היהודי",
-          "source_symbol": "טב",
-          "target": "זהות",
-          "target_symbol": "ז",
-          "votes": 11429,
-          "percentage": 4.0
         },
         {
           "source": "הבית היהודי",
           "source_symbol": "טב",
           "target": "הימין החדש",
           "target_symbol": "נ",
-          "votes": 102177,
+          "votes": 102488,
           "percentage": 36.1
         },
         {
@@ -3782,63 +3368,23 @@
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 232153,
+          "votes": 233174,
           "percentage": 96.5
-        },
-        {
-          "source": "ש״ס",
-          "source_symbol": "שס",
-          "target": "יהדות התורה",
-          "target_symbol": "ג",
-          "votes": 6986,
-          "percentage": 2.9
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "חד״ש-תע״ל",
-          "target_symbol": "ום",
-          "votes": 5366,
-          "percentage": 2.5
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 173888,
+          "votes": 174153,
           "percentage": 81.0
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "מרצ",
-          "target_symbol": "מרצ",
-          "votes": 7604,
-          "percentage": 3.5
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "כולנו",
-          "target_symbol": "כ",
-          "votes": 8265,
-          "percentage": 3.9
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "זהות",
-          "target_symbol": "ז",
-          "votes": 12393,
-          "percentage": 5.8
         },
         {
           "source": "יהדות התורה",
           "source_symbol": "ג",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 205132,
+          "votes": 207706,
           "percentage": 98.8
         },
         {
@@ -3846,7 +3392,7 @@
           "source_symbol": "מרצ",
           "target": "כחול לבן",
           "target_symbol": "פה",
-          "votes": 30277,
+          "votes": 30386,
           "percentage": 18.4
         },
         {
@@ -3854,7 +3400,7 @@
           "source_symbol": "מרצ",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 24045,
+          "votes": 24132,
           "percentage": 14.6
         },
         {
@@ -3862,16 +3408,16 @@
           "source_symbol": "מרצ",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 110573,
+          "votes": 110972,
           "percentage": 67.0
         }
       ],
       "stats": {
         "common_precincts": 8758,
         "r_squared": 0.8463,
-        "total_votes_from": 4010473,
+        "total_votes_from": 4021367,
         "total_votes_to": 4199883,
-        "generated_at": "2026-02-17 23:26:25"
+        "generated_at": "2026-07-11 22:46:14"
       }
     },
     "21_to_22": {
@@ -3880,6 +3426,7 @@
         "name": "הכנסת ה-21",
         "name_en": "21st Knesset",
         "date": "2019-04-09",
+        "estimated": false,
         "eligible_voters": 6339279,
         "votes_cast": 4340253,
         "valid_votes": 4268929,
@@ -3890,6 +3437,7 @@
         "name": "הכנסת ה-22",
         "name_en": "22nd Knesset",
         "date": "2019-09-17",
+        "estimated": false,
         "eligible_voters": 6394030,
         "votes_cast": 4465168,
         "valid_votes": 4421448,
@@ -4144,7 +3692,7 @@
         {
           "name": "כחול לבן",
           "symbol": "פה",
-          "votes": 1065030,
+          "votes": 1148700,
           "seats": 33,
           "color": "#8b5cf6",
           "info": {
@@ -4163,7 +3711,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 1034439,
+          "votes": 1111535,
           "seats": 32,
           "color": "#2563eb",
           "info": {
@@ -4182,7 +3730,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 458753,
+          "votes": 470611,
           "seats": 13,
           "color": "#0d9488",
           "info": {
@@ -4201,7 +3749,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 312400,
+          "votes": 329834,
           "seats": 9,
           "color": "#1e3a8a",
           "info": {
@@ -4220,7 +3768,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 295809,
+          "votes": 309688,
           "seats": 8,
           "color": "#db2777",
           "info": {
@@ -4239,7 +3787,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 257129,
+          "votes": 268688,
           "seats": 7,
           "color": "#4b5563",
           "info": {
@@ -4258,7 +3806,7 @@
         {
           "name": "ימינה",
           "symbol": "טב",
-          "votes": 235796,
+          "votes": 260339,
           "seats": 7,
           "color": "#ea580c",
           "info": {
@@ -4277,7 +3825,7 @@
         {
           "name": "העבודה-גשר",
           "symbol": "אמת",
-          "votes": 199455,
+          "votes": 212529,
           "seats": 6,
           "color": "#dc2626",
           "info": {
@@ -4296,7 +3844,7 @@
         {
           "name": "המחנה הדמוקרטי",
           "symbol": "מרצ",
-          "votes": 178550,
+          "votes": 192261,
           "seats": 5,
           "color": "#16a34a",
           "info": {
@@ -4429,14 +3977,6 @@
         {
           "source": "הבית היהודי",
           "source_symbol": "טב",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 10027,
-          "percentage": 6.3
-        },
-        {
-          "source": "הבית היהודי",
-          "source_symbol": "טב",
           "target": "יהדות התורה",
           "target_symbol": "ג",
           "votes": 16575,
@@ -4457,14 +3997,6 @@
           "target_symbol": "ודעם",
           "votes": 72774,
           "percentage": 46.5
-        },
-        {
-          "source": "מרצ",
-          "source_symbol": "מרצ",
-          "target": "העבודה-גשר",
-          "target_symbol": "אמת",
-          "votes": 9042,
-          "percentage": 5.8
         },
         {
           "source": "מרצ",
@@ -4517,14 +4049,6 @@
         {
           "source": "זהות",
           "source_symbol": "ז",
-          "target": "כחול לבן",
-          "target_symbol": "פה",
-          "votes": 12613,
-          "percentage": 10.7
-        },
-        {
-          "source": "זהות",
-          "source_symbol": "ז",
           "target": "הליכוד",
           "target_symbol": "מחל",
           "votes": 33777,
@@ -4537,14 +4061,6 @@
           "target_symbol": "ל",
           "votes": 44147,
           "percentage": 37.4
-        },
-        {
-          "source": "זהות",
-          "source_symbol": "ז",
-          "target": "ימינה",
-          "target_symbol": "טב",
-          "votes": 10285,
-          "percentage": 8.7
         },
         {
           "source": "זהות",
@@ -4567,8 +4083,8 @@
         "common_precincts": 9870,
         "r_squared": 0.9303,
         "total_votes_from": 4199883,
-        "total_votes_to": 4037361,
-        "generated_at": "2026-02-17 23:26:55"
+        "total_votes_to": 4304185,
+        "generated_at": "2026-07-11 22:46:44"
       }
     },
     "22_to_23": {
@@ -4577,6 +4093,7 @@
         "name": "הכנסת ה-22",
         "name_en": "22nd Knesset",
         "date": "2019-09-17",
+        "estimated": false,
         "eligible_voters": 6394030,
         "votes_cast": 4465168,
         "valid_votes": 4421448,
@@ -4587,6 +4104,7 @@
         "name": "הכנסת ה-23",
         "name_en": "23rd Knesset",
         "date": "2020-03-02",
+        "estimated": false,
         "eligible_voters": 6453255,
         "votes_cast": 4615135,
         "valid_votes": 4553225,
@@ -4596,7 +4114,7 @@
         {
           "name": "כחול לבן",
           "symbol": "פה",
-          "votes": 1065030,
+          "votes": 1148700,
           "seats": 33,
           "color": "#8b5cf6",
           "info": {
@@ -4615,7 +4133,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 1034439,
+          "votes": 1111535,
           "seats": 32,
           "color": "#2563eb",
           "info": {
@@ -4634,7 +4152,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 458753,
+          "votes": 470611,
           "seats": 13,
           "color": "#0d9488",
           "info": {
@@ -4653,7 +4171,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 312400,
+          "votes": 329834,
           "seats": 9,
           "color": "#1e3a8a",
           "info": {
@@ -4672,7 +4190,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 295809,
+          "votes": 309688,
           "seats": 8,
           "color": "#db2777",
           "info": {
@@ -4691,7 +4209,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 257129,
+          "votes": 268688,
           "seats": 7,
           "color": "#4b5563",
           "info": {
@@ -4710,7 +4228,7 @@
         {
           "name": "ימינה",
           "symbol": "טב",
-          "votes": 235796,
+          "votes": 260339,
           "seats": 7,
           "color": "#ea580c",
           "info": {
@@ -4729,7 +4247,7 @@
         {
           "name": "העבודה-גשר",
           "symbol": "אמת",
-          "votes": 199455,
+          "votes": 212529,
           "seats": 6,
           "color": "#dc2626",
           "info": {
@@ -4748,7 +4266,7 @@
         {
           "name": "המחנה הדמוקרטי",
           "symbol": "מרצ",
-          "votes": 178550,
+          "votes": 192261,
           "seats": 5,
           "color": "#16a34a",
           "info": {
@@ -4769,7 +4287,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 1245400,
+          "votes": 1352449,
           "seats": 36,
           "color": "#2563eb",
           "info": {
@@ -4788,7 +4306,7 @@
         {
           "name": "כחול לבן",
           "symbol": "פה",
-          "votes": 1122553,
+          "votes": 1220381,
           "seats": 33,
           "color": "#8b5cf6",
           "info": {
@@ -4807,7 +4325,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 563430,
+          "votes": 581507,
           "seats": 15,
           "color": "#0d9488",
           "info": {
@@ -4826,7 +4344,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 329589,
+          "votes": 352853,
           "seats": 9,
           "color": "#1e3a8a",
           "info": {
@@ -4845,7 +4363,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 261050,
+          "votes": 274437,
           "seats": 7,
           "color": "#4b5563",
           "info": {
@@ -4864,7 +4382,7 @@
         {
           "name": "עבודה-גשר-מרצ",
           "symbol": "אמת",
-          "votes": 243343,
+          "votes": 267480,
           "seats": 7,
           "color": "#dc2626",
           "info": {
@@ -4883,7 +4401,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 250550,
+          "votes": 263365,
           "seats": 7,
           "color": "#db2777",
           "info": {
@@ -4902,7 +4420,7 @@
         {
           "name": "ימינה",
           "symbol": "טב",
-          "votes": 213332,
+          "votes": 240689,
           "seats": 6,
           "color": "#ea580c",
           "info": {
@@ -4925,7 +4443,7 @@
           "source_symbol": "פה",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 29414,
+          "votes": 31725,
           "percentage": 2.8
         },
         {
@@ -4933,7 +4451,7 @@
           "source_symbol": "פה",
           "target": "כחול לבן",
           "target_symbol": "פה",
-          "votes": 1047564,
+          "votes": 1129862,
           "percentage": 98.4
         },
         {
@@ -4941,7 +4459,7 @@
           "source_symbol": "מחל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 1037457,
+          "votes": 1114778,
           "percentage": 100.3
         },
         {
@@ -4949,7 +4467,7 @@
           "source_symbol": "מחל",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 15843,
+          "votes": 17023,
           "percentage": 1.5
         },
         {
@@ -4957,7 +4475,7 @@
           "source_symbol": "ודעם",
           "target": "הרשימה המשותפת",
           "target_symbol": "ודעם",
-          "votes": 457846,
+          "votes": 469680,
           "percentage": 99.8
         },
         {
@@ -4965,7 +4483,7 @@
           "source_symbol": "שס",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 22766,
+          "votes": 24036,
           "percentage": 7.3
         },
         {
@@ -4973,7 +4491,7 @@
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 289781,
+          "votes": 305953,
           "percentage": 92.8
         },
         {
@@ -4981,7 +4499,7 @@
           "source_symbol": "ל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 46080,
+          "votes": 48242,
           "percentage": 15.6
         },
         {
@@ -4989,23 +4507,15 @@
           "source_symbol": "ל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 248483,
+          "votes": 260141,
           "percentage": 84.0
-        },
-        {
-          "source": "יהדות התורה",
-          "source_symbol": "ג",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 7505,
-          "percentage": 2.9
         },
         {
           "source": "יהדות התורה",
           "source_symbol": "ג",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 249868,
+          "votes": 261101,
           "percentage": 97.2
         },
         {
@@ -5013,7 +4523,7 @@
           "source_symbol": "טב",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 31480,
+          "votes": 34756,
           "percentage": 13.4
         },
         {
@@ -5021,7 +4531,7 @@
           "source_symbol": "טב",
           "target": "ימינה",
           "target_symbol": "טב",
-          "votes": 203786,
+          "votes": 224997,
           "percentage": 86.4
         },
         {
@@ -5029,7 +4539,7 @@
           "source_symbol": "אמת",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 30045,
+          "votes": 32014,
           "percentage": 15.1
         },
         {
@@ -5037,7 +4547,7 @@
           "source_symbol": "אמת",
           "target": "כחול לבן",
           "target_symbol": "פה",
-          "votes": 39990,
+          "votes": 42611,
           "percentage": 20.0
         },
         {
@@ -5045,7 +4555,7 @@
           "source_symbol": "אמת",
           "target": "עבודה-גשר-מרצ",
           "target_symbol": "אמת",
-          "votes": 129705,
+          "votes": 138207,
           "percentage": 65.0
         },
         {
@@ -5053,7 +4563,7 @@
           "source_symbol": "מרצ",
           "target": "כחול לבן",
           "target_symbol": "פה",
-          "votes": 38971,
+          "votes": 41964,
           "percentage": 21.8
         },
         {
@@ -5061,7 +4571,7 @@
           "source_symbol": "מרצ",
           "target": "הרשימה המשותפת",
           "target_symbol": "ודעם",
-          "votes": 26216,
+          "votes": 28229,
           "percentage": 14.7
         },
         {
@@ -5069,16 +4579,16 @@
           "source_symbol": "מרצ",
           "target": "עבודה-גשר-מרצ",
           "target_symbol": "אמת",
-          "votes": 113956,
+          "votes": 122707,
           "percentage": 63.8
         }
       ],
       "stats": {
         "common_precincts": 9745,
         "r_squared": 0.9637,
-        "total_votes_from": 4037361,
-        "total_votes_to": 4229247,
-        "generated_at": "2026-02-17 23:27:09"
+        "total_votes_from": 4304185,
+        "total_votes_to": 4553161,
+        "generated_at": "2026-07-11 22:46:58"
       }
     },
     "23_to_24": {
@@ -5087,6 +4597,7 @@
         "name": "הכנסת ה-23",
         "name_en": "23rd Knesset",
         "date": "2020-03-02",
+        "estimated": false,
         "eligible_voters": 6453255,
         "votes_cast": 4615135,
         "valid_votes": 4553225,
@@ -5097,6 +4608,7 @@
         "name": "הכנסת ה-24",
         "name_en": "24th Knesset",
         "date": "2021-03-23",
+        "estimated": false,
         "eligible_voters": 6578084,
         "votes_cast": 4436365,
         "valid_votes": 4381020,
@@ -5106,7 +4618,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 1245400,
+          "votes": 1352449,
           "seats": 36,
           "color": "#2563eb",
           "info": {
@@ -5125,7 +4637,7 @@
         {
           "name": "כחול לבן",
           "symbol": "פה",
-          "votes": 1122553,
+          "votes": 1220381,
           "seats": 33,
           "color": "#8b5cf6",
           "info": {
@@ -5144,7 +4656,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 563430,
+          "votes": 581507,
           "seats": 15,
           "color": "#0d9488",
           "info": {
@@ -5163,7 +4675,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 329589,
+          "votes": 352853,
           "seats": 9,
           "color": "#1e3a8a",
           "info": {
@@ -5182,7 +4694,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 261050,
+          "votes": 274437,
           "seats": 7,
           "color": "#4b5563",
           "info": {
@@ -5201,7 +4713,7 @@
         {
           "name": "עבודה-גשר-מרצ",
           "symbol": "אמת",
-          "votes": 243343,
+          "votes": 267480,
           "seats": 7,
           "color": "#dc2626",
           "info": {
@@ -5220,7 +4732,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 250550,
+          "votes": 263365,
           "seats": 7,
           "color": "#db2777",
           "info": {
@@ -5239,7 +4751,7 @@
         {
           "name": "ימינה",
           "symbol": "טב",
-          "votes": 213332,
+          "votes": 240689,
           "seats": 6,
           "color": "#ea580c",
           "info": {
@@ -5260,7 +4772,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 963856,
+          "votes": 1066892,
           "seats": 30,
           "color": "#2563eb",
           "info": {
@@ -5279,7 +4791,7 @@
         {
           "name": "יש עתיד",
           "symbol": "פה",
-          "votes": 556110,
+          "votes": 614112,
           "seats": 17,
           "color": "#06b6d4",
           "info": {
@@ -5298,7 +4810,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 292044,
+          "votes": 316008,
           "seats": 9,
           "color": "#1e3a8a",
           "info": {
@@ -5317,7 +4829,7 @@
         {
           "name": "כחול לבן",
           "symbol": "כן",
-          "votes": 265521,
+          "votes": 292257,
           "seats": 8,
           "color": "#8b5cf6",
           "info": {
@@ -5336,7 +4848,7 @@
         {
           "name": "ימינה",
           "symbol": "ב",
-          "votes": 234143,
+          "votes": 273836,
           "seats": 7,
           "color": "#ea580c",
           "info": {
@@ -5355,7 +4867,7 @@
         {
           "name": "העבודה",
           "symbol": "אמת",
-          "votes": 234498,
+          "votes": 268767,
           "seats": 7,
           "color": "#dc2626",
           "info": {
@@ -5374,7 +4886,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 234624,
+          "votes": 248391,
           "seats": 7,
           "color": "#4b5563",
           "info": {
@@ -5393,7 +4905,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 220887,
+          "votes": 248370,
           "seats": 7,
           "color": "#db2777",
           "info": {
@@ -5412,7 +4924,7 @@
         {
           "name": "הציונות הדתית",
           "symbol": "ט",
-          "votes": 198511,
+          "votes": 225641,
           "seats": 6,
           "color": "#92400e",
           "info": {
@@ -5431,7 +4943,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 201397,
+          "votes": 212583,
           "seats": 6,
           "color": "#0d9488",
           "info": {
@@ -5450,7 +4962,7 @@
         {
           "name": "תקווה חדשה",
           "symbol": "ת",
-          "votes": 187084,
+          "votes": 209161,
           "seats": 6,
           "color": "#6ee7b7",
           "info": {
@@ -5469,7 +4981,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 181815,
+          "votes": 202218,
           "seats": 6,
           "color": "#16a34a",
           "info": {
@@ -5488,7 +5000,7 @@
         {
           "name": "רע״ם",
           "symbol": "עם",
-          "votes": 160437,
+          "votes": 167064,
           "seats": 4,
           "color": "#84cc16",
           "info": {
@@ -5511,7 +5023,7 @@
           "source_symbol": "מחל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 873649,
+          "votes": 948744,
           "percentage": 70.2
         },
         {
@@ -5519,7 +5031,7 @@
           "source_symbol": "מחל",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 25380,
+          "votes": 27562,
           "percentage": 2.0
         },
         {
@@ -5527,7 +5039,7 @@
           "source_symbol": "מחל",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 34403,
+          "votes": 37361,
           "percentage": 2.8
         },
         {
@@ -5535,7 +5047,7 @@
           "source_symbol": "מחל",
           "target": "כחול לבן",
           "target_symbol": "כן",
-          "votes": 29719,
+          "votes": 32273,
           "percentage": 2.4
         },
         {
@@ -5543,7 +5055,7 @@
           "source_symbol": "מחל",
           "target": "ימינה",
           "target_symbol": "ב",
-          "votes": 97374,
+          "votes": 105744,
           "percentage": 7.8
         },
         {
@@ -5551,7 +5063,7 @@
           "source_symbol": "מחל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 18095,
+          "votes": 19651,
           "percentage": 1.5
         },
         {
@@ -5559,7 +5071,7 @@
           "source_symbol": "מחל",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 41240,
+          "votes": 44785,
           "percentage": 3.3
         },
         {
@@ -5567,7 +5079,7 @@
           "source_symbol": "מחל",
           "target": "הרשימה המשותפת",
           "target_symbol": "ודעם",
-          "votes": 18802,
+          "votes": 20419,
           "percentage": 1.5
         },
         {
@@ -5575,7 +5087,7 @@
           "source_symbol": "מחל",
           "target": "תקווה חדשה",
           "target_symbol": "ת",
-          "votes": 95034,
+          "votes": 103203,
           "percentage": 7.6
         },
         {
@@ -5583,7 +5095,7 @@
           "source_symbol": "מחל",
           "target": "רע״ם",
           "target_symbol": "עם",
-          "votes": 14193,
+          "votes": 15414,
           "percentage": 1.1
         },
         {
@@ -5591,7 +5103,7 @@
           "source_symbol": "פה",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 14414,
+          "votes": 15670,
           "percentage": 1.3
         },
         {
@@ -5599,23 +5111,15 @@
           "source_symbol": "פה",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 464111,
+          "votes": 504557,
           "percentage": 41.3
-        },
-        {
-          "source": "כחול לבן",
-          "source_symbol": "פה",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 7781,
-          "percentage": 0.7
         },
         {
           "source": "כחול לבן",
           "source_symbol": "פה",
           "target": "כחול לבן",
           "target_symbol": "כן",
-          "votes": 241703,
+          "votes": 262767,
           "percentage": 21.5
         },
         {
@@ -5623,7 +5127,7 @@
           "source_symbol": "פה",
           "target": "ימינה",
           "target_symbol": "ב",
-          "votes": 58091,
+          "votes": 63154,
           "percentage": 5.2
         },
         {
@@ -5631,7 +5135,7 @@
           "source_symbol": "פה",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 118793,
+          "votes": 129146,
           "percentage": 10.6
         },
         {
@@ -5639,7 +5143,7 @@
           "source_symbol": "פה",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 14701,
+          "votes": 15982,
           "percentage": 1.3
         },
         {
@@ -5647,23 +5151,15 @@
           "source_symbol": "פה",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 33849,
+          "votes": 36799,
           "percentage": 3.0
-        },
-        {
-          "source": "כחול לבן",
-          "source_symbol": "פה",
-          "target": "הרשימה המשותפת",
-          "target_symbol": "ודעם",
-          "votes": 10768,
-          "percentage": 1.0
         },
         {
           "source": "כחול לבן",
           "source_symbol": "פה",
           "target": "תקווה חדשה",
           "target_symbol": "ת",
-          "votes": 86798,
+          "votes": 94362,
           "percentage": 7.7
         },
         {
@@ -5671,23 +5167,15 @@
           "source_symbol": "פה",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 66092,
+          "votes": 71852,
           "percentage": 5.9
-        },
-        {
-          "source": "כחול לבן",
-          "source_symbol": "פה",
-          "target": "רע״ם",
-          "target_symbol": "עם",
-          "votes": 7744,
-          "percentage": 0.7
         },
         {
           "source": "הרשימה המשותפת",
           "source_symbol": "ודעם",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 29784,
+          "votes": 30740,
           "percentage": 5.3
         },
         {
@@ -5695,7 +5183,7 @@
           "source_symbol": "ודעם",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 20027,
+          "votes": 20670,
           "percentage": 3.6
         },
         {
@@ -5703,7 +5191,7 @@
           "source_symbol": "ודעם",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 21345,
+          "votes": 22030,
           "percentage": 3.8
         },
         {
@@ -5711,7 +5199,7 @@
           "source_symbol": "ודעם",
           "target": "כחול לבן",
           "target_symbol": "כן",
-          "votes": 20051,
+          "votes": 20694,
           "percentage": 3.6
         },
         {
@@ -5719,7 +5207,7 @@
           "source_symbol": "ודעם",
           "target": "ימינה",
           "target_symbol": "ב",
-          "votes": 20980,
+          "votes": 21653,
           "percentage": 3.7
         },
         {
@@ -5727,7 +5215,7 @@
           "source_symbol": "ודעם",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 18460,
+          "votes": 19052,
           "percentage": 3.3
         },
         {
@@ -5735,7 +5223,7 @@
           "source_symbol": "ודעם",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 21729,
+          "votes": 22426,
           "percentage": 3.9
         },
         {
@@ -5743,7 +5231,7 @@
           "source_symbol": "ודעם",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 22221,
+          "votes": 22934,
           "percentage": 3.9
         },
         {
@@ -5751,7 +5239,7 @@
           "source_symbol": "ודעם",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 21458,
+          "votes": 22146,
           "percentage": 3.8
         },
         {
@@ -5759,7 +5247,7 @@
           "source_symbol": "ודעם",
           "target": "הרשימה המשותפת",
           "target_symbol": "ודעם",
-          "votes": 168211,
+          "votes": 173608,
           "percentage": 29.9
         },
         {
@@ -5767,7 +5255,7 @@
           "source_symbol": "ודעם",
           "target": "תקווה חדשה",
           "target_symbol": "ת",
-          "votes": 22756,
+          "votes": 23486,
           "percentage": 4.0
         },
         {
@@ -5775,7 +5263,7 @@
           "source_symbol": "ודעם",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 27943,
+          "votes": 28840,
           "percentage": 5.0
         },
         {
@@ -5783,79 +5271,31 @@
           "source_symbol": "ודעם",
           "target": "רע״ם",
           "target_symbol": "עם",
-          "votes": 148458,
+          "votes": 153221,
           "percentage": 26.3
-        },
-        {
-          "source": "ש״ס",
-          "source_symbol": "שס",
-          "target": "הליכוד",
-          "target_symbol": "מחל",
-          "votes": 7317,
-          "percentage": 2.2
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 247953,
+          "votes": 265455,
           "percentage": 75.2
-        },
-        {
-          "source": "ש״ס",
-          "source_symbol": "שס",
-          "target": "כחול לבן",
-          "target_symbol": "כן",
-          "votes": 5154,
-          "percentage": 1.6
-        },
-        {
-          "source": "ש״ס",
-          "source_symbol": "שס",
-          "target": "העבודה",
-          "target_symbol": "אמת",
-          "votes": 5245,
-          "percentage": 1.6
-        },
-        {
-          "source": "ש״ס",
-          "source_symbol": "שס",
-          "target": "יהדות התורה",
-          "target_symbol": "ג",
-          "votes": 13746,
-          "percentage": 4.2
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 35991,
+          "votes": 38532,
           "percentage": 10.9
-        },
-        {
-          "source": "ש״ס",
-          "source_symbol": "שס",
-          "target": "רע״ם",
-          "target_symbol": "עם",
-          "votes": 7603,
-          "percentage": 2.3
-        },
-        {
-          "source": "יהדות התורה",
-          "source_symbol": "ג",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 12372,
-          "percentage": 4.7
         },
         {
           "source": "יהדות התורה",
           "source_symbol": "ג",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 198245,
+          "votes": 208412,
           "percentage": 75.9
         },
         {
@@ -5863,23 +5303,15 @@
           "source_symbol": "ג",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 14489,
+          "votes": 15232,
           "percentage": 5.6
-        },
-        {
-          "source": "יהדות התורה",
-          "source_symbol": "ג",
-          "target": "מרצ",
-          "target_symbol": "מרצ",
-          "votes": 5081,
-          "percentage": 1.9
         },
         {
           "source": "עבודה-גשר-מרצ",
           "source_symbol": "אמת",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 122607,
+          "votes": 134768,
           "percentage": 50.4
         },
         {
@@ -5887,7 +5319,7 @@
           "source_symbol": "אמת",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 120694,
+          "votes": 132666,
           "percentage": 49.6
         },
         {
@@ -5895,7 +5327,7 @@
           "source_symbol": "ל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 23522,
+          "votes": 24726,
           "percentage": 9.4
         },
         {
@@ -5903,7 +5335,7 @@
           "source_symbol": "ל",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 29899,
+          "votes": 31429,
           "percentage": 11.9
         },
         {
@@ -5911,31 +5343,15 @@
           "source_symbol": "ל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 167920,
+          "votes": 176509,
           "percentage": 67.0
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "הרשימה המשותפת",
-          "target_symbol": "ודעם",
-          "votes": 9310,
-          "percentage": 3.7
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "תקווה חדשה",
-          "target_symbol": "ת",
-          "votes": 13779,
-          "percentage": 5.5
         },
         {
           "source": "ימינה",
           "source_symbol": "טב",
           "target": "ימינה",
           "target_symbol": "ב",
-          "votes": 82967,
+          "votes": 93607,
           "percentage": 38.9
         },
         {
@@ -5943,16 +5359,16 @@
           "source_symbol": "טב",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 130723,
+          "votes": 147486,
           "percentage": 61.3
         }
       ],
       "stats": {
         "common_precincts": 6049,
         "r_squared": 0.7506,
-        "total_votes_from": 4229247,
-        "total_votes_to": 3930927,
-        "generated_at": "2026-02-17 23:27:10"
+        "total_votes_from": 4553161,
+        "total_votes_to": 4345300,
+        "generated_at": "2026-07-11 22:46:59"
       }
     },
     "24_to_25": {
@@ -5961,6 +5377,7 @@
         "name": "הכנסת ה-24",
         "name_en": "24th Knesset",
         "date": "2021-03-23",
+        "estimated": false,
         "eligible_voters": 6578084,
         "votes_cast": 4436365,
         "valid_votes": 4381020,
@@ -5971,6 +5388,7 @@
         "name": "הכנסת ה-25",
         "name_en": "25th Knesset",
         "date": "2022-11-01",
+        "estimated": false,
         "eligible_voters": 6788804,
         "votes_cast": 4794593,
         "valid_votes": 4764742,
@@ -5980,7 +5398,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 963856,
+          "votes": 1066892,
           "seats": 30,
           "color": "#2563eb",
           "info": {
@@ -5999,7 +5417,7 @@
         {
           "name": "יש עתיד",
           "symbol": "פה",
-          "votes": 556110,
+          "votes": 614112,
           "seats": 17,
           "color": "#06b6d4",
           "info": {
@@ -6018,7 +5436,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 292044,
+          "votes": 316008,
           "seats": 9,
           "color": "#1e3a8a",
           "info": {
@@ -6037,7 +5455,7 @@
         {
           "name": "כחול לבן",
           "symbol": "כן",
-          "votes": 265521,
+          "votes": 292257,
           "seats": 8,
           "color": "#8b5cf6",
           "info": {
@@ -6056,7 +5474,7 @@
         {
           "name": "ימינה",
           "symbol": "ב",
-          "votes": 234143,
+          "votes": 273836,
           "seats": 7,
           "color": "#ea580c",
           "info": {
@@ -6075,7 +5493,7 @@
         {
           "name": "העבודה",
           "symbol": "אמת",
-          "votes": 234498,
+          "votes": 268767,
           "seats": 7,
           "color": "#dc2626",
           "info": {
@@ -6094,7 +5512,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 234624,
+          "votes": 248391,
           "seats": 7,
           "color": "#4b5563",
           "info": {
@@ -6113,7 +5531,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 220887,
+          "votes": 248370,
           "seats": 7,
           "color": "#db2777",
           "info": {
@@ -6132,7 +5550,7 @@
         {
           "name": "הציונות הדתית",
           "symbol": "ט",
-          "votes": 198511,
+          "votes": 225641,
           "seats": 6,
           "color": "#92400e",
           "info": {
@@ -6151,7 +5569,7 @@
         {
           "name": "הרשימה המשותפת",
           "symbol": "ודעם",
-          "votes": 201397,
+          "votes": 212583,
           "seats": 6,
           "color": "#0d9488",
           "info": {
@@ -6170,7 +5588,7 @@
         {
           "name": "תקווה חדשה",
           "symbol": "ת",
-          "votes": 187084,
+          "votes": 209161,
           "seats": 6,
           "color": "#6ee7b7",
           "info": {
@@ -6189,7 +5607,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 181815,
+          "votes": 202218,
           "seats": 6,
           "color": "#16a34a",
           "info": {
@@ -6208,7 +5626,7 @@
         {
           "name": "רע״ם",
           "symbol": "עם",
-          "votes": 160437,
+          "votes": 167064,
           "seats": 4,
           "color": "#84cc16",
           "info": {
@@ -6229,7 +5647,7 @@
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 1005452,
+          "votes": 1102965,
           "seats": 32,
           "color": "#2563eb",
           "info": {
@@ -6248,7 +5666,7 @@
         {
           "name": "יש עתיד",
           "symbol": "פה",
-          "votes": 768530,
+          "votes": 838169,
           "seats": 24,
           "color": "#06b6d4",
           "info": {
@@ -6267,7 +5685,7 @@
         {
           "name": "הציונות הדתית",
           "symbol": "ט",
-          "votes": 444808,
+          "votes": 509356,
           "seats": 14,
           "color": "#92400e",
           "info": {
@@ -6286,7 +5704,7 @@
         {
           "name": "המחנה הממלכתי",
           "symbol": "כן",
-          "votes": 382926,
+          "votes": 427163,
           "seats": 12,
           "color": "#7c3aed",
           "info": {
@@ -6305,7 +5723,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 360848,
+          "votes": 388753,
           "seats": 11,
           "color": "#1e3a8a",
           "info": {
@@ -6324,7 +5742,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 262929,
+          "votes": 278185,
           "seats": 7,
           "color": "#4b5563",
           "info": {
@@ -6343,7 +5761,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 187060,
+          "votes": 210454,
           "seats": 6,
           "color": "#db2777",
           "info": {
@@ -6362,7 +5780,7 @@
         {
           "name": "רע״ם",
           "symbol": "עם",
-          "votes": 185783,
+          "votes": 192660,
           "seats": 5,
           "color": "#84cc16",
           "info": {
@@ -6381,7 +5799,7 @@
         {
           "name": "חד״ש-תע״ל",
           "symbol": "ום",
-          "votes": 170622,
+          "votes": 177233,
           "seats": 5,
           "color": "#f43f5e",
           "info": {
@@ -6400,7 +5818,7 @@
         {
           "name": "העבודה",
           "symbol": "אמת",
-          "votes": 152360,
+          "votes": 173156,
           "seats": 4,
           "color": "#dc2626",
           "info": {
@@ -6419,7 +5837,7 @@
         {
           "name": "מרצ",
           "symbol": "מרצ",
-          "votes": 136266,
+          "votes": 148819,
           "seats": 0,
           "color": "#16a34a",
           "info": {
@@ -6438,7 +5856,7 @@
         {
           "name": "בל״ד",
           "symbol": "ד",
-          "votes": 130634,
+          "votes": 136761,
           "seats": 0,
           "color": "#065f46",
           "info": {
@@ -6453,6 +5871,25 @@
             "founded": 1995,
             "description": "ברית לאומית דמוקרטית, מפלגה ערבית לאומית"
           }
+        },
+        {
+          "name": "הבית היהודי",
+          "symbol": "ב",
+          "votes": 56102,
+          "seats": 0,
+          "color": "#ea580c",
+          "info": {
+            "name": "הבית היהודי",
+            "name_en": "HaBayit HaYehudi",
+            "color": "#ea580c",
+            "leader": "איילת שקד",
+            "leader_en": "Ayelet Shaked",
+            "leader_image": "images/leaders/shaked.jpg",
+            "logo": "images/logos/bayit_yehudi.png",
+            "ideology": "ימין דתי-לאומי",
+            "founded": 2008,
+            "description": "מפלגת ימין דתית-לאומית בהנהגת איילת שקד, לא עברה את אחוז החסימה"
+          }
         }
       ],
       "transfers": [
@@ -6461,39 +5898,39 @@
           "source_symbol": "מחל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 866795,
-          "percentage": 89.9
+          "votes": 960762,
+          "percentage": 90.1
         },
         {
           "source": "הליכוד",
           "source_symbol": "מחל",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 109926,
-          "percentage": 11.4
+          "votes": 124687,
+          "percentage": 11.7
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 554610,
-          "percentage": 99.7
+          "votes": 612701,
+          "percentage": 99.8
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "המחנה הממלכתי",
           "target_symbol": "כן",
-          "votes": 21477,
-          "percentage": 3.9
+          "votes": 24445,
+          "percentage": 4.0
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 292286,
+          "votes": 316235,
           "percentage": 100.1
         },
         {
@@ -6501,15 +5938,15 @@
           "source_symbol": "כן",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 80444,
-          "percentage": 30.3
+          "votes": 89218,
+          "percentage": 30.5
         },
         {
           "source": "כחול לבן",
           "source_symbol": "כן",
           "target": "המחנה הממלכתי",
           "target_symbol": "כן",
-          "votes": 189696,
+          "votes": 208767,
           "percentage": 71.4
         },
         {
@@ -6517,240 +5954,160 @@
           "source_symbol": "ב",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 44292,
-          "percentage": 18.9
+          "votes": 38722,
+          "percentage": 14.1
         },
         {
           "source": "ימינה",
           "source_symbol": "ב",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 116821,
-          "percentage": 49.9
+          "votes": 123737,
+          "percentage": 45.2
         },
         {
           "source": "ימינה",
           "source_symbol": "ב",
           "target": "המחנה הממלכתי",
           "target_symbol": "כן",
-          "votes": 36390,
-          "percentage": 15.5
+          "votes": 29647,
+          "percentage": 10.8
         },
         {
           "source": "ימינה",
           "source_symbol": "ב",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 24719,
-          "percentage": 10.6
+          "votes": 16882,
+          "percentage": 6.2
         },
         {
           "source": "ימינה",
           "source_symbol": "ב",
-          "target": "יהדות התורה",
-          "target_symbol": "ג",
-          "votes": 6142,
-          "percentage": 2.6
-        },
-        {
-          "source": "ימינה",
-          "source_symbol": "ב",
-          "target": "ישראל ביתנו",
-          "target_symbol": "ל",
-          "votes": 6663,
-          "percentage": 2.8
+          "target": "הבית היהודי",
+          "target_symbol": "ב",
+          "votes": 66286,
+          "percentage": 24.2
         },
         {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 78718,
-          "percentage": 33.6
-        },
-        {
-          "source": "העבודה",
-          "source_symbol": "אמת",
-          "target": "המחנה הממלכתי",
-          "target_symbol": "כן",
-          "votes": 11474,
-          "percentage": 4.9
+          "votes": 90907,
+          "percentage": 33.8
         },
         {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "העבודה",
           "target_symbol": "אמת",
-          "votes": 145217,
-          "percentage": 61.9
-        },
-        {
-          "source": "יהדות התורה",
-          "source_symbol": "ג",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 5321,
-          "percentage": 2.3
+          "votes": 165033,
+          "percentage": 61.4
         },
         {
           "source": "יהדות התורה",
           "source_symbol": "ג",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 233740,
-          "percentage": 99.6
+          "votes": 247585,
+          "percentage": 99.7
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 17132,
-          "percentage": 7.8
+          "votes": 18809,
+          "percentage": 7.6
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 12516,
-          "percentage": 5.7
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "המחנה הממלכתי",
-          "target_symbol": "כן",
-          "votes": 9075,
-          "percentage": 4.1
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 6498,
-          "percentage": 2.9
+          "votes": 15135,
+          "percentage": 6.1
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 172879,
-          "percentage": 78.3
+          "votes": 195259,
+          "percentage": 78.6
         },
         {
           "source": "הציונות הדתית",
           "source_symbol": "ט",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 197876,
-          "percentage": 99.7
+          "votes": 225600,
+          "percentage": 100.0
         },
         {
           "source": "הרשימה המשותפת",
           "source_symbol": "ודעם",
           "target": "חד״ש-תע״ל",
           "target_symbol": "ום",
-          "votes": 123465,
-          "percentage": 61.3
+          "votes": 129696,
+          "percentage": 61.0
         },
         {
           "source": "הרשימה המשותפת",
           "source_symbol": "ודעם",
           "target": "בל״ד",
           "target_symbol": "ד",
-          "votes": 74712,
-          "percentage": 37.1
+          "votes": 78314,
+          "percentage": 36.8
         },
         {
           "source": "תקווה חדשה",
           "source_symbol": "ת",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 74917,
-          "percentage": 40.0
-        },
-        {
-          "source": "תקווה חדשה",
-          "source_symbol": "ת",
-          "target": "יש עתיד",
-          "target_symbol": "פה",
-          "votes": 12533,
-          "percentage": 6.7
+          "votes": 88498,
+          "percentage": 42.3
         },
         {
           "source": "תקווה חדשה",
           "source_symbol": "ת",
           "target": "המחנה הממלכתי",
           "target_symbol": "כן",
-          "votes": 104277,
-          "percentage": 55.7
+          "votes": 121710,
+          "percentage": 58.2
         },
         {
           "source": "מרצ",
           "source_symbol": "מרצ",
           "target": "יש עתיד",
           "target_symbol": "פה",
-          "votes": 27004,
+          "votes": 30086,
           "percentage": 14.9
-        },
-        {
-          "source": "מרצ",
-          "source_symbol": "מרצ",
-          "target": "רע״ם",
-          "target_symbol": "עם",
-          "votes": 7366,
-          "percentage": 4.1
-        },
-        {
-          "source": "מרצ",
-          "source_symbol": "מרצ",
-          "target": "חד״ש-תע״ל",
-          "target_symbol": "ום",
-          "votes": 8306,
-          "percentage": 4.6
         },
         {
           "source": "מרצ",
           "source_symbol": "מרצ",
           "target": "מרצ",
           "target_symbol": "מרצ",
-          "votes": 130295,
-          "percentage": 71.7
-        },
-        {
-          "source": "מרצ",
-          "source_symbol": "מרצ",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 6113,
-          "percentage": 3.4
+          "votes": 144678,
+          "percentage": 71.5
         },
         {
           "source": "רע״ם",
           "source_symbol": "עם",
           "target": "רע״ם",
           "target_symbol": "עם",
-          "votes": 151070,
-          "percentage": 94.2
-        },
-        {
-          "source": "רע״ם",
-          "source_symbol": "עם",
-          "target": "בל״ד",
-          "target_symbol": "ד",
-          "votes": 7729,
-          "percentage": 4.8
+          "votes": 156845,
+          "percentage": 93.9
         }
       ],
       "stats": {
         "common_precincts": 7035,
-        "r_squared": 0.8915,
-        "total_votes_from": 3930927,
-        "total_votes_to": 4188218,
-        "generated_at": "2026-02-17 23:27:40"
+        "r_squared": 0.8894,
+        "total_votes_from": 4345300,
+        "total_votes_to": 4639776,
+        "generated_at": "2026-07-11 22:47:32"
       }
     },
     "25_to_26": {
@@ -7004,13 +6361,32 @@
             "founded": 1995,
             "description": "ברית לאומית דמוקרטית, מפלגה ערבית לאומית"
           }
+        },
+        {
+          "name": "הבית היהודי",
+          "symbol": "ב",
+          "votes": 56102,
+          "seats": 0,
+          "color": "#ea580c",
+          "info": {
+            "name": "הבית היהודי",
+            "name_en": "HaBayit HaYehudi",
+            "color": "#ea580c",
+            "leader": "איילת שקד",
+            "leader_en": "Ayelet Shaked",
+            "leader_image": "images/leaders/shaked.jpg",
+            "logo": "images/logos/bayit_yehudi.png",
+            "ideology": "ימין דתי-לאומי",
+            "founded": 2008,
+            "description": "מפלגת ימין דתית-לאומית בהנהגת איילת שקד, לא עברה את אחוז החסימה"
+          }
         }
       ],
       "nodes_to": [
         {
           "name": "הליכוד",
           "symbol": "מחל",
-          "votes": 948052,
+          "votes": 812932,
           "seats": 25,
           "color": "#2563eb",
           "info": {
@@ -7029,7 +6405,7 @@
         {
           "name": "ביחד",
           "symbol": "נב",
-          "votes": 829589,
+          "votes": 728963,
           "seats": 22,
           "color": "#f97316",
           "info": {
@@ -7048,7 +6424,7 @@
         {
           "name": "ישר",
           "symbol": "יר",
-          "votes": 611464,
+          "votes": 1003176,
           "seats": 16,
           "color": "#14b8a6",
           "info": {
@@ -7066,7 +6442,7 @@
         {
           "name": "הדמוקרטים",
           "symbol": "דמ",
-          "votes": 421610,
+          "votes": 422676,
           "seats": 11,
           "color": "#16a34a",
           "info": {
@@ -7083,7 +6459,7 @@
         {
           "name": "ש״ס",
           "symbol": "שס",
-          "votes": 389589,
+          "votes": 392946,
           "seats": 10,
           "color": "#1e3a8a",
           "info": {
@@ -7102,7 +6478,7 @@
         {
           "name": "עוצמה יהודית",
           "symbol": "עי",
-          "votes": 355488,
+          "votes": 112991,
           "seats": 9,
           "color": "#7f1d1d",
           "info": {
@@ -7119,7 +6495,7 @@
         {
           "name": "יהדות התורה",
           "symbol": "ג",
-          "votes": 305720,
+          "votes": 310726,
           "seats": 8,
           "color": "#4b5563",
           "info": {
@@ -7138,7 +6514,7 @@
         {
           "name": "ישראל ביתנו",
           "symbol": "ל",
-          "votes": 299877,
+          "votes": 263521,
           "seats": 8,
           "color": "#db2777",
           "info": {
@@ -7157,7 +6533,7 @@
         {
           "name": "חד״ש-תע״ל",
           "symbol": "ום",
-          "votes": 217391,
+          "votes": 216565,
           "seats": 6,
           "color": "#f43f5e",
           "info": {
@@ -7176,7 +6552,7 @@
         {
           "name": "רע״ם",
           "symbol": "עם",
-          "votes": 192419,
+          "votes": 191376,
           "seats": 5,
           "color": "#84cc16",
           "info": {
@@ -7195,7 +6571,7 @@
         {
           "name": "הציונות הדתית",
           "symbol": "ט",
-          "votes": 137875,
+          "votes": 219281,
           "seats": 0,
           "color": "#92400e",
           "info": {
@@ -7214,7 +6590,7 @@
         {
           "name": "המילואימניקים",
           "symbol": "מי",
-          "votes": 120557,
+          "votes": 184170,
           "seats": 0,
           "color": "#a16207",
           "info": {
@@ -7232,7 +6608,7 @@
         {
           "name": "בל״ד",
           "symbol": "ד",
-          "votes": 72820,
+          "votes": 73307,
           "seats": 0,
           "color": "#065f46",
           "info": {
@@ -7251,7 +6627,7 @@
         {
           "name": "כחול לבן",
           "symbol": "כל",
-          "votes": 49258,
+          "votes": 19079,
           "seats": 0,
           "color": "#6b7280",
           "info": {
@@ -7274,304 +6650,352 @@
           "source_symbol": "מחל",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 796712,
-          "percentage": 72.2
+          "votes": 726413,
+          "percentage": 65.9
         },
         {
           "source": "הליכוד",
           "source_symbol": "מחל",
           "target": "ביחד",
           "target_symbol": "נב",
-          "votes": 137481,
-          "percentage": 12.5
+          "votes": 119536,
+          "percentage": 10.8
         },
         {
           "source": "הליכוד",
           "source_symbol": "מחל",
           "target": "ישר",
           "target_symbol": "יר",
-          "votes": 71962,
-          "percentage": 6.5
+          "votes": 99124,
+          "percentage": 9.0
+        },
+        {
+          "source": "הליכוד",
+          "source_symbol": "מחל",
+          "target": "הדמוקרטים",
+          "target_symbol": "דמ",
+          "votes": 16955,
+          "percentage": 1.5
+        },
+        {
+          "source": "הליכוד",
+          "source_symbol": "מחל",
+          "target": "ש״ס",
+          "target_symbol": "שס",
+          "votes": 23444,
+          "percentage": 2.1
         },
         {
           "source": "הליכוד",
           "source_symbol": "מחל",
           "target": "עוצמה יהודית",
           "target_symbol": "עי",
-          "votes": 38145,
-          "percentage": 3.5
+          "votes": 16393,
+          "percentage": 1.5
+        },
+        {
+          "source": "הליכוד",
+          "source_symbol": "מחל",
+          "target": "יהדות התורה",
+          "target_symbol": "ג",
+          "votes": 18899,
+          "percentage": 1.7
+        },
+        {
+          "source": "הליכוד",
+          "source_symbol": "מחל",
+          "target": "ישראל ביתנו",
+          "target_symbol": "ל",
+          "votes": 15038,
+          "percentage": 1.4
+        },
+        {
+          "source": "הליכוד",
+          "source_symbol": "מחל",
+          "target": "הציונות הדתית",
+          "target_symbol": "ט",
+          "votes": 22408,
+          "percentage": 2.0
         },
         {
           "source": "הליכוד",
           "source_symbol": "מחל",
           "target": "המילואימניקים",
           "target_symbol": "מי",
-          "votes": 61352,
-          "percentage": 5.6
-        },
-        {
-          "source": "הליכוד",
-          "source_symbol": "מחל",
-          "target": "כחול לבן",
-          "target_symbol": "כל",
-          "votes": 16155,
-          "percentage": 1.5
+          "votes": 109871,
+          "percentage": 10.0
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "ביחד",
           "target_symbol": "נב",
-          "votes": 368401,
-          "percentage": 44.0
+          "votes": 325433,
+          "percentage": 38.8
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "ישר",
           "target_symbol": "יר",
-          "votes": 284127,
-          "percentage": 33.9
+          "votes": 401098,
+          "percentage": 47.9
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "הדמוקרטים",
           "target_symbol": "דמ",
-          "votes": 122326,
-          "percentage": 14.6
+          "votes": 99822,
+          "percentage": 11.9
         },
         {
           "source": "יש עתיד",
           "source_symbol": "פה",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 95214,
-          "percentage": 11.4
+          "votes": 58996,
+          "percentage": 7.0
+        },
+        {
+          "source": "יש עתיד",
+          "source_symbol": "פה",
+          "target": "המילואימניקים",
+          "target_symbol": "מי",
+          "votes": 15836,
+          "percentage": 1.9
         },
         {
           "source": "הציונות הדתית",
           "source_symbol": "ט",
           "target": "הליכוד",
           "target_symbol": "מחל",
-          "votes": 68388,
-          "percentage": 13.4
+          "votes": 38276,
+          "percentage": 7.5
         },
         {
           "source": "הציונות הדתית",
           "source_symbol": "ט",
           "target": "ביחד",
           "target_symbol": "נב",
-          "votes": 52317,
-          "percentage": 10.3
+          "votes": 78348,
+          "percentage": 15.4
         },
         {
           "source": "הציונות הדתית",
           "source_symbol": "ט",
-          "target": "ש״ס",
-          "target_symbol": "שס",
-          "votes": 19714,
-          "percentage": 3.9
+          "target": "ישר",
+          "target_symbol": "יר",
+          "votes": 151479,
+          "percentage": 29.7
         },
         {
           "source": "הציונות הדתית",
           "source_symbol": "ט",
           "target": "עוצמה יהודית",
           "target_symbol": "עי",
-          "votes": 269985,
-          "percentage": 53.0
+          "votes": 70834,
+          "percentage": 13.9
         },
         {
           "source": "הציונות הדתית",
           "source_symbol": "ט",
           "target": "הציונות הדתית",
           "target_symbol": "ט",
-          "votes": 125057,
-          "percentage": 24.6
-        },
-        {
-          "source": "המחנה הממלכתי",
-          "source_symbol": "כן",
-          "target": "הליכוד",
-          "target_symbol": "מחל",
-          "votes": 25249,
-          "percentage": 5.9
+          "votes": 191770,
+          "percentage": 37.6
         },
         {
           "source": "המחנה הממלכתי",
           "source_symbol": "כן",
           "target": "ביחד",
           "target_symbol": "נב",
-          "votes": 200211,
-          "percentage": 46.9
+          "votes": 118446,
+          "percentage": 27.7
         },
         {
           "source": "המחנה הממלכתי",
           "source_symbol": "כן",
           "target": "ישר",
           "target_symbol": "יר",
-          "votes": 152933,
-          "percentage": 35.8
+          "votes": 211057,
+          "percentage": 49.4
+        },
+        {
+          "source": "המחנה הממלכתי",
+          "source_symbol": "כן",
+          "target": "הדמוקרטים",
+          "target_symbol": "דמ",
+          "votes": 44038,
+          "percentage": 10.3
         },
         {
           "source": "המחנה הממלכתי",
           "source_symbol": "כן",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 45878,
-          "percentage": 10.7
+          "votes": 40725,
+          "percentage": 9.5
         },
         {
           "source": "המחנה הממלכתי",
           "source_symbol": "כן",
           "target": "המילואימניקים",
           "target_symbol": "מי",
-          "votes": 25850,
-          "percentage": 6.1
+          "votes": 44902,
+          "percentage": 10.5
+        },
+        {
+          "source": "ש״ס",
+          "source_symbol": "שס",
+          "target": "הליכוד",
+          "target_symbol": "מחל",
+          "votes": 21264,
+          "percentage": 5.5
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "ש״ס",
           "target_symbol": "שס",
-          "votes": 347161,
-          "percentage": 89.3
+          "votes": 356243,
+          "percentage": 91.6
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "עוצמה יהודית",
           "target_symbol": "עי",
-          "votes": 33133,
-          "percentage": 8.5
+          "votes": 20728,
+          "percentage": 5.3
         },
         {
           "source": "ש״ס",
           "source_symbol": "שס",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 26078,
-          "percentage": 6.7
+          "votes": 19685,
+          "percentage": 5.1
         },
         {
           "source": "יהדות התורה",
           "source_symbol": "ג",
           "target": "יהדות התורה",
           "target_symbol": "ג",
-          "votes": 269097,
-          "percentage": 96.7
-        },
-        {
-          "source": "ישראל ביתנו",
-          "source_symbol": "ל",
-          "target": "הליכוד",
-          "target_symbol": "מחל",
-          "votes": 17521,
-          "percentage": 8.3
+          "votes": 270542,
+          "percentage": 97.3
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "ביחד",
           "target_symbol": "נב",
-          "votes": 27954,
-          "percentage": 13.3
+          "votes": 31382,
+          "percentage": 14.9
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "ישר",
           "target_symbol": "יר",
-          "votes": 30184,
-          "percentage": 14.3
+          "votes": 42325,
+          "percentage": 20.1
         },
         {
           "source": "ישראל ביתנו",
           "source_symbol": "ל",
           "target": "ישראל ביתנו",
           "target_symbol": "ל",
-          "votes": 135620,
-          "percentage": 64.4
+          "votes": 134211,
+          "percentage": 63.8
         },
         {
           "source": "רע״ם",
           "source_symbol": "עם",
           "target": "רע״ם",
           "target_symbol": "עם",
-          "votes": 171410,
-          "percentage": 89.0
+          "votes": 172004,
+          "percentage": 89.3
         },
         {
           "source": "חד״ש-תע״ל",
           "source_symbol": "ום",
           "target": "חד״ש-תע״ל",
           "target_symbol": "ום",
-          "votes": 150987,
-          "percentage": 85.2
+          "votes": 148541,
+          "percentage": 83.8
         },
         {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "ביחד",
           "target_symbol": "נב",
-          "votes": 26444,
-          "percentage": 15.3
+          "votes": 25871,
+          "percentage": 14.9
         },
         {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "ישר",
           "target_symbol": "יר",
-          "votes": 29129,
-          "percentage": 16.8
+          "votes": 41983,
+          "percentage": 24.2
         },
         {
           "source": "העבודה",
           "source_symbol": "אמת",
           "target": "הדמוקרטים",
           "target_symbol": "דמ",
-          "votes": 124080,
-          "percentage": 71.7
+          "votes": 113226,
+          "percentage": 65.4
         },
         {
           "source": "מרצ",
           "source_symbol": "מרצ",
           "target": "ישר",
           "target_symbol": "יר",
-          "votes": 21362,
-          "percentage": 14.4
+          "votes": 29009,
+          "percentage": 19.5
         },
         {
           "source": "מרצ",
           "source_symbol": "מרצ",
           "target": "הדמוקרטים",
           "target_symbol": "דמ",
-          "votes": 122767,
-          "percentage": 82.5
+          "votes": 117893,
+          "percentage": 79.2
         },
         {
           "source": "בל״ד",
           "source_symbol": "ד",
           "target": "חד״ש-תע״ל",
           "target_symbol": "ום",
-          "votes": 53169,
-          "percentage": 38.9
+          "votes": 54481,
+          "percentage": 39.8
         },
         {
           "source": "בל״ד",
           "source_symbol": "ד",
           "target": "בל״ד",
           "target_symbol": "ד",
-          "votes": 62276,
-          "percentage": 45.5
+          "votes": 63085,
+          "percentage": 46.1
+        },
+        {
+          "source": "הבית היהודי",
+          "source_symbol": "ב",
+          "target": "ישר",
+          "target_symbol": "יר",
+          "votes": 20622,
+          "percentage": 36.8
         }
       ],
       "stats": {
         "common_precincts": 11690,
-        "r_squared": 0.8856,
-        "total_votes_from": 4583674,
+        "r_squared": 0.8865,
+        "total_votes_from": 4639776,
         "total_votes_to": 4951709,
-        "generated_at": "2026-05-24 08:17:39"
+        "generated_at": "2026-07-11 22:48:32"
       }
     }
   }
