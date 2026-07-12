@@ -699,7 +699,15 @@ class VoteTransferSankey {
             })
             .filter(l => l !== null && l.value > 0);
 
-        console.log('Nodes:', nodes.length, 'Links:', links.length);
+        // Filter nodes to only those with links
+        const linkedNodeIds = new Set();
+        links.forEach(link => {
+            linkedNodeIds.add(link.source);
+            linkedNodeIds.add(link.target);
+        });
+        const filteredNodes = nodes.filter(n => linkedNodeIds.has(n.id));
+
+        console.log('Nodes:', filteredNodes.length, 'Links:', links.length);
 
         if (links.length === 0) {
             this.container.innerHTML = `<div class="loading">${i18n.t('no_data')}</div>`;
@@ -718,7 +726,7 @@ class VoteTransferSankey {
 
         // Generate layout
         const graph = sankeyGenerator({
-            nodes: nodes.map(d => Object.assign({}, d)),
+            nodes: filteredNodes.map(d => Object.assign({}, d)),
             links: links.map(d => Object.assign({}, d))
         });
 
