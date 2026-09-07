@@ -85,19 +85,159 @@
 
         .result-item {
             display: flex;
-            align-items: center;
-            gap: 8px;
+            flex-direction: column;
+            gap: 4px;
             padding: 8px 0;
             border-bottom: 1px solid var(--border);
         }
 
         .result-item:last-child { border-bottom: none; }
 
+        .result-item.below-threshold {
+            background: rgba(251, 191, 36, 0.06);
+            border-radius: 6px;
+            padding: 8px 6px;
+            border-bottom-color: transparent;
+        }
+
+        .result-item.below-threshold .result-party-name {
+            color: var(--text-muted);
+        }
+
+        .result-item.below-threshold .result-seats-num {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 52px;
+        }
+
+        .below-badge {
+            display: inline-block;
+            font-size: 0.58rem;
+            font-weight: 700;
+            color: #fbbf24;
+            background: rgba(251, 191, 36, 0.12);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            border-radius: 4px;
+            padding: 0 0.28rem;
+            white-space: nowrap;
+        }
+
+        .result-top {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
         .result-color-bar {
             width: 4px;
-            height: 36px;
+            height: 22px;
             border-radius: 2px;
             flex-shrink: 0;
+        }
+
+        .result-item.below-threshold .result-color-bar {
+            opacity: 0.4;
+        }
+
+        .vote-bar-track {
+            position: relative;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.045);
+            border-radius: 4px;
+            overflow: visible;
+            margin-inline-start: 12px;
+        }
+
+        .vote-bar-fill {
+            position: absolute;
+            inset-block: 0;
+            inset-inline-start: 0;
+            border-radius: 4px;
+            min-width: 0;
+        }
+
+        .result-item.below-threshold .vote-bar-fill {
+            opacity: 0.7;
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 3px,
+                rgba(0, 0, 0, 0.35) 3px,
+                rgba(0, 0, 0, 0.35) 6px
+            );
+        }
+
+        .vote-bar-cutoff {
+            position: absolute;
+            top: -2px;
+            bottom: -2px;
+            width: 0;
+            border-inline-start: 2px dashed #fbbf24;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .seat-blocks {
+            --seat-w: 4%;
+            --gap: 1px;
+            display: flex;
+            align-items: stretch;
+            gap: var(--gap);
+            height: 14px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .seat-block {
+            position: relative;
+            flex: 0 0 var(--seat-w);
+            width: var(--seat-w);
+            height: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .seat-block i {
+            position: absolute;
+            inset-block: 0;
+            inset-inline-start: 0;
+            display: block;
+            height: 100%;
+        }
+
+        .seat-block.remainder {
+            background: transparent;
+            border: 1px dashed rgba(255, 255, 255, 0.32);
+            box-sizing: border-box;
+        }
+
+        .seat-block.at-risk {
+            box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.85);
+        }
+
+        .threshold-banner {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            background: var(--bg-primary, #0a0a0f);
+            color: #fbbf24;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 6px 2px 8px;
+            border-bottom: 1px dashed rgba(251, 191, 36, 0.45);
+            margin-bottom: 4px;
+        }
+
+        .threshold-votes-eq {
+            color: #fbbf24;
+            font-weight: 700;
+            font-size: 0.85rem;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
         }
 
         .result-main {
@@ -451,6 +591,7 @@
             <label data-i18n="threshold_pct">אחוז חסימה:</label>
             <input type="number" class="threshold-input" id="threshold-input" value="3.25" min="0" max="10" step="0.25">
             <span>%</span>
+            <span class="threshold-votes-eq" id="threshold-votes-eq"></span>
         </div>
         <div class="threshold-row">
             <label data-i18n="knesset_size_label">גודל הכנסת:</label>
@@ -832,6 +973,7 @@
 
             const seats = {};
             eligible.forEach(p => seats[p.name] = 0);
+            let lastQuotient = 0;
 
             for (let i = 0; i < this.totalSeats; i++) {
                 let maxQ = -1, winner = null;
@@ -857,7 +999,10 @@
                         if (q > maxQ) { maxQ = q; winner = party.name; }
                     }
                 });
-                if (winner) seats[winner]++;
+                if (winner) {
+                    seats[winner]++;
+                    lastQuotient = maxQ;
+                }
             }
 
             // Marginal votes
@@ -873,9 +1018,10 @@
                 toLose: marginals[p.name]?.toLose,
                 gainFrom: marginals[p.name]?.gainFrom,
                 loseTo: marginals[p.name]?.loseTo,
-            })).sort((a, b) => b.seats - a.seats);
+                loseViaThreshold: !!marginals[p.name]?.loseViaThreshold,
+            })).sort((a, b) => b.seats - a.seats || b.votes - a.votes);
 
-            this.renderResults(results);
+            this.renderResults(results, thresholdVotes, lastQuotient);
             this.renderParliament(results);
 
             // Update seats label
@@ -890,7 +1036,7 @@
             this.parties.forEach((party, idx) => {
                 if (party.votes < thresholdVotes) {
                     const needed = Math.ceil(thresholdVotes) - party.votes;
-                    results[party.name] = { toGain: needed > 0 ? needed : null, toLose: null };
+                    results[party.name] = { toGain: needed > 0 ? needed : null, toLose: null, loseViaThreshold: false };
                     return;
                 }
 
@@ -916,7 +1062,7 @@
                 }
 
                 // Votes to lose
-                let toLose = null, loseTo = null;
+                let toLose = null, loseTo = null, loseViaThreshold = false;
                 if (curS > 0) {
                     let lo = 1, hi = party.votes;
                     while (lo < hi) {
@@ -928,15 +1074,19 @@
                     }
                     if (lo <= party.votes && lo > 0) {
                         toLose = lo;
-                        const tp = this.parties.map((p, i) => i === idx ? { ...p, votes: party.votes - lo } : p);
-                        const ns = this.simulateSeats(tp);
-                        for (const [n, s] of Object.entries(currentSeats)) {
-                            if (n !== party.name && (ns[n] || 0) > s) { loseTo = n; break; }
+                        if (party.votes - lo < thresholdVotes) {
+                            loseViaThreshold = true;
+                        } else {
+                            const tp = this.parties.map((p, i) => i === idx ? { ...p, votes: party.votes - lo } : p);
+                            const ns = this.simulateSeats(tp);
+                            for (const [n, s] of Object.entries(currentSeats)) {
+                                if (n !== party.name && (ns[n] || 0) > s) { loseTo = n; break; }
+                            }
                         }
                     }
                 }
 
-                results[party.name] = { toGain, toLose, gainFrom, loseTo };
+                results[party.name] = { toGain, toLose, gainFrom, loseTo, loseViaThreshold };
             });
 
             return results;
@@ -993,38 +1143,87 @@
             return seats;
         }
 
-        // ---- Render results list ----
-        renderResults(results) {
-            const container = document.getElementById('results-list');
-            const eligible = results.filter(r => r.seats > 0);
+        seatBlocksHtml(r, seatCost, maxVotes) {
+            if (!r.eligible || r.seats <= 0) return '';
+            const seatW = 100 * seatCost / Math.max(maxVotes, 1);
+            const gain = r.toGain;
+            const lose = r.toLose;
+            const clamp = (x) => Math.max(0, Math.min(100, x));
+            const nextFill = (gain == null || seatCost <= 0)
+                ? 0
+                : clamp(100 * (1 - gain / seatCost));
+            const atRisk = lose != null && seatCost > 0 && lose / seatCost < 0.25;
+            const brick = (fill, extra) =>
+                `<span class="seat-block ${extra}"><i style="width:${fill}%;background:${r.color}"></i></span>`;
+            let html = `<div class="seat-blocks" style="--seat-w:${seatW}%">`;
+            for (let i = 0; i < r.seats; i++) {
+                const last = i === r.seats - 1;
+                html += brick(100, last && atRisk ? 'at-risk' : 'full');
+            }
+            html += brick(nextFill, 'remainder');
+            html += '</div>';
+            return html;
+        }
 
-            container.innerHTML = eligible.map(r => {
+        // ---- Render results list ----
+        renderResults(results, thresholdVotes, lastQuotient) {
+            const container = document.getElementById('results-list');
+            const sorted = [...results].sort((a, b) => b.seats - a.seats || b.votes - a.votes);
+            const maxVotes = Math.max(1, ...sorted.map(r => r.votes));
+            const totalVotes = this.parties.reduce((s, p) => s + p.votes, 0);
+            const seatCost = lastQuotient > 0 ? lastQuotient : (totalVotes / Math.max(this.totalSeats, 1));
+            const cutoffPct = Math.min(100, 100 * thresholdVotes / maxVotes);
+            const cutoffLabel = `${i18n.t('threshold_cutoff')} ${this.threshold}% · ${i18n.fmtNum(Math.ceil(thresholdVotes || 0))}`;
+
+            const threshEq = document.getElementById('threshold-votes-eq');
+            if (threshEq) {
+                threshEq.textContent = i18n.t('threshold_votes_eq', { n: i18n.fmtNum(Math.ceil(thresholdVotes || 0)) });
+            }
+
+            const cutoffLine = `<div class="vote-bar-cutoff" style="inset-inline-start:${cutoffPct}%"></div>`;
+
+            const rows = sorted.map(r => {
                 const agIcon = r.hasAgreement ? `<span class="result-agreement-icon" title="${i18n.t('in_surplus_agreement')}">🤝</span>` : '';
-                const gainFromParty = r.gainFrom ? i18n.partyName({name: r.gainFrom, name_en: (this.parties.find(p => p.name === r.gainFrom) || {}).name_en}) : '';
-                const loseToParty = r.loseTo ? i18n.partyName({name: r.loseTo, name_en: (this.parties.find(p => p.name === r.loseTo) || {}).name_en}) : '';
-                const gainFromText = r.gainFrom ? ` ${i18n.t('gain_from', { party: gainFromParty })}` : '';
-                const loseToText = r.loseTo ? ` ${i18n.t('lose_to', { party: loseToParty })}` : '';
+                const below = !r.eligible;
+                const gainFromParty = !below && r.gainFrom ? i18n.partyName({name: r.gainFrom, name_en: (this.parties.find(p => p.name === r.gainFrom) || {}).name_en}) : '';
+                const loseToParty = !r.loseViaThreshold && r.loseTo ? i18n.partyName({name: r.loseTo, name_en: (this.parties.find(p => p.name === r.loseTo) || {}).name_en}) : '';
+                const gainFromText = gainFromParty ? ` ${i18n.t('gain_from', { party: gainFromParty })}` : '';
+                const loseToText = loseToParty ? ` ${i18n.t('lose_to', { party: loseToParty })}` : '';
+                const gainKey = below ? 'votes_to_pass_threshold' : 'votes_to_gain';
+                const loseKey = r.loseViaThreshold ? 'votes_to_drop_threshold' : 'votes_to_lose';
                 const gainText = r.toGain
-                    ? `<span class="marginal-text marginal-gain">${i18n.t('votes_to_gain', { n: i18n.fmtNum(r.toGain) })}${gainFromText}</span>`
+                    ? `<span class="marginal-text marginal-gain">${i18n.t(gainKey, { n: i18n.fmtNum(r.toGain) })}${gainFromText}</span>`
                     : '';
                 const loseText = r.toLose
-                    ? `<span class="marginal-text marginal-lose">${i18n.t('votes_to_lose', { n: i18n.fmtNum(r.toLose) })}${loseToText}</span>`
+                    ? `<span class="marginal-text marginal-lose">${i18n.t(loseKey, { n: i18n.fmtNum(r.toLose) })}${loseToText}</span>`
                     : '';
+                const votePct = Math.min(100, 100 * r.votes / maxVotes);
+                const barInner = below
+                    ? `<div class="vote-bar-fill" style="width:${votePct}%;background-color:${r.color}"></div>`
+                    : this.seatBlocksHtml(r, seatCost, maxVotes);
 
                 return `
-                <div class="result-item">
-                    <div class="result-color-bar" style="background:${r.color}"></div>
-                    <div class="result-main">
-                        <div class="result-name-row">
-                            ${agIcon}
-                            <span class="result-party-name">${i18n.partyName(r)}</span>
+                <div class="result-item${below ? ' below-threshold' : ''}">
+                    <div class="result-top">
+                        <div class="result-color-bar" style="background:${r.color}"></div>
+                        <div class="result-main">
+                            <div class="result-name-row">
+                                ${agIcon}
+                                <span class="result-party-name">${i18n.partyName(r)}</span>
+                            </div>
                         </div>
-                        <div class="result-votes-text">${i18n.fmtNum(r.votes)} ${i18n.t('votes')}</div>
+                        <div class="result-seats-num">${below ? `0 <span class="below-badge">${i18n.t('below_threshold')}</span>` : r.seats}</div>
+                        <div class="result-marginals">${gainText}${loseText}</div>
                     </div>
-                    <div class="result-seats-num">${r.seats}</div>
-                    <div class="result-marginals">${gainText}${loseText}</div>
+                    <div class="vote-bar-track">
+                        ${barInner}
+                        ${cutoffLine}
+                    </div>
+                    <div class="result-votes-text">${i18n.fmtNum(r.votes)} ${i18n.t('votes')}</div>
                 </div>`;
             }).join('');
+
+            container.innerHTML = `<div class="threshold-banner">${cutoffLabel} · ${i18n.t('seat_block_legend')}</div>` + rows;
 
             // Coalition counts
             const rightSeats = results.filter(r => r.block === 'right').reduce((s, r) => s + r.seats, 0);
