@@ -28,6 +28,22 @@ logger = logging.getLogger(__name__)
 
 pd.options.mode.chained_assignment = None
 
+# Cells the unconstrained least-squares solver would otherwise fill with
+# multicollinearity noise. 25→26: right-bloc sources should not feed
+# Democrats or Gantz (Blue and White comes from the centre).
+FORBIDDEN_CELLS = {
+    ('25', '26'): [
+        ('הליכוד', 'הדמוקרטים'),
+        ('הליכוד', 'כחול לבן'),
+        ('ש״ס', 'הדמוקרטים'),
+        ('ש״ס', 'כחול לבן'),
+        ('יהדות התורה', 'הדמוקרטים'),
+        ('יהדות התורה', 'כחול לבן'),
+        ('הציונות הדתית', 'הדמוקרטים'),
+        ('הציונות הדתית', 'כחול לבן'),
+    ],
+}
+
 
 class VoteTransferAnalyzer:
     """Analyzes vote transfers between consecutive elections."""
@@ -106,24 +122,17 @@ class VoteTransferAnalyzer:
 
         return party_df, existing_symbols, existing_names
 
-    def solve_transfer_matrix_convex(self, X, Y, row_sum=1.0):
+    def solve_transfer_matrix_convex(self, X, Y, row_sum=1.0, zero_cells=None):
         """
         Solve for transfer matrix using convex optimization.
 
         Minimizes ||XM - Y||_F subject to:
         - 0 <= M <= row_sum (each cell at most the row total)
         - sum(M, axis=1) == row_sum (each row sums to row_sum)
+        - optional M[i,j] == 0 for politically implausible cells
 
         row_sum > 1 accommodates population growth between elections (e.g. for
         K25→K26 it's ~1.075, reflecting ~7.5% growth in eligible voters).
-
-        Args:
-            X: Previous election votes (n_precincts, n_parties_prev)
-            Y: Current election votes (n_precincts, n_parties_curr)
-            row_sum: Constraint for each row sum (default 1.0)
-
-        Returns:
-            Transfer matrix M (n_parties_prev, n_parties_curr)
         """
         M = cvx.Variable((X.shape[1], Y.shape[1]))
         constraints = [
@@ -131,6 +140,8 @@ class VoteTransferAnalyzer:
             M <= row_sum,
             cvx.sum(M, axis=1) == row_sum
         ]
+        for i, j in (zero_cells or []):
+            constraints.append(M[i, j] == 0)
         objective = cvx.Minimize(cvx.norm(X @ M - Y, 'fro'))
 
         prob = cvx.Problem(objective, constraints)
@@ -286,7 +297,13 @@ class VoteTransferAnalyzer:
             logger.info(f"  Using row_sum={row_sum} for {election_from}→{election_to} (population growth)")
 
         if self.method == 'convex':
-            M = self.solve_transfer_matrix_convex(X, Y, row_sum=row_sum)
+            zero_cells = []
+            for src, dst in FORBIDDEN_CELLS.get((str(election_from), str(election_to)), []):
+                if src in names_from and dst in names_to:
+                    zero_cells.append((names_from.index(src), names_to.index(dst)))
+            if zero_cells:
+                logger.info(f"  Zeroing {len(zero_cells)} implausible cells for {election_from}→{election_to}")
+            M = self.solve_transfer_matrix_convex(X, Y, row_sum=row_sum, zero_cells=zero_cells)
         elif self.method == 'nnls':
             M = self.solve_transfer_matrix_nnls(X, Y)
         else:

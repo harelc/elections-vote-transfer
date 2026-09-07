@@ -12,10 +12,12 @@ Live site: https://kolot-nodedim.netlify.app/
 │   ├── ballot_locations_*.json    # Ballot venue names (scraped)
 │   ├── socio_eco21_T*.xlsx        # CBS 2021 socioeconomic data (T01, T07, T08, T12)
 │   └── statisticalareas_demography2019.gdb/  # CBS 2011 statistical area boundaries (GDB)
-├── party_config.py                # Election metadata, party names/symbols/seats per election (16-25)
+├── party_config.py                # Election metadata, party names/symbols/seats per election (16-26)
 ├── generate_transfer_data.py      # Generates vote transfer matrices (cvxpy optimization)
 ├── generate_tsne_data.py          # Generates T-SNE clustering data
 ├── generate_map_data.py           # Generates geographic map data per election (with name normalization)
+├── generate_metrics_data.py       # Pedersen volatility + HHI → site/data/metrics.json
+├── generate_irregularities_data.py # Unusual-ballot scores → site/data/irregularities_*.json
 ├── download_statistical_zones.py  # Loads CBS 2011 GDB, matches stations to zones via point-in-polygon
 ├── process_statistical_zones.py   # Joins CBS socioeconomic data to zones, creates station mapping
 ├── download_historical_ballots.py # Downloads K16-K20 ballot CSVs from CEC CKAN API
@@ -23,17 +25,22 @@ Live site: https://kolot-nodedim.netlify.app/
 ├── normalize_coordinates.py       # One-shot: normalize settlement names in station_coordinates.json
 ├── add_locations_to_tsne.py       # Adds venue names to tsne_*.json from ballot_locations
 ├── enrich_settlements_wikipedia.py # Fetches Wikipedia summaries for settlements
+├── simulate_election_26.py        # Builds synthetic ballot26.csv from K25 + transfer matrix
 ├── prepare_election_26.py         # Workflow script to generate all election 26 data
+├── prepare_fraud_sim.py           # Builds fraud_sim_24_25.json / fraud_sim_25_26.json
+├── estimate_alpha.py              # Dirichlet α estimates per historical transition
 ├── generate_og_image.py           # Generates OG social preview image (Pillow)
 ├── geocode_with_amenities.py      # Geocodes ballot stations via Nominatim
 ├── fix_venues_google.py           # Precise geocoding via Google Places API
 ├── requirements.txt               # Python dependencies
 ├── venv/                          # Python virtual environment
 ├── wikipages/                     # Wikipedia HTML files with party info per election
+├── elections-paper/               # Nested git repo (harelc/elections-paper) — not a submodule
 ├── site/                          # Static website (served directly)
 │   ├── index.html                 # Landing page dashboard
 │   ├── sankey.html                # Sankey vote flow diagram (was index.html)
 │   ├── sankey.js                  # Sankey visualization logic
+│   ├── sankey-explainer.html      # Click-through explainer of the transfer-matrix solver
 │   ├── tsne.html                  # T-SNE ballot clustering visualization
 │   ├── geomap.html                # Geographic map with ballot station markers
 │   ├── scatter.html               # Party support scatter plot (X vs Y axis)
@@ -41,8 +48,13 @@ Live site: https://kolot-nodedim.netlify.app/
 │   ├── irregular.html             # Irregular ballot analysis
 │   ├── fraud-sim.html             # Election fraud detection simulator (K24→K25, K25→K26)
 │   ├── regional.html              # Regional elections simulator (Voronoi + D'Hondt)
+│   ├── voronoi-explainer.html     # Click-through explainer of Voronoi districting
 │   ├── settlement.html            # Settlement profile page (?name=...)
 │   ├── party.html                 # Party profile page (?name=...)
+│   ├── rankings.html              # Settlement volatility (Pedersen) + party HHI
+│   ├── methodology.html           # Written methodology (convex solver, R², Dirichlet α)
+│   ├── primer.html                # Illustrated intro to K25 election data (D3 chapters)
+│   ├── animation.html             # Full-screen animated Sankey across K16→K25
 │   ├── discussions.html           # Giscus discussions page
 │   ├── styles.css                 # Shared CSS (desktop)
 │   ├── i18n.js                    # Internationalization (Hebrew/English), nav rendering
@@ -53,7 +65,7 @@ Live site: https://kolot-nodedim.netlify.app/
 │   │   ├── archive_poster_1.jpg   # Election poster
 │   │   ├── archive_poster_2.jpg   # Election poster
 │   │   └── archive_photo_3-12.jpg # Historical election photos (voting, rallies, results)
-│   ├── m/                         # Mobile-optimized pages
+│   ├── m/                         # Mobile-optimized pages (not every desktop page has a twin)
 │   │   ├── index.html             # Mobile dashboard
 │   │   ├── sankey.html            # Mobile Sankey
 │   │   ├── tsne.html              # Mobile T-SNE
@@ -64,14 +76,23 @@ Live site: https://kolot-nodedim.netlify.app/
 │   │   ├── settlement.html        # Mobile settlement profile
 │   │   ├── party.html             # Mobile party profile
 │   │   ├── irregular.html         # Mobile irregular ballot analysis
+│   │   ├── rankings.html          # Mobile rankings
+│   │   ├── methodology.html       # Mobile methodology
 │   │   ├── discussions.html       # Mobile discussions
 │   │   └── styles.css             # Shared CSS (mobile)
 │   └── data/                      # JSON data for frontend (source of truth)
 │       ├── transfer_*.json        # Vote transfer matrices between elections
+│       ├── transfer_*_abstention.json # Same matrices with "did not vote" pseudo-party
 │       ├── tsne_*.json            # T-SNE clustering data per election
-│       ├── map_*.json             # Geographic/settlement data per election
+│       ├── map_*.json             # Geographic/settlement data per election (16-26)
 │       ├── all_transfers.json     # Combined transfer data for all election pairs
+│       ├── metrics.json           # Pedersen volatility + HHI (from generate_metrics_data.py)
+│       ├── irregularities_*.json  # Unusual-ballot scores per election
+│       ├── fraud_sim_24_25.json / fraud_sim_25_26.json
+│       ├── primer_25.json / sankey_primer.json  # Primer / explainer source data
+│       ├── alpha_estimates.json   # Dirichlet α per historical transition
 │       ├── settlement_wiki.json   # Wikipedia enrichment data per settlement
+│       ├── settlement_names_en.json # English settlement names
 │       ├── wiki_official_results.json # Official per-party vote totals per election (from Wikipedia)
 │       ├── station_coordinates.json # Geocoded ballot station coordinates
 │       ├── socioeconomic_clusters.json # CBS socioeconomic cluster per settlement
@@ -89,24 +110,27 @@ cd site && python3 -m http.server 8888
 # Access at http://localhost:8888/
 
 # Desktop pages served at root, mobile at /m/
-# Each desktop page auto-redirects to /m/ on mobile devices
+# Pages with an m/ twin auto-redirect to /m/ on mobile devices
 ```
 
 ## Architecture
 
 ### Desktop vs Mobile
-Every visualization has two HTML files: `site/<page>.html` (desktop) and `site/m/<page>.html` (mobile). Desktop pages detect mobile user agents and redirect to `m/<page>.html`. Mobile pages have:
+Most visualizations have two HTML files: `site/<page>.html` (desktop) and `site/m/<page>.html` (mobile). Desktop pages detect mobile user agents and redirect to `m/<page>.html`. Mobile pages have:
 - **Top bar**: Fixed header with 🏠 home link, page title (flex:1 to push buttons left), ℹ info toggle, language toggle
 - **Bottom tab bar**: Horizontally scrollable pill-style nav (48px height, no home item since it's in top-bar)
 - **BMC banner**: Floating dismissible Buy Me a Coffee banner above tab bar (3s delay, sessionStorage persistence)
 - Touch-optimized bottom sheets instead of hover tooltips
+
+**Desktop-only** (no `m/` twin; some are linked from the mobile dashboard to the desktop URL): `primer.html`, `animation.html`, `fraud-sim.html`, `sankey-explainer.html`, `voronoi-explainer.html`.
 
 ### Internationalization (i18n.js)
 Central bilingual system (Hebrew/English). Key concepts:
 - **Translation dict**: All UI strings keyed by ID, with `he` and `en` values
 - **`data-i18n` attributes**: HTML elements get auto-translated via `applyTranslations()`
 - **`renderNav(activePageId)`**: Generates the view-switcher nav bar on every page. The dashboard (`index.html`) uses `injectLangToggle()` instead (no nav bar)
-- **`navViews` array**: Defines page order and hrefs for navigation. Order: home → geomap → tsne → sankey → scatter → dhondt → regional → irregular
+- **`navViews` array**: Main nav row. Order: home → geomap → tsne → sankey → scatter → dhondt → regional → irregular → fraud-sim
+- **`extraLinks` row** (`.nav-extras` below the main nav): settlement → party → rankings → methodology → discussions + language toggle
 - **Helper functions**: `i18n.partyName()`, `i18n.settlementName()`, `i18n.settlementMatches()`, `i18n.fmtNum()`
 - **Language toggle**: Persisted in localStorage, fires `langchange` event
 
@@ -118,7 +142,63 @@ Election 26 support is behind a URL feature flag: `?e26=1`. When active:
 - Data files (`tsne_26.json`, `map_26.json`, `transfer_25_to_26.json`) must be generated first via `prepare_election_26.py`
 
 #### Simulated K26 scenario
-K26 is a **simulated scenario** — `ballot26.csv` is generated by `simulate_election_26.py` from `ballot25.csv`:
+K26 is a **simulated scenario** — `ballot26.csv` is generated by `simulate_election_26.py` from `ballot25.csv`. Seat map is calibrated to [Madad 120](https://madad120.geva.workers.dev/) (7 Sep 2026). CEC letter-symbols are still provisional until the official list harvest; remap after https://www.gov.il/he/pages/candidates-lists-26?chapterIndex=5 fills in.
+
+##### Harvesting the official K26 list (including tiny parties)
+CEC publishes the full submitted lists (every list, not just majors) on **7–8 Sep 2026**:
+https://www.gov.il/he/pages/candidates-lists-26?chapterIndex=5
+(`chapterIndex=5` = "רשימות המועמדים לכנסת"). As of 7 Sep the chapter is still a placeholder.
+
+Sibling chapters on the same page (useful on harvest day):
+- taken vs available letter-symbols
+- approved ballot slips (פתקי הצבעה)
+- surplus agreements (הסכמי עודפים)
+- disqualification requests
+
+Harvest into:
+1. `party_config.py` `PARTIES` (and `PARTY_OVERRIDES` for `(26, symbol)` as needed) — **all** symbols, including below-threshold lists. Historical tiny parties live in the same dict, grouped by election in comments.
+2. `party_config.py` `ELECTIONS['26']['major_parties']` — threshold-relevant lists only (symbols, names, seats).
+3. `simulate_election_26.py` `E26_PARTIES` — currently the Madad 120 majors; after harvest, add every letter-symbol as a CSV column. Tiny K25 votes are today collapsed into `_small` and dumped onto the ballot's dominant party; K26 tiny lists should exist as columns even if the transfer matrix sends them ~0.
+4. `PARTY_FAMILIES` in `party.html` / `m/party.html` if new families appear.
+5. `prepare_fraud_sim.py` `BLOC_DEFINITIONS['26']` and Sankey `INFO_OVERRIDES` in `sankey.js`.
+
+`generate_map_data.py` `count_lists()` counts CSV columns after `כשרים`, so a full-column `ballot26.csv` is what makes the dashboard "lists" stat correct.
+
+##### Calibrating seats from polling (Madad 120)
+The **hidden** generating process is `TRANSFER_MATRIX` + `ROW_TURNOUT` in `simulate_election_26.py`. After simulation we *re-estimate* a transfer matrix from matched ballots (`generate_transfer_data.py`) for the Sankey — so the hidden matrix and the published matrix are not the same object.
+
+Treat [Madad 120](https://madad120.geva.workers.dev/) as the target seat map (weighted-poll forecast, updated ~daily). Calibration loop:
+
+1. Lock `E26_PARTIES` to letter-symbols / names (provisional until CEC harvest).
+2. Read Madad 120 `#parties` center forecast (and `#polls` table). Optionally `#vote-share` for raw % before Bader-Ofer.
+3. Tune `TRANSFER_MATRIX` (who goes where) and `ROW_TURNOUT` (mobilization) so simulated national totals, after Bader-Ofer, match that center. Cross-bloc leakage should stay small: Madad 120 currently has &lt;1% undecided *between* blocs; most residual is threshold / turnout.
+4. `python simulate_election_26.py` → `prepare_election_26.py --real-csv ballot26.csv` → copy transfer/tsne/map; sync hardcoded totals (dhondt, wiki_official_results, party_config).
+
+Madad 120 center forecast as of **7 Sep 2026** (50 days out; lists close 8 Sep 22:00). Blocs: coalition **50** (45–55), opposition **55** (50–59), Joint List **8**, Ra'am **5**. Per-list center vs current sim:
+
+| List | Madad center | Range | Sim seats |
+|---|---|---|---|
+| ישר (Eisenkot) | 23 | 20–26 | 22 |
+| הליכוד | 21 | 19–23 | 20 |
+| ביחד (Bennett) | 14 | 12–16 | 13 |
+| הדמוקרטים | 9 | 8–11 | 9 |
+| ישראל ביתנו | 8 | 7–9 | 8 |
+| המשותפת (Hadash–Ta'al–Balad) | 8 | 7–9 | 8 |
+| יהדות התורה | 8 | 7–8 | 8 |
+| ש״ס | 7 | 6–8 | 7 |
+| עוצמה יהודית | 7 | 6–8 | 7 |
+| הציונות הדתית + זהות | 5 | 4–6 | 5 |
+| רע״ם | 5 | 4–6 | 5 |
+| עמך ישראל (Winter) | 0 / 4–5 | ~48% pass | 4 |
+| הנדל–זליכה | 0 / 4–5 | ~52% pass | 4 |
+| כחול לבן (Gantz) | below (~1.2%) | | 0 |
+
+Both threshold lists are included as passing (4 each); 1 seat shaved from Yashar / Likud / Beyachad so the 120 still add up. Turnout intent on Madad: opposition 82% / coalition 77% / Arab 75%.
+
+Provisional majors in `simulate_election_26.py` (`E26_PARTIES`):
+ישר, הליכוד, ביחד, הדמוקרטים, ישראל ביתנו, הרשימה המשותפת, יהדות התורה, ש״ס, עוצמה יהודית, הציונות הדתית, רע״ם, עמך ישראל, הנדל–זליכה, כחול לבן
+
+Simulation knobs:
 - `TRANSFER_MATRIX`: per K25 source party → K26 destination distribution (rows must sum to 1.0)
 - `ROW_TURNOUT`: per-source mobilization factor (<1 demobilized, >1 mobilized)
 - `POP_GROWTH = 1.075`: global multiplier modeling ~7.5% growth in eligible voters (Nov 2022 → Oct 2026)
@@ -132,11 +212,13 @@ Hardcoded K26 totals appear in 3 places that must stay in sync when re-tuning:
 2. `site/data/wiki_official_results.json` `"26"` entry (used by sankey side bar legend; has `_26_note` sibling key flagging simulation)
 3. `party_config.py` ELECTIONS['26'] major_parties seats list
 
-Set `min_flow_threshold=15000` in `generate_transfer_data.py` to hide solver multicollinearity noise (~1% spurious cells) from sankey.
+Current synced map: Yashar 22 / Likud 20 / Beyachad 13 / Democrats 9 / YB 8 / Joint List 8 / UTJ 8 / Shas 7 / Otzma 7 / RZ 5 / Ra'am 5 / Amcha 4 / Hendel–Zelicha 4 / Gantz 0. Surplus agreements in the simulator: Shas+UTJ, Otzma+RZ, Yashar+YB, Joint+Ra'am.
+
+Set `min_flow_threshold=15000` in `generate_transfer_data.py` to hide solver multicollinearity noise (~1% spurious cells) from sankey. `sankey.js` also drops nodes with zero remaining flows.
 
 ### Settlement Profile Pages
 URL pattern: `settlement.html?name=<settlement_name>` (URL-encoded Hebrew, normalized name)
-- Loads all 5 map files (`map_21.json` through `map_25.json`) to show voting trends
+- Loads all 10 map files (`map_16.json` through `map_25.json`) to show voting trends
 - Loads `settlement_wiki.json` for Wikipedia data (thumbnail, description, extract)
 - Loads `socioeconomic_clusters.json` and `station_coordinates.json`
 - Desktop: search box, hero section, voting trends chart (Chart.js), party table + Leaflet mini-map (dots colored by winning party), sortable ballot table
@@ -146,7 +228,7 @@ URL pattern: `settlement.html?name=<settlement_name>` (URL-encoded Hebrew, norma
 
 ### Party Profile Pages
 URL pattern: `party.html?name=<canonical_hebrew_name>` (URL-encoded)
-- 15 party families with per-election incarnations, merges, notes, and gaps
+- ~23 party families with per-election incarnations, merges, notes, and gaps (including historical: Kadima, Shinui, Gil, Kulanu, Yisrael BaAliyah; K26: Beyachad / ישר)
 - PARTY_FAMILIES config duplicated in desktop `party.html` and mobile `m/party.html`
 - Loads `wiki_official_results.json` for official per-party vote totals
 - Leader photos from `map_*.json` party info `leader_image` field (e.g. `images/leaders/netanyahu.jpg`)
@@ -266,9 +348,19 @@ python generate_map_data.py
 # Wikipedia enrichment (rate-limited, ~3 min for 1100 settlements, resumes from cache)
 python enrich_settlements_wikipedia.py
 
+# Rankings metrics (Pedersen + HHI)
+python generate_metrics_data.py
+
+# Irregular-ballot scores
+python generate_irregularities_data.py
+
+# Fraud-sim payloads (after tsne + transfer exist for those years)
+python prepare_fraud_sim.py
+
 # Election 26 (simulated scenario workflow)
 python simulate_election_26.py                          # generate ballot26.csv (alpha=55, seed=42)
 python prepare_election_26.py --real-csv ballot26.csv   # run tsne/transfer/map for K26
+python prepare_fraud_sim.py                             # refresh fraud_sim_25_26.json
 # After re-tuning the matrix, also refresh hardcoded K26 totals in:
 #   site/dhondt.html, site/m/dhondt.html, site/data/wiki_official_results.json, party_config.py
 ```
@@ -329,7 +421,7 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 
 ### Party Configuration
 
-`party_config.py` contains the `ELECTIONS` dict with metadata for each election (21-26):
+`party_config.py` contains the `ELECTIONS` dict with metadata for each election (16-26):
 - Election name (Hebrew + English), date, file path, encoding
 - Eligible voters, votes cast, turnout percentage
 - Major parties: symbols, names, seats
@@ -339,21 +431,35 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 
 ### index.html (Dashboard)
 - Landing page with animated hero stats and card grid linking to all visualizations
-- Stats: elections (25), lists, settlements, ballots, eligible voters, voted, visitors — all with rolling number animation
-- Stats loaded from all 5 map_*.json files (max ballots across elections, latest for rest)
+- Stats: elections (10: K16–K25), lists, settlements, ballots, eligible voters, voted, visitors — all with rolling number animation
+- Stats loaded from all 10 map_*.json files (16–25; max ballots across elections, latest for rest)
 - Visitor counter integrated as regular stat (counterapi.dev)
-- Archive photos: 12 historical NLI images in `site/images/`, 2 randomly chosen per page load, flanking the 9 view cards
+- Dashboard cards (13): primer, geomap, tsne, sankey, animation, scatter, settlement, party, dhondt, regional, irregular, fraud-sim, rankings
+- Header extras: methodology + discussions next to language toggle
+- Footer: CC BY-NC-SA 4.0, GitHub, Buy Me a Coffee
+- Archive photos: 12 historical NLI images in `site/images/`, 2 randomly chosen per page load, flanking the view cards
 - Credit: Dan Hadani Archive, Pritzker Family National Photography Collection, National Library of Israel
 - Photos hidden on screens < 1200px
-- Discussions link next to language toggle
 - No nav bar (uses `injectLangToggle()` only)
 
+### primer.html (Illustrated Intro)
+- Click-through D3 chapters on K25 public data (desktop-only; mobile dashboard links to the desktop page)
+- Chapters: turnout totals → ballot geography → ballot size → turnout distribution → settlement 9999 double envelopes → lists running vs threshold → threshold cliff → party-size buckets → Bader-Ofer / surplus agreements
+- Last "next" lands on the home page
+- Data: `primer_25.json`
+
+### animation.html (Multi-election Sankey Film)
+- Full-screen autoplay Sankey across K16→K25 (9 transitions), using `all_transfers.json` + `wiki_official_results.json`
+- Keyboard / swipe / play-pause; also an `animation.mp4` recording for OG/Twitter player tags
+- Desktop-only (mobile dashboard links to it)
+
 ### sankey.html (Vote Transfer Flow)
-- Shows vote flow between consecutive elections as Sankey diagram (K16→K17 through K24→K25)
-- Uses `sankey.js` for rendering
+- Shows vote flow between consecutive elections as Sankey diagram (K16→K17 through K24→K25; K25→K26 when `?e26=1`)
+- Uses `sankey.js` for rendering; nodes with zero remaining flows are dropped
 - Data: `transfer_*.json` and `all_transfers.json`
 - **Abstention toggle**: Shows "did not vote" pseudo-party (לא הצביעו) using `*_abstention.json` files
 - Abstention disabled for K16→K17 and K17→K18 (unreliable per-ballot eligible voter data)
+- Link to `sankey-explainer.html` (click-through visual of T, row-sum constraint, least squares, R²)
 
 ### tsne.html (Ballot Clustering)
 - T-SNE clustering of ballot boxes by voting patterns
@@ -383,6 +489,7 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 
 ### irregular.html (Anomaly Detection)
 - Identifies statistically unusual ballot boxes
+- Data: `irregularities_*.json` from `generate_irregularities_data.py`
 
 ### fraud-sim.html (Election Fraud Detection Simulator)
 - Interactive fraud detector sandbox for K24→K25 (real data) and K25→K26 (simulated scenario)
@@ -398,30 +505,40 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 
 ### regional.html (Regional Elections Simulator)
 - Voronoi-based regional election simulation with D'Hondt allocation
+- Link to `voronoi-explainer.html` (animated explanation of districting)
+
+### rankings.html (Volatility + Concentration)
+- Two tabs: settlements (Pedersen-style vote volatility across elections) and parties (HHI / effective-settlement concentration)
+- Size filters for settlements; sortable tables; Chart.js histogram + HHI bar chart
+- Data: `site/data/metrics.json` from `generate_metrics_data.py`
+- Desktop + mobile (`m/rankings.html`); `?tab=parties` URL support
+
+### methodology.html (Written Methods)
+- Bilingual prose (`.prose-he` / `.prose-en`) with KaTeX: convex transfer model, R², Dirichlet residual dispersion, empirical α, per-destination heatmap, limitations
+- Desktop + mobile; linked from dashboard header and nav extras
 
 ### settlement.html (Settlement Profile)
 - Per-settlement deep dive with Wikipedia info, voting trends, party breakdown
 - URL parameter: `?name=<settlement_name>`
+- Trends use K16–K25 map files
 
 ## Paper
 
-The `paper/` directory is a **separate git repo** (`harelc/elections-paper`) embedded in this repo. It has its own remote, branch (`main`), and commit history. Commit and push it independently:
+The paper lives in `elections-paper/` — a **nested git repo** (`harelc/elections-paper`), gitignored in the parent (the old `paper/` submodule ref was removed because it broke GitHub Pages). It has its own remote, branch (`main`), and commit history. Commit and push it independently.
 
 ```bash
 # Compile the paper (uses tectonic, NOT pdflatex/latexmk)
-cd paper && tectonic paper.tex
+cd elections-paper && tectonic paper.tex
 
 # Commit paper changes (separate repo!)
-cd paper && git add -A && git commit -m "..." && git push
-# Then update the submodule ref in the parent:
-cd .. && git add paper && git commit -m "Update paper submodule"
+cd elections-paper && git add -A && git commit -m "..." && git push
 
 # Key files:
-# paper/paper.tex         — Main paper source
-# paper/references.bib    — Bibliography
-# paper/figures/           — Generated figures (PDF)
-# paper/generate_figures.py — Script to regenerate figures
-# paper/bootstrap_analysis.py — Bootstrap confidence interval analysis
+# elections-paper/paper.tex              — Main paper source
+# elections-paper/references.bib         — Bibliography
+# elections-paper/figures/               — Generated figures (PDF)
+# elections-paper/generate_figures.py    — Script to regenerate figures
+# elections-paper/bootstrap_analysis.py  — Bootstrap confidence interval analysis
 ```
 
 ## Common Issues

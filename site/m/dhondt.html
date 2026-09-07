@@ -507,25 +507,27 @@
     ];
 
     const parties26 = [
-        { name: 'ישר', votes: 958223, color: '#14b8a6', block: 'left', name_en: 'Yashar' },
-        { name: 'הליכוד', votes: 759196, color: '#2563eb', block: 'right', name_en: 'Likud' },
-        { name: 'ביחד', votes: 679459, color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
-        { name: 'הדמוקרטים', votes: 421710, color: '#16a34a', block: 'left', name_en: 'The Democrats' },
-        { name: 'ש״ס', votes: 396381, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
-        { name: 'עוצמה יהודית', votes: 360989, color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
-        { name: 'יהדות התורה', votes: 305034, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
-        { name: 'ישראל ביתנו', votes: 275897, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
-        { name: 'חד״ש-תע״ל', votes: 217193, color: '#f43f5e', block: 'arab', name_en: 'Hadash-Taal' },
-        { name: 'רע״ם', votes: 190962, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
-        { name: 'הציונות הדתית', votes: 165918, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
-        { name: 'בל״ד', votes: 72567, color: '#065f46', block: 'arab', name_en: 'Balad' },
+        { name: 'ישר', votes: 837733, color: '#14b8a6', block: 'left', name_en: 'Yashar' },
+        { name: 'הליכוד', votes: 799166, color: '#2563eb', block: 'right', name_en: 'Likud' },
+        { name: 'ביחד', votes: 511740, color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
+        { name: 'הדמוקרטים', votes: 365268, color: '#16a34a', block: 'left', name_en: 'The Democrats' },
+        { name: 'יהדות התורה', votes: 323449, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+        { name: 'ישראל ביתנו', votes: 311326, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+        { name: 'הרשימה המשותפת', votes: 307834, color: '#0d9488', block: 'arab', name_en: 'Joint List' },
+        { name: 'ש״ס', votes: 269393, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+        { name: 'עוצמה יהודית', votes: 265473, color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
+        { name: 'הציונות הדתית', votes: 210819, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+        { name: 'רע״ם', votes: 204054, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
+        { name: 'עמך ישראל', votes: 176045, color: '#4d7c0f', block: 'right', name_en: 'Amcha Yisrael' },
+        { name: 'הנדל–זליכה', votes: 163553, color: '#d97706', block: 'right', name_en: 'Hendel–Zelicha' },
+        { name: 'כחול לבן', votes: 77173, color: '#8b5cf6', block: 'left', name_en: 'Blue and White' },
     ];
 
     const agreements26 = [
-        [4, 6],   // ש״ס + יהדות התורה
-        [5, 10],  // עוצמה יהודית + הציונות הדתית
-        [2, 7],   // ישר + ישראל ביתנו
-        [8, 9],   // חד״ש-תע״ל + רע״ם
+        [7, 4],   // ש״ס + יהדות התורה
+        [8, 9],   // עוצמה יהודית + הציונות הדתית
+        [0, 5],   // ישר + ישראל ביתנו
+        [6, 10],  // הרשימה המשותפת + רע״ם
     ];
 
     const presets = {
@@ -541,8 +543,8 @@
         'הרשימה המשותפת': 0.5, 'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
         'הדמוקרטים': 5, 'העבודה': 5, 'המחנה הממלכתי': 6, 'ישר': 6.5,
         'יש עתיד': 7, 'ישראל ביתנו': 8, 'ביחד': 8.5, 'כחול לבן': 8.7,
-        'ש״ס': 9, 'יהדות התורה': 10, 'המילואימניקים': 10.5,
-        'הליכוד': 11, 'הציונות הדתית': 12, 'עוצמה יהודית': 12.5, 'הבית היהודי': 13,
+        'ש״ס': 9, 'יהדות התורה': 10, 'הנדל–זליכה': 10.7,
+        'הליכוד': 11, 'עמך ישראל': 11.5, 'הציונות הדתית': 12, 'עוצמה יהודית': 12.5, 'הבית היהודי': 13,
     };
 
     class MobileDHondt {

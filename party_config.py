@@ -513,8 +513,8 @@ PARTIES = {
         'name': 'ביחד',
         'name_en': 'Together (Beyachad)',
         'color': PARTY_COLORS['together'],
-        'leader': 'נפתלי בנט ויאיר לפיד',
-        'leader_en': 'Naftali Bennett and Yair Lapid',
+        'leader': 'נפתלי בנט',
+        'leader_en': 'Naftali Bennett',
         'leader_image': 'images/leaders/bennett.jpg',
         'logo': 'images/logos/yesh_atid.png',
         'ideology': 'מרכז-ימין, ממלכתיות, ליברליזם',
@@ -542,15 +542,37 @@ PARTIES = {
         'description': 'מפלגת ימין קיצוני בראשות איתמר בן גביר'
     },
     'מי': {
-        'name': 'המילואימניקים',
-        'name_en': 'The Reservists',
-        'color': '#a16207',
-        'leader': 'יועז הנדל',
-        'leader_en': 'Yoaz Hendel',
+        'name': 'הנדל–זליכה',
+        'name_en': 'Hendel–Zelicha–Wilf',
+        'color': '#d97706',
+        'leader': 'יועז הנדל, ירון זליכה ועינת וילף',
+        'leader_en': 'Yoaz Hendel, Yaron Zelicha and Einat Wilf',
         'leader_image': 'images/leaders/hendel.jpg',
-        'ideology': 'מרכז-ימין, ביטחון, מילואים',
+        'ideology': 'מרכז, כלכלה, ממלכתיות',
         'founded': 2026,
-        'description': 'מפלגה חדשה בראשות יועז הנדל המייצגת את ציבור המילואימניקים, מדגישה ערכי ביטחון, ממלכתיות ומחויבות לעורף'
+        'description': 'רשימה משותפת של יועז הנדל, ירון זליכה ועינת וילף; במדד 120 על סף אחוז החסימה'
+    },
+    'וי': {
+        'name': 'עמך ישראל',
+        'name_en': 'Amcha Yisrael',
+        'color': '#4d7c0f',
+        'leader': 'עופר וינטר',
+        'leader_en': 'Ofer Winter',
+        'leader_image': 'images/leaders/winter.jpg',
+        'ideology': 'ימין, ביטחון, שמרנות',
+        'founded': 2026,
+        'description': 'רשימת ימין בראשות תא״ל (מיל׳) עופר וינטר; הגישה רשימה עצמאית ב־7 בספטמבר 2026; במדד 120 על סף אחוז החסימה'
+    },
+    'כל': {
+        'name': 'כחול לבן',
+        'name_en': 'Blue and White',
+        'color': '#8b5cf6',
+        'leader': 'בני גנץ',
+        'leader_en': 'Benny Gantz',
+        'leader_image': 'images/leaders/gantz.jpg',
+        'ideology': 'מרכז, ממלכתיות',
+        'founded': 2019,
+        'description': 'רשימת בני גנץ; במדד 120 מתחת לאחוז החסימה (~1.2%)'
     },
     'יר': {
         'name': 'ישר',
@@ -780,17 +802,17 @@ ELECTIONS = {
         'file': 'ballot26.csv',
         'encoding': 'utf-8-sig',
         'ballot_field': 'קלפי',
-        # Simulated — values reflect ~7.5% population growth Nov 2022 → Oct 2026
-        'eligible_voters': 7300000,
-        'votes_cast': 5000000,
-        'valid_votes': 4950000,
-        'turnout_percent': 68.5,
+        # Simulated — Madad 120 calibration (7 Sep 2026), seed 42, alpha 55, POP_GROWTH 1.075
+        'eligible_voters': 7287030,
+        'votes_cast': 4853194,
+        'valid_votes': 4823026,
+        'turnout_percent': 66.6,
         'major_parties': {
-            'symbols': ['מחל', 'נב', 'יר', 'דמ', 'שס', 'עי', 'ג', 'ל', 'ום', 'עם', 'ט', 'מי', 'ד', 'כל'],
-            'names': ['הליכוד', 'ביחד', 'ישר', 'הדמוקרטים', 'ש״ס',
-                     'עוצמה יהודית', 'יהדות התורה', 'ישראל ביתנו', 'חד״ש-תע״ל', 'רע״ם',
-                     'הציונות הדתית', 'המילואימניקים', 'בל״ד', 'כחול לבן'],
-            'seats': [25, 22, 16, 11, 10, 9, 8, 8, 6, 5, 0, 0, 0, 0]
+            'symbols': ['יר', 'מחל', 'נב', 'דמ', 'ל', 'ום', 'ג', 'שס', 'עי', 'ט', 'עם', 'וי', 'מי', 'כל'],
+            'names': ['ישר', 'הליכוד', 'ביחד', 'הדמוקרטים', 'ישראל ביתנו',
+                     'הרשימה המשותפת', 'יהדות התורה', 'ש״ס', 'עוצמה יהודית',
+                     'הציונות הדתית', 'רע״ם', 'עמך ישראל', 'הנדל–זליכה', 'כחול לבן'],
+            'seats': [22, 20, 13, 9, 8, 8, 8, 7, 7, 5, 5, 4, 4, 0]
         }
     }
 }
@@ -1405,7 +1427,7 @@ PARTY_OVERRIDES = {
         'description': 'מפלגת ימין דתית-לאומית בהנהגת איילת שקד, לא עברה את אחוז החסימה'
     },
 
-    # ===== ELECTION 26 (Simulated) =====
+    # ===== ELECTION 26 (Simulated — Madad 120 list map, 7 Sep 2026) =====
     ('26', 'ט'): {
         'name': 'הציונות הדתית',
         'name_en': 'Religious Zionism',
@@ -1413,14 +1435,24 @@ PARTY_OVERRIDES = {
         'leader': 'בצלאל סמוטריץ׳',
         'leader_en': 'Bezalel Smotrich',
         'leader_image': 'images/leaders/smotrich.jpg',
+        'description': 'רשימה משותפת של הציונות הדתית וזהות (פייגלין)',
     },
     ('26', 'עם'): {
-        'name': 'הרשימה המשותפת',
-        'name_en': 'United Arab List',
+        'name': 'רע״ם',
+        'name_en': "Ra'am",
         'color': '#84cc16',
         'leader': 'מנסור עבאס',
         'leader_en': 'Mansour Abbas',
         'leader_image': 'images/leaders/abbas.jpg',
+    },
+    ('26', 'ום'): {
+        'name': 'הרשימה המשותפת',
+        'name_en': 'Joint List',
+        'color': '#0d9488',
+        'leader': 'יוסף ג׳בארין',
+        'leader_en': 'Yousef Jabareen',
+        'leader_image': 'images/leaders/jabarin.jpg',
+        'description': 'חד״ש–תע״ל–בל״ד רצים יחד כרשימה המשותפת',
     },
 
     # ===== SMALL PARTY OVERRIDES (symbols reused across elections) =====
@@ -2013,13 +2045,6 @@ PARTY_OVERRIDES = {
     ('24', 'יף'): {
         'name': 'כבוד האדם',
         'description': 'כבוד האדם'
-    },
-
-    # ===== ELECTION 26 (October 2026 — simulated scenario) =====
-    ('26', 'ום'): {
-        'leader': 'יוסף ג׳בארין',
-        'leader_en': 'Yousef Jabarin',
-        'leader_image': 'images/leaders/jabarin.jpg',
     },
 }
 

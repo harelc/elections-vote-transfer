@@ -491,6 +491,14 @@
             { name: 'העבודה', color: '#dc2626', block: 'left', name_en: 'Labor' },
             { name: 'מרצ', color: '#16a34a', block: 'left', name_en: 'Meretz' },
             { name: 'בל״ד', color: '#065f46', block: 'arab', name_en: 'Balad' },
+            { name: 'ביחד', color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
+            { name: 'ישר', color: '#14b8a6', block: 'left', name_en: 'Yashar' },
+            { name: 'הדמוקרטים', color: '#16a34a', block: 'left', name_en: 'The Democrats' },
+            { name: 'עוצמה יהודית', color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
+            { name: 'הרשימה המשותפת', color: '#0d9488', block: 'arab', name_en: 'Joint List' },
+            { name: 'עמך ישראל', color: '#4d7c0f', block: 'right', name_en: 'Amcha Yisrael' },
+            { name: 'הנדל–זליכה', color: '#d97706', block: 'right', name_en: 'Hendel–Zelicha' },
+            { name: 'כחול לבן', color: '#8b5cf6', block: 'left', name_en: 'Blue and White' },
         ];
 
         // ── Geographic zone naming (biblical/historical) ──
@@ -615,10 +623,11 @@
         partyConfig.forEach(p => { partyColorMap[p.name] = p.color; partyBlockMap[p.name] = p.block; });
 
         const politicalOrder = {
-            'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
-            'העבודה': 5, 'המחנה הממלכתי': 6, 'יש עתיד': 7,
-            'ישראל ביתנו': 8, 'ש״ס': 9, 'יהדות התורה': 10,
-            'הליכוד': 11, 'הציונות הדתית': 12, 'הבית היהודי': 13,
+            'הרשימה המשותפת': 0.5, 'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
+            'העבודה': 5, 'הדמוקרטים': 5, 'המחנה הממלכתי': 6, 'ישר': 6.5, 'יש עתיד': 7,
+            'ישראל ביתנו': 8, 'ביחד': 8.5, 'כחול לבן': 8.7,
+            'ש״ס': 9, 'יהדות התורה': 10, 'הנדל–זליכה': 10.7,
+            'הליכוד': 11, 'עמך ישראל': 11.5, 'הציונות הדתית': 12, 'עוצמה יהודית': 12.5, 'הבית היהודי': 13,
         };
 
         const actualSeats = {

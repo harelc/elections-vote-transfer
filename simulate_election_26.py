@@ -22,58 +22,112 @@ from party_config import ELECTIONS
 # ============================================================================
 
 # E26 party definitions: symbol → (hebrew_name, color)
+# List map follows Madad 120 (7 Sep 2026): Yashar, Likud, Beyachad, Democrats,
+# YB, Joint List (Hadash–Ta'al–Balad), UTJ, Shas, Otzma, RZ+Zehut, Ra'am,
+# Amcha Yisrael (Winter), Hendel–Zelicha, Gantz below threshold.
 E26_PARTIES = {
+    'יר':  ('ישר', '#14b8a6'),
     'מחל': ('הליכוד', '#2563eb'),
     'נב':  ('ביחד', '#f97316'),
-    'ל':   ('ישראל ביתנו', '#db2777'),
     'דמ':  ('הדמוקרטים', '#16a34a'),
-    'שס':  ('ש״ס', '#1e3a8a'),
+    'ל':   ('ישראל ביתנו', '#db2777'),
+    'ום':  ('הרשימה המשותפת', '#0d9488'),
     'ג':   ('יהדות התורה', '#4b5563'),
-    'ום':  ('חד״ש-תע״ל', '#f43f5e'),
-    'עם':  ('רע״ם', '#84cc16'),
-    'ד':   ('בל״ד', '#065f46'),
-    'ט':   ('הציונות הדתית', '#92400e'),
+    'שס':  ('ש״ס', '#1e3a8a'),
     'עי':  ('עוצמה יהודית', '#7f1d1d'),
-    'יר':  ('ישר', '#14b8a6'),
+    'ט':   ('הציונות הדתית', '#92400e'),
+    'עם':  ('רע״ם', '#84cc16'),
+    'וי':  ('עמך ישראל', '#4d7c0f'),
+    'מי':  ('הנדל–זליכה', '#d97706'),
     'כל':  ('כחול לבן', '#8b5cf6'),
 }
 
-# Transfer matrix: E25 party name → dict of E26 party name → fraction
-# Each row must sum to 1.0
-TRANSFER_MATRIX = {
-    'הליכוד':        {'הליכוד': 0.60, 'עוצמה יהודית': 0.10, 'ביחד': 0.10, 'ישר': 0.08, 'הציונות הדתית': 0.03, 'ש״ס': 0.02, 'יהדות התורה': 0.02, 'כחול לבן': 0.05},
-    'יש עתיד':      {'ביחד': 0.35, 'ישר': 0.40, 'הדמוקרטים': 0.12, 'ישראל ביתנו': 0.08, 'כחול לבן': 0.05},
-    'הציונות הדתית': {'עוצמה יהודית': 0.40, 'הציונות הדתית': 0.25, 'ישר': 0.20, 'הליכוד': 0.10, 'ביחד': 0.05},
-    'המחנה הממלכתי': {'ישר': 0.50, 'ביחד': 0.25, 'הדמוקרטים': 0.10, 'ישראל ביתנו': 0.10, 'כחול לבן': 0.05},
-    'ש״ס':          {'ש״ס': 0.85, 'עוצמה יהודית': 0.07, 'הליכוד': 0.05, 'יהדות התורה': 0.03},
-    'יהדות התורה':  {'יהדות התורה': 0.90, 'ש״ס': 0.05, 'עוצמה יהודית': 0.03, 'הליכוד': 0.02},
-    'ישראל ביתנו':  {'ישראל ביתנו': 0.60, 'ישר': 0.18, 'ביחד': 0.12, 'הליכוד': 0.07, 'כחול לבן': 0.03},
-    'רע״ם':         {'רע״ם': 0.90, 'חד״ש-תע״ל': 0.05, 'הדמוקרטים': 0.03, 'בל״ד': 0.02},
-    'חד״ש-תע״ל':   {'חד״ש-תע״ל': 0.85, 'בל״ד': 0.05, 'רע״ם': 0.05, 'הדמוקרטים': 0.05},
-    'העבודה':       {'הדמוקרטים': 0.55, 'ישר': 0.20, 'ביחד': 0.15, 'ישראל ביתנו': 0.05, 'כחול לבן': 0.05},
-    'מרצ':          {'הדמוקרטים': 0.65, 'ישר': 0.20, 'ביחד': 0.10, 'חד״ש-תע״ל': 0.03, 'כחול לבן': 0.02},
-    'בל״ד':         {'בל״ד': 0.45, 'חד״ש-תע״ל': 0.40, 'רע״ם': 0.10, 'הדמוקרטים': 0.05},
+# Madad 120 center, 7 Sep 2026. Both threshold lists included as passing (4 each);
+# 1 seat shaved from Yashar / Likud / Beyachad so the 120 still add up.
+TARGET_SEATS = {
+    'ישר': 22, 'הליכוד': 20, 'ביחד': 13, 'הדמוקרטים': 9,
+    'ישראל ביתנו': 8, 'הרשימה המשותפת': 8, 'יהדות התורה': 8,
+    'ש״ס': 7, 'עוצמה יהודית': 7, 'הציונות הדתית': 5, 'רע״ם': 5,
+    'עמך ישראל': 4, 'הנדל–זליכה': 4, 'כחול לבן': 0,
 }
 
-# Per-source-party turnout factor: what fraction of E25 voters show up in E26.
-# <1.0 = demobilized (stay home), >1.0 = mobilized (new/returning voters join).
-# The transfer matrix rows still sum to 1.0 (distribution among E26 parties),
-# but the effective contribution is scaled by this factor.
+# K25 official valid votes (wiki_official_results.json) — used by --preview
+K25_NATIONAL_VOTES = {
+    'הליכוד': 1115336, 'יש עתיד': 847435, 'הציונות הדתית': 516470,
+    'המחנה הממלכתי': 432482, 'ש״ס': 392964, 'יהדות התורה': 280194,
+    'ישראל ביתנו': 213687, 'רע״ם': 194047, 'חד״ש-תע״ל': 178735,
+    'העבודה': 175992, 'מרצ': 150793, 'בל״ד': 138617,
+}
+
+# Transfer matrix: E25 party name → dict of E26 party name → fraction
+# Each row must sum to 1.0. Cross-bloc cells kept tiny (Madad: <1% undecided
+# between camps). K25 RZ list was Otzma+RZ+Noam together.
+TRANSFER_MATRIX = {
+    'הליכוד': {
+        'הליכוד': 0.73, 'עוצמה יהודית': 0.08, 'עמך ישראל': 0.09,
+        'הציונות הדתית': 0.05, 'ש״ס': 0.03, 'יהדות התורה': 0.02,
+    },
+    'יש עתיד': {
+        'ביחד': 0.39, 'ישר': 0.42, 'הדמוקרטים': 0.07, 'ישראל ביתנו': 0.03,
+        'הנדל–זליכה': 0.06, 'כחול לבן': 0.03,
+    },
+    'הציונות הדתית': {
+        'עוצמה יהודית': 0.38, 'הציונות הדתית': 0.34, 'עמך ישראל': 0.18,
+        'הליכוד': 0.10,
+    },
+    'המחנה הממלכתי': {
+        'ישר': 0.62, 'ביחד': 0.12, 'הנדל–זליכה': 0.16, 'הדמוקרטים': 0.03,
+        'ישראל ביתנו': 0.02, 'כחול לבן': 0.05,
+    },
+    'ש״ס': {
+        'ש״ס': 0.88, 'הליכוד': 0.05, 'יהדות התורה': 0.05, 'עוצמה יהודית': 0.02,
+    },
+    'יהדות התורה': {
+        'יהדות התורה': 0.94, 'ש״ס': 0.04, 'הליכוד': 0.02,
+    },
+    'ישראל ביתנו': {
+        'ישראל ביתנו': 0.85, 'ישר': 0.06, 'ביחד': 0.03, 'הנדל–זליכה': 0.03, 'כחול לבן': 0.03,
+    },
+    'רע״ם': {
+        'רע״ם': 0.92, 'הרשימה המשותפת': 0.08,
+    },
+    'חד״ש-תע״ל': {
+        'הרשימה המשותפת': 0.82, 'רע״ם': 0.08, 'הדמוקרטים': 0.10,
+    },
+    'העבודה': {
+        'הדמוקרטים': 0.68, 'ישר': 0.15, 'ביחד': 0.10, 'הנדל–זליכה': 0.04, 'כחול לבן': 0.03,
+    },
+    'מרצ': {
+        'הדמוקרטים': 0.70, 'ישר': 0.12, 'הרשימה המשותפת': 0.04, 'ביחד': 0.12, 'כחול לבן': 0.02,
+    },
+    'בל״ד': {
+        'הרשימה המשותפת': 0.88, 'רע״ם': 0.12,
+    },
+}
+
 ROW_TURNOUT = {
-    'הליכוד':        0.88,   # Likud base demobilized
-    'יש עתיד':      1.05,   # Yesh Atid bloc (→ Beyachad) energized
-    'הציונות הדתית': 0.94,   # RZ demobilized after split
-    'המחנה הממלכתי': 1.08,   # National Unity bloc (→ Yashar) strongly mobilized
-    'ש״ס':          1.00,   # Shas machine keeps turnout high
-    'יהדות התורה':  1.00,   # UTJ same
-    'ישראל ביתנו':  1.00,   # Stable
-    'רע״ם':         0.90,   # Arab turnout lower
-    'חד״ש-תע״ל':   0.90,   # Arab turnout lower
-    'העבודה':       1.10,   # Mobilized for Democrats
-    'מרצ':          1.15,   # Highly mobilized for Democrats
-    'בל״ד':         0.90,   # Arab turnout lower
+    'הליכוד':        0.80,
+    'יש עתיד':      1.08,
+    'הציונות הדתית': 0.84,
+    'המחנה הממלכתי': 1.18,
+    'ש״ס':          0.62,
+    'יהדות התורה':  1.02,
+    'ישראל ביתנו':  1.40,
+    'רע״ם':         0.90,
+    'חד״ש-תע״ל':   1.00,
+    'העבודה':       1.08,
+    'מרצ':          1.08,
+    'בל״ד':         0.98,
 }
 DEFAULT_ROW_TURNOUT = 1.00
+
+# Surplus agreements used by --preview Bader-Ofer (and later dhondt.html)
+SURPLUS_AGREEMENTS = [
+    ('ש״ס', 'יהדות התורה'),
+    ('עוצמה יהודית', 'הציונות הדתית'),
+    ('ישר', 'ישראל ביתנו'),
+    ('הרשימה המשותפת', 'רע״ם'),
+]
 
 # Global population growth between K25 (Nov 2022) and K26 (~Oct 2026).
 # Israeli registered-voter rolls grew ~1.93%/year (2021→2022 CEC figures);
@@ -166,8 +220,9 @@ def simulate_ballot(votes_by_e25_name, e26_party_list, rng, alpha):
         # Get transfer row; if no row, distribute proportionally to all parties
         row = TRANSFER_MATRIX.get(e25_name)
         if row is None:
-            row = {'הליכוד': 0.3, 'ביחד': 0.3, 'ישר': 0.15, 'הדמוקרטים': 0.15,
-                   'ישראל ביתנו': 0.05, 'חד״ש-תע״ל': 0.05}
+            row = {'הליכוד': 0.25, 'ביחד': 0.20, 'ישר': 0.22, 'הדמוקרטים': 0.10,
+                   'ישראל ביתנו': 0.05, 'הרשימה המשותפת': 0.05,
+                   'הנדל–זליכה': 0.08, 'עמך ישראל': 0.05}
 
         for dst_name, fraction in row.items():
             if dst_name in party_idx:
@@ -192,6 +247,84 @@ def simulate_ballot(votes_by_e25_name, e26_party_list, rng, alpha):
     int_votes = largest_remainder_round(raw_votes, int(total_votes))
 
     return {name: int(int_votes[i]) for i, name in enumerate(e26_party_list)}
+
+
+def bader_ofer(votes, threshold_pct=3.25, total_seats=120, agreements=None):
+    """Israeli Bader-Ofer (D'Hondt) with optional surplus-vote pairs."""
+    total = sum(votes.values())
+    thresh = total * threshold_pct / 100.0
+    passed = {k: v for k, v in votes.items() if v >= thresh}
+
+    partner = {}
+    for a, b in (agreements or []):
+        if a in passed and b in passed:
+            partner[a] = b
+            partner[b] = a
+
+    groups = []
+    seen = set()
+    for name in passed:
+        if name in seen:
+            continue
+        if name in partner:
+            other = partner[name]
+            groups.append(([name, other], passed[name] + passed[other]))
+            seen.update((name, other))
+        else:
+            groups.append(([name], passed[name]))
+            seen.add(name)
+
+    seats_g = [0] * len(groups)
+    for _ in range(total_seats):
+        i = max(range(len(groups)), key=lambda j: groups[j][1] / (seats_g[j] + 1))
+        seats_g[i] += 1
+
+    result = {k: 0 for k in votes}
+    for (members, _), n in zip(groups, seats_g):
+        if len(members) == 1:
+            result[members[0]] = n
+            continue
+        inner = [0] * len(members)
+        for _ in range(n):
+            i = max(range(len(members)), key=lambda j: passed[members[j]] / (inner[j] + 1))
+            inner[i] += 1
+        for m, s in zip(members, inner):
+            result[m] = s
+    return result, passed, thresh
+
+
+def expected_national_votes():
+    """Noise-free national E26 totals from K25 official votes × matrix."""
+    totals = {name: 0.0 for _, (name, _) in E26_PARTIES.items()}
+    for src, v in K25_NATIONAL_VOTES.items():
+        ev = v * ROW_TURNOUT.get(src, DEFAULT_ROW_TURNOUT) * POP_GROWTH
+        for dst, frac in TRANSFER_MATRIX[src].items():
+            totals[dst] += ev * frac
+    return {k: int(round(x)) for k, x in totals.items()}
+
+
+def preview_national():
+    """Print expected votes / Bader-Ofer seats vs Madad 120 targets."""
+    validate_config()
+    votes = expected_national_votes()
+    total = sum(votes.values())
+    seats, passed, thresh = bader_ofer(votes, agreements=SURPLUS_AGREEMENTS)
+    print(f"National preview (no Dirichlet noise), valid={total:,}  threshold={thresh:,.0f}")
+    print(f"{'Party':<22} {'Votes':>10} {'%':>6} {'Seats':>5} {'Target':>6} {'Δ':>4}")
+    print("-" * 58)
+    for name in TARGET_SEATS:
+        v = votes.get(name, 0)
+        s = seats.get(name, 0)
+        t = TARGET_SEATS[name]
+        print(f"{name:<22} {v:>10,} {100*v/total:5.1f}% {s:>5} {t:>6} {s-t:>+4}")
+    print("-" * 58)
+    print(f"{'TOTAL':<22} {total:>10,} {'':>6} {sum(seats.values()):>5} {sum(TARGET_SEATS.values()):>6}")
+    missed = [n for n, t in TARGET_SEATS.items() if t > 0 and n not in passed]
+    extra = [n for n in passed if TARGET_SEATS.get(n, 0) == 0]
+    if missed:
+        print("Below threshold (wanted seats):", ", ".join(missed))
+    if extra:
+        print("Passed but target 0:", ", ".join(extra))
 
 
 def simulate(alpha=55, seed=42):
@@ -297,6 +430,14 @@ def simulate(alpha=55, seed=42):
         pct = votes / total_e26_votes * 100 if total_e26_votes > 0 else 0
         print(f"{sym:<6} {name:<20} {votes:>12,} {pct:>6.1f}%")
 
+    # Bader-Ofer on noisy national totals
+    vote_map = {name: int(out_df[sym].sum()) for sym, (name, _) in E26_PARTIES.items()}
+    seats, passed, thresh = bader_ofer(vote_map, agreements=SURPLUS_AGREEMENTS)
+    print(f"\nBader-Ofer (threshold {thresh:,.0f}):")
+    for name, t in TARGET_SEATS.items():
+        s = seats.get(name, 0)
+        print(f"  {name:<22} {s:>3} seats  (target {t}{'' if s == t else f', Δ{s-t:+d}'})")
+
 
 def main():
     parser = argparse.ArgumentParser(description='Simulate election 26 from election 25 data')
@@ -306,7 +447,13 @@ def main():
                              'from estimate_alpha.py; see site/data/alpha_estimates.json)')
     parser.add_argument('--seed', type=int, default=42,
                         help='Random seed for reproducibility (default: 42)')
+    parser.add_argument('--preview', action='store_true',
+                        help='Print national Bader-Ofer seats from the matrix (no ballot CSV)')
     args = parser.parse_args()
+
+    if args.preview:
+        preview_national()
+        return
 
     simulate(alpha=args.alpha, seed=args.seed)
 

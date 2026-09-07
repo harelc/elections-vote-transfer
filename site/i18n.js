@@ -524,6 +524,8 @@
         'הדמוקרטים': 'The Democrats',
         'עוצמה יהודית': 'Jewish Power',
         'ישר': 'Yashar',
+        'עמך ישראל': 'Amcha Yisrael',
+        'הנדל–זליכה': 'Hendel–Zelicha–Wilf',
         'המילואימניקים': 'The Reservists',
     };
 

@@ -136,6 +136,11 @@ def main():
         [sys.executable, 'add_locations_to_tsne.py', '-e', '26'],
         'Adding venue names to site/data/tsne_26.json'
     )
+    # Keep data/tsne_26.json in sync so the later copy_outputs step cannot
+    # overwrite site/data/tsne_26.json with a version that is missing `l`.
+    if os.path.exists('site/data/tsne_26.json'):
+        shutil.copy2('site/data/tsne_26.json', 'data/tsne_26.json')
+        print('  Synced located tsne_26.json back to data/')
 
     # Step 3: Generate transfer data for 25→26
     run_script(
