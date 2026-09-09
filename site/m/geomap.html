@@ -401,6 +401,7 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="../basemap.js"></script>
     <script>
     class MobileGeoMap {
         constructor() {
@@ -458,11 +459,7 @@
                 zoomControl: false
             });
 
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OSM &copy; CARTO',
-                subdomains: 'abcd',
-                maxZoom: 20
-            }).addTo(this.map);
+            addBasemap(this.map, 'positron');
 
             L.control.zoom({ position: 'bottomright' }).addTo(this.map);
 

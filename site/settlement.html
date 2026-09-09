@@ -17,6 +17,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="basemap.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
@@ -636,10 +637,7 @@
                 zoom: 14,
                 zoomControl: false,
             });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OSM &copy; CARTO',
-                maxZoom: 19,
-            }).addTo(map);
+            addBasemap(map, 'dark_matter');
 
             // Add markers only for ballots in this election, colored by winning party
             const stations = (coordsData && coordsData.stations) || {};

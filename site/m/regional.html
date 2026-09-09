@@ -472,6 +472,7 @@
     </nav>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../basemap.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
     (function() {
@@ -849,9 +850,7 @@
                 center: [31.4, 35.0], zoom: 7.5, minZoom: 7, maxZoom: 18, zoomControl: false,
                 maxBounds: [[28.5, 33.5], [34.0, 36.5]], maxBoundsViscosity: 1.0,
             });
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap &copy; CARTO', subdomains: 'abcd', maxZoom: 20
-            }).addTo(map);
+            addBasemap(map, 'positron');
             L.control.zoom({ position: 'bottomright' }).addTo(map);
         }
 
