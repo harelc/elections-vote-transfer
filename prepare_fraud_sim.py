@@ -29,9 +29,9 @@ BLOC_DEFINITIONS = {
         'arab':       ['עם', 'ום', 'ד'],
     },
     '26': {
-        'right':      ['מחל', 'שס', 'ג', 'ט', 'עי', 'וי', 'מי'],
-        'leftcenter': ['נב', 'ל', 'דמ', 'יר', 'כל'],
-        'arab':       ['ום', 'עם'],
+        'right':      ['מחל', 'שס', 'ג', 'ט', 'ב', 'ך', 'די'],
+        'leftcenter': ['רק', 'ל', 'אמת', 'דרך', 'כן'],
+        'arab':       ['ודם', 'עם'],
     },
 }
 
@@ -53,8 +53,8 @@ SCENARIOS_BY_YEAR = {
         {'id': 'left_to_right',  'kind': 'bloc', 'src': 'leftcenter', 'dst': 'right',      'label': 'גוש שמאל-מרכז ← גוש הימין'},
         {'id': 'jewish_to_arab', 'kind': 'bloc', 'src': 'right',      'dst': 'arab',       'label': 'הימין ← המפלגות הערביות'},
         {'id': 'intra_right',    'kind': 'pair', 'src': 'מחל',         'dst': 'ט',          'label': 'בתוך הימין: ליכוד ← הציונות הדתית'},
-        {'id': 'intra_arab',     'kind': 'pair', 'src': 'עם',          'dst': 'ום',         'label': 'בתוך הערביות: רע״ם ← המשותפת'},
-        {'id': 'lapid_likud',    'kind': 'pair', 'src': 'נב',          'dst': 'מחל',        'label': 'ביחד ← ליכוד'},
+        {'id': 'intra_arab',     'kind': 'pair', 'src': 'עם',          'dst': 'ודם',        'label': 'בתוך הערביות: רע״ם ← המשותפת'},
+        {'id': 'lapid_likud',    'kind': 'pair', 'src': 'רק',          'dst': 'מחל',        'label': 'ביחד ← ליכוד'},
         {'id': 'custom',         'kind': 'pair', 'src': None,         'dst': None,         'label': 'התאמה אישית (קבוצות מפלגות)'},
     ],
 }

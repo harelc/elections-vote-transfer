@@ -8,7 +8,19 @@ When keys collapse, keep the entry with coordinates (prefer google_venue > venue
 import json
 
 
-SOURCE_PRIORITY = {'google_venue': 3, 'venue': 2, 'settlement': 1, 'not_found': 0}
+# cec_k26 is an official cluster point from the CEC polling-station file.
+# Manual pins outrank geocoders. Unknown sources rank below a real pin.
+SOURCE_PRIORITY = {
+    'cec_k26': 6,
+    'manual_override': 5,
+    'manual_correction': 5,
+    'manual': 5,
+    'google_venue_haifa': 4,
+    'google_venue': 3,
+    'venue': 2,
+    'settlement': 1,
+    'not_found': 0,
+}
 
 
 def normalize_name(name):
