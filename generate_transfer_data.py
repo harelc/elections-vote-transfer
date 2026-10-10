@@ -7,6 +7,7 @@ and exports data as JSON for web visualization.
 Written by Harel Cain, 2019-2024
 """
 
+import csv
 import json
 import logging
 import time
@@ -43,6 +44,26 @@ FORBIDDEN_CELLS = {
         ('הציונות הדתית', 'כחול לבן'),
     ],
 }
+
+
+def load_k26_crosswalk():
+    """K25 ballot id → K26 ballot id pairs from the union file.
+
+    Ids are ``settlementCode__ballot``, with a trailing ``.0`` already stripped.
+    """
+    path = Path('data/k25_k26_ballot_union.csv')
+    if not path.exists():
+        return None
+    pairs = []
+    with path.open(encoding='utf-8-sig') as fh:
+        for row in csv.DictReader(fh):
+            if row['decision'] not in ('id', 'id_dot1', 'venue', 'coord'):
+                continue
+            pairs.append((
+                f"{int(float(row['k25_code']))}__{row['k25_ballot']}",
+                f"{int(float(row['k26_code']))}__{row['k26_ballot']}",
+            ))
+    return pairs
 
 
 class VoteTransferAnalyzer:
@@ -241,21 +262,28 @@ class VoteTransferAnalyzer:
                 base = parts[0] + '__' + parts[1][:-2]
                 to_bases_with_zero.add(base)
 
-        # Build mapping: for each "to" ballot, find matching "from" ballot
+        # Build mapping: for each "to" ballot, find matching "from" ballot.
+        # K26 uses the precomputed crosswalk (same number, else same building).
         from_ids = set(votes_from.index)
         matched_pairs = []  # (from_id, to_id)
+        crosswalk = load_k26_crosswalk() if (str(election_from), str(election_to)) == ('25', '26') else None
 
-        for to_id in votes_to.index:
-            if to_id in from_ids:
-                # Exact match
-                matched_pairs.append((to_id, to_id))
-            elif is_dot_one(to_id):
-                # Only .1 can fall back (not .2, .3, etc.)
-                base_id = get_base_ballot_id(to_id)
-                if base_id not in to_bases_with_zero and base_id in from_ids:
-                    matched_pairs.append((base_id, to_id))
-
-        logger.info(f"Found {len(matched_pairs)} matched precincts (with fallback)")
+        if crosswalk:
+            for from_id, to_id in crosswalk:
+                if from_id in from_ids and to_id in votes_to.index:
+                    matched_pairs.append((from_id, to_id))
+            logger.info(f"K26 crosswalk: {len(matched_pairs)} matched precincts")
+        else:
+            for to_id in votes_to.index:
+                if to_id in from_ids:
+                    # Exact match
+                    matched_pairs.append((to_id, to_id))
+                elif is_dot_one(to_id):
+                    # Only .1 can fall back (not .2, .3, etc.)
+                    base_id = get_base_ballot_id(to_id)
+                    if base_id not in to_bases_with_zero and base_id in from_ids:
+                        matched_pairs.append((base_id, to_id))
+            logger.info(f"Found {len(matched_pairs)} matched precincts (with fallback)")
 
         if not matched_pairs:
             raise ValueError("No matching precincts found")
@@ -266,6 +294,8 @@ class VoteTransferAnalyzer:
 
         X = votes_from.loc[from_matched_ids].values.astype(float)
         Y = votes_to.loc[to_matched_ids].values.astype(float)
+        party_vote_from = X
+        party_vote_to = Y
 
         # Optionally add "did not vote" pseudo-party column
         if self.include_abstention:
@@ -287,14 +317,23 @@ class VoteTransferAnalyzer:
         # Compute transfer matrix
         logger.info(f"Computing transfer matrix using {self.method} method...")
 
-        # Population growth between elections (used as row-sum constraint).
-        # Hard-coded for 25→26 to match simulate_election_26.POP_GROWTH.
-        POP_GROWTH_PER_TRANSITION = {
-            ('25', '26'): 1.075,
-        }
-        row_sum = POP_GROWTH_PER_TRANSITION.get((str(election_from), str(election_to)), 1.0)
-        if row_sum != 1.0:
-            logger.info(f"  Using row_sum={row_sum} for {election_from}→{election_to} (population growth)")
+        # 25→26. Without abstention the matrix only sees valid votes, so each
+        # row sums to the growth in valid votes on the paired boxes (population
+        # plus the turnout change). With abstention, turnout change is a flow
+        # into or out of לא הצביעו, and the row sum is growth of the electorate.
+        if (str(election_from), str(election_to)) == ('25', '26'):
+            if self.include_abstention:
+                elig_from = df_from.loc[from_matched_ids, 'בזב'].astype(float).sum()
+                elig_to = df_to.loc[to_matched_ids, 'בזב'].astype(float).sum()
+                row_sum = float(elig_to / elig_from) if elig_from else 1.0
+                logger.info(f"  Using row_sum={row_sum:.4f} for 25→26 abstention (matched eligible voters)")
+            elif party_vote_from.sum() > 0:
+                row_sum = float(party_vote_to.sum() / party_vote_from.sum())
+                logger.info(f"  Using row_sum={row_sum:.4f} for 25→26 (matched valid votes)")
+            else:
+                row_sum = 1.0
+        else:
+            row_sum = 1.0
 
         if self.method == 'convex':
             zero_cells = []

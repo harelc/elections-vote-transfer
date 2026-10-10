@@ -13,8 +13,15 @@ Then run:
 """
 
 import argparse
+import csv
+import json
+import math
+from pathlib import Path
+
 import numpy as np
+import openpyxl
 import pandas as pd
+from pyproj import Transformer
 from party_config import ELECTIONS
 
 # ============================================================================
@@ -25,22 +32,36 @@ from party_config import ELECTIONS
 # List map follows Madad 120 (7 Sep 2026): Yashar, Likud, Beyachad, Democrats,
 # YB, Joint List (Hadash–Ta'al–Balad), UTJ, Shas, Otzma, RZ+Zehut, Ra'am,
 # Amcha Yisrael (Winter), Hendel–Zelicha, Gantz below threshold.
+# Official CEC letter-symbols (candidates-lists-26, finalized).
 E26_PARTIES = {
-    'יר':  ('ישר', '#14b8a6'),
+    'דרך': ('ישר', '#14b8a6'),
     'מחל': ('הליכוד', '#2563eb'),
-    'נב':  ('ביחד', '#f97316'),
-    'דמ':  ('הדמוקרטים', '#16a34a'),
+    'רק':  ('ביחד', '#f97316'),
+    'אמת': ('הדמוקרטים', '#16a34a'),
     'ל':   ('ישראל ביתנו', '#db2777'),
-    'ום':  ('הרשימה המשותפת', '#0d9488'),
+    'ודם': ('הרשימה המשותפת', '#0d9488'),
     'ג':   ('יהדות התורה', '#4b5563'),
     'שס':  ('ש״ס', '#1e3a8a'),
-    'עי':  ('עוצמה יהודית', '#7f1d1d'),
+    'ב':   ('עוצמה יהודית', '#7f1d1d'),
     'ט':   ('הציונות הדתית', '#92400e'),
     'עם':  ('רע״ם', '#84cc16'),
-    'וי':  ('עמך ישראל', '#4d7c0f'),
-    'מי':  ('הנדל–זליכה', '#d97706'),
-    'כל':  ('כחול לבן', '#8b5cf6'),
+    'ך':   ('עמך ישראל', '#4d7c0f'),
+    'די':  ('הנדל–זליכה', '#d97706'),
+    'כן':  ('כחול לבן', '#8b5cf6'),
 }
+
+# Below-threshold lists. Columns exist so the dashboard list-count is right.
+# They stay at 0; the Dirichlet draw covers the majors only.
+E26_TINY = [
+    ('בד', 'ביחד נצליח'), ('בי', 'צומת בית ישראל'), ('בקר', 'אורות השחר'),
+    ('ד', 'השותפות לכולם'), ('ה', 'גן עדן'), ('ז', 'בטח'),
+    ('זך', 'הציבור החרדי'), ('זץ', 'ברית עולם'), ('י', 'ישראל תחילה'),
+    ('יק', 'גה״ת'), ('ני', 'נעם'), ('נף', 'שמע'), ('נץ', 'ביטחון אישי'),
+    ('נקי', 'התיקון'), ('נר', 'צבע שחור'), ('פה', 'אני ואתה'),
+    ('צבי', 'תנועת אחי'), ('צדק', 'שרשר'), ('צף', 'הפיראטים'),
+    ('ק', 'תקומה'), ('קה', 'קול הנשים'), ('קך', 'סדר חדש'),
+    ('קץ', 'משפט צדק'), ('רץ', 'הקהל'),
+]
 
 # Madad 120 center, 7 Sep 2026. Both threshold lists included as passing (4 each);
 # 1 seat shaved from Yashar / Likud / Beyachad so the 120 still add up.
@@ -128,6 +149,10 @@ SURPLUS_AGREEMENTS = [
     ('ישר', 'ישראל ביתנו'),
     ('הרשימה המשותפת', 'רע״ם'),
 ]
+
+# National K26 turnout (voters / eligible), applied on top of the K25
+# geographic pattern so high-turnout and low-turnout boxes stay apart.
+TARGET_TURNOUT = 0.743
 
 # Global population growth between K25 (Nov 2022) and K26 (~Oct 2026).
 # Israeli registered-voter rolls grew ~1.93%/year (2021→2022 CEC figures);
@@ -327,116 +352,310 @@ def preview_national():
         print("Passed but target 0:", ", ".join(extra))
 
 
+def _norm_ballot(value):
+    text = str(value).strip()
+    if text.endswith('.0'):
+        text = text[:-2]
+    return text
+
+
+def _votes_by_name(row, party_cols):
+    votes = {}
+    for sym in party_cols:
+        name = E25_SYMBOL_TO_NAME.get(sym)
+        count = int(row.get(sym, 0) or 0)
+        if name:
+            votes[name] = votes.get(name, 0) + count
+        elif count:
+            votes['_small'] = votes.get('_small', 0) + count
+    small = votes.pop('_small', 0)
+    if small:
+        dominant = get_dominant_party(votes)
+        votes[dominant or 'הליכוד'] = votes.get(dominant or 'הליכוד', 0) + small
+    return votes
+
+
+def _load_k25_coords():
+    raw = json.loads(Path('site/data/station_coordinates.json').read_text(encoding='utf-8'))
+    lookup = {}
+    for key, val in raw.get('stations', {}).items():
+        if '|' not in key or val.get('lat') is None:
+            continue
+        name, ballot = key.rsplit('|', 1)
+        lookup[(name, _norm_ballot(ballot))] = (float(val['lat']), float(val['lng']))
+    return lookup
+
+
+def _load_k25_ballots():
+    config = ELECTIONS['25']
+    frame = pd.read_csv(config['file'], encoding=config['encoding'])
+    frame = frame[frame['סמל ישוב'] != 9999]
+    kosher = list(frame.columns).index('כשרים')
+    party_cols = list(frame.columns)[kosher + 1:]
+    coords = _load_k25_coords()
+    by_id = {}
+    by_settlement = {}
+    points = {}
+    for _, row in frame.iterrows():
+        code = int(row['סמל ישוב'])
+        ballot = _norm_ballot(row['קלפי'])
+        bid = f"{code}__{ballot}"
+        latlng = coords.get((str(row['שם ישוב']).strip(), ballot))
+        record = {
+            'eligible': int(row['בזב'] or 0),
+            'valid': int(row['כשרים'] or 0),
+            'invalid': int(row['פסולים'] or 0),
+            'votes': _votes_by_name(row, party_cols),
+            'lat': latlng[0] if latlng else None,
+            'lng': latlng[1] if latlng else None,
+            'code': code,
+        }
+        by_id[bid] = record
+        bucket = by_settlement.setdefault(code, {'eligible': 0, 'valid': 0, 'invalid': 0, 'votes': {}})
+        bucket['eligible'] += record['eligible']
+        bucket['valid'] += record['valid']
+        bucket['invalid'] += record['invalid']
+        for name, count in record['votes'].items():
+            bucket['votes'][name] = bucket['votes'].get(name, 0) + count
+        if latlng:
+            points.setdefault(code, []).append(record)
+    return by_id, by_settlement, points
+
+
+def _load_crosswalk():
+    path = Path('data/k25_k26_ballot_union.csv')
+    pairs = {}
+    with path.open(encoding='utf-8-sig') as handle:
+        for row in csv.DictReader(handle):
+            if row['decision'] not in ('id', 'id_dot1', 'venue', 'coord'):
+                continue
+            k26 = f"{int(float(row['k26_code']))}__{row['k26_ballot']}"
+            k25 = f"{int(float(row['k25_code']))}__{row['k25_ballot']}"
+            pairs[k26] = k25
+    return pairs
+
+
+def _load_cluster_xy():
+    """Official cluster points. X=0,Y=0 is a blank cell, not a place."""
+    to_wgs = Transformer.from_crs('EPSG:2039', 'EPSG:4326', always_xy=True)
+    book = openpyxl.load_workbook(Path('data/k26_cec/clusters.xlsx'), read_only=True, data_only=True)
+    rows = list(book.active.iter_rows(values_only=True))
+    book.close()
+    header = {name: i for i, name in enumerate(rows[0])}
+    points = {}
+    for row in rows[1:]:
+        if row[header['סמל ישוב בחירות']] is None or not row[header['X']] or not row[header['Y']]:
+            continue
+        lng, lat = to_wgs.transform(float(row[header['X']]), float(row[header['Y']]))
+        if not (29.4 < lat < 33.45 and 34.2 < lng < 35.95):
+            continue
+        points[(int(row[header['סמל ישוב בחירות']]), row[header['סמל רכוז']])] = (lat, lng)
+    return points
+
+
+def _load_k26_stations():
+    path = Path('data/k26_cec/stations.xlsx')
+    book = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    rows = list(book.active.iter_rows(values_only=True))
+    book.close()
+    header = {name: i for i, name in enumerate(rows[0])}
+    clusters = _load_cluster_xy()
+    stations = []
+    for row in rows[1:]:
+        if row[header['סמל ישוב בחירות']] is None or row[header['סמל קלפי']] is None:
+            continue
+        code = int(row[header['סמל ישוב בחירות']])
+        cluster = row[header['סמל רכוז']]
+        latlng = clusters.get((code, cluster))
+        stations.append({
+            'committee': int(row[header['סמל ועדה']] or 0),
+            'serial': int(row[header["מס' ברזל"]] or 0),
+            'name': str(row[header['שם ישוב בחירות']] or '').strip(),
+            'code': code,
+            'ballot': _norm_ballot(row[header['סמל קלפי']]),
+            'cluster': int(cluster or 0),
+            'eligible': int(row[header['בוחרי כנסת']] or 0),
+            'lat': latlng[0] if latlng else None,
+            'lng': latlng[1] if latlng else None,
+        })
+    return stations
+
+
+def _hav(a, b):
+    radius = 6371000.0
+    p1, p2 = math.radians(a[0]), math.radians(b[0])
+    dp, dl = math.radians(b[0] - a[0]), math.radians(b[1] - a[1])
+    x = math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2
+    return 2 * radius * math.asin(math.sqrt(min(1.0, x)))
+
+
+def _pool(records):
+    pooled = {'eligible': 0, 'valid': 0, 'invalid': 0, 'votes': {}}
+    for record in records:
+        pooled['eligible'] += record['eligible']
+        pooled['valid'] += record['valid']
+        pooled['invalid'] += record['invalid']
+        for name, count in record['votes'].items():
+            pooled['votes'][name] = pooled['votes'].get(name, 0) + count
+    return pooled
+
+
+def _nearby_k25(station, points_by_code):
+    """Vote mix for an unmatched K26 box: nearby K25 boxes, simulation only.
+
+    Prefer every K25 box within 250 m in the same settlement. Otherwise the
+    eight nearest boxes there. The settlement-wide mix is the last resort.
+    """
+    local = points_by_code.get(station['code'], [])
+    if station['lat'] is not None and local:
+        here = (station['lat'], station['lng'])
+        ranked = sorted(((_hav(here, (p['lat'], p['lng'])), p) for p in local), key=lambda item: item[0])
+        close = [p for dist, p in ranked if dist <= 250]
+        if close:
+            return _pool(close), 'within_250m', len(close)
+        return _pool([p for _, p in ranked[:8]]), 'nearest_8', 8
+    return None, 'settlement', 0
+
+
+def _source_rates(record):
+    eligible = record['eligible']
+    voters = record['valid'] + record['invalid']
+    if eligible <= 0 or voters <= 0:
+        return None, 0.008
+    return voters / eligible, record['invalid'] / voters
+
+
+def _rescale(votes, target):
+    if target <= 0 or sum(votes.values()) <= 0:
+        return {name: 0 for name in votes}
+    raw = np.array([votes[name] for name in votes], dtype=float)
+    raw = raw / raw.sum() * target
+    rounded = largest_remainder_round(raw, int(target))
+    return {name: int(rounded[i]) for i, name in enumerate(votes)}
+
+
 def simulate(alpha=55, seed=42):
-    """Generate simulated ballot26.csv from ballot25.csv."""
+    """Generate ballot26.csv on the official roster, at TARGET_TURNOUT."""
     validate_config()
-
     rng = np.random.default_rng(seed)
+    k25_by_id, k25_by_settlement, k25_points = _load_k25_ballots()
+    crosswalk = _load_crosswalk()
+    stations = _load_k26_stations()
+    e26_names = [name for _, (name, _) in E26_PARTIES.items()]
 
-    # Read E25 data
-    e25_config = ELECTIONS['25']
-    df = pd.read_csv(e25_config['file'], encoding=e25_config['encoding'])
+    sources = []
+    neighbor_modes = {}
+    for station in stations:
+        bid = f"{station['code']}__{station['ballot']}"
+        record = k25_by_id.get(crosswalk.get(bid))
+        mode = 'paired'
+        if record is None:
+            record, mode, _ = _nearby_k25(station, k25_points)
+            if record is None:
+                record = k25_by_settlement.get(station['code'])
+                mode = 'settlement'
+        if record is None or not record['votes']:
+            record = {'eligible': 0, 'valid': 0, 'invalid': 0, 'votes': {'הליכוד': 1}}
+            mode = 'national'
+        neighbor_modes[mode] = neighbor_modes.get(mode, 0) + 1
+        rate, invalid_share = _source_rates(record)
+        sources.append((station, record, rate if rate is not None else 0.67, invalid_share))
 
-    # Identify metadata columns (up to and including כשרים)
-    cols = list(df.columns)
-    try:
-        kosher_idx = cols.index('כשרים')
-    except ValueError:
-        raise ValueError("Cannot find 'כשרים' column in ballot25.csv")
+    weighted = sum(station['eligible'] * rate for station, _, rate, _ in sources)
+    eligible_total = sum(station['eligible'] for station, _, _, _ in sources) or 1
+    scale = TARGET_TURNOUT / (weighted / eligible_total)
 
-    meta_cols = cols[:kosher_idx + 1]
-    e25_party_cols = cols[kosher_idx + 1:]
+    print(f"Official boxes: {len(stations):,}  eligible: {eligible_total:,}")
+    print(f"Turnout target {TARGET_TURNOUT:.1%}, K25-pattern scale {scale:.3f}")
+    paired = sum(1 for station, _, _, _ in sources if f"{station['code']}__{station['ballot']}" in crosswalk)
+    print(f"Crosswalk hits: {paired:,}")
+    print("Unmatched source: " + ", ".join(f"{k} {v}" for k, v in sorted(neighbor_modes.items())))
 
-    # E26 party list (ordered)
-    e26_party_list = [name for _, (name, _) in E26_PARTIES.items()]
-    e26_symbol_list = list(E26_PARTIES.keys())
+    out_rows = []
+    for station, record, rate, invalid_share in sources:
+        turnout = min(0.97, max(0.05, rate * scale))
+        voters = int(round(station['eligible'] * turnout))
+        invalid = min(voters, int(round(voters * invalid_share)))
+        valid_target = voters - invalid
+        drawn = simulate_ballot(record['votes'], e26_names, rng, alpha)
+        drawn = _rescale(drawn, valid_target)
+        out_rows.append((station, voters, invalid, valid_target, drawn))
 
-    print(f"E25 parties: {len(e25_party_cols)} columns")
-    print(f"E26 parties: {len(e26_party_list)} parties")
-    print(f"Ballots: {len(df)}")
-    print(f"Alpha (noise): {alpha}, Seed: {seed}")
+    # The cap at 97% can leave the national rate a little short. Spread the
+    # missing voters across boxes that still have room.
+    voters_now = sum(voters for _, voters, _, _, _ in out_rows)
+    target_voters = int(round(eligible_total * TARGET_TURNOUT))
+    gap = target_voters - voters_now
+    if gap > 0:
+        room = []
+        for i, (station, voters, _, _, _) in enumerate(out_rows):
+            space = int(station['eligible'] * 0.97) - voters
+            if space > 0:
+                room.append((space, i))
+        room.sort(reverse=True)
+        for space, i in room:
+            if gap <= 0:
+                break
+            add = min(space, gap)
+            station, voters, invalid, valid_target, drawn = out_rows[i]
+            invalid_share = invalid / voters if voters else 0.008
+            voters += add
+            invalid = min(voters, int(round(voters * invalid_share)))
+            valid_target = voters - invalid
+            drawn = _rescale(drawn, valid_target)
+            out_rows[i] = (station, voters, invalid, valid_target, drawn)
+            gap -= add
 
-    # Build output dataframe with same metadata columns
-    out_df = df[meta_cols].copy()
-
-    # Initialize E26 party columns
-    for sym in e26_symbol_list:
-        out_df[sym] = 0
-
-    total_e25_votes = 0
-    total_e26_votes = 0
-
-    for idx, row in df.iterrows():
-        # Gather E25 votes by party name
-        votes_by_name = {}
-        for sym in e25_party_cols:
-            name = E25_SYMBOL_TO_NAME.get(sym)
-            v = int(row.get(sym, 0) or 0)
-            if name:
-                votes_by_name[name] = votes_by_name.get(name, 0) + v
-            else:
-                # Small party: add to a generic bucket
-                votes_by_name.setdefault('_small', 0)
-                votes_by_name['_small'] = votes_by_name.get('_small', 0) + v
-
-        # Handle small party votes: distribute through default transfer
-        small_votes = votes_by_name.pop('_small', 0)
-        if small_votes > 0:
-            # Find the dominant party and add small votes to it
-            dominant = get_dominant_party(votes_by_name)
-            if dominant:
-                votes_by_name[dominant] = votes_by_name.get(dominant, 0) + small_votes
-            else:
-                votes_by_name['הליכוד'] = small_votes
-
-        # Simulate E26 votes (turnout adjustment is built into simulate_ballot
-        # via ROW_TURNOUT per source party)
-        total_e25 = sum(votes_by_name.values())
-        e26_votes = simulate_ballot(votes_by_name, e26_party_list, rng, alpha)
-
-        # Update metadata to reflect adjusted totals
-        e26_total = sum(e26_votes.values())
-        out_df.at[idx, 'כשרים'] = e26_total
-        # Scale invalid ballots by population growth too, then recompute voters
-        invalid_e26 = int(round(int(row.get('פסולים', 0) or 0) * POP_GROWTH))
-        out_df.at[idx, 'פסולים'] = invalid_e26
-        out_df.at[idx, 'מצביעים'] = e26_total + invalid_e26
-        # Scale eligible voters by population growth so turnout ratio stays consistent
-        if 'בזב' in out_df.columns:
-            out_df.at[idx, 'בזב'] = int(round(int(row.get('בזב', 0) or 0) * POP_GROWTH))
-
-        # Write E26 votes by symbol
+    columns = ['סמל ועדה', 'ברזל', 'שם ישוב', 'סמל ישוב', 'קלפי', 'ריכוז', 'שופט',
+               'בזב', 'מצביעים', 'פסולים', 'כשרים']
+    columns += [sym for sym, _ in E26_PARTIES.items()]
+    columns += [sym for sym, _ in E26_TINY]
+    records = []
+    for station, voters, invalid, valid_target, drawn in out_rows:
+        row = {
+            'סמל ועדה': station['committee'],
+            'ברזל': station['serial'],
+            'שם ישוב': station['name'],
+            'סמל ישוב': station['code'],
+            'קלפי': station['ballot'],
+            'ריכוז': station['cluster'],
+            'שופט': 0,
+            'בזב': station['eligible'],
+            'מצביעים': voters,
+            'פסולים': invalid,
+            'כשרים': valid_target,
+        }
         for sym, (name, _) in E26_PARTIES.items():
-            out_df.at[idx, sym] = e26_votes[name]
+            row[sym] = drawn.get(name, 0)
+        for sym, _ in E26_TINY:
+            row[sym] = 0
+        records.append(row)
+    out_df = pd.DataFrame.from_records(records, columns=columns)
+    out_df.to_csv('ballot26.csv', index=False, encoding='utf-8-sig')
 
-        total_e25_votes += total_e25
-        total_e26_votes += e26_total
+    eligible_total = int(out_df['בזב'].sum())
+    voter_total = int(out_df['מצביעים'].sum())
+    valid_total = int(out_df['כשרים'].sum())
+    print(f"\nOutput: ballot26.csv")
+    print(f"Rows: {len(out_df):,}")
+    print(f"Eligible: {eligible_total:,}")
+    print(f"Voters: {voter_total:,}  turnout {voter_total / eligible_total:.1%}")
+    print(f"Valid: {valid_total:,}")
 
-    # Save
-    output_path = 'ballot26.csv'
-    out_df.to_csv(output_path, index=False, encoding='utf-8-sig')
-
-    print(f"\nOutput: {output_path}")
-    print(f"Total E25 valid votes: {total_e25_votes:,.0f}")
-    print(f"Total E26 valid votes: {total_e26_votes:,}")
-    print(f"Rows: {len(out_df)}")
-
-    # Print per-party totals
     print(f"\nE26 Party Totals:")
     print(f"{'Symbol':<6} {'Party':<20} {'Votes':>12} {'%':>7}")
     print("-" * 48)
     for sym, (name, _) in E26_PARTIES.items():
-        votes = out_df[sym].sum()
-        pct = votes / total_e26_votes * 100 if total_e26_votes > 0 else 0
+        votes = int(out_df[sym].sum())
+        pct = votes / valid_total * 100 if valid_total else 0
         print(f"{sym:<6} {name:<20} {votes:>12,} {pct:>6.1f}%")
 
-    # Bader-Ofer on noisy national totals
     vote_map = {name: int(out_df[sym].sum()) for sym, (name, _) in E26_PARTIES.items()}
     seats, passed, thresh = bader_ofer(vote_map, agreements=SURPLUS_AGREEMENTS)
     print(f"\nBader-Ofer (threshold {thresh:,.0f}):")
-    for name, t in TARGET_SEATS.items():
-        s = seats.get(name, 0)
-        print(f"  {name:<22} {s:>3} seats  (target {t}{'' if s == t else f', Δ{s-t:+d}'})")
+    for name, target in TARGET_SEATS.items():
+        got = seats.get(name, 0)
+        print(f"  {name:<22} {got:>3} seats  (target {target}{'' if got == target else f', Δ{got - target:+d}'})")
 
 
 def main():
