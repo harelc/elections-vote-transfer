@@ -1,20 +1,22 @@
 /*
  * Mobile shared styles - קולות נודדים
  */
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&display=swap');
 
 :root {
-    --bg-primary: #0a0a0f;
-    --bg-secondary: #12121a;
-    --bg-tertiary: #1a1a25;
-    --bg-card: #1e1e2a;
-    --bg-hover: #252535;
-    --text-primary: #f0f0f5;
-    --text-secondary: #a0a0b0;
-    --text-muted: #606075;
-    --accent: #6366f1;
-    --accent-glow: rgba(99, 102, 241, 0.3);
-    --border: #2a2a3a;
-    --border-light: #35354a;
+    --bg-primary: #14120e;
+    --bg-secondary: #1c1914;
+    --bg-tertiary: #262219;
+    --bg-card: #221f1a;
+    --bg-hover: #2e2922;
+    --text-primary: #f4efe6;
+    --text-secondary: #b7aa96;
+    --text-muted: #7d7264;
+    --accent: #c4a574;
+    --on-accent: #1a1612;
+    --accent-glow: rgba(196, 165, 116, 0.22);
+    --border: #3a332a;
+    --border-light: #4d453b;
     --shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
     --radius: 10px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -62,14 +64,13 @@ html, body {
 .top-bar .title {
     flex: 1;
     min-width: 0;
+    font-family: 'Frank Ruhl Libre', 'Heebo', serif;
     font-size: 0.95rem;
-    font-weight: 600;
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 .election-pills {
@@ -102,7 +103,7 @@ html, body {
 .election-pill.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
 /* ---- Bottom Tabs (scrollable pill bar) ---- */
@@ -146,7 +147,7 @@ html, body {
 .tab-bar a.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
 .tab-bar a:active:not(.active) {
@@ -257,7 +258,7 @@ html, body {
 .chip.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
 .chip .remove {

@@ -13,22 +13,22 @@
     <title>דירוגים - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-tertiary: #1a1a25;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border-color: #2a2a3a;
-            --accent-primary: #3b82f6;
-            --accent-secondary: #06b6d4;
+            --bg-primary: #14120e;
+            --bg-secondary: #1c1914;
+            --bg-tertiary: #262219;
+            --text-primary: #f4efe6;
+            --text-secondary: #b7aa96;
+            --text-muted: #7d7264;
+            --border-color: #3a332a;
+            --accent-primary: #c4a574;
+            --accent-secondary: #e4d2b0;
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
@@ -106,10 +106,8 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.2rem;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            font-family: 'Frank Ruhl Libre', 'Heebo', serif;
+            color: var(--text-primary);
         }
         .title-icon {
             display: inline-block;
@@ -467,7 +465,7 @@
 
     <div class="app-container">
         <header class="main-header">
-            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <h1><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="rankings_subtitle">דירוגי תנודתיות יישובים וריכוז גיאוגרפי</p>
             <nav class="view-switcher"></nav>
         </header>

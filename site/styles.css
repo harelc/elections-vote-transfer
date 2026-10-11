@@ -1,26 +1,27 @@
 /*
- * קולות נודדים - Dark Theme Styles
- * Israeli Election Vote Transfer Visualization
+ * קולות נודדים
+ * Warm ink and archive sand. Party colors stay on the data.
  */
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&display=swap');
 
 :root {
-    /* Dark theme colors */
-    --bg-primary: #0a0a0f;
-    --bg-secondary: #12121a;
-    --bg-tertiary: #1a1a25;
-    --bg-card: #1e1e2a;
-    --bg-hover: #252535;
+    --bg-primary: #14120e;
+    --bg-secondary: #1c1914;
+    --bg-tertiary: #262219;
+    --bg-card: #221f1a;
+    --bg-hover: #2e2922;
 
-    --text-primary: #f0f0f5;
-    --text-secondary: #a0a0b0;
-    --text-muted: #606075;
+    --text-primary: #f4efe6;
+    --text-secondary: #b7aa96;
+    --text-muted: #7d7264;
 
-    --accent-primary: #3b82f6;
-    --accent-secondary: #8b5cf6;
-    --accent-glow: rgba(99, 102, 241, 0.3);
+    --accent-primary: #c4a574;
+    --accent-secondary: #e4d2b0;
+    --on-accent: #1a1612;
+    --accent-glow: rgba(196, 165, 116, 0.22);
 
-    --border-color: #2a2a3a;
-    --border-light: #35354a;
+    --border-color: #3a332a;
+    --border-light: #4d453b;
 
     --success: #10b981;
     --warning: #f59e0b;
@@ -152,14 +153,21 @@ body {
 }
 
 .site-title {
+    font-family: 'Frank Ruhl Libre', 'Heebo', serif;
     font-size: 2.5rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     margin-bottom: 0.2rem;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
+}
+
+.site-title::after {
+    content: '';
+    display: block;
+    width: 3.25rem;
+    height: 2px;
+    margin: 0.55rem auto 0;
+    background: var(--accent-primary);
 }
 
 .title-icon {
@@ -208,6 +216,7 @@ body {
 .nav-extras .view-btn.active {
     opacity: 1;
     background: var(--accent-primary);
+    color: var(--on-accent);
     border: none;
 }
 
@@ -230,7 +239,7 @@ body {
 
 .view-btn.active {
     background: var(--accent-primary);
-    color: var(--text-primary);
+    color: var(--on-accent);
     border-color: var(--accent-primary);
 }
 
@@ -274,15 +283,12 @@ body {
     background: var(--bg-hover);
     border-color: var(--border-light);
     color: var(--text-primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
 }
 
 .nav-btn.active {
     background: var(--accent-primary);
     border-color: var(--accent-primary);
-    color: white;
-    box-shadow: var(--shadow-glow);
+    color: var(--on-accent);
 }
 
 .nav-btn.animation-link {

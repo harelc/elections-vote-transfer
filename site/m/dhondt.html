@@ -10,7 +10,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <title>מחשבון באדר-עופר - קולות נודדים</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
@@ -450,7 +450,7 @@
             background: var(--accent);
             border: none;
             border-radius: 6px;
-            color: white;
+            color: #1a1612;
             font-family: inherit;
             font-size: 0.85rem;
             cursor: pointer;
@@ -521,7 +521,7 @@
         .step-pill.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: white;
+            color: #1a1612;
         }
     </style>
 </head>
@@ -818,7 +818,7 @@
                         const isActive = b.dataset.election === el;
                         b.classList.toggle('active', isActive);
                         b.style.background = isActive ? 'var(--accent)' : 'transparent';
-                        b.style.color = isActive ? 'white' : 'var(--text-secondary)';
+                        b.style.color = isActive ? '#1a1612' : 'var(--text-secondary)';
                     });
                     // Refresh edit sheet if open
                     if (this.activeSheet === 'edit-sheet') this.renderEditList();
