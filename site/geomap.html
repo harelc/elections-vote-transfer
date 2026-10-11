@@ -1009,7 +1009,7 @@
                         <span class="color-label" data-i18n="socioeconomic">אשכול חברתי-כלכלי</span>
                     </div>
                     <div class="color-option" data-mode="embed">
-                        <span class="color-swatch" style="background: conic-gradient(hsl(180,78%,46%), hsl(120,78%,46%), hsl(60,78%,46%), hsl(0,78%,46%), hsl(300,78%,46%), hsl(240,78%,46%), hsl(180,78%,46%));"></span>
+                        <span class="color-swatch" style="background: conic-gradient(from 0deg, #84f514, #f5bc14, #f51414, #f514bc, #8414f5, #144cf5, #14f5f5, #14f54c, #84f514);"></span>
                         <span class="color-label" data-i18n="embed_color">דפוס הצבעה</span>
                     </div>
                 </div>
@@ -1839,21 +1839,21 @@
                 return `rgb(${newR}, ${newG}, ${newB})`;
             }
 
-            hsvToRgb(h, s, v) {
+            embedRGB(nx, ny) {
+                const dx = nx - 0.5;
+                const dy = ny - 0.5;
+                const r = Math.min(1, Math.hypot(dx, dy) * Math.SQRT2);
+                let h = Math.atan2(dy, dx) / (Math.PI * 2);
+                if (h < 0) h += 1;
+                const s = 0.92 * r;
+                const v = 0.96;
                 const i = Math.floor(h * 6);
                 const f = h * 6 - i;
                 const p = v * (1 - s);
                 const q = v * (1 - f * s);
                 const t = v * (1 - (1 - f) * s);
-                const map = [v, q, p, p, t, v];
-                const rgb = [map[i % 6], map[(i + 4) % 6], map[(i + 2) % 6]];
-                return rgb.map(channel => channel * 255);
-            }
-
-            embedRGB(nx, ny) {
-                const angle = Math.atan2(ny - 0.5, nx - 0.5);
-                const hue = (angle + Math.PI) / (2 * Math.PI);
-                return this.hsvToRgb(hue, 0.82, 0.88);
+                const rgb = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i % 6];
+                return rgb.map(c => c * 255);
             }
 
             ensureEmbedRange() {
