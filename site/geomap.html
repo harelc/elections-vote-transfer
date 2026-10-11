@@ -13,7 +13,7 @@
     <title>מפה גיאוגרפית - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -21,15 +21,15 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
     <style>
         :root {
-            --bg-primary: #14120e;
-            --bg-secondary: #1c1914;
-            --bg-tertiary: #262219;
-            --text-primary: #f4efe6;
-            --text-secondary: #b7aa96;
-            --text-muted: #7d7264;
-            --border-color: #3a332a;
-            --accent-primary: #c4a574;
-            --accent-secondary: #e4d2b0;
+            --bg-primary: #16181d;
+            --bg-secondary: #1e212a;
+            --bg-tertiary: #272b36;
+            --text-primary: #f3f5f8;
+            --text-secondary: #c8ceda;
+            --text-muted: #939aab;
+            --border-color: #3a4050;
+            --accent-primary: #f0b429;
+            --accent-secondary: #f6d78a;
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
@@ -71,9 +71,17 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.2rem;
-            font-family: 'Frank Ruhl Libre', 'Heebo', serif;
-            color: var(--text-primary);
+                        color: var(--text-primary);
         }
+        .main-header h1::after {
+            content: '';
+            display: block;
+            width: 3.25rem;
+            height: 2px;
+            margin: 0.55rem auto 0;
+            background: var(--accent-primary);
+        }
+
 
         .title-icon {
             display: inline-block;
@@ -103,6 +111,7 @@
             text-decoration: none;
             border-radius: 8px;
             font-size: 0.9rem;
+            line-height: 1.25;
             border: 1px solid var(--border-color);
             transition: var(--transition-fast);
             cursor: pointer;
@@ -115,7 +124,7 @@
 
         .view-btn.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -149,7 +158,7 @@
 
         .nav-btn:hover, .nav-btn.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -808,7 +817,7 @@
         .compare-pill.active {
             background: var(--accent-primary);
             border-color: var(--accent-primary);
-            color: #1a1612;
+            color: #1a1408;
         }
         .compare-msg {
             font-size: 0.65rem;
@@ -921,7 +930,7 @@
                 left: 50%;
                 transform: translateX(-50%);
                 background: var(--accent-primary);
-                color: #1a1612;
+                color: #1a1408;
                 border: none;
                 border-radius: 20px;
                 padding: 0.5rem 1rem;
@@ -999,6 +1008,10 @@
                         <span class="color-swatch" style="background: linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142);"></span>
                         <span class="color-label" data-i18n="socioeconomic">אשכול חברתי-כלכלי</span>
                     </div>
+                    <div class="color-option" data-mode="embed">
+                        <span class="color-swatch" style="background: conic-gradient(hsl(180,78%,46%), hsl(120,78%,46%), hsl(60,78%,46%), hsl(0,78%,46%), hsl(300,78%,46%), hsl(240,78%,46%), hsl(180,78%,46%));"></span>
+                        <span class="color-label" data-i18n="embed_color">דפוס הצבעה</span>
+                    </div>
                 </div>
 
                 <div class="panel-divider"></div>
@@ -1022,6 +1035,8 @@
                 <div class="color-scale-legend" id="color-legend">
                     <div class="color-scale-title" id="legend-title">מפלגה מנצחת</div>
                     <div class="color-scale-bar" id="legend-bar" style="display: none;"></div>
+                    <canvas id="embed-legend" width="112" height="112" style="display:none;width:112px;height:112px;border-radius:4px"></canvas>
+                    <div id="embed-note" style="display:none;font-size:0.72rem;color:var(--text-muted);max-width:168px;line-height:1.4;margin-top:0.35rem"></div>
                     <div class="color-scale-labels">
                         <span id="legend-min"></span>
                         <span id="legend-max"></span>
@@ -1234,7 +1249,7 @@
                     .map(([name, votes]) => ({
                         name,
                         pct: totalVoters > 0 ? Math.round(votes / totalVoters * 100) : 0,
-                        color: this.parties.find(p => p.name === name)?.color || '#64748b'
+                        color: this.parties.find(p => p.name === name)?.color || '#939aab'
                     }));
 
                 // Title
@@ -1285,7 +1300,7 @@
                         const avg = wDiff / totalW;
                         const sign = avg >= 0 ? '+' : '';
                         const isEn = i18n.getLang() === 'en';
-                        clusterDiffRow = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);font-size:0.8rem;">
+                        clusterDiffRow = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#3a4050);font-size:0.8rem;">
                             <span dir="ltr" style="color:${avg >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${avg.toFixed(1)}%</span>
                             <span style="color:var(--text-muted);">(${isEn ? 'avg change' : 'שינוי ממוצע'})</span>
                         </div>`;
@@ -1314,7 +1329,7 @@
                         ${partyRows}
                     </div>
                     ${clusterDiffRow}
-                    ${settlementList.length === 1 ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#2a2a3a);"><a href="settlement.html?name=${encodeURIComponent(settlementList[0])}" style="color:#3b82f6;text-decoration:none;font-size:0.8em;">${i18n.t('go_to_profile')} \u2192</a></div>` : ''}
+                    ${settlementList.length === 1 ? `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#3a4050);"><a href="settlement.html?name=${encodeURIComponent(settlementList[0])}" style="color:#f0b429;text-decoration:none;font-size:0.8em;">${i18n.t('go_to_profile')} \u2192</a></div>` : ''}
                 `;
 
                 // Position tooltip near cluster
@@ -1338,7 +1353,7 @@
                 if (bn.endsWith('.0')) bn = bn.slice(0, -2);
                 const url = `https://votes${this.currentElection}.bechirot.gov.il/ballotresults?cityID=${sid}&BallotNumber=${bn}`;
                 const label = i18n.getLang() === 'en' ? 'CEC' : 'ועדת הבחירות';
-                return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${label}" style="color:#64748b;text-decoration:none;font-size:0.85em;display:inline-flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${label}</a>`;
+                return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${label}" style="color:#939aab;text-decoration:none;font-size:0.85em;display:inline-flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${label}</a>`;
             }
 
             renderStationCardHTML(station, coordData) {
@@ -1360,7 +1375,7 @@
                 }
                 const partyRows = displayed.map(([name, pct]) => {
                     const party = this.parties.find(p => p.name === name);
-                    const color = party ? party.color : '#64748b';
+                    const color = party ? party.color : '#939aab';
                     const displayName = i18n.partyName(party || name);
                     return `
                         <div class="station-popup-party">
@@ -1413,7 +1428,7 @@
                         </div>
                         ${diffRow}
                         <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color);display:flex;justify-content:space-between;gap:0.5rem;flex-wrap:wrap">
-                            <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
+                            <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="color:#f0b429;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} \u2192</a>
                             ${this.cecBallotLinkHTML(station)}
                         </div>
                     </div>
@@ -1594,6 +1609,7 @@
                     const response = await fetch(`data/tsne_${electionId}.json`);
                     this.tsneData = await response.json();
                     this.parties = this.tsneData.parties || [];
+                    this.embedRange = null;
 
                     this.buildSettlementsList();
                     this.updatePartyList();
@@ -1748,6 +1764,10 @@
                 const legendMax = document.getElementById('legend-max');
                 const isEn = i18n.getLang() === 'en';
                 document.getElementById('cluster-legend').classList.remove('visible');
+                const embedCanvas = document.getElementById('embed-legend');
+                const embedNote = document.getElementById('embed-note');
+                if (embedCanvas) embedCanvas.style.display = 'none';
+                if (embedNote) embedNote.style.display = 'none';
 
                 if (this.colorMode === 'turnout') {
                     legendTitle.textContent = i18n.t('turnout');
@@ -1767,6 +1787,19 @@
                     legendMin.textContent = '';
                     legendMax.textContent = '';
                     document.getElementById('cluster-legend').classList.add('visible');
+                } else if (this.colorMode === 'embed') {
+                    legendTitle.textContent = i18n.t('embed_color');
+                    legendBar.style.display = 'none';
+                    legendMin.textContent = '';
+                    legendMax.textContent = '';
+                    if (embedCanvas) {
+                        embedCanvas.style.display = 'block';
+                        this.drawEmbedLegend(embedCanvas);
+                    }
+                    if (embedNote) {
+                        embedNote.style.display = 'block';
+                        embedNote.textContent = i18n.t('embed_note');
+                    }
                 } else if (this.colorMode === 'party' && this.selectedParty) {
                     const displayName = i18n.partyName(this.selectedParty);
                     if (this.compareElection) {
@@ -1806,6 +1839,68 @@
                 return `rgb(${newR}, ${newG}, ${newB})`;
             }
 
+            hsvToRgb(h, s, v) {
+                const i = Math.floor(h * 6);
+                const f = h * 6 - i;
+                const p = v * (1 - s);
+                const q = v * (1 - f * s);
+                const t = v * (1 - (1 - f) * s);
+                const map = [v, q, p, p, t, v];
+                const rgb = [map[i % 6], map[(i + 4) % 6], map[(i + 2) % 6]];
+                return rgb.map(channel => channel * 255);
+            }
+
+            embedRGB(nx, ny) {
+                const angle = Math.atan2(ny - 0.5, nx - 0.5);
+                const hue = (angle + Math.PI) / (2 * Math.PI);
+                return this.hsvToRgb(hue, 0.82, 0.88);
+            }
+
+            ensureEmbedRange() {
+                if (this.embedRange) return;
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                (this.tsneData?.stations || []).forEach(station => {
+                    if (station.x == null || station.y == null) return;
+                    minX = Math.min(minX, station.x);
+                    maxX = Math.max(maxX, station.x);
+                    minY = Math.min(minY, station.y);
+                    maxY = Math.max(maxY, station.y);
+                });
+                this.embedRange = { minX, maxX, minY, maxY };
+            }
+
+            embedColor(station) {
+                this.ensureEmbedRange();
+                const { minX, maxX, minY, maxY } = this.embedRange;
+                if (station.x == null || station.y == null || !(maxX > minX) || !(maxY > minY)) {
+                    return '#6b7280';
+                }
+                const nx = (station.x - minX) / (maxX - minX);
+                const ny = (station.y - minY) / (maxY - minY);
+                const rgb = this.embedRGB(nx, ny).map(v => Math.round(v));
+                return `rgb(${rgb.join(',')})`;
+            }
+
+            drawEmbedLegend(canvas) {
+                const ctx = canvas.getContext('2d');
+                const w = canvas.width;
+                const h = canvas.height;
+                const image = ctx.createImageData(w, h);
+                for (let py = 0; py < h; py++) {
+                    for (let px = 0; px < w; px++) {
+                        const nx = px / (w - 1);
+                        const ny = 1 - py / (h - 1);
+                        const rgb = this.embedRGB(nx, ny);
+                        const i = (py * w + px) * 4;
+                        image.data[i] = rgb[0];
+                        image.data[i + 1] = rgb[1];
+                        image.data[i + 2] = rgb[2];
+                        image.data[i + 3] = 255;
+                    }
+                }
+                ctx.putImageData(image, 0, 0);
+            }
+
             getStationColor(station) {
                 if (this.colorMode === 'turnout') {
                     const turnout = station.t || station.turnout || 0;
@@ -1837,6 +1932,10 @@
                     return '#374151';
                 }
 
+                if (this.colorMode === 'embed') {
+                    return this.embedColor(station);
+                }
+
                 if (this.colorMode === 'party' && this.selectedParty) {
                     const proportions = station.p || station.proportions || {};
                     const currentPct = proportions[this.selectedParty.name] || 0;
@@ -1851,7 +1950,7 @@
                     return this.interpolateColor(this.lightenColor(this.selectedParty.color, 0.85), this.selectedParty.color, t);
                 }
 
-                return '#3b82f6';
+                return '#f0b429';
             }
 
             interpolateColor(color1, color2, t) {
@@ -2100,6 +2199,17 @@
                         );
                         infoText = `${partyPct}%`;
                     }
+                } else if (this.colorMode === 'embed') {
+                    let sx = 0, sy = 0, n = 0;
+                    childMarkers.forEach(m => {
+                        const s = m.options.stationData;
+                        if (!s || s.x == null || s.y == null) return;
+                        sx += s.x;
+                        sy += s.y;
+                        n++;
+                    });
+                    bgColor = n ? this.embedColor({ x: sx / n, y: sy / n }) : '#6b7280';
+                    infoText = '';
                 }
 
                 // Detect colocated cluster (all children at same coordinates)

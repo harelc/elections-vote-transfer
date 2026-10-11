@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <title>פרופיל מפלגה - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
@@ -943,7 +943,7 @@
                     responsive: true, maintainAspectRatio: false,
                     interaction: { mode: 'index', intersect: false },
                     plugins: {
-                        legend: { position: 'bottom', labels: { color: '#a0a0b0', font: { family: 'Heebo', size: 10 }, padding: 8 } },
+                        legend: { position: 'bottom', labels: { color: '#c8ceda', font: { family: 'Heebo', size: 10 }, padding: 8 } },
                         tooltip: {
                             callbacks: {
                                 label: function(ctx) {
@@ -954,15 +954,15 @@
                         }
                     },
                     scales: {
-                        x: { ticks: { color: '#a0a0b0', font: { family: 'Heebo', size: 10 } }, grid: { color: '#2a2a3a' } },
+                        x: { ticks: { color: '#c8ceda', font: { family: 'Heebo', size: 10 } }, grid: { color: '#3a4050' } },
                         y: {
                             position: lang === 'en' ? 'left' : 'right',
-                            ticks: { color: '#a0a0b0', callback: v => v + '%' },
-                            grid: { color: '#2a2a3a' }, min: 0,
+                            ticks: { color: '#c8ceda', callback: v => v + '%' },
+                            grid: { color: '#3a4050' }, min: 0,
                         },
                         y1: {
                             position: lang === 'en' ? 'right' : 'left',
-                            ticks: { color: '#94a3b8', stepSize: 5 },
+                            ticks: { color: '#c8ceda', stepSize: 5 },
                             grid: { display: false }, min: 0,
                         }
                     }

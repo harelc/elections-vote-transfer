@@ -10,7 +10,7 @@
     <meta name="twitter:card" content="summary_large_image">
     <title>בחירות אזוריות - קולות נודדים</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
@@ -39,7 +39,7 @@
             display: block;
             font-size: 9px;
             font-weight: 400;
-            color: var(--text-secondary, #a0a0b0);
+            color: var(--text-secondary, #c8ceda);
             text-align: center;
         }
 
@@ -90,7 +90,7 @@
 
         .m-pill-btn.active {
             background: var(--accent);
-            color: #1a1612;
+            color: #1a1408;
             border-color: var(--accent);
         }
 
@@ -186,17 +186,17 @@
             justify-content: center;
             gap: 12px;
             font-size: 0.7rem;
-            color: var(--text-secondary, #a0a0b0);
+            color: var(--text-secondary, #c8ceda);
             margin-top: 4px;
         }
         .m-legend-item { display: flex; align-items: center; gap: 4px; }
         .m-legend-dot {
             width: 10px; height: 10px; border-radius: 50%;
-            background: var(--accent, #3b82f6);
+            background: var(--accent, #f0b429);
         }
         .m-legend-dot.ring {
             background: transparent;
-            border: 2px solid var(--accent, #3b82f6);
+            border: 2px solid var(--accent, #f0b429);
         }
 
         /* Mini comparison table */
@@ -256,13 +256,13 @@
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            background: #94a3b8;
+            background: #c8ceda;
             border: 1px solid #000;
             display: inline-block;
         }
         .m-legend-dot.ring {
             background: transparent;
-            border: 2px solid #94a3b8;
+            border: 2px solid #c8ceda;
         }
 
         /* Region detail overlay */
@@ -303,7 +303,7 @@
 
         .region-detail-meta {
             font-size: 0.75rem;
-            color: var(--text-secondary, #a0a0b0);
+            color: var(--text-secondary, #c8ceda);
             margin-bottom: 8px;
         }
 
@@ -964,14 +964,14 @@
                 }
             }
             if (boundaryLines.length > 0) {
-                boundaryLayer = L.polyline(boundaryLines, { color: '#e2e8f0', weight: 3, opacity: 0.6, renderer: canvasRenderer, interactive: false }).addTo(map);
+                boundaryLayer = L.polyline(boundaryLines, { color: '#f3f5f8', weight: 3, opacity: 0.6, renderer: canvasRenderer, interactive: false }).addTo(map);
             }
 
             // Mask outside Israel
             const outerRing = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
             const innerRing = israelBorder.concat([israelBorder[0]]);
             const maskMain = L.geoJSON({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [outerRing, innerRing] } }, {
-                style: { fillColor: '#0f172a', fillOpacity: 1.0, stroke: true, color: '#334155', weight: 1.5, opacity: 0.8 }, interactive: false,
+                style: { fillColor: '#0f172a', fillOpacity: 1.0, stroke: true, color: '#3a4050', weight: 1.5, opacity: 0.8 }, interactive: false,
             }).addTo(map);
             maskLayer = { remove() { map.removeLayer(maskMain); } };
 

@@ -11,25 +11,25 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <title>איך פותרים את מטריצת המעבר</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
-            --bg: #0a0a0f;
-            --bg2: #12121a;
-            --bg3: #1a1a25;
-            --text: #f8fafc;
-            --text2: #94a3b8;
-            --text3: #64748b;
-            --accent: #3b82f6;
+            --bg: #16181d;
+            --bg2: #1e212a;
+            --bg3: #272b36;
+            --text: #f3f5f8;
+            --text2: #c8ceda;
+            --text3: #939aab;
+            --accent: #f0b429;
             --likud: #2563eb;
             --ya: #06b6d4;
             --rz: #92400e;
             --nu: #7c3aed;
             --shas: #1e3a8a;
             --utj: #4b5563;
-            --abstain: #475569;
-            --border: #2a2a3a;
+            --abstain: #939aab;
+            --border: #3a4050;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -665,7 +665,7 @@
             samples.forEach((s, i) => {
                 svg.append('circle')
                     .attr('cx', xs(s)).attr('cy', yBase - 30 + jitter(i))
-                    .attr('r', 0).attr('fill', '#3b82f6').attr('opacity', 0.55)
+                    .attr('r', 0).attr('fill', '#f0b429').attr('opacity', 0.55)
                     .transition().delay(200 + i * 6).duration(200)
                     .attr('r', 2.5);
             });
@@ -764,7 +764,7 @@
             svg.selectAll('circle.pt').data(data).enter().append('circle')
                 .attr('class', 'pt')
                 .attr('cx', d => xs(d[0])).attr('cy', d => ys(d[1]))
-                .attr('r', 0).attr('fill', '#3b82f6').attr('opacity', 0.7)
+                .attr('r', 0).attr('fill', '#f0b429').attr('opacity', 0.7)
                 .transition().delay((d, i) => 300 + i * 4).duration(300)
                 .attr('r', 2.6);
 

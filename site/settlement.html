@@ -13,7 +13,7 @@
     <title>פרופיל יישוב - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -560,7 +560,7 @@
                     const s = settlementByElection[e];
                     return s ? s.turnout : null;
                 }),
-                borderColor: '#94a3b8',
+                borderColor: '#c8ceda',
                 borderDash: [5, 5],
                 tension: 0.3,
                 pointRadius: 3,
@@ -582,23 +582,23 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { color: '#a0a0b0', font: { family: 'Heebo' }, padding: 12 }
+                            labels: { color: '#c8ceda', font: { family: 'Heebo' }, padding: 12 }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#a0a0b0', font: { family: 'Heebo' } },
-                            grid: { color: '#2a2a3a' }
+                            ticks: { color: '#c8ceda', font: { family: 'Heebo' } },
+                            grid: { color: '#3a4050' }
                         },
                         y: {
                             position: lang === 'en' ? 'left' : 'right',
-                            ticks: { color: '#a0a0b0', callback: v => v + '%' },
-                            grid: { color: '#2a2a3a' },
+                            ticks: { color: '#c8ceda', callback: v => v + '%' },
+                            grid: { color: '#3a4050' },
                             min: 0,
                         },
                         y1: {
                             position: lang === 'en' ? 'right' : 'left',
-                            ticks: { color: '#94a3b8', callback: v => v + '%' },
+                            ticks: { color: '#c8ceda', callback: v => v + '%' },
                             grid: { display: false },
                             min: 0, max: 100,
                         }

@@ -125,6 +125,8 @@
         display_settings:      { he: 'הגדרות תצוגה', en: 'Display settings' },
         color_mode:            { he: 'צביעה:', en: 'Color:' },
         winner:                { he: 'מפלגה מנצחת', en: 'Winning party' },
+        embed_color:           { he: 'דפוס הצבעה', en: 'Voting pattern' },
+        embed_note:            { he: 'הצבע הוא המיקום בהטלת t-SNE. צבע דומה הוא דפוס הצבעה דומה.', en: 'Color is position in the t-SNE plot. Similar colors voted alike.' },
         specific_party:        { he: 'מפלגה ספציפית', en: 'Specific party' },
         filter_settlement:     { he: 'סנן לפי יישוב...', en: 'Filter by settlement...' },
         stations:              { he: 'תחנות', en: 'Stations' },
@@ -158,6 +160,7 @@
         dhondt_subtitle:       { he: 'מחשבון חלוקת מנדטים בשיטת באדר-עופר', en: 'Seat allocation calculator using the D\'Hondt method' },
         threshold:             { he: 'אחוז חסימה', en: 'Electoral threshold' },
         threshold_pct:         { he: 'אחוז חסימה:', en: 'Threshold:' },
+        mandate_quotient:      { he: 'מודד למנדט', en: 'Votes per seat' },
         threshold_votes_eq:    { he: '= {n} קולות', en: '= {n} votes' },
         threshold_cutoff:      { he: 'סף החסימה', en: 'Threshold' },
         knesset_size_label:    { he: 'גודל הכנסת:', en: 'Knesset size:' },
@@ -438,8 +441,8 @@
             en: '<strong>Polling averages:</strong> expected vote shares per party are based on aggregated current polling.'
         },
         e26_modal_li2:         {
-            he: '<strong>מטריצת מעבר על בסיס נתונים:</strong> אומדנים כמותיים של תנועת מצביעים בין מפלגות, שמקורם במטריצות העברה שחישבנו ממעברים היסטוריים (ראו <a href="methodology.html" style="color:var(--accent-primary,#3b82f6)">מתודולוגיה</a>).',
-            en: '<strong>Data-driven transfer matrix:</strong> quantitative estimates of voter movement between parties, derived from the historical transfer matrices we computed (see <a href="methodology.html" style="color:var(--accent-primary,#3b82f6)">Methodology</a>).'
+            he: '<strong>מטריצת מעבר על בסיס נתונים:</strong> אומדנים כמותיים של תנועת מצביעים בין מפלגות, שמקורם במטריצות העברה שחישבנו ממעברים היסטוריים (ראו <a href="methodology.html" style="color:var(--accent-primary,#f0b429)">מתודולוגיה</a>).',
+            en: '<strong>Data-driven transfer matrix:</strong> quantitative estimates of voter movement between parties, derived from the historical transfer matrices we computed (see <a href="methodology.html" style="color:var(--accent-primary,#f0b429)">Methodology</a>).'
         },
         e26_modal_li3:         {
             he: '<strong>שונות בין־קלפיות נאמדת:</strong> הרעש הסטטיסטי ברמת הקלפי נדגם מהתפלגות דיריכלה עם פרמטר ריכוז שנאמד על בסיס בחירות העבר.',
@@ -900,7 +903,7 @@
                 padding: 5px 12px;
                 font-family: 'Heebo', 'Inter', sans-serif;
                 font-size: 0.78rem;
-                color: #e2e8f0;
+                color: #f3f5f8;
                 display: flex;
                 align-items: center;
                 gap: 8px;
@@ -919,7 +922,7 @@
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
-                background: #64748b;
+                background: #939aab;
                 transition: background 0.15s;
             }
             #e26-widget.on .e26-dot { background: #f97316; box-shadow: 0 0 6px #f97316; }
@@ -943,9 +946,9 @@
             }
             #e26-modal-overlay.visible { display: flex; }
             #e26-modal {
-                background: #12121a;
+                background: #1e212a;
                 color: #f1f5f9;
-                border: 1px solid #2a2a3a;
+                border: 1px solid #3a4050;
                 border-radius: 10px;
                 max-width: 640px;
                 max-height: 88vh;

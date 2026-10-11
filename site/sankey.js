@@ -211,14 +211,14 @@ class VoteTransferSankey {
         ctx.scale(scale, scale);
 
         // Draw background for entire canvas
-        ctx.fillStyle = '#0a0a0f';
+        ctx.fillStyle = '#16181d';
         ctx.fillRect(0, 0, svgWidth, totalHeight);
 
         // Draw header with election info
-        ctx.fillStyle = '#12121a';
+        ctx.fillStyle = '#1e212a';
         ctx.fillRect(0, 0, svgWidth, headerHeight);
 
-        ctx.fillStyle = '#f8fafc';
+        ctx.fillStyle = '#f3f5f8';
         ctx.font = 'bold 18px Heebo, sans-serif';
         ctx.textAlign = 'center';
         const fromName = i18n.electionName(this.data.from_election);
@@ -229,7 +229,7 @@ class VoteTransferSankey {
         ctx.fillText(headerLabel, svgWidth / 2, 28);
 
         // Stats line
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#c8ceda';
         ctx.font = '12px Heebo, sans-serif';
         ctx.fillText(`${i18n.t('common_precincts')}: ${i18n.fmtNum(this.data.stats.common_precincts)} | ${i18n.t('r_squared')}: ${this.data.stats.r_squared.toFixed(3)}`, svgWidth / 2, 50);
 
@@ -249,11 +249,11 @@ class VoteTransferSankey {
 
             // Draw watermark section
             const watermarkY = totalHeight - watermarkHeight;
-            ctx.fillStyle = '#1a1a25';
+            ctx.fillStyle = '#272b36';
             ctx.fillRect(0, watermarkY, svgWidth, watermarkHeight);
 
             // Draw separator line
-            ctx.strokeStyle = '#2a2a3a';
+            ctx.strokeStyle = '#3a4050';
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(0, watermarkY);
@@ -268,12 +268,12 @@ class VoteTransferSankey {
                 ctx.drawImage(qrImg, 15, watermarkY + 7, qrSize, qrSize);
 
                 // Draw watermark text
-                ctx.fillStyle = '#f8fafc';
+                ctx.fillStyle = '#f3f5f8';
                 ctx.font = 'bold 14px Heebo, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText(i18n.t('watermark_created'), svgWidth - 15, watermarkY + 25);
 
-                ctx.fillStyle = '#64748b';
+                ctx.fillStyle = '#939aab';
                 ctx.font = '12px Heebo, sans-serif';
                 ctx.fillText('https://kolot-nodedim.netlify.app/', svgWidth - 15, watermarkY + 45);
 

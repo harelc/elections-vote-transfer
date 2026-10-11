@@ -14,9 +14,9 @@
     height: 28px;
     padding: 0 8px;
     border-radius: 14px;
-    border: 1px solid var(--border-color, #2a2a3a);
-    background: var(--bg-tertiary, #1a1a25);
-    color: var(--text-secondary, #94a3b8);
+    border: 1px solid var(--border-color, #3a4050);
+    background: var(--bg-tertiary, #272b36);
+    color: var(--text-secondary, #c8ceda);
     font-family: 'Inter', 'Heebo', sans-serif;
     font-size: 0.75rem;
     font-weight: 600;
@@ -28,13 +28,13 @@
 
 .lang-toggle:hover {
     background: var(--bg-hover, #252535);
-    border-color: var(--accent-primary, #6366f1);
-    color: var(--text-primary, #f8fafc);
+    border-color: var(--accent-primary, #f0b429);
+    color: var(--text-primary, #f3f5f8);
 }
 
 /* ── Mobile top-bar toggle adjustments ── */
 .top-bar .lang-toggle {
-    border-color: var(--border, #2a2a3a);
+    border-color: var(--border, #3a4050);
     background: transparent;
     margin-right: 4px;
 }
@@ -47,19 +47,19 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    border: 1.5px solid var(--accent, #6366f1);
-    background: rgba(99, 102, 241, 0.15);
-    color: var(--accent, #6366f1);
+    border: 1.5px solid var(--accent, #f0b429);
+    background: rgba(240, 177, 41, 0.15);
+    color: var(--accent, #f0b429);
     font-size: 0.9rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s ease;
     flex-shrink: 0;
-    box-shadow: 0 0 8px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 0 8px rgba(240, 177, 41, 0.25);
 }
 
 .info-toggle:active {
-    background: rgba(99, 102, 241, 0.3);
+    background: rgba(240, 177, 41, 0.3);
     transform: scale(0.92);
 }
 
@@ -77,12 +77,12 @@
 .about-sheet p {
     font-size: 0.85rem;
     line-height: 1.7;
-    color: var(--text-secondary, #a0a0b0);
+    color: var(--text-secondary, #c8ceda);
     margin: 0 0 8px;
 }
 
 .about-sheet a {
-    color: var(--accent, #6366f1);
+    color: var(--accent, #f0b429);
     text-decoration: none;
 }
 
@@ -155,7 +155,7 @@
 
 /* nav-sep kept for backwards compat */
 .nav-sep {
-    color: var(--text-muted, #64748b);
+    color: var(--text-muted, #939aab);
     font-size: 0.85rem;
     margin: 0 0.1rem;
     align-self: center;

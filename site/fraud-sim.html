@@ -11,19 +11,35 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <title>סימולציית זיוף — קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
     <style>
         :root {
-            --bg: #0a0a0f;
-            --bg2: #12121a;
-            --bg3: #1a1a25;
-            --text: #f8fafc;
-            --text2: #94a3b8;
-            --text3: #64748b;
-            --accent: #3b82f6;
-            --border: #2a2a3a;
+            --bg: #16181d;
+            --bg2: #1e212a;
+            --bg3: #272b36;
+            --text: #f3f5f8;
+            --text2: #c8ceda;
+            --text3: #939aab;
+            --accent: #f0b429;
+            --border: #3a4050;
             --tp: #22c55e;
             --fp: #ef4444;
+            --bg-primary: var(--bg);
+            --bg-secondary: var(--bg2);
+            --bg-tertiary: var(--bg3);
+            --bg-card: var(--bg2);
+            --bg-hover: var(--bg3);
+            --text-primary: var(--text);
+            --text-secondary: var(--text2);
+            --text-muted: var(--text3);
+            --accent-primary: var(--accent);
+            --accent-secondary: #f6d78a;
+            --on-accent: #1a1408;
+            --border-color: var(--border);
+            --border-light: #4c5468;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -34,18 +50,8 @@
             font-variant-numeric: tabular-nums;
         }
 
-        .top-bar {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 0.75rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-            background: var(--bg2);
-        }
-        .top-bar a { color: var(--text2); text-decoration: none; }
-        .top-bar a:hover { color: var(--text); }
-        .top-bar .title { flex: 1; font-weight: 600; font-size: 1rem; }
-        .top-bar .badge {
+        #transition-pills { display: contents; }
+        .badge {
             background: rgba(245, 158, 11, 0.15);
             color: #fbbf24;
             padding: 0.2rem 0.6rem;
@@ -316,13 +322,19 @@
     </style>
 </head>
 <body>
-    <div class="top-bar">
-        <a href="index.html">🏠 דף הבית</a>
-        <span class="title" id="top-title">סימולציית זיופים</span>
-        <div id="transition-pills" style="display:flex;gap:0.4rem"></div>
-        <span class="badge" id="sim-badge" style="display:none">סימולציה</span>
-        <button class="help-btn" id="help-btn" title="מה זה הדף הזה?">?</button>
-    </div>
+    <div class="app-container">
+    <header class="main-header">
+        <h1 class="site-title"><span data-i18n="site_title">קולות נודדים</span></h1>
+        <p class="site-subtitle" id="top-title">סימולציית זיופים</p>
+        <nav class="view-switcher"></nav>
+    </header>
+    <nav class="election-nav">
+        <div class="nav-container">
+            <div id="transition-pills"></div>
+            <span class="badge" id="sim-badge" style="display:none">סימולציה</span>
+            <button class="help-btn" id="help-btn" title="מה זה הדף הזה?">?</button>
+        </div>
+    </nav>
 
     <!-- Intro / explainer modal -->
     <div class="modal-backdrop" id="intro-modal">
@@ -1112,7 +1124,7 @@
             for (let i = 0; i < keptMask.length; i++) if (keptMask[i]) Nkept++;
 
             const detectorSpecs = [
-                { id: 'matched',  scores: scoresMatched,  color: '#3b82f6', label: 'גלובלי MF' },
+                { id: 'matched',  scores: scoresMatched,  color: '#f0b429', label: 'גלובלי MF' },
                 { id: 'l2',       scores: scoresL2,       color: '#f59e0b', label: 'גלובלי L2' },
                 { id: 'geo',      scores: scoresGeo,      color: '#a855f7', label: 'גאוגרפי' },
                 { id: 'manifold', scores: scoresManifold, color: '#10b981', label: 'שכני t-SNE' },
@@ -1239,7 +1251,7 @@
                     `<span class="badge ${isTP ? 'tp' : 'fp'}">${isTP ? '✓ זיהוי נכון' : '✗ זיהוי שגוי'}</span>` +
                     `<span class="score" title="${scoreTitle}">ציון <bdi dir="ltr">${scores[idx].toFixed(3)}</bdi> · ${fmt(b.v || 0)} קולות</span>` +
                     (b.sid && !DATA.meta.is_simulated
-                        ? ` <a href="https://votes${toYear}.bechirot.gov.il/ballotresults?cityID=${b.sid}&BallotNumber=${b.b}" target="_blank" rel="noopener" style="margin-inline-start:auto;color:#475569" title="ועדת הבחירות">CEC ↗</a>`
+                        ? ` <a href="https://votes${toYear}.bechirot.gov.il/ballotresults?cityID=${b.sid}&BallotNumber=${b.b}" target="_blank" rel="noopener" style="margin-inline-start:auto;color:#939aab" title="ועדת הבחירות">CEC ↗</a>`
                         : '');
 
                 // Stacked bars
@@ -1272,11 +1284,12 @@
             const t = currentTransition();
             const pills = document.getElementById('transition-pills');
             pills.innerHTML = '';
-            for (const [tid, label] of [['24_25', '24→25 (אמת)'], ['25_26', '25→26 (סימולציה)']]) {
+            for (const [tid, from, to] of [['24_25', '24', '25'], ['25_26', '25', '26']]) {
                 const a = document.createElement('a');
-                a.href = '?t=' + tid;
-                a.textContent = label;
-                a.style.cssText = `padding:0.2rem 0.55rem;border-radius:999px;font-size:0.72rem;text-decoration:none;border:1px solid ${tid === t ? 'var(--accent)' : 'var(--border)'};color:${tid === t ? '#fff' : 'var(--text2)'};background:${tid === t ? 'var(--accent)' : 'transparent'}`;
+                const extra = location.search.includes('e26=1') ? '&e26=1' : '';
+                a.href = '?t=' + tid + extra;
+                a.className = 'nav-btn' + (tid === t ? ' active' : '');
+                a.innerHTML = `<span class="nav-from">${from}</span><span class="nav-arrow">←</span><span class="nav-to">${to}</span>`;
                 pills.appendChild(a);
             }
         }
@@ -1326,5 +1339,7 @@
         boot();
     })();
     </script>
+    </div>
+    <script>i18n.renderNav('fraud-sim'); i18n.renderBMC();</script>
 </body>
 </html>

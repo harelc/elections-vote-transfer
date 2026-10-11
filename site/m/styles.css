@@ -1,22 +1,21 @@
 /*
  * Mobile shared styles - קולות נודדים
  */
-@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&display=swap');
 
 :root {
-    --bg-primary: #14120e;
-    --bg-secondary: #1c1914;
-    --bg-tertiary: #262219;
-    --bg-card: #221f1a;
-    --bg-hover: #2e2922;
-    --text-primary: #f4efe6;
-    --text-secondary: #b7aa96;
-    --text-muted: #7d7264;
-    --accent: #c4a574;
-    --on-accent: #1a1612;
-    --accent-glow: rgba(196, 165, 116, 0.22);
-    --border: #3a332a;
-    --border-light: #4d453b;
+    --bg-primary: #16181d;
+    --bg-secondary: #1e212a;
+    --bg-tertiary: #272b36;
+    --bg-card: #232733;
+    --bg-hover: #2e3340;
+    --text-primary: #f3f5f8;
+    --text-secondary: #c8ceda;
+    --text-muted: #939aab;
+    --accent: #f0b429;
+    --on-accent: #1a1408;
+    --accent-glow: rgba(240, 177, 41, 0.28);
+    --border: #3a4050;
+    --border-light: #4c5468;
     --shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
     --radius: 10px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -64,8 +63,7 @@ html, body {
 .top-bar .title {
     flex: 1;
     min-width: 0;
-    font-family: 'Frank Ruhl Libre', 'Heebo', serif;
-    font-size: 0.95rem;
+        font-size: 0.95rem;
     font-weight: 700;
     white-space: nowrap;
     overflow: hidden;

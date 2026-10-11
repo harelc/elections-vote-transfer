@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <title>השוואת מפלגות - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
@@ -505,7 +505,7 @@
             }
 
             // Dots
-            const colorX = partyX.color || '#6366f1';
+            const colorX = partyX.color || '#939aab';
             const colorY = partyY.color || '#ef4444';
 
             g.selectAll('.dot')
@@ -577,7 +577,7 @@
                     <span class="label">${i18n.t('voters')}</span>
                     <span class="value">${i18n.fmtNum(d.voters)}</span>
                 </div>
-                <a href="settlement.html?name=${encodeURIComponent(d.settlement)}" style="display:block;margin-top:10px;color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
+                <a href="settlement.html?name=${encodeURIComponent(d.settlement)}" style="display:block;margin-top:10px;color:#f0b429;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
             `;
             document.getElementById('sheet-backdrop').classList.add('visible');
             document.getElementById('bottom-sheet').classList.add('visible');

@@ -13,7 +13,7 @@
     <title>פרופיל מפלגה - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1206,7 +1206,7 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { color: '#a0a0b0', font: { family: 'Heebo' }, padding: 12 }
+                            labels: { color: '#c8ceda', font: { family: 'Heebo' }, padding: 12 }
                         },
                         tooltip: {
                             callbacks: {
@@ -1219,20 +1219,20 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#a0a0b0', font: { family: 'Heebo' } },
-                            grid: { color: '#2a2a3a' }
+                            ticks: { color: '#c8ceda', font: { family: 'Heebo' } },
+                            grid: { color: '#3a4050' }
                         },
                         y: {
                             position: lang === 'en' ? 'left' : 'right',
-                            title: { display: true, text: i18n.t('support_pct'), color: '#a0a0b0' },
-                            ticks: { color: '#a0a0b0', callback: v => v + '%' },
-                            grid: { color: '#2a2a3a' },
+                            title: { display: true, text: i18n.t('support_pct'), color: '#c8ceda' },
+                            ticks: { color: '#c8ceda', callback: v => v + '%' },
+                            grid: { color: '#3a4050' },
                             min: 0,
                         },
                         y1: {
                             position: lang === 'en' ? 'right' : 'left',
-                            title: { display: true, text: i18n.t('seats'), color: '#a0a0b0' },
-                            ticks: { color: '#94a3b8', stepSize: 5 },
+                            title: { display: true, text: i18n.t('seats'), color: '#c8ceda' },
+                            ticks: { color: '#c8ceda', stepSize: 5 },
                             grid: { display: false },
                             min: 0,
                         }

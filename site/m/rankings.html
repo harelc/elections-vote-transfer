@@ -11,7 +11,7 @@
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <title>דירוגים - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
@@ -55,7 +55,7 @@
         .section-tab.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: #1a1612;
+            color: #1a1408;
         }
 
         /* Section */
@@ -135,7 +135,7 @@
         .filter-pill.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: #1a1612;
+            color: #1a1408;
         }
 
         /* Count */
@@ -432,12 +432,12 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     x: {
-                        ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 45 },
-                        grid: { color: '#2a2a3a40' }
+                        ticks: { color: '#c8ceda', font: { size: 9 }, maxRotation: 45 },
+                        grid: { color: '#3a405040' }
                     },
                     y: {
-                        ticks: { color: '#94a3b8', font: { size: 9 } },
-                        grid: { color: '#2a2a3a40' }
+                        ticks: { color: '#c8ceda', font: { size: 9 } },
+                        grid: { color: '#3a405040' }
                     }
                 }
             },
@@ -451,7 +451,7 @@
                     ctx.save();
                     ctx.beginPath();
                     ctx.setLineDash([4, 3]);
-                    ctx.strokeStyle = '#f8fafc';
+                    ctx.strokeStyle = '#f3f5f8';
                     ctx.lineWidth = 1.5;
                     ctx.moveTo(xPx, yScale.top);
                     ctx.lineTo(xPx, yScale.bottom);
@@ -527,8 +527,8 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     x: {
-                        ticks: { color: '#94a3b8', font: { size: 10 } },
-                        grid: { color: '#2a2a3a40' }
+                        ticks: { color: '#c8ceda', font: { size: 10 } },
+                        grid: { color: '#3a405040' }
                     },
                     y: {
                         ticks: { color: '#f0f0f5', font: { size: 11 } },

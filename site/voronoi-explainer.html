@@ -6,17 +6,17 @@
     <title>איך עובדת חלוקה לאזורי בחירה</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
-            --bg: #0a0a0f;
-            --bg2: #12121a;
-            --text: #f8fafc;
-            --text2: #94a3b8;
-            --text3: #64748b;
-            --accent: #3b82f6;
-            --border: #2a2a3a;
+            --bg: #16181d;
+            --bg2: #1e212a;
+            --text: #f3f5f8;
+            --text2: #c8ceda;
+            --text3: #939aab;
+            --accent: #f0b429;
+            --border: #3a4050;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -152,7 +152,7 @@
 
         .cumbar-fill {
             height: 100%;
-            background: linear-gradient(90deg, rgba(59,130,246,0.5), rgba(59,130,246,0.8));
+            background: linear-gradient(90deg, rgba(240, 177, 41, 0.45), rgba(59,130,246,0.8));
             border-radius: 6px 0 0 6px;
             transition: width 0.05s linear;
             position: relative;
@@ -245,7 +245,7 @@
         'use strict';
 
         const REGION_COLORS = [
-            '#3b82f6', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
+            '#f0b429', '#ef4444', '#22c55e', '#f59e0b', '#8b5cf6',
             '#06b6d4', '#ec4899', '#14b8a6', '#f97316', '#6366f1',
             '#84cc16', '#e11d48', '#0ea5e9', '#d946ef', '#a3e635',
             '#fb923c', '#2dd4bf', '#f43f5e', '#818cf8', '#facc15',
@@ -345,7 +345,7 @@
             if (!borderPath) return;
             ctx.save();
             ctx.globalAlpha = alpha;
-            ctx.strokeStyle = '#475569';
+            ctx.strokeStyle = '#939aab';
             ctx.lineWidth = 1.5;
             ctx.stroke(borderPath);
             ctx.restore();
@@ -689,7 +689,7 @@
                 const [x2] = project(0, parentBbox.maxLng);
                 // glow
                 ctx.globalAlpha = 0.25;
-                ctx.strokeStyle = '#3b82f6';
+                ctx.strokeStyle = '#f0b429';
                 ctx.lineWidth = 8;
                 ctx.beginPath(); ctx.moveTo(x1, y); ctx.lineTo(x2, y); ctx.stroke();
                 // bright
@@ -701,7 +701,7 @@
                 const [, y1] = project(parentBbox.maxLat, 0);
                 const [, y2] = project(parentBbox.minLat, 0);
                 ctx.globalAlpha = 0.25;
-                ctx.strokeStyle = '#3b82f6';
+                ctx.strokeStyle = '#f0b429';
                 ctx.lineWidth = 8;
                 ctx.beginPath(); ctx.moveTo(x, y1); ctx.lineTo(x, y2); ctx.stroke();
                 ctx.globalAlpha = 0.9;
@@ -715,7 +715,7 @@
             const { axis, splitValue, parentBbox } = splitInfo;
             ctx.save();
             ctx.globalAlpha = alpha;
-            ctx.strokeStyle = '#e2e8f0';
+            ctx.strokeStyle = '#f3f5f8';
             ctx.lineWidth = 2.5;
             if (axis === 'lat') {
                 const [, y] = project(splitValue, 0);
@@ -739,7 +739,7 @@
 
         function drawAllBoundaries(regs, alpha) {
             for (const reg of regs) {
-                drawRect(reg.bbox, '#e2e8f0', 2, alpha, null);
+                drawRect(reg.bbox, '#f3f5f8', 2, alpha, null);
             }
         }
 
@@ -760,7 +760,7 @@
                 const [x, y] = project(s.lat, s.lng);
                 const r = sizeForEligible(s.eligible);
                 const a = typeof alphaFn === 'function' ? alphaFn(i) : alphaFn;
-                drawPoint(x, y, r, '#94a3b8', a, false);
+                drawPoint(x, y, r, '#c8ceda', a, false);
             }
         }
 
@@ -770,7 +770,7 @@
             const cy = r.y + r.h / 2;
             ctx.save();
             ctx.globalAlpha = alpha;
-            ctx.fillStyle = '#f8fafc';
+            ctx.fillStyle = '#f3f5f8';
             ctx.font = '600 13px Heebo';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
@@ -792,7 +792,7 @@
             ctx.textBaseline = 'middle';
 
             // Height marker (lat span) on left side
-            const hColor = highlightAxis === 'lat' ? '#60a5fa' : '#64748b';
+            const hColor = highlightAxis === 'lat' ? '#f6d78a' : '#939aab';
             ctx.strokeStyle = hColor;
             ctx.fillStyle = hColor;
             ctx.lineWidth = 1;
@@ -807,7 +807,7 @@
             ctx.restore();
 
             // Width marker (lng span) on bottom
-            const wColor = highlightAxis === 'lng' ? '#60a5fa' : '#64748b';
+            const wColor = highlightAxis === 'lng' ? '#f6d78a' : '#939aab';
             ctx.strokeStyle = wColor;
             ctx.fillStyle = wColor;
             const my = r.y + r.h + 14;
@@ -821,7 +821,7 @@
 
         function drawHighlightRect(bbox, t) {
             const pulse = 0.6 + 0.4 * Math.sin(t * 4);
-            drawRect(bbox, '#60a5fa', 2.5, pulse, null);
+            drawRect(bbox, '#f6d78a', 2.5, pulse, null);
         }
 
         function setCumbar(pct) {
@@ -967,19 +967,19 @@
                 const [x, y] = project(s.lat, s.lng);
                 const r = sizeForEligible(s.eligible);
                 const eased = d3.easeCubicOut(a);
-                drawPoint(x, y, r * eased, '#94a3b8', eased, false);
+                drawPoint(x, y, r * eased, '#c8ceda', eased, false);
             }
             // Bounding box fades in
             const bboxAlpha = Math.min(1, Math.max(0, (t - 1.5) / 1.0));
             if (bboxAlpha > 0) {
-                drawRect(initRegion.bbox, '#64748b', 1, bboxAlpha * 0.5, [6, 4]);
+                drawRect(initRegion.bbox, '#939aab', 1, bboxAlpha * 0.5, [6, 4]);
             }
         }
 
         // Phase 1: Finding the Longest Axis
         function renderPhase1(t) {
             drawPointsGray(0.7);
-            drawRect(initRegion.bbox, '#94a3b8', 1.5, 0.7, null);
+            drawRect(initRegion.bbox, '#c8ceda', 1.5, 0.7, null);
 
             const si = allSplits[0].splitInfo;
             const dimAlpha = Math.min(1, Math.max(0, (t - 0.5) / 1.0));
@@ -994,7 +994,7 @@
                     const r = projectBbox(initRegion.bbox);
                     ctx.save();
                     ctx.globalAlpha = pulse;
-                    ctx.strokeStyle = '#3b82f6';
+                    ctx.strokeStyle = '#f0b429';
                     ctx.lineWidth = 3;
                     ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x, r.y + r.h); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(r.x + r.w, r.y); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.stroke();
@@ -1003,7 +1003,7 @@
                     const r = projectBbox(initRegion.bbox);
                     ctx.save();
                     ctx.globalAlpha = pulse;
-                    ctx.strokeStyle = '#3b82f6';
+                    ctx.strokeStyle = '#f0b429';
                     ctx.lineWidth = 3;
                     ctx.beginPath(); ctx.moveTo(r.x, r.y); ctx.lineTo(r.x + r.w, r.y); ctx.stroke();
                     ctx.beginPath(); ctx.moveTo(r.x, r.y + r.h); ctx.lineTo(r.x + r.w, r.y + r.h); ctx.stroke();
@@ -1021,7 +1021,7 @@
 
             if (!splitDone) {
                 drawPointsGray(0.7);
-                drawRect(initRegion.bbox, '#94a3b8', 1.5, 0.6, null);
+                drawRect(initRegion.bbox, '#c8ceda', 1.5, 0.6, null);
                 drawScanLine(si, d3.easeCubicInOut(scanProgress));
                 cumbarEl.classList.add('visible');
                 setCumbar(scanProgress * 50);
@@ -1247,7 +1247,7 @@
                 ctx.lineWidth = hasRemainder.has(r.idx) ? 1.5 : 0.5;
                 ctx.stroke();
                 ctx.globalAlpha = 1;
-                ctx.fillStyle = isJust ? '#0a0a0f' : '#f8fafc';
+                ctx.fillStyle = isJust ? '#16181d' : '#f3f5f8';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(txt, cx, cy);
@@ -1284,16 +1284,16 @@
             ctx.direction = 'rtl';
 
             // Header
-            ctx.fillStyle = '#94a3b8';
+            ctx.fillStyle = '#c8ceda';
             ctx.font = '500 13px Heebo';
             ctx.fillText('מכסת הייר (שיטת המילטון)', tx, ly);
             ly += 20;
-            ctx.fillStyle = '#f8fafc';
+            ctx.fillStyle = '#f3f5f8';
             ctx.font = '700 14px Heebo';
             const quotaK = (hareData.quota / 1000).toFixed(1);
             ctx.fillText(`מכסה = ${(hareData.totalE / 1e6).toFixed(2)}M \u00f7 ${KNESSET_SEATS} = ${Math.round(hareData.quota).toLocaleString()}`, tx, ly);
             ly += 20;
-            ctx.fillStyle = autoComplete ? '#94a3b8' : '#f8fafc';
+            ctx.fillStyle = autoComplete ? '#c8ceda' : '#f3f5f8';
             ctx.font = '500 12px Heebo';
             ctx.fillText(`חלוקה שלמה: ${autoSeatsSoFar} מנדטים${inStage2 ? '  |  שאריות: +' + remainderCount + ' מתוך ' + hareData.remainderSeats : ''}`, tx, ly);
             ly += 18;
@@ -1312,7 +1312,7 @@
                     const drawY = ly + (logLine - scrollOffset) * lineH;
                     const isJust = r.idx === justAutoIdx;
                     ctx.font = isJust ? '600 11px Heebo' : '400 11px Heebo';
-                    ctx.fillStyle = isJust ? '#f8fafc' : '#94a3b8';
+                    ctx.fillStyle = isJust ? '#f3f5f8' : '#c8ceda';
                     const eK = (r.eligible / 1000).toFixed(0);
                     const qK = (hareData.quota / 1000).toFixed(0);
                     ctx.fillText(`${eK}K \u00f7 ${qK}K = ${r.exact.toFixed(2)}  \u2192  ${r.autoSeats} מנדטים  (שארית ${r.remainder.toFixed(2)})`, tx, drawY);

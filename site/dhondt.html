@@ -13,19 +13,19 @@
     <title>מחשבון באדר-עופר - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@500;700&family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
-            --bg-primary: #14120e;
-            --bg-secondary: #1c1914;
-            --bg-tertiary: #262219;
-            --text-primary: #f4efe6;
-            --text-secondary: #b7aa96;
-            --text-muted: #7d7264;
-            --border-color: #3a332a;
-            --accent-primary: #c4a574;
-            --accent-secondary: #e4d2b0;
+            --bg-primary: #16181d;
+            --bg-secondary: #1e212a;
+            --bg-tertiary: #272b36;
+            --text-primary: #f3f5f8;
+            --text-secondary: #c8ceda;
+            --text-muted: #939aab;
+            --border-color: #3a4050;
+            --accent-primary: #f0b429;
+            --accent-secondary: #f6d78a;
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
@@ -126,9 +126,17 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.2rem;
-            font-family: 'Frank Ruhl Libre', 'Heebo', serif;
-            color: var(--text-primary);
+                        color: var(--text-primary);
         }
+        .main-header h1::after {
+            content: '';
+            display: block;
+            width: 3.25rem;
+            height: 2px;
+            margin: 0.55rem auto 0;
+            background: var(--accent-primary);
+        }
+
 
         .title-icon {
             display: inline-block;
@@ -161,6 +169,7 @@
             text-decoration: none;
             border-radius: 8px;
             font-size: 0.9rem;
+            line-height: 1.25;
             border: 1px solid var(--border-color);
             transition: var(--transition-fast);
             cursor: pointer;
@@ -173,7 +182,7 @@
 
         .view-btn.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -407,6 +416,38 @@
             font-weight: 600;
         }
 
+        .derived-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.2rem 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .derived-row .mandate-quotient,
+        .derived-row .turnout-pct {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .derived-stats-inline {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem 1.25rem;
+            margin: -0.35rem 0 1rem;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .derived-stats-inline .mandate-quotient,
+        .derived-stats-inline .turnout-pct {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
         .reset-btn {
             width: 100%;
             padding: 0.6rem;
@@ -502,7 +543,7 @@
             background: var(--accent-primary);
             border: none;
             border-radius: 6px;
-            color: #1a1612;
+            color: #1a1408;
             font-family: inherit;
             font-size: 0.8rem;
             cursor: pointer;
@@ -1000,6 +1041,14 @@
                             <span data-i18n="total_votes">סה״כ קולות:</span>
                             <span id="total-votes">0</span>
                         </div>
+                        <div class="derived-row">
+                            <span data-i18n="mandate_quotient">מודד למנדט</span>
+                            <span class="mandate-quotient">—</span>
+                        </div>
+                        <div class="derived-row">
+                            <span data-i18n="turnout_pct">אחוז הצבעה</span>
+                            <span class="turnout-pct">—</span>
+                        </div>
                     </div>
                 </div>
 
@@ -1040,6 +1089,10 @@
 
                 <div class="results-container">
                     <h3 class="results-title"><span data-i18n="seat_allocation">חלוקת המנדטים</span><span class="results-threshold-label" id="results-threshold-label"></span></h3>
+                    <div class="derived-stats-inline">
+                        <span><span data-i18n="mandate_quotient">מודד למנדט</span> <span class="mandate-quotient">—</span></span>
+                        <span><span data-i18n="turnout_pct">אחוז הצבעה</span> <span class="turnout-pct">—</span></span>
+                    </div>
                     <div id="results-grid" class="results-grid"></div>
                 </div>
             </div>
@@ -1121,8 +1174,8 @@
 
         // Presets keyed by election
         const presets = {
-            '25': { parties: parties25, agreements: agreements25 },
-            '26': { parties: parties26, agreements: agreements26 },
+            '25': { parties: parties25, agreements: agreements25, eligible: 6788804, voters: 4794593 },
+            '26': { parties: parties26, agreements: agreements26, eligible: 7331981, voters: 5447662 },
         };
 
         let currentElection = i18n.SHOW_E26 ? '26' : '25';
@@ -1359,7 +1412,7 @@
                         e26Btn.style.display = '';
                         e26Btn.classList.add('active');
                         e26Btn.style.background = 'var(--accent-primary)';
-                        e26Btn.style.color = '#1a1612';
+                        e26Btn.style.color = '#1a1408';
                     }
                     document.querySelectorAll('.election-toggle-btn[data-election="25"]').forEach(b => {
                         b.classList.remove('active');
@@ -1380,7 +1433,7 @@
                             const isActive = b.dataset.election === el;
                             b.classList.toggle('active', isActive);
                             b.style.background = isActive ? 'var(--accent-primary)' : 'transparent';
-                            b.style.color = isActive ? '#1a1612' : 'var(--text-secondary)';
+                            b.style.color = isActive ? '#1a1408' : 'var(--text-secondary)';
                         });
                     });
                 });
@@ -1736,12 +1789,35 @@
                 return `<div class="vote-bar-cutoff" style="inset-inline-start:${cutoffPct}%"></div>`;
             }
 
+            liveFigures(totalVotes, thresholdVotes) {
+                const roll = presets[currentElection];
+                const presetVotes = roll.parties.reduce((sum, party) => sum + party.votes, 0);
+                const cast = Math.max(0, totalVotes + roll.voters - presetVotes);
+                const turnout = roll.eligible > 0 ? 100 * cast / roll.eligible : 0;
+                const qualifying = this.parties.reduce((sum, party) => (
+                    sum + (party.votes >= thresholdVotes ? party.votes : 0)
+                ), 0);
+                const measure = this.totalSeats > 0 ? Math.floor(qualifying / this.totalSeats) : 0;
+                const figures = {
+                    measureText: i18n.fmtNum(measure),
+                    turnoutText: turnout.toFixed(1) + '%',
+                };
+                document.querySelectorAll('.mandate-quotient').forEach(el => {
+                    el.textContent = figures.measureText;
+                });
+                document.querySelectorAll('.turnout-pct').forEach(el => {
+                    el.textContent = figures.turnoutText;
+                });
+                return figures;
+            }
+
             renderResults(results, thresholdVotes, lastQuotient) {
                 const container = document.getElementById('results-grid');
                 const sorted = [...results].sort((a, b) => b.seats - a.seats || b.votes - a.votes);
                 const maxSeats = Math.max(0, ...sorted.map(r => r.seats));
                 const maxVotes = Math.max(1, ...sorted.map(r => r.votes));
                 const totalVotes = this.parties.reduce((sum, p) => sum + p.votes, 0);
+                this.liveFigures(totalVotes, thresholdVotes);
                 const seatCost = lastQuotient > 0 ? lastQuotient : (totalVotes / Math.max(this.totalSeats, 1));
                 const cutoffPct = Math.min(100, 100 * thresholdVotes / maxVotes);
                 const cutoffLabel = i18n.fmtNum(Math.ceil(thresholdVotes));
@@ -2066,11 +2142,11 @@
             ctx.scale(scale, scale);
 
             // Background
-            ctx.fillStyle = '#0a0a0f';
+            ctx.fillStyle = '#16181d';
             ctx.fillRect(0, 0, width, totalHeight);
 
             // Parliament section background
-            ctx.fillStyle = '#12121a';
+            ctx.fillStyle = '#1e212a';
             ctx.fillRect(10, 10, width - 20, parliamentHeight - 20);
 
             // Clone and serialize the parliament SVG
@@ -2087,7 +2163,7 @@
             const img = new Image();
             img.onload = () => {
                 // Draw parliament title
-                ctx.fillStyle = '#f8fafc';
+                ctx.fillStyle = '#f3f5f8';
                 ctx.font = 'bold 18px Heebo, sans-serif';
                 ctx.textAlign = 'center';
                 const pngTitle = i18n.getLang() === 'en'
@@ -2105,7 +2181,7 @@
                 const leftSeats = document.getElementById('left-seats').textContent;
 
                 ctx.font = '14px Heebo, sans-serif';
-                ctx.fillStyle = '#94a3b8';
+                ctx.fillStyle = '#c8ceda';
                 ctx.textAlign = 'right';
                 ctx.fillText(i18n.t('right_bloc'), width - 40, 180);
                 ctx.fillStyle = parseInt(rightSeats) >= 61 ? '#10b981' : '#ef4444';
@@ -2113,7 +2189,7 @@
                 ctx.fillText(rightSeats, width - 40, 215);
 
                 ctx.font = '14px Heebo, sans-serif';
-                ctx.fillStyle = '#94a3b8';
+                ctx.fillStyle = '#c8ceda';
                 ctx.textAlign = 'left';
                 ctx.fillText(i18n.t('left_bloc'), 40, 180);
                 ctx.fillStyle = parseInt(leftSeats) >= 61 ? '#10b981' : '#ef4444';
@@ -2124,18 +2200,18 @@
                 // Add threshold and total votes info
                 const thresholdValue = document.getElementById('threshold').value;
                 const totalVotes = document.getElementById('total-votes').textContent;
-                ctx.fillStyle = '#64748b';
+                ctx.fillStyle = '#939aab';
                 ctx.font = '11px Heebo, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(`${i18n.t('threshold_pct')} ${thresholdValue}% | ${i18n.t('total_votes')} ${totalVotes}`, width / 2, parliamentHeight - 15);
 
                 // Results section
                 const resultsY = parliamentHeight;
-                ctx.fillStyle = '#12121a';
+                ctx.fillStyle = '#1e212a';
                 ctx.fillRect(10, resultsY, width - 20, resultsHeight - 10);
 
                 // Results title
-                ctx.fillStyle = '#f8fafc';
+                ctx.fillStyle = '#f3f5f8';
                 ctx.font = 'bold 16px Heebo, sans-serif';
                 ctx.textAlign = 'right';
                 ctx.fillText(i18n.t('seat_allocation'), width - 25, resultsY + 28);
@@ -2151,7 +2227,7 @@
                     const cardY = startY + row * (cardHeight + cardPadding);
 
                     // Card background
-                    ctx.fillStyle = '#1a1a25';
+                    ctx.fillStyle = '#272b36';
                     ctx.beginPath();
                     ctx.roundRect(cardX, cardY, cardWidth, cardHeight, 8);
                     ctx.fill();
@@ -2163,18 +2239,18 @@
                     ctx.fill();
 
                     // Party name
-                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillStyle = '#f3f5f8';
                     ctx.font = 'bold 13px Heebo, sans-serif';
                     ctx.textAlign = 'right';
                     ctx.fillText(r.name, cardX + cardWidth - 30, cardY + 20);
 
                     // Seats
-                    ctx.fillStyle = '#3b82f6';
+                    ctx.fillStyle = '#f0b429';
                     ctx.font = 'bold 15px Heebo, sans-serif';
                     ctx.fillText(r.seats, cardX + cardWidth - 30, cardY + 38);
 
                     // Votes
-                    ctx.fillStyle = '#64748b';
+                    ctx.fillStyle = '#939aab';
                     ctx.font = '11px Heebo, sans-serif';
                     ctx.fillText(r.votes, cardX + cardWidth - 30, cardY + 53);
 
@@ -2196,11 +2272,11 @@
 
                 // Watermark section
                 const watermarkY = totalHeight - watermarkHeight;
-                ctx.fillStyle = '#1a1a25';
+                ctx.fillStyle = '#272b36';
                 ctx.fillRect(0, watermarkY, width, watermarkHeight);
 
                 // Separator line
-                ctx.strokeStyle = '#2a2a3a';
+                ctx.strokeStyle = '#3a4050';
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(0, watermarkY);
@@ -2215,12 +2291,12 @@
                     ctx.drawImage(qrImg, 15, watermarkY + 7, qrSize, qrSize);
 
                     // Watermark text
-                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillStyle = '#f3f5f8';
                     ctx.font = 'bold 14px Heebo, sans-serif';
                     ctx.textAlign = 'right';
                     ctx.fillText(i18n.t('watermark_created'), width - 15, watermarkY + 25);
 
-                    ctx.fillStyle = '#64748b';
+                    ctx.fillStyle = '#939aab';
                     ctx.font = '12px Heebo, sans-serif';
                     ctx.fillText('https://kolot-nodedim.netlify.app/', width - 15, watermarkY + 45);
 
