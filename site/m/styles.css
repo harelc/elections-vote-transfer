@@ -3,18 +3,19 @@
  */
 
 :root {
-    --bg-primary: #0a0a0f;
-    --bg-secondary: #12121a;
-    --bg-tertiary: #1a1a25;
-    --bg-card: #1e1e2a;
-    --bg-hover: #252535;
-    --text-primary: #f0f0f5;
-    --text-secondary: #a0a0b0;
-    --text-muted: #606075;
-    --accent: #6366f1;
-    --accent-glow: rgba(99, 102, 241, 0.3);
-    --border: #2a2a3a;
-    --border-light: #35354a;
+    --bg-primary: #16181d;
+    --bg-secondary: #1e212a;
+    --bg-tertiary: #272b36;
+    --bg-card: #232733;
+    --bg-hover: #2e3340;
+    --text-primary: #f3f5f8;
+    --text-secondary: #c8ceda;
+    --text-muted: #939aab;
+    --accent: #f0b429;
+    --on-accent: #1a1408;
+    --accent-glow: rgba(240, 177, 41, 0.28);
+    --border: #3a4050;
+    --border-light: #4c5468;
     --shadow: 0 -4px 20px rgba(0, 0, 0, 0.5);
     --radius: 10px;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
@@ -62,14 +63,12 @@ html, body {
 .top-bar .title {
     flex: 1;
     min-width: 0;
-    font-size: 0.95rem;
-    font-weight: 600;
+        font-size: 0.95rem;
+    font-weight: 700;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    background: linear-gradient(135deg, var(--text-primary), var(--accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--text-primary);
 }
 
 .election-pills {
@@ -102,7 +101,7 @@ html, body {
 .election-pill.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
 /* ---- Bottom Tabs (scrollable pill bar) ---- */
@@ -146,7 +145,7 @@ html, body {
 .tab-bar a.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
 .tab-bar a:active:not(.active) {
@@ -257,7 +256,7 @@ html, body {
 .chip.active {
     background: var(--accent);
     border-color: var(--accent);
-    color: white;
+    color: var(--on-accent);
 }
 
 .chip .remove {

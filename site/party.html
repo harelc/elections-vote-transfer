@@ -462,7 +462,7 @@
         <header class="main-header">
             <div class="header-content">
                 <h1 class="site-title">
-                    <span class="title-icon">🗳️</span>
+                    
                     <span data-i18n="site_title">קולות נודדים</span>
                 </h1>
                 <p class="site-subtitle" data-i18n="party_profile">פרופיל מפלגה</p>
@@ -1206,7 +1206,7 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { color: '#a0a0b0', font: { family: 'Heebo' }, padding: 12 }
+                            labels: { color: '#c8ceda', font: { family: 'Heebo' }, padding: 12 }
                         },
                         tooltip: {
                             callbacks: {
@@ -1219,20 +1219,20 @@
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#a0a0b0', font: { family: 'Heebo' } },
-                            grid: { color: '#2a2a3a' }
+                            ticks: { color: '#c8ceda', font: { family: 'Heebo' } },
+                            grid: { color: '#3a4050' }
                         },
                         y: {
                             position: lang === 'en' ? 'left' : 'right',
-                            title: { display: true, text: i18n.t('support_pct'), color: '#a0a0b0' },
-                            ticks: { color: '#a0a0b0', callback: v => v + '%' },
-                            grid: { color: '#2a2a3a' },
+                            title: { display: true, text: i18n.t('support_pct'), color: '#c8ceda' },
+                            ticks: { color: '#c8ceda', callback: v => v + '%' },
+                            grid: { color: '#3a4050' },
                             min: 0,
                         },
                         y1: {
                             position: lang === 'en' ? 'right' : 'left',
-                            title: { display: true, text: i18n.t('seats'), color: '#a0a0b0' },
-                            ticks: { color: '#94a3b8', stepSize: 5 },
+                            title: { display: true, text: i18n.t('seats'), color: '#c8ceda' },
+                            ticks: { color: '#c8ceda', stepSize: 5 },
                             grid: { display: false },
                             min: 0,
                         }

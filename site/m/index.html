@@ -26,11 +26,19 @@
             text-align: center;
         }
         .m-hero-title {
-            font-size: 1.8rem;
+                        font-size: 2.15rem;
             font-weight: 700;
-            margin-bottom: 0.3rem;
+            margin-bottom: 0.35rem;
+            line-height: 1.2;
         }
-        .m-hero-title .icon { font-size: 1.5rem; margin-inline-end: 0.3rem; }
+        .m-hero-title::after {
+            content: '';
+            display: block;
+            width: 2.4rem;
+            height: 2px;
+            margin: 0.4rem auto 0;
+            background: var(--accent);
+        }
         .m-hero-subtitle {
             font-size: 0.88rem;
             color: var(--text-secondary);
@@ -45,16 +53,14 @@
         }
         .m-stat-value {
             display: block;
-            font-size: 1.6rem;
+                        font-size: 1.7rem;
             font-weight: 700;
-            color: var(--accent);
-            line-height: 1.2;
+            color: var(--text-primary);
+            line-height: 1.15;
         }
         .m-stat-label {
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.3px;
         }
         .m-cards {
             display: flex;
@@ -67,15 +73,13 @@
             gap: 0.75rem;
             background: var(--bg-card);
             border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 0.9rem;
+            border-radius: 2px;
+            padding: 0.9rem 1rem;
             text-decoration: none;
             color: inherit;
-            transition: border-color 0.15s;
             text-align: start;
         }
         .m-card:active { border-color: var(--accent); }
-        .m-card-icon { font-size: 1.5rem; flex-shrink: 0; }
         .m-card-text { min-width: 0; }
         .m-card-title {
             font-size: 0.95rem;
@@ -170,7 +174,6 @@
 
     <div class="m-dashboard">
         <h1 class="m-hero-title">
-            <span class="icon">🗳️</span>
             <span data-i18n="dashboard_title">קולות נודדים</span>
         </h1>
         <p class="m-hero-subtitle" data-i18n="dashboard_subtitle">ניתוח אינטראקטיבי של נתוני בחירות לכנסת ישראל</p>
@@ -276,7 +279,6 @@
             a.className = 'm-card';
             a.href = c.href;
             a.innerHTML =
-                '<span class="m-card-icon">' + c.icon + '</span>' +
                 '<div class="m-card-text">' +
                 '<div class="m-card-title" data-i18n="' + c.i18n_title + '">' + i18n.t(c.i18n_title) + '</div>' +
                 '<div class="m-card-desc" data-i18n="' + c.i18n_desc + '">' + i18n.t(c.i18n_desc) + '</div>' +

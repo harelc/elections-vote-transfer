@@ -17,15 +17,15 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-tertiary: #1a1a25;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border-color: #2a2a3a;
-            --accent-primary: #3b82f6;
-            --accent-secondary: #06b6d4;
+            --bg-primary: #16181d;
+            --bg-secondary: #1e212a;
+            --bg-tertiary: #272b36;
+            --text-primary: #f3f5f8;
+            --text-secondary: #c8ceda;
+            --text-muted: #939aab;
+            --border-color: #3a4050;
+            --accent-primary: #f0b429;
+            --accent-secondary: #f6d78a;
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
@@ -136,11 +136,17 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.2rem;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+                        color: var(--text-primary);
         }
+        .main-header h1::after {
+            content: '';
+            display: block;
+            width: 3.25rem;
+            height: 2px;
+            margin: 0.55rem auto 0;
+            background: var(--accent-primary);
+        }
+
 
         .title-icon {
             display: inline-block;
@@ -173,6 +179,7 @@
             text-decoration: none;
             border-radius: 8px;
             font-size: 0.9rem;
+            line-height: 1.25;
             border: 1px solid var(--border-color);
             transition: var(--transition-fast);
             cursor: pointer;
@@ -186,7 +193,7 @@
 
         .view-btn.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -259,7 +266,7 @@
 
         .election-btn.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -831,7 +838,7 @@
 
     <div class="app-container">
         <header class="main-header">
-            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <h1><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="irregular_subtitle">זיהוי קלפיות עם דפוסי הצבעה חריגים</p>
             <nav class="view-switcher"><button class="export-btn header-export" id="export-png" data-i18n="export_png">📷 ייצוא PNG</button></nav>
         </header>

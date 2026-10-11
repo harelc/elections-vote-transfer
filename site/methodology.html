@@ -24,14 +24,14 @@
     <script src="i18n.js"></script>
     <style>
         :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-tertiary: #1a1a25;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border-color: #2a2a3a;
-            --accent-primary: #3b82f6;
+            --bg-primary: #16181d;
+            --bg-secondary: #1e212a;
+            --bg-tertiary: #272b36;
+            --text-primary: #f3f5f8;
+            --text-secondary: #c8ceda;
+            --text-muted: #939aab;
+            --border-color: #3a4050;
+            --accent-primary: #f0b429;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -53,6 +53,15 @@
             position: relative;
         }
         .main-header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; }
+        .main-header h1::after {
+            content: '';
+            display: block;
+            width: 3.25rem;
+            height: 2px;
+            margin: 0.55rem auto 0;
+            background: var(--accent-primary);
+        }
+
         .main-header .subtitle { color: var(--text-secondary); font-size: 1rem; margin-top: 0.3rem; }
         .header-controls { position: absolute; top: 1rem; left: 1rem; display: flex; gap: 0.5rem; }
         html[dir="rtl"] .header-controls { left: auto; right: 1rem; }
@@ -418,7 +427,7 @@
 
         // Color scale for alpha: red (low) → orange → yellow → teal → blue (high)
         function alphaColor(a) {
-            if (a == null || isNaN(a)) return '#1a1a25';
+            if (a == null || isNaN(a)) return '#272b36';
             const t = Math.max(0, Math.min(1, (Math.log(a) - Math.log(3)) / (Math.log(250) - Math.log(3))));
             const stops = [
                 [122, 31, 31], [163, 82, 52], [138, 122, 53], [45, 111, 106], [13, 74, 90],

@@ -251,7 +251,7 @@
         .compare-pill.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: white;
+            color: #1a1408;
         }
         .compare-msg {
             font-size: 0.6rem;
@@ -355,6 +355,8 @@
     <div class="color-scale" id="color-scale" style="display:none;">
         <div class="color-scale-title" id="scale-title"></div>
         <div class="color-scale-bar" id="scale-bar"></div>
+        <canvas id="embed-legend" width="112" height="112" style="display:none;width:112px;height:112px;border-radius:4px"></canvas>
+        <div id="embed-note" style="display:none;font-size:0.7rem;color:var(--text-muted);line-height:1.4;margin-top:4px"></div>
         <div class="color-scale-labels">
             <span id="scale-min"></span>
             <span id="scale-max"></span>
@@ -531,6 +533,7 @@
                     fetch(`../data/station_socioeconomic.json`)
                 ]);
                 this.tsneData = await tsneRes.json();
+                this.embedRange = null;
                 this.coordinates = await coordRes.json();
                 const seArr = await seRes.json();
 
@@ -580,6 +583,7 @@
             try {
                 const res = await fetch(`../data/tsne_${id}.json`);
                 this.tsneData = await res.json();
+                this.embedRange = null;
                 this.parties = this.tsneData.parties || [];
                 this.buildSettlements();
                 this.buildColorFabs();
@@ -613,7 +617,8 @@
                 { id: 'winner', bg: 'linear-gradient(135deg, #2563eb, #dc2626, #16a34a)', label: i18n.t('winner') },
                 { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', label: i18n.t('turnout') },
                 { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', label: i18n.t('socioeconomic') },
-                { id: 'party', bg: '#6366f1', label: i18n.t('party') }
+                { id: 'embed', bg: 'conic-gradient(from 0deg, #84f514, #f5bc14, #f51414, #f514bc, #8414f5, #144cf5, #14f5f5, #14f54c, #84f514)', label: i18n.t('embed_color') },
+                { id: 'party', bg: '#f0b429', label: i18n.t('party') }
             ];
 
             container.innerHTML = modes.map(m => `
@@ -673,6 +678,10 @@
             const max = document.getElementById('scale-max');
             const clusterLegend = document.getElementById('cluster-legend');
             clusterLegend.classList.remove('visible');
+            const embedCanvas = document.getElementById('embed-legend');
+            const embedNote = document.getElementById('embed-note');
+            if (embedCanvas) embedCanvas.style.display = 'none';
+            if (embedNote) embedNote.style.display = 'none';
 
             if (this.colorMode === 'turnout') {
                 el.style.display = 'block';
@@ -718,6 +727,20 @@
                 min.textContent = '';
                 max.textContent = '';
                 clusterLegend.classList.add('visible');
+            } else if (this.colorMode === 'embed') {
+                el.style.display = 'block';
+                title.textContent = i18n.t('embed_color');
+                bar.style.display = 'none';
+                min.textContent = '';
+                max.textContent = '';
+                if (embedCanvas) {
+                    embedCanvas.style.display = 'block';
+                    this.drawEmbedLegend(embedCanvas);
+                }
+                if (embedNote) {
+                    embedNote.style.display = 'block';
+                    embedNote.textContent = i18n.t('embed_note');
+                }
             } else {
                 el.style.display = 'none';
             }
@@ -841,6 +864,17 @@
                         this.selectedParty.color, t), 0.8);
                     info = `${pct}%`;
                 }
+            } else if (this.colorMode === 'embed') {
+                let sx = 0, sy = 0, n = 0;
+                children.forEach(m => {
+                    const s = m.options.stationData;
+                    if (!s || s.x == null || s.y == null) return;
+                    sx += s.x;
+                    sy += s.y;
+                    n++;
+                });
+                bgColor = n ? this.embedColor({ x: sx / n, y: sy / n }) : '#6b7280';
+                info = '';
             }
 
             // Detect colocated cluster (all children at same coordinates)
@@ -1014,6 +1048,68 @@
             this.renderMarkers();
         }
 
+        embedRGB(nx, ny) {
+            const dx = nx - 0.5;
+            const dy = ny - 0.5;
+            const r = Math.min(1, Math.hypot(dx, dy) * Math.SQRT2);
+            let h = Math.atan2(dy, dx) / (Math.PI * 2);
+            if (h < 0) h += 1;
+            const s = 0.92 * r;
+            const v = 0.96;
+            const i = Math.floor(h * 6);
+            const f = h * 6 - i;
+            const p = v * (1 - s);
+            const q = v * (1 - f * s);
+            const t = v * (1 - (1 - f) * s);
+            const rgb = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i % 6];
+            return rgb.map(c => c * 255);
+        }
+
+        ensureEmbedRange() {
+            if (this.embedRange) return;
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+            (this.tsneData?.stations || []).forEach(station => {
+                if (station.x == null || station.y == null) return;
+                minX = Math.min(minX, station.x);
+                maxX = Math.max(maxX, station.x);
+                minY = Math.min(minY, station.y);
+                maxY = Math.max(maxY, station.y);
+            });
+            this.embedRange = { minX, maxX, minY, maxY };
+        }
+
+        embedColor(station) {
+            this.ensureEmbedRange();
+            const { minX, maxX, minY, maxY } = this.embedRange;
+            if (station.x == null || station.y == null || !(maxX > minX) || !(maxY > minY)) {
+                return '#6b7280';
+            }
+            const nx = (station.x - minX) / (maxX - minX);
+            const ny = (station.y - minY) / (maxY - minY);
+            const rgb = this.embedRGB(nx, ny).map(v => Math.round(v));
+            return `rgb(${rgb.join(',')})`;
+        }
+
+        drawEmbedLegend(canvas) {
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+            const image = ctx.createImageData(w, h);
+            for (let py = 0; py < h; py++) {
+                for (let px = 0; px < w; px++) {
+                    const nx = px / (w - 1);
+                    const ny = 1 - py / (h - 1);
+                    const rgb = this.embedRGB(nx, ny);
+                    const i = (py * w + px) * 4;
+                    image.data[i] = rgb[0];
+                    image.data[i + 1] = rgb[1];
+                    image.data[i + 2] = rgb[2];
+                    image.data[i + 3] = 255;
+                }
+            }
+            ctx.putImageData(image, 0, 0);
+        }
+
         getColor(station) {
             if (this.colorMode === 'turnout') {
                 return this.getTurnoutColor(station.t || 0);
@@ -1033,6 +1129,9 @@
                 }
                 return '#374151';
             }
+            if (this.colorMode === 'embed') {
+                return this.embedColor(station);
+            }
             if (this.colorMode === 'party' && this.selectedParty) {
                 const currentPct = (station.p || {})[this.selectedParty.name] || 0;
 
@@ -1047,7 +1146,7 @@
                     this.lightenColor(this.selectedParty.color, 0.85),
                     this.selectedParty.color, t);
             }
-            return '#3b82f6';
+            return '#f0b429';
         }
 
         // ---- Bottom Sheets ----
@@ -1061,7 +1160,7 @@
             if (bn.endsWith('.0')) bn = bn.slice(0, -2);
             const url = `https://votes${this.currentElection}.bechirot.gov.il/ballotresults?cityID=${sid}&BallotNumber=${bn}`;
             const label = i18n.getLang() === 'en' ? 'CEC' : 'ועדת הבחירות';
-            return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${label}" style="color:#64748b;text-decoration:none;font-size:0.85em;display:inline-flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${label}</a>`;
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${label}" style="color:#939aab;text-decoration:none;font-size:0.85em;display:inline-flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${label}</a>`;
         }
 
         showStationSheet(station, coord) {
@@ -1078,7 +1177,7 @@
 
             const partyHtml = topParties.map(([pname, pct]) => {
                 const party = this.parties.find(p => p.name === pname);
-                const color = party?.color || '#64748b';
+                const color = party?.color || '#939aab';
                 return `<div class="party-row">
                     <span class="party-dot" style="background:${color}"></span>
                     <span class="party-name">${i18n.partyName(pname)}</span>
@@ -1116,7 +1215,7 @@
                 ${partyHtml}
                 ${diffHtml}
                 <div style="display:flex;justify-content:space-between;gap:0.5rem;margin-top:10px;flex-wrap:wrap;">
-                    <a href="settlement.html?name=${encodeURIComponent(name)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
+                    <a href="settlement.html?name=${encodeURIComponent(name)}" style="color:#f0b429;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
                     ${this.cecBallotLinkHTML(station)}
                 </div>
             `;
@@ -1165,7 +1264,7 @@
                 .map(([name, votes]) => ({
                     name,
                     pct: totalVoters > 0 ? Math.round(votes / totalVoters * 100) : 0,
-                    color: this.parties.find(p => p.name === name)?.color || '#64748b'
+                    color: this.parties.find(p => p.name === name)?.color || '#939aab'
                 }));
 
             const partyHtml = topParties.map(p => `
@@ -1211,7 +1310,7 @@
                 const topHtml = topParties.map(([pn, pct]) => {
                     const party = this.parties.find(p => p.name === pn);
                     return `<span style="display:inline-flex;align-items:center;gap:2px;">
-                        <span style="width:8px;height:8px;border-radius:50%;background:${party?.color || '#64748b'};display:inline-block;"></span>
+                        <span style="width:8px;height:8px;border-radius:50%;background:${party?.color || '#939aab'};display:inline-block;"></span>
                         ${Math.round(pct)}%
                     </span>`;
                 }).join(' ');
@@ -1230,7 +1329,7 @@
                 ${location ? `<div style="font-size:0.8rem;color:var(--text-muted);font-style:italic;margin-bottom:4px;">${location}</div>` : ''}
                 <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">${count} ${i18n.t('stations')} · ${i18n.fmtNum(totalVoters)} ${i18n.t('voted')} · ${avgTurnout}%</div>
                 <div style="display:flex;flex-direction:column;gap:4px;">${ballotRows}</div>
-                <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="display:block;margin-top:10px;color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
+                <a href="settlement.html?name=${encodeURIComponent(settlement)}" style="display:block;margin-top:10px;color:#f0b429;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
             `;
 
             // Tap individual ballot → show its detail sheet

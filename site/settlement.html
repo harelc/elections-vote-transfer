@@ -262,7 +262,7 @@
         <header class="main-header">
             <div class="header-content">
                 <h1 class="site-title">
-                    <span class="title-icon">🗳️</span>
+                    
                     <span data-i18n="site_title">קולות נודדים</span>
                 </h1>
                 <p class="site-subtitle" data-i18n="settlement_profile">פרופיל יישוב</p>
@@ -560,7 +560,7 @@
                     const s = settlementByElection[e];
                     return s ? s.turnout : null;
                 }),
-                borderColor: '#94a3b8',
+                borderColor: '#c8ceda',
                 borderDash: [5, 5],
                 tension: 0.3,
                 pointRadius: 3,
@@ -582,23 +582,23 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { color: '#a0a0b0', font: { family: 'Heebo' }, padding: 12 }
+                            labels: { color: '#c8ceda', font: { family: 'Heebo' }, padding: 12 }
                         }
                     },
                     scales: {
                         x: {
-                            ticks: { color: '#a0a0b0', font: { family: 'Heebo' } },
-                            grid: { color: '#2a2a3a' }
+                            ticks: { color: '#c8ceda', font: { family: 'Heebo' } },
+                            grid: { color: '#3a4050' }
                         },
                         y: {
                             position: lang === 'en' ? 'left' : 'right',
-                            ticks: { color: '#a0a0b0', callback: v => v + '%' },
-                            grid: { color: '#2a2a3a' },
+                            ticks: { color: '#c8ceda', callback: v => v + '%' },
+                            grid: { color: '#3a4050' },
                             min: 0,
                         },
                         y1: {
                             position: lang === 'en' ? 'right' : 'left',
-                            ticks: { color: '#94a3b8', callback: v => v + '%' },
+                            ticks: { color: '#c8ceda', callback: v => v + '%' },
                             grid: { display: false },
                             min: 0, max: 100,
                         }

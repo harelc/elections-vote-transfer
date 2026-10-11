@@ -50,7 +50,7 @@
         }
         .proj-pill.active {
             background: var(--accent);
-            color: white;
+            color: #1a1408;
         }
         .proj-pill:disabled {
             opacity: 0.35;
@@ -422,7 +422,7 @@
                 { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', labelKey: 'turnout' },
                 { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', labelKey: 'socioeconomic' },
                 { id: 'crossentropy', bg: 'linear-gradient(to bottom, #0038b8, #4a7fd4, #ffffff)', labelKey: 'cross_entropy' },
-                { id: 'party', bg: '#6366f1', labelKey: 'party' }
+                { id: 'party', bg: '#f0b429', labelKey: 'party' }
             ];
             container.innerHTML = modes.map(m => `
                 <div class="color-fab-wrapper ${m.id === this.colorMode ? 'active' : ''}" data-mode="${m.id}">
@@ -626,7 +626,7 @@
                     this.lightenColor(this.selectedParty.color, 0.85),
                     this.selectedParty.color, t);
             }
-            return '#64748b';
+            return '#939aab';
         }
 
         // ---- Sheets ----
@@ -640,7 +640,7 @@
             if (bn.endsWith('.0')) bn = bn.slice(0, -2);
             const url = `https://votes${this.currentElection}.bechirot.gov.il/ballotresults?cityID=${sid}&BallotNumber=${bn}`;
             const label = i18n.getLang() === 'en' ? 'CEC' : 'ועדת הבחירות';
-            return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${label}" style="color:#64748b;text-decoration:none;font-size:0.85em;display:inline-flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${label}</a>`;
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer" title="${label}" style="color:#939aab;text-decoration:none;font-size:0.85em;display:inline-flex;align-items:center;gap:3px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>${label}</a>`;
         }
 
         showStationSheet(station) {
@@ -651,7 +651,7 @@
 
             const partyHtml = topParties.map(([name, pct]) => {
                 const party = this.data.parties.find(p => p.name === name);
-                const color = party?.color || '#64748b';
+                const color = party?.color || '#939aab';
                 return `<div class="party-row">
                     <span class="party-dot" style="background:${color}"></span>
                     <span class="party-name">${i18n.partyName(name)}</span>
@@ -678,7 +678,7 @@
                 </div>
                 ${partyHtml}
                 <div style="display:flex;justify-content:space-between;gap:0.5rem;margin-top:10px;flex-wrap:wrap;">
-                    <a href="settlement.html?name=${encodeURIComponent(station.n)}" style="color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
+                    <a href="settlement.html?name=${encodeURIComponent(station.n)}" style="color:#f0b429;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
                     ${this.cecBallotLinkHTML(station)}
                 </div>
             `;

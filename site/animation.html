@@ -31,8 +31,8 @@
 
         body {
             font-family: 'Heebo', sans-serif;
-            background: linear-gradient(170deg, #06060c 0%, #0d0d18 50%, #0a0a14 100%);
-            color: #e2e8f0;
+            background: linear-gradient(170deg, #101218 0%, #16181d 50%, #1a1d26 100%);
+            color: #f3f5f8;
             overflow: hidden;
             width: 100vw;
             height: 100vh;
@@ -68,7 +68,7 @@
             font-size: clamp(20px, 3vw, 36px);
             font-weight: 700;
             letter-spacing: 2px;
-            color: #94a3b8;
+            color: #c8ceda;
             line-height: 1;
             opacity: 0;
             transition: opacity 0.6s;
@@ -76,7 +76,7 @@
         #year-subtitle {
             font-size: clamp(14px, 1.8vw, 20px);
             font-weight: 400;
-            color: #64748b;
+            color: #939aab;
             margin-top: 2px;
             opacity: 0;
             transition: opacity 0.6s;
@@ -98,25 +98,25 @@
         .progress-segment {
             width: clamp(24px, 5vw, 55px);
             height: 2px;
-            background: #1e293b;
+            background: #272b36;
         }
         .progress-segment.active {
-            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+            background: linear-gradient(90deg, #f0b429, #f6d78a);
         }
         .progress-dot {
             width: 9px;
             height: 9px;
             border-radius: 50%;
-            background: #1e293b;
-            border: 1.5px solid #334155;
+            background: #272b36;
+            border: 1.5px solid #3a4050;
             flex-shrink: 0;
             transition: all 0.5s;
             position: relative;
         }
         .progress-dot.active {
-            background: #3b82f6;
-            border-color: #60a5fa;
-            box-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+            background: #f0b429;
+            border-color: #f6d78a;
+            box-shadow: 0 0 8px rgba(240, 177, 41, 0.45);
         }
         .progress-dot .dot-label {
             position: absolute;
@@ -124,12 +124,12 @@
             left: 50%;
             transform: translateX(-50%);
             font-size: 9px;
-            color: #475569;
+            color: #939aab;
             white-space: nowrap;
             transition: color 0.5s;
         }
         .progress-dot.active .dot-label {
-            color: #94a3b8;
+            color: #c8ceda;
         }
 
         /* Controls */
@@ -158,7 +158,7 @@
         .ctrl-btn {
             background: none;
             border: none;
-            color: #94a3b8;
+            color: #c8ceda;
             cursor: pointer;
             font-size: 13px;
             padding: 2px 5px;
@@ -166,11 +166,11 @@
             transition: all 0.2s;
             font-family: inherit;
         }
-        .ctrl-btn:hover { background: rgba(51,65,85,0.5); color: #e2e8f0; }
-        .ctrl-btn.active { color: #3b82f6; }
-        #speed-slider { width: 44px; accent-color: #3b82f6; cursor: pointer; }
-        #speed-label { font-size: 9px; color: #64748b; min-width: 20px; text-align: center; }
-        .ctrl-sep { width: 1px; height: 14px; background: #334155; }
+        .ctrl-btn:hover { background: rgba(51,65,85,0.5); color: #f3f5f8; }
+        .ctrl-btn.active { color: #f0b429; }
+        #speed-slider { width: 44px; accent-color: #f0b429; cursor: pointer; }
+        #speed-label { font-size: 9px; color: #939aab; min-width: 20px; text-align: center; }
+        .ctrl-sep { width: 1px; height: 14px; background: #3a4050; }
 
         /* Outro overlay */
         #outro-overlay {
@@ -204,7 +204,7 @@
             font-size: clamp(32px, 5vw, 56px);
             font-weight: 700;
             letter-spacing: 6px;
-            background: linear-gradient(180deg, #f8fafc 0%, #64748b 100%);
+            background: linear-gradient(180deg, #f3f5f8 0%, #939aab 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -213,18 +213,18 @@
         .outro-subtitle {
             font-size: clamp(16px, 2.5vw, 24px);
             font-weight: 300;
-            color: #94a3b8;
+            color: #c8ceda;
             margin-bottom: 30px;
         }
         .outro-url {
             font-size: 14px;
-            color: #64748b;
+            color: #939aab;
             letter-spacing: 1px;
             margin-top: 16px;
         }
         .outro-dismiss {
             font-size: 13px;
-            color: #475569;
+            color: #939aab;
             margin-top: 28px;
             opacity: 0;
             transition: opacity 1s 2s;
@@ -241,7 +241,7 @@
             left: 16px;
             z-index: 5;
             font-size: 15px;
-            color: #94a3b8;
+            color: #c8ceda;
             letter-spacing: 0.5px;
             pointer-events: none;
             opacity: 0.7;
@@ -262,7 +262,7 @@
             left: 16px;
             z-index: 20;
             font-size: 14px;
-            color: #94a3b8;
+            color: #c8ceda;
             text-decoration: none;
             padding: 6px 14px;
             border-radius: 8px;
@@ -275,7 +275,7 @@
         }
         #back-link:hover {
             opacity: 1;
-            color: #e2e8f0;
+            color: #f3f5f8;
             border-color: rgba(96, 165, 250, 0.5);
             background: rgba(15, 23, 42, 0.8);
         }
@@ -287,7 +287,7 @@
             transform: translate(-50%, -50%);
             z-index: 30;
             font-size: 18px;
-            color: #64748b;
+            color: #939aab;
         }
 
         /* Tooltip */
@@ -301,7 +301,7 @@
             border-radius: 10px;
             padding: 10px 14px;
             font-size: 13px;
-            color: #e2e8f0;
+            color: #f3f5f8;
             opacity: 0;
             transition: opacity 0.15s;
             max-width: 280px;
@@ -319,7 +319,7 @@
         .tt-header-text { flex: 1; min-width: 0; }
         .tt-name { font-weight: 600; font-size: 14px; line-height: 1.3; }
         .tt-leader-name { color: #cbd5e1; font-size: 11px; }
-        .tt-row { color: #94a3b8; font-size: 11px; line-height: 1.5; }
+        .tt-row { color: #c8ceda; font-size: 11px; line-height: 1.5; }
         .tt-color {
             display: inline-block;
             width: 8px;
@@ -328,7 +328,7 @@
             margin-left: 4px;
             vertical-align: middle;
         }
-        .tt-desc { color: #64748b; font-size: 10px; margin-top: 4px; line-height: 1.4; }
+        .tt-desc { color: #939aab; font-size: 10px; margin-top: 4px; line-height: 1.4; }
     </style>
 </head>
 <body>
@@ -854,7 +854,7 @@ class ChainedSankeyAnimation {
             .attr('y', d => (d.y0 + d.y1) / 2)
             .attr('text-anchor', isLeft ? 'end' : 'start')
             .attr('dominant-baseline', 'central')
-            .attr('fill', '#94a3b8')
+            .attr('fill', '#c8ceda')
             .attr('font-size', d => {
                 const h = d.y1 - d.y0;
                 return h > 18 ? '11px' : h > 10 ? '9px' : '8px';
@@ -884,7 +884,7 @@ class ChainedSankeyAnimation {
             .attr('x', cx)
             .attr('y', this.padding.top - 14)
             .attr('text-anchor', 'middle')
-            .attr('fill', '#64748b')
+            .attr('fill', '#939aab')
             .attr('font-size', '12px')
             .attr('font-weight', '600')
             .text(shortYear)
@@ -897,7 +897,7 @@ class ChainedSankeyAnimation {
             .attr('x', cx)
             .attr('y', this.padding.top - 3)
             .attr('text-anchor', 'middle')
-            .attr('fill', '#475569')
+            .attr('fill', '#939aab')
             .attr('font-size', '9px')
             .text(`K${elId}`)
             .style('opacity', animated ? 0 : 0.6)
@@ -1283,9 +1283,9 @@ class ChainedSankeyAnimation {
         canvas.width = size * cell;
         canvas.height = size * cell;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#1e293b';
+        ctx.fillStyle = '#272b36';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#e2e8f0';
+        ctx.fillStyle = '#f3f5f8';
         for (let y = 0; y < size; y++)
             for (let x = 0; x < size; x++)
                 if (m[y][x]) ctx.fillRect(x * cell, y * cell, cell, cell);

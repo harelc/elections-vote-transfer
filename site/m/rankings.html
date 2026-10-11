@@ -55,7 +55,7 @@
         .section-tab.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: white;
+            color: #1a1408;
         }
 
         /* Section */
@@ -135,7 +135,7 @@
         .filter-pill.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: white;
+            color: #1a1408;
         }
 
         /* Count */
@@ -432,12 +432,12 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     x: {
-                        ticks: { color: '#94a3b8', font: { size: 9 }, maxRotation: 45 },
-                        grid: { color: '#2a2a3a40' }
+                        ticks: { color: '#c8ceda', font: { size: 9 }, maxRotation: 45 },
+                        grid: { color: '#3a405040' }
                     },
                     y: {
-                        ticks: { color: '#94a3b8', font: { size: 9 } },
-                        grid: { color: '#2a2a3a40' }
+                        ticks: { color: '#c8ceda', font: { size: 9 } },
+                        grid: { color: '#3a405040' }
                     }
                 }
             },
@@ -451,7 +451,7 @@
                     ctx.save();
                     ctx.beginPath();
                     ctx.setLineDash([4, 3]);
-                    ctx.strokeStyle = '#f8fafc';
+                    ctx.strokeStyle = '#f3f5f8';
                     ctx.lineWidth = 1.5;
                     ctx.moveTo(xPx, yScale.top);
                     ctx.lineTo(xPx, yScale.bottom);
@@ -527,8 +527,8 @@
                 plugins: { legend: { display: false } },
                 scales: {
                     x: {
-                        ticks: { color: '#94a3b8', font: { size: 10 } },
-                        grid: { color: '#2a2a3a40' }
+                        ticks: { color: '#c8ceda', font: { size: 10 } },
+                        grid: { color: '#3a405040' }
                     },
                     y: {
                         ticks: { color: '#f0f0f5', font: { size: 11 } },

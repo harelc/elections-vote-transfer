@@ -223,7 +223,7 @@
             position: sticky;
             top: 0;
             z-index: 3;
-            background: var(--bg-primary, #0a0a0f);
+            background: var(--bg-primary, #16181d);
             color: #fbbf24;
             font-size: 0.75rem;
             font-weight: 700;
@@ -450,7 +450,7 @@
             background: var(--accent);
             border: none;
             border-radius: 6px;
-            color: white;
+            color: #1a1408;
             font-family: inherit;
             font-size: 0.85rem;
             cursor: pointer;
@@ -466,6 +466,38 @@
             margin-top: 4px;
             font-size: 0.85rem;
             font-weight: 600;
+        }
+
+        .derived-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 3px 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .derived-row .mandate-quotient,
+        .derived-row .turnout-pct {
+            font-weight: 700;
+            color: var(--text-primary);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .derived-inline {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 4px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .derived-inline .mandate-quotient,
+        .derived-inline .turnout-pct {
+            color: var(--text-primary);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
 
         .reset-btn {
@@ -521,7 +553,7 @@
         .step-pill.active {
             background: var(--accent);
             border-color: var(--accent);
-            color: white;
+            color: #1a1408;
         }
     </style>
 </head>
@@ -573,6 +605,14 @@
         <div class="total-row">
             <span data-i18n="total_votes">סה״כ קולות:</span>
             <span id="edit-total-votes">0</span>
+        </div>
+        <div class="derived-row">
+            <span data-i18n="mandate_quotient">מודד למנדט</span>
+            <span class="mandate-quotient">—</span>
+        </div>
+        <div class="derived-row">
+            <span data-i18n="turnout_pct">אחוז הצבעה</span>
+            <span class="turnout-pct">—</span>
         </div>
     </div>
 
@@ -672,8 +712,8 @@
     ];
 
     const presets = {
-        '25': { parties: parties25, agreements: agreements25 },
-        '26': { parties: parties26, agreements: agreements26 },
+        '25': { parties: parties25, agreements: agreements25, eligible: 6788804, voters: 4794593 },
+        '26': { parties: parties26, agreements: agreements26, eligible: 7331981, voters: 5447662 },
     };
 
     let currentElection = i18n.SHOW_E26 ? '26' : '25';
@@ -818,7 +858,7 @@
                         const isActive = b.dataset.election === el;
                         b.classList.toggle('active', isActive);
                         b.style.background = isActive ? 'var(--accent)' : 'transparent';
-                        b.style.color = isActive ? 'white' : 'var(--text-secondary)';
+                        b.style.color = isActive ? '#1a1408' : 'var(--text-secondary)';
                     });
                     // Refresh edit sheet if open
                     if (this.activeSheet === 'edit-sheet') this.renderEditList();
@@ -1165,6 +1205,28 @@
             return html;
         }
 
+        liveFigures(totalVotes, thresholdVotes) {
+            const roll = presets[currentElection];
+            const presetVotes = roll.parties.reduce((sum, party) => sum + party.votes, 0);
+            const cast = Math.max(0, totalVotes + roll.voters - presetVotes);
+            const turnout = roll.eligible > 0 ? 100 * cast / roll.eligible : 0;
+            const qualifying = this.parties.reduce((sum, party) => (
+                sum + (party.votes >= thresholdVotes ? party.votes : 0)
+            ), 0);
+            const measure = this.totalSeats > 0 ? Math.floor(qualifying / this.totalSeats) : 0;
+            const figures = {
+                measureText: i18n.fmtNum(measure),
+                turnoutText: turnout.toFixed(1) + '%',
+            };
+            document.querySelectorAll('.mandate-quotient').forEach(el => {
+                el.textContent = figures.measureText;
+            });
+            document.querySelectorAll('.turnout-pct').forEach(el => {
+                el.textContent = figures.turnoutText;
+            });
+            return figures;
+        }
+
         // ---- Render results list ----
         renderResults(results, thresholdVotes, lastQuotient) {
             const container = document.getElementById('results-list');
@@ -1223,7 +1285,8 @@
                 </div>`;
             }).join('');
 
-            container.innerHTML = `<div class="threshold-banner">${cutoffLabel} · ${i18n.t('seat_block_legend')}</div>` + rows;
+            container.innerHTML = `<div class="threshold-banner"><div>${cutoffLabel} · ${i18n.t('seat_block_legend')}</div><div class="derived-inline"><span>${i18n.t('mandate_quotient')} <span class="mandate-quotient">—</span></span><span>${i18n.t('turnout_pct')} <span class="turnout-pct">—</span></span></div></div>` + rows;
+            this.liveFigures(totalVotes, thresholdVotes);
 
             // Coalition counts
             const rightSeats = results.filter(r => r.block === 'right').reduce((s, r) => s + r.seats, 0);

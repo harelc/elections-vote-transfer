@@ -505,7 +505,7 @@
             }
 
             // Dots
-            const colorX = partyX.color || '#6366f1';
+            const colorX = partyX.color || '#939aab';
             const colorY = partyY.color || '#ef4444';
 
             g.selectAll('.dot')
@@ -577,7 +577,7 @@
                     <span class="label">${i18n.t('voters')}</span>
                     <span class="value">${i18n.fmtNum(d.voters)}</span>
                 </div>
-                <a href="settlement.html?name=${encodeURIComponent(d.settlement)}" style="display:block;margin-top:10px;color:#3b82f6;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
+                <a href="settlement.html?name=${encodeURIComponent(d.settlement)}" style="display:block;margin-top:10px;color:#f0b429;text-decoration:none;font-size:0.85em;">${i18n.t('go_to_profile')} &rarr;</a>
             `;
             document.getElementById('sheet-backdrop').classList.add('visible');
             document.getElementById('bottom-sheet').classList.add('visible');

@@ -1,26 +1,26 @@
 /*
- * קולות נודדים - Dark Theme Styles
- * Israeli Election Vote Transfer Visualization
+ * קולות נודדים
+ * Cool ink, one gold mark. Party colors stay on the data.
  */
 
 :root {
-    /* Dark theme colors */
-    --bg-primary: #0a0a0f;
-    --bg-secondary: #12121a;
-    --bg-tertiary: #1a1a25;
-    --bg-card: #1e1e2a;
-    --bg-hover: #252535;
+    --bg-primary: #16181d;
+    --bg-secondary: #1e212a;
+    --bg-tertiary: #272b36;
+    --bg-card: #232733;
+    --bg-hover: #2e3340;
 
-    --text-primary: #f0f0f5;
-    --text-secondary: #a0a0b0;
-    --text-muted: #606075;
+    --text-primary: #f3f5f8;
+    --text-secondary: #c8ceda;
+    --text-muted: #939aab;
 
-    --accent-primary: #3b82f6;
-    --accent-secondary: #8b5cf6;
-    --accent-glow: rgba(99, 102, 241, 0.3);
+    --accent-primary: #f0b429;
+    --accent-secondary: #f6d78a;
+    --on-accent: #1a1408;
+    --accent-glow: rgba(240, 177, 41, 0.28);
 
-    --border-color: #2a2a3a;
-    --border-light: #35354a;
+    --border-color: #3a4050;
+    --border-light: #4c5468;
 
     --success: #10b981;
     --warning: #f59e0b;
@@ -152,14 +152,21 @@ body {
 }
 
 .site-title {
-    font-size: 2.5rem;
+        font-size: 2.5rem;
     font-weight: 700;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
     margin-bottom: 0.2rem;
-    background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: var(--text-primary);
+}
+
+.site-title::after,
+.main-header h1::after {
+    content: '';
+    display: block;
+    width: 3.25rem;
+    height: 2px;
+    margin: 0.55rem auto 0;
+    background: var(--accent-primary);
 }
 
 .title-icon {
@@ -208,6 +215,7 @@ body {
 .nav-extras .view-btn.active {
     opacity: 1;
     background: var(--accent-primary);
+    color: var(--on-accent);
     border: none;
 }
 
@@ -218,6 +226,7 @@ body {
     text-decoration: none;
     border-radius: var(--radius-md);
     font-size: 0.9rem;
+    line-height: 1.25;
     border: 1px solid var(--border-color);
     transition: var(--transition-fast);
     cursor: pointer;
@@ -230,7 +239,7 @@ body {
 
 .view-btn.active {
     background: var(--accent-primary);
-    color: var(--text-primary);
+    color: var(--on-accent);
     border-color: var(--accent-primary);
 }
 
@@ -274,32 +283,27 @@ body {
     background: var(--bg-hover);
     border-color: var(--border-light);
     color: var(--text-primary);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
 }
 
 .nav-btn.active {
     background: var(--accent-primary);
     border-color: var(--accent-primary);
-    color: white;
-    box-shadow: var(--shadow-glow);
+    color: var(--on-accent);
 }
 
 .nav-btn.animation-link {
     text-decoration: none;
     font-size: 1.2rem;
     padding: var(--spacing-sm) var(--spacing-lg);
-    background: linear-gradient(135deg, #7c3aed, #3b82f6);
-    border-color: #7c3aed;
-    color: white;
+    background: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: var(--on-accent);
     margin-inline-start: var(--spacing-md);
     font-weight: 600;
-    box-shadow: 0 0 12px rgba(124, 58, 237, 0.3);
 }
 .nav-btn.animation-link:hover {
-    background: linear-gradient(135deg, #6d28d9, #2563eb);
-    box-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
-    transform: translateY(-1px);
+    background: var(--accent-secondary);
+    color: var(--on-accent);
 }
 
 .nav-from, .nav-to {

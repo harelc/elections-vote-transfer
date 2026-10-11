@@ -15,14 +15,14 @@
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         :root {
-            --bg: #0a0a0f;
-            --bg2: #12121a;
-            --bg3: #1a1a25;
-            --text: #f8fafc;
-            --text2: #94a3b8;
-            --text3: #64748b;
-            --accent: #3b82f6;
-            --border: #2a2a3a;
+            --bg: #16181d;
+            --bg2: #1e212a;
+            --bg3: #272b36;
+            --text: #f3f5f8;
+            --text2: #c8ceda;
+            --text3: #939aab;
+            --accent: #f0b429;
+            --border: #3a4050;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -172,7 +172,7 @@
 
         .final-link {
             background: var(--accent);
-            color: white !important;
+            color: #1a1408 !important;
             border-color: var(--accent);
             font-weight: 600;
         }
@@ -317,7 +317,7 @@
         function drawIntro() {
             const svg = makeSvg(700, 280);
             const stats = [
-                { label: 'בעלי זכות בחירה', value: DATA.totals.eligible, color: '#3b82f6' },
+                { label: 'בעלי זכות בחירה', value: DATA.totals.eligible, color: '#f0b429' },
                 { label: 'מימשו את זכותם', value: DATA.totals.voted,    color: '#22c55e' },
                 { label: 'קולות כשרים',    value: DATA.totals.kosher,    color: '#f59e0b' },
             ];
@@ -398,7 +398,7 @@
                 .attr('cx', d => proj(d)[0])
                 .attr('cy', d => proj(d)[1])
                 .attr('r', 0)
-                .attr('fill', '#3b82f6')
+                .attr('fill', '#f0b429')
                 .attr('opacity', 0)
                 .transition().delay((d, i) => (i / order.length) * totalDur).duration(300)
                 .attr('r', 1.6).attr('opacity', 0.65);
@@ -427,7 +427,7 @@
                 .attr('width', b => Math.max(0, xs(b.hi) - xs(b.lo) - 4))
                 .attr('y', H - pad.b)
                 .attr('height', 0)
-                .attr('fill', '#3b82f6').attr('opacity', 0.85)
+                .attr('fill', '#f0b429').attr('opacity', 0.85)
                 .transition().duration(800).delay((d, i) => i * 100)
                 .attr('y', b => ys(b.c))
                 .attr('height', b => (H - pad.b) - ys(b.c));
@@ -518,13 +518,13 @@
             svg.append('line')
                 .attr('x1', xs(avg)).attr('x2', xs(avg))
                 .attr('y1', pad.t).attr('y2', H - pad.b)
-                .attr('stroke', '#3b82f6').attr('stroke-width', 2).attr('stroke-dasharray', '4,4')
+                .attr('stroke', '#f0b429').attr('stroke-width', 2).attr('stroke-dasharray', '4,4')
                 .style('opacity', 0)
                 .transition().delay(1400).duration(500).style('opacity', 1);
             svg.append('text')
                 .attr('x', xs(avg)).attr('y', pad.t - 8)
                 .attr('text-anchor', 'middle')
-                .attr('fill', '#3b82f6').attr('font-size', '0.85rem').attr('font-weight', 600)
+                .attr('fill', '#f0b429').attr('font-size', '0.85rem').attr('font-weight', 600)
                 .text('ממוצע ארצי ' + pctFmt(avg))
                 .style('opacity', 0)
                 .transition().delay(1400).duration(500).style('opacity', 1);
@@ -542,7 +542,7 @@
             const y0 = 140, bh = 70;
 
             svg.append('rect').attr('x', pad).attr('y', y0)
-                .attr('width', 0).attr('height', bh).attr('fill', '#3b82f6').attr('opacity', 0.85)
+                .attr('width', 0).attr('height', bh).attr('fill', '#f0b429').attr('opacity', 0.85)
                 .transition().duration(900).attr('width', xs(regular) - pad);
             svg.append('rect').attr('x', xs(regular)).attr('y', y0)
                 .attr('width', 0).attr('height', bh).attr('fill', '#f59e0b').attr('opacity', 0.95)
@@ -608,7 +608,7 @@
                 symbol: '— זנב ארוך —',
                 name: rest.length + ' רשימות נוספות',
                 votes: d3.sum(rest, p => p.votes),
-                color: '#475569',
+                color: '#939aab',
             };
             const display = top.concat([restGroup]);
             const ys = d3.scaleBand().domain(display.map(d => d.name)).range([pad.t, H - pad.b]).padding(0.18);
@@ -621,7 +621,7 @@
                 .attr('y', d => ys(d.name))
                 .attr('width', 0)
                 .attr('height', ys.bandwidth())
-                .attr('fill', d => d.color || '#64748b')
+                .attr('fill', d => d.color || '#939aab')
                 .attr('opacity', 0.9)
                 .transition().duration(800).delay((d, i) => i * 60)
                 .attr('width', d => Math.max(2, xs(d.votes) - pad.l));
@@ -660,7 +660,7 @@
                 .attr('width', xs.bandwidth())
                 .attr('y', H - pad.b)
                 .attr('height', 0)
-                .attr('fill', d => d.color || '#64748b')
+                .attr('fill', d => d.color || '#939aab')
                 .attr('opacity', d => d.votes >= threshold ? 0.95 : 0.35)
                 .transition().duration(800).delay((d, i) => i * 70)
                 .attr('y', d => ys(d.votes))
@@ -695,10 +695,10 @@
             const W = 800, H = 420, pad = { l: 30, r: 30, t: 30, b: 30 };
             const svg = makeSvg(W, H);
             const buckets = [
-                { key: 'big',    title: 'גדולות',  desc: 'מעל 10% מהקולות', color: '#3b82f6' },
+                { key: 'big',    title: 'גדולות',  desc: 'מעל 10% מהקולות', color: '#f0b429' },
                 { key: 'medium', title: 'בינוניות', desc: 'עברו את אחוז החסימה', color: '#22c55e' },
                 { key: 'small_below_threshold', title: 'קטנות', desc: 'מתחת לחסימה אך מעל 0.5%', color: '#f59e0b' },
-                { key: 'tiny',   title: 'זעירות',  desc: 'מתחת ל-0.5%', color: '#64748b' },
+                { key: 'tiny',   title: 'זעירות',  desc: 'מתחת ל-0.5%', color: '#939aab' },
             ];
             const all = DATA.parties;
             const total = DATA.total_valid;

@@ -20,15 +20,15 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
     <style>
         :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-tertiary: #1a1a25;
-            --text-primary: #f8fafc;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --border-color: #2a2a3a;
-            --accent-primary: #3b82f6;
-            --accent-secondary: #06b6d4;
+            --bg-primary: #16181d;
+            --bg-secondary: #1e212a;
+            --bg-tertiary: #272b36;
+            --text-primary: #f3f5f8;
+            --text-secondary: #c8ceda;
+            --text-muted: #939aab;
+            --border-color: #3a4050;
+            --accent-primary: #f0b429;
+            --accent-secondary: #f6d78a;
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
             --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
@@ -106,11 +106,17 @@
             font-weight: 700;
             letter-spacing: -0.02em;
             margin-bottom: 0.2rem;
-            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+                        color: var(--text-primary);
         }
+        .main-header h1::after {
+            content: '';
+            display: block;
+            width: 3.25rem;
+            height: 2px;
+            margin: 0.55rem auto 0;
+            background: var(--accent-primary);
+        }
+
         .title-icon {
             display: inline-block;
             margin-left: 0.5rem;
@@ -139,6 +145,7 @@
             text-decoration: none;
             border-radius: 8px;
             font-size: 0.9rem;
+            line-height: 1.25;
             border: 1px solid var(--border-color);
             transition: var(--transition-fast);
             cursor: pointer;
@@ -147,7 +154,7 @@
         .view-btn:hover { background: #252535; color: var(--text-primary); }
         .view-btn.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -189,7 +196,7 @@
         .section-tab:hover { background: #252535; color: var(--text-primary); }
         .section-tab.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -265,7 +272,7 @@
         .filter-pill:hover { background: #252535; color: var(--text-primary); }
         .filter-pill.active {
             background: var(--accent-primary);
-            color: var(--text-primary);
+            color: #1a1408;
             border-color: var(--accent-primary);
         }
 
@@ -467,7 +474,7 @@
 
     <div class="app-container">
         <header class="main-header">
-            <h1><span class="title-icon">🗳️</span><span data-i18n="site_title">קולות נודדים</span></h1>
+            <h1><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="rankings_subtitle">דירוגי תנודתיות יישובים וריכוז גיאוגרפי</p>
             <nav class="view-switcher"></nav>
         </header>
@@ -759,21 +766,21 @@
                 },
                 scales: {
                     x: {
-                        ticks: { color: '#94a3b8', font: { size: 11 } },
-                        grid: { color: '#2a2a3a40' },
+                        ticks: { color: '#c8ceda', font: { size: 11 } },
+                        grid: { color: '#3a405040' },
                         title: {
                             display: true,
                             text: i18n.t('volatility_label') + ' (%)',
-                            color: '#94a3b8'
+                            color: '#c8ceda'
                         }
                     },
                     y: {
-                        ticks: { color: '#94a3b8', font: { size: 11 } },
-                        grid: { color: '#2a2a3a40' },
+                        ticks: { color: '#c8ceda', font: { size: 11 } },
+                        grid: { color: '#3a405040' },
                         title: {
                             display: true,
                             text: i18n.getLang() === 'he' ? 'מספר יישובים' : 'Number of settlements',
-                            color: '#94a3b8'
+                            color: '#c8ceda'
                         }
                     }
                 }
@@ -790,13 +797,13 @@
                     ctx.save();
                     ctx.beginPath();
                     ctx.setLineDash([6, 4]);
-                    ctx.strokeStyle = '#f8fafc';
+                    ctx.strokeStyle = '#f3f5f8';
                     ctx.lineWidth = 2;
                     ctx.moveTo(xPx, yScale.top);
                     ctx.lineTo(xPx, yScale.bottom);
                     ctx.stroke();
                     // Label
-                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillStyle = '#f3f5f8';
                     ctx.font = '12px Heebo, sans-serif';
                     ctx.textAlign = 'center';
                     ctx.fillText(i18n.t('median_label') + ' ' + median.toFixed(1) + '%', xPx, yScale.top - 6);
@@ -963,16 +970,16 @@
                 },
                 scales: {
                     x: {
-                        ticks: { color: '#94a3b8', font: { size: 11 } },
-                        grid: { color: '#2a2a3a40' },
+                        ticks: { color: '#c8ceda', font: { size: 11 } },
+                        grid: { color: '#3a405040' },
                         title: {
                             display: true,
                             text: i18n.t('effective_settlements'),
-                            color: '#94a3b8'
+                            color: '#c8ceda'
                         }
                     },
                     y: {
-                        ticks: { color: '#f8fafc', font: { size: 12 } },
+                        ticks: { color: '#f3f5f8', font: { size: 12 } },
                         grid: { display: false }
                     }
                 }
