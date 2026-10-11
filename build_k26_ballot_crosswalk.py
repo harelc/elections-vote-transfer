@@ -2,10 +2,16 @@
 """
 Pair K25 and K26 ballots for the 25→26 Sankey, and preview K25 pin corrections.
 
-Does not modify station_coordinates.json. Writes:
+By default writes only:
 
   data/k25_k26_ballot_union.csv
   data/k25_coord_corrections_preview.csv
+
+Flags that rewrite site/data/station_coordinates.json:
+
+  --apply-geo          move clearly wrong pins and write official K26 ITM
+  --sync-keys          copy the better pin onto name|N and name|N.0 twins
+  --backfill-missing   copy the paired K26 point onto K25 keys with no pin
 
 Pairing policy (a K25 ballot is used at most once):
 
@@ -679,8 +685,124 @@ def apply_geo(proposals, k25, k26):
     print(f'Coordinates: {moved} old pins moved ≥2 km, {added} K26 keys added, {replaced} K26 keys set to ITM, {skipped} conflicting numbers left alone')
 
 
+def sync_ballot_key_twins():
+    """Give both ``name|2`` and ``name|2.0`` the better pin.
+
+    Older geocoding stored integer ballots as ``2.0``. Later writers stored
+    ``2``. The K26 correction updated only the one key the crosswalk had
+    recorded, so the twin could keep a wrong town-center pin.
+    """
+    priority = {
+        'cec_k26': 6, 'manual_override': 5, 'manual_correction': 5, 'manual': 5,
+        'google_venue_haifa': 4, 'google_venue': 3, 'venue': 2, 'settlement': 1,
+        'not_found': 0,
+    }
+    data = json.loads(COORDS_PATH.read_text(encoding='utf-8'))
+    stations = data['stations']
+    groups = {}
+    for key in stations:
+        if '|' not in key:
+            continue
+        name, ballot = key.rsplit('|', 1)
+        canon = ballot[:-2] if ballot.endswith('.0') else ballot
+        groups.setdefault((name, canon), []).append(key)
+
+    updated = groups_fixed = 0
+    for keys in groups.values():
+        if len(keys) < 2:
+            continue
+        ranked = sorted(keys, key=lambda k: (
+            priority.get(stations[k].get('source'), 0),
+            1 if _point_ok(stations[k].get('lat'), stations[k].get('lng')) else 0,
+        ), reverse=True)
+        winner = stations[ranked[0]]
+        if not _point_ok(winner.get('lat'), winner.get('lng')):
+            continue
+        wlat, wlng = float(winner['lat']), float(winner['lng'])
+        changed = False
+        for key in ranked[1:]:
+            entry = stations[key]
+            olat, olng = entry.get('lat'), entry.get('lng')
+            far = not _point_ok(olat, olng) or hav((float(olat), float(olng)), (wlat, wlng)) > 50
+            if not far:
+                continue
+            entry['prev_source'] = entry.get('source')
+            entry['prev_lat'] = olat
+            entry['prev_lng'] = olng
+            entry['lat'] = wlat
+            entry['lng'] = wlng
+            entry['source'] = winner.get('source')
+            updated += 1
+            changed = True
+        if changed:
+            groups_fixed += 1
+
+    COORDS_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    print(f'Synced {updated} duplicate ballot keys in {groups_fixed} ballots')
+
+
+def backfill_missing_k25_pins():
+    """Copy the paired K26 coordinate onto K25 keys that were never geocoded."""
+    from generate_map_data import normalize_name
+
+    data = json.loads(COORDS_PATH.read_text(encoding='utf-8'))
+    stations = data['stations']
+
+    def usable(entry):
+        return entry is not None and _point_ok(entry.get('lat'), entry.get('lng'))
+
+    def locate(name, ballot):
+        name = normalize_name(name)
+        for key in (f'{name}|{ballot}', f'{name}|{ballot}.0'):
+            entry = stations.get(key)
+            if usable(entry):
+                return entry
+        return None
+
+    rows = list(csv.DictReader(UNION_PATH.open(encoding='utf-8-sig')))
+    filled = 0
+    for row in rows:
+        if row['decision'] not in ('id', 'id_dot1', 'venue', 'coord'):
+            continue
+        if locate(row['k25_name'], row['k25_ballot']):
+            continue
+        donor = locate(row['k26_name'], row['k26_ballot'])
+        if donor is None:
+            continue
+        name = normalize_name(row['k25_name'])
+        ballot = row['k25_ballot']
+        for key, ballot_text in ((f'{name}|{ballot}', ballot), (f'{name}|{ballot}.0', f'{ballot}.0')):
+            entry = stations.get(key)
+            if usable(entry):
+                continue
+            if entry is None:
+                entry = {
+                    'settlement': name,
+                    'ballot': ballot_text,
+                    'location': row['k25_venue'] or row['k26_venue'],
+                }
+                stations[key] = entry
+            entry['prev_source'] = entry.get('source')
+            entry['prev_lat'] = entry.get('lat')
+            entry['prev_lng'] = entry.get('lng')
+            entry['lat'] = donor['lat']
+            entry['lng'] = donor['lng']
+            entry['source'] = 'cec_k26'
+            if not entry.get('location'):
+                entry['location'] = row['k26_venue']
+            filled += 1
+    COORDS_PATH.write_text(json.dumps(data, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
+    print(f'Backfilled {filled} coordinate keys from the paired K26 point')
+
+
 def main():
     import sys
+    if '--sync-keys' in sys.argv:
+        sync_ballot_key_twins()
+        return
+    if '--backfill-missing' in sys.argv:
+        backfill_missing_k25_pins()
+        return
     print('Loading…')
     k25 = load_k25()
     k26 = load_k26()
