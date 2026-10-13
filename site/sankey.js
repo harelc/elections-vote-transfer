@@ -52,6 +52,8 @@ class VoteTransferSankey {
         this.g = null;
         this.percentMode = 'source'; // 'source' or 'target'
         this.abstentionMode = false;
+        this.flowCI = null;
+        this.flowCIFile = null;
         // Transitions where abstention data is unreliable (K17 has no per-ballot eligible voter data)
         this.noAbstentionTransitions = ['16_to_17', '17_to_18'];
 
@@ -582,6 +584,9 @@ class VoteTransferSankey {
             this.data = await response.json();
             console.log('Data loaded:', this.data);
 
+            const ciFile = await this.loadFlowCI();
+            this.flowCI = (ciFile.transitions || {})[transitionId + suffix] || null;
+
             // Apply color overrides
             applyColorOverrides(this.data.nodes_from);
             applyColorOverrides(this.data.nodes_to);
@@ -621,6 +626,48 @@ class VoteTransferSankey {
         // Update stats
         document.getElementById('stat-precincts').textContent = i18n.fmtNum(stats.common_precincts);
         document.getElementById('stat-r2').textContent = stats.r_squared.toFixed(3);
+        const r2ci = document.getElementById('stat-r2-ci');
+        if (r2ci) {
+            const interval = this.flowCI && this.flowCI.r2_ci;
+            const label = r2ci.querySelector('.stat-ci-label');
+            const range = r2ci.querySelector('.stat-ci-range');
+            if (interval && label && range) {
+                r2ci.hidden = false;
+                label.textContent = i18n.t('ci_95');
+                range.textContent = `${interval[0].toFixed(3)}–${interval[1].toFixed(3)}`;
+            } else {
+                r2ci.hidden = true;
+            }
+        }
+    }
+
+    async loadFlowCI() {
+        if (this.flowCIFile) return this.flowCIFile;
+        try {
+            const response = await fetch('/data/transfer_ci.json');
+            this.flowCIFile = response.ok ? await response.json() : { transitions: {} };
+        } catch (e) {
+            this.flowCIFile = { transitions: {} };
+        }
+        return this.flowCIFile;
+    }
+
+    formatCI(link, reversePercent) {
+        if (link.ciLow == null || link.ciHigh == null) return '';
+        let lo = link.ciLow;
+        let hi = link.ciHigh;
+        if (this.percentMode !== 'source' && link.percentage) {
+            const scale = parseFloat(reversePercent) / link.percentage;
+            lo *= scale;
+            hi *= scale;
+        }
+        const fmt = v => {
+            const capped = Math.min(100, Math.max(0, v));
+            return (Math.round(capped * 10) / 10).toFixed(1);
+        };
+        const a = Math.min(lo, hi);
+        const b = Math.max(lo, hi);
+        return `${i18n.t('ci_95')}: ${fmt(a)}–${fmt(b)}`;
     }
 
     formatDate(dateStr, estimated) {
@@ -688,6 +735,7 @@ class VoteTransferSankey {
                     console.warn('Missing node for transfer:', t.source, '->', t.target);
                     return null;
                 }
+                const ci = this.flowCI && this.flowCI.cells[`${t.source}\t${t.target}`];
                 return {
                     source: nodes[sourceIdx].id,
                     target: nodes[targetIdx].id,
@@ -696,7 +744,9 @@ class VoteTransferSankey {
                     sourceName: t.source,
                     targetName: t.target,
                     sourceSymbol: t.source_symbol,
-                    targetSymbol: t.target_symbol
+                    targetSymbol: t.target_symbol,
+                    ciLow: ci ? ci[0] : null,
+                    ciHigh: ci ? ci[1] : null
                 };
             })
             .filter(l => l !== null && l.value > 0);
@@ -1019,6 +1069,7 @@ class VoteTransferSankey {
         const percentText = this.percentMode === 'source'
             ? `${link.percentage}% ${i18n.t('from_votes_of', { party: srcName })}`
             : `${reversePercent}% ${i18n.t('from_votes_of_new', { party: tgtName })}`;
+        const ciText = this.formatCI(link, reversePercent);
 
         const html = `
             <div class="tooltip-flow">
@@ -1028,6 +1079,7 @@ class VoteTransferSankey {
                     <span class="tooltip-flow-party">${tgtName}</span>
                 </div>
                 <div class="tooltip-flow-value">${percentText}</div>
+                ${ciText ? `<div class="tooltip-flow-note">${ciText}</div>` : ''}
                 <div class="tooltip-flow-note">${i18n.t('votes_from_common_only', { n: i18n.fmtNum(link.value) })}</div>
             </div>
         `;

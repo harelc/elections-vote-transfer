@@ -55,6 +55,7 @@
         correlation_label:     { he: 'מקדם פירסון:', en: 'Pearson coefficient:' },
         regression_label:      { he: 'משוואת רגרסיה:', en: 'Regression equation:' },
         r_squared:             { he: 'R²:', en: 'R²:' },
+        ci_95:                 { he: 'רווח בר סמך 95%', en: '95% CI' },
         pct_display:           { he: 'תצוגת אחוזים:', en: 'Percent display:' },
         pct_from_prev:         { he: 'מהבחירות הקודמות', en: 'From previous election' },
         pct_from_next:         { he: 'מהבחירות החדשות', en: 'From new election' },

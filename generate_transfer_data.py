@@ -209,12 +209,12 @@ class VoteTransferAnalyzer:
         logger.warning("No eligible voter data available, abstention will be 0")
         return pd.Series(0, index=df.index)
 
-    def compute_transfer(self, election_from, election_to):
-        """
-        Compute vote transfer between two elections.
+    def design_matrices(self, election_from, election_to):
+        """Matched ballots, party names, and constraints for one transition.
 
-        Returns:
-            dict with transfer data suitable for JSON export
+        The published transfer JSON and the bootstrap intervals both start
+        from this design, so a cell's percentage and its interval describe
+        the same fit.
         """
         # Load data
         df_from, config_from = self.load_election_data(election_from)
@@ -314,9 +314,6 @@ class VoteTransferAnalyzer:
             symbols_from = list(symbols_from) + ['abstain']
             symbols_to = list(symbols_to) + ['abstain']
 
-        # Compute transfer matrix
-        logger.info(f"Computing transfer matrix using {self.method} method...")
-
         # 25→26. Without abstention the matrix only sees valid votes, so each
         # row sums to the growth in valid votes on the paired boxes (population
         # plus the turnout change). With abstention, turnout change is a flow
@@ -335,13 +332,60 @@ class VoteTransferAnalyzer:
         else:
             row_sum = 1.0
 
+        zero_cells = []
+        for src, dst in FORBIDDEN_CELLS.get((str(election_from), str(election_to)), []):
+            if src in names_from and dst in names_to:
+                zero_cells.append((names_from.index(src), names_to.index(dst)))
+
+        return {
+            'df_from': df_from,
+            'df_to': df_to,
+            'config_from': config_from,
+            'config_to': config_to,
+            'df_from_raw': df_from_raw,
+            'df_to_raw': df_to_raw,
+            'parties_from': parties_from,
+            'parties_to': parties_to,
+            'names_from': list(names_from),
+            'names_to': list(names_to),
+            'symbols_from': list(symbols_from),
+            'symbols_to': list(symbols_to),
+            'X': X,
+            'Y': Y,
+            'row_sum': row_sum,
+            'zero_cells': zero_cells,
+        }
+
+    def compute_transfer(self, election_from, election_to):
+        """
+        Compute vote transfer between two elections.
+
+        Returns:
+            dict with transfer data suitable for JSON export
+        """
+        design = self.design_matrices(election_from, election_to)
+        df_from = design['df_from']
+        df_to = design['df_to']
+        config_from = design['config_from']
+        config_to = design['config_to']
+        df_from_raw = design['df_from_raw']
+        df_to_raw = design['df_to_raw']
+        parties_from = design['parties_from']
+        parties_to = design['parties_to']
+        names_from = design['names_from']
+        names_to = design['names_to']
+        symbols_from = design['symbols_from']
+        symbols_to = design['symbols_to']
+        X = design['X']
+        Y = design['Y']
+        row_sum = design['row_sum']
+        zero_cells = design['zero_cells']
+
+        logger.info(f"Computing transfer matrix using {self.method} method...")
+        if zero_cells:
+            logger.info(f"  Zeroing {len(zero_cells)} implausible cells for {election_from}→{election_to}")
+
         if self.method == 'convex':
-            zero_cells = []
-            for src, dst in FORBIDDEN_CELLS.get((str(election_from), str(election_to)), []):
-                if src in names_from and dst in names_to:
-                    zero_cells.append((names_from.index(src), names_to.index(dst)))
-            if zero_cells:
-                logger.info(f"  Zeroing {len(zero_cells)} implausible cells for {election_from}→{election_to}")
             M = self.solve_transfer_matrix_convex(X, Y, row_sum=row_sum, zero_cells=zero_cells)
         elif self.method == 'nnls':
             M = self.solve_transfer_matrix_nnls(X, Y)
