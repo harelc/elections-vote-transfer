@@ -12,9 +12,7 @@
     <title>מפה - קולות נודדים</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
@@ -24,8 +22,7 @@
             height: 100%;
         }
 
-        .leaflet-tile-pane { filter: brightness(0.7) saturate(0.8); }
-        .leaflet-popup-pane, .leaflet-marker-pane, .leaflet-overlay-pane { filter: none; }
+        .maplibregl-map { background: var(--bg); }
 
         /* Cluster icons */
         .custom-cluster {
@@ -144,15 +141,15 @@
         }
 
         /* Station popup override for dark theme */
-        .leaflet-popup-content-wrapper {
+        .maplibregl-popup-content-wrapper, .maplibregl-popup-content {
             background: var(--bg-card) !important;
             color: var(--text-primary) !important;
             border-radius: var(--radius) !important;
             border: 1px solid var(--border) !important;
             box-shadow: var(--shadow) !important;
         }
-        .leaflet-popup-tip { background: var(--bg-card) !important; }
-        .leaflet-popup-close-button { color: var(--text-muted) !important; font-size: 18px !important; }
+        .maplibregl-popup-anchor-bottom .maplibregl-popup-tip { border-top-color: var(--bg-card) !important; }
+        .maplibregl-popup-close-button { color: var(--text-muted) !important; font-size: 18px !important; }
 
         .popup-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 2px; }
         .popup-subtitle { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; }
@@ -401,9 +398,9 @@
         <a href="discussions.html"><span class="tab-icon">💬</span><span data-i18n="nav_discussions">דיונים</span></a>
     </nav>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="../basemap.js"></script>
+    <script src="../station-clusters.js"></script>
     <script>
     class MobileGeoMap {
         constructor() {
@@ -453,50 +450,27 @@
         }
 
         initMap() {
-            this.map = L.map('map', {
-                center: [31.5, 34.9],
+            this.map = createMap('map', {
+                center: [34.9, 31.5],
                 zoom: 8,
                 minZoom: 7,
                 maxZoom: 18,
-                zoomControl: false
+                basemap: 'positron',
+                zoomPosition: 'bottom-right'
             });
-
-            addBasemap(this.map, 'positron');
-
-            L.control.zoom({ position: 'bottomright' }).addTo(this.map);
-
-            this.markers = L.markerClusterGroup({
-                chunkedLoading: true,
-                maxClusterRadius: 50,
-                showCoverageOnHover: false,
-                zoomToBoundsOnClick: false,
-                spiderfyOnMaxZoom: false,
-                iconCreateFunction: c => this.createClusterIcon(c)
-            });
-            this.map.addLayer(this.markers);
-
-            // Tap on cluster → smart handling
-            this.markers.on('clusterclick', e => {
-                const cluster = e.layer;
-                const children = cluster.getAllChildMarkers();
-                const firstLL = children[0].getLatLng();
-                const colocated = children.every(m => {
-                    const ll = m.getLatLng();
-                    return ll.lat === firstLL.lat && ll.lng === firstLL.lng;
-                });
-
-                if (colocated) {
-                    // Colocated: show bottom sheet with individual ballot list (no spiderfy)
-                    this.showColocatedSheet(cluster);
-                } else {
-                    // Spread: zoom in, or spiderfy if can't zoom further
-                    const boundsZoom = this.map.getBoundsZoom(cluster.getBounds());
-                    if (boundsZoom <= this.map.getZoom()) {
-                        cluster.spiderfy();
-                    } else {
-                        cluster.zoomToBounds({padding: [20, 20]});
-                    }
-                }
+            const viz = this;
+            this.stationsLayer = new StationClusterLayer(this.map, {
+                clusterHTML: (stations, lng, lat) => viz.createClusterIcon(asLeafletCluster(stations, lng, lat)),
+                onClusterClick: (stations) => {
+                    const first = stations[0];
+                    const colocated = stations.every(item =>
+                        Math.abs(item.origLat - first.origLat) < 1e-5 &&
+                        Math.abs(item.origLng - first.origLng) < 1e-5
+                    );
+                    if (colocated) viz.showColocatedSheet(stations.map(item => item.station));
+                    else viz.map.fitBounds(stations.map(item => [item.origLat, item.origLng]), { padding: 30, maxZoom: 16 });
+                },
+                onStationClick: (item) => viz.showStationSheet(item.station, { lat: item.origLat, lng: item.origLng, location: item.station.l })
             });
         }
 
@@ -747,44 +721,45 @@
         }
 
         renderMarkers() {
-            this.markers.clearLayers();
             const stations = this.tsneData.stations;
             let filtered = stations;
-
             if (this.selectedSettlements.length > 0) {
-                filtered = stations.filter(s =>
-                    this.selectedSettlements.includes(s.n));
+                filtered = stations.filter(s => this.selectedSettlements.includes(s.n));
             }
 
-            const batch = [];
+            const groups = new Map();
+            const items = [];
             filtered.forEach(station => {
                 const key = `${station.n}|${station.b}`;
                 const coord = this.coordinates?.stations?.[key];
                 if (!coord || !coord.lat || !coord.lng) return;
-
-                const color = this.getColor(station);
                 const voters = station.v || 0;
-                const radius = Math.max(4, Math.min(12, Math.sqrt(voters / 50) * 2.5));
-
-                const marker = L.circleMarker([coord.lat, coord.lng], {
-                    radius,
-                    fillColor: color,
-                    color: '#000',
-                    weight: 1,
-                    opacity: 0.8,
-                    fillOpacity: 0.7,
-                    stationData: { ...station, l: station.l || coord.location || '' }
-                });
-
-                marker.on('click', () => this.showStationSheet(station, coord));
-                batch.push(marker);
+                const record = {
+                    lng: coord.lng,
+                    lat: coord.lat,
+                    origLng: coord.lng,
+                    origLat: coord.lat,
+                    color: this.getColor(station),
+                    radius: Math.max(4, Math.min(12, Math.sqrt(voters / 50) * 2.5)),
+                    station: { ...station, l: station.l || coord.location || '' }
+                };
+                const pile = `${coord.lat.toFixed(5)},${coord.lng.toFixed(5)}`;
+                if (!groups.has(pile)) groups.set(pile, []);
+                groups.get(pile).push(record);
+                items.push(record);
             });
+            groups.forEach(group => {
+                if (group.length < 2) return;
+                group.forEach((record, i) => {
+                    const angle = (i / group.length) * Math.PI * 2;
+                    record.lat += Math.sin(angle) * 0.00012;
+                    record.lng += Math.cos(angle) * 0.00012;
+                });
+            });
+            this.stationsLayer.setStations(items);
 
-            this.markers.addLayers(batch);
-
-            if (this.selectedSettlements.length > 0) {
-                const bounds = this.markers.getBounds();
-                if (bounds.isValid()) this.map.fitBounds(bounds, { padding: [30, 30] });
+            if (this.selectedSettlements.length > 0 && items.length) {
+                this.map.fitBounds(items.map(item => [item.origLat, item.origLng]), { padding: 30 });
             }
         }
 
@@ -922,14 +897,14 @@
             if (colocated) size = Math.round(size * 0.85);
             const cls = colocated ? 'custom-cluster cluster-colocated' : 'custom-cluster';
 
-            return L.divIcon({
+            return {
                 html: `<div class="cluster-inner" style="${bgStyle}">
                     <div class="cluster-count">${count}</div>
                     <div class="cluster-info">${info}</div>
                 </div>`,
                 className: cls,
-                iconSize: L.point(size, size)
-            });
+                size: size
+            };
         }
 
         // ---- Compare mode methods ----
@@ -1289,12 +1264,10 @@
             this.showSheet();
         }
 
-        showColocatedSheet(cluster) {
-            const children = cluster.getAllChildMarkers();
-            const count = children.length;
+        showColocatedSheet(stations) {
+            const count = stations.length;
 
-            const sorted = children
-                .map(m => m.options.stationData)
+            const sorted = stations
                 .filter(Boolean)
                 .sort((a, b) => (parseFloat(a.b) || 0) - (parseFloat(b.b) || 0));
 

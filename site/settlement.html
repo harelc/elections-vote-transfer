@@ -15,8 +15,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="basemap.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="i18n.css">
@@ -632,36 +632,54 @@
                 });
             }
 
-            const map = L.map('mini-map', {
-                center: [settlement.lat, settlement.lng],
+            const map = createMap('mini-map', {
+                center: [settlement.lng, settlement.lat],
                 zoom: 14,
                 zoomControl: false,
+                basemap: 'dark_matter',
+                darken: false
             });
-            addBasemap(map, 'dark_matter');
 
-            // Add markers only for ballots in this election, colored by winning party
             const stations = (coordsData && coordsData.stations) || {};
-            const markers = [];
+            const features = [];
             Object.keys(ballotInfo).forEach(ballotNum => {
                 const key = settlementName + '|' + ballotNum;
                 const info = stations[key];
-                if (info && info.lat) {
-                    const bi = ballotInfo[ballotNum];
-                    const m = L.circleMarker([info.lat, info.lng], {
-                        radius: 6,
-                        fillColor: bi.color,
-                        color: '#fff',
-                        weight: 1,
-                        fillOpacity: 0.85,
-                    }).addTo(map).bindPopup(i18n.t('ballot') + ' ' + ballotNum + (bi.location ? '<br>' + bi.location : ''));
-                    markers.push(m);
+                if (!info || !info.lat) return;
+                const bi = ballotInfo[ballotNum];
+                features.push({
+                    type: 'Feature',
+                    properties: {
+                        color: bi.color,
+                        label: i18n.t('ballot') + ' ' + ballotNum + (bi.location ? '<br>' + bi.location : '')
+                    },
+                    geometry: { type: 'Point', coordinates: [info.lng, info.lat] }
+                });
+            });
+            whenMapReady(map, () => {
+                map.addSource('ballots', { type: 'geojson', data: { type: 'FeatureCollection', features } });
+                map.addLayer({
+                    id: 'ballots',
+                    type: 'circle',
+                    source: 'ballots',
+                    paint: {
+                        'circle-radius': 6,
+                        'circle-color': ['get', 'color'],
+                        'circle-opacity': 0.85,
+                        'circle-stroke-width': 1,
+                        'circle-stroke-color': '#fff'
+                    }
+                });
+                map.on('click', 'ballots', (e) => {
+                    new maplibregl.Popup({ closeButton: false })
+                        .setLngLat(e.lngLat)
+                        .setHTML(e.features[0].properties.label)
+                        .addTo(map);
+                });
+                if (features.length > 1) {
+                    map.fitBounds(features.map(f => [f.geometry.coordinates[1], f.geometry.coordinates[0]]), { padding: 24, maxZoom: 15 });
                 }
             });
-            // Fit bounds if we have markers
-            if (markers.length > 1) {
-                const group = L.featureGroup(markers);
-                map.fitBounds(group.getBounds().pad(0.15));
-            }
         }
 
         function initSearch() {

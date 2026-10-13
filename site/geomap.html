@@ -15,10 +15,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
     <style>
         :root {
             --bg-primary: #16181d;
@@ -454,52 +451,7 @@
             background: var(--bg-primary);
         }
 
-        /* Override Leaflet styles for dark theme */
-        .leaflet-container {
-            background: var(--bg-primary);
-            font-family: 'Heebo', sans-serif;
-        }
-
-        /* Darken the map tiles */
-        .leaflet-tile-pane {
-            filter: brightness(0.7) saturate(0.8);
-        }
-
-        .leaflet-popup-content-wrapper {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-            border-radius: 8px;
-            box-shadow: var(--shadow-lg);
-        }
-
-        .leaflet-popup-tip {
-            background: var(--bg-secondary);
-        }
-
-        .leaflet-popup-content {
-            margin: 12px 14px;
-            font-size: 0.85rem;
-            line-height: 1.5;
-        }
-
-        .leaflet-control-zoom a {
-            background: var(--bg-secondary) !important;
-            color: var(--text-primary) !important;
-            border-color: var(--border-color) !important;
-        }
-
-        .leaflet-control-zoom a:hover {
-            background: var(--bg-tertiary) !important;
-        }
-
-        .leaflet-control-attribution {
-            background: rgba(10, 10, 15, 0.8) !important;
-            color: var(--text-muted) !important;
-        }
-
-        .leaflet-control-attribution a {
-            color: var(--accent-primary) !important;
-        }
+        .maplibregl-map { background: var(--bg-primary); }
 
         /* Custom cluster styles */
         .custom-cluster {
@@ -1081,10 +1033,9 @@
         </footer>
     </div>
 
-    <!-- Leaflet JS -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="basemap.js"></script>
+    <script src="station-clusters.js"></script>
 
     <script>
         class GeoMapVisualization {
@@ -1161,35 +1112,34 @@
             }
 
             initMap() {
-                // Israel center coordinates
-                const israelCenter = [31.5, 34.9];
-
-                this.map = L.map('map', {
-                    center: israelCenter,
+                this.map = createMap('map', {
+                    center: [34.9, 31.5],
                     zoom: 8,
                     minZoom: 7,
-                    maxZoom: 18
+                    maxZoom: 18,
+                    basemap: 'positron'
+                });
+                const viz = this;
+                this.stationsLayer = new StationClusterLayer(this.map, {
+                    clusterHTML: (stations, lng, lat) => viz.createClusterIcon(asLeafletCluster(stations, lng, lat)),
+                    onClusterEnter: (stations, lng, lat) => viz.showClusterTooltip({ layer: asLeafletCluster(stations, lng, lat) }),
+                    onClusterLeave: () => viz.scheduleHideTooltip(),
+                    onStationEnter: (item, point) => {
+                        viz.cancelHideTooltip();
+                        const tooltip = document.getElementById('cluster-tooltip');
+                        tooltip.style.direction = i18n.isRTL() ? 'rtl' : 'ltr';
+                        tooltip.innerHTML = viz.renderStationCardHTML(item.station, { location: item.station.l, lat: item.origLat, lng: item.origLng });
+                        tooltip.style.left = (point.x + 20) + 'px';
+                        tooltip.style.top = (point.y - 20) + 'px';
+                        tooltip.style.display = 'block';
+                    },
+                    onStationLeave: () => viz.scheduleHideTooltip(),
+                    onStationClick: (item) => {
+                        const html = viz.createPopupContent(item.station, { location: item.station.l, lat: item.origLat, lng: item.origLng });
+                        viz.stationsLayer.showPopup(item.lng, item.lat, html);
+                    }
                 });
 
-                addBasemap(this.map, 'positron');
-
-                // Initialize marker cluster group
-                this.markers = L.markerClusterGroup({
-                    chunkedLoading: true,
-                    maxClusterRadius: 50,
-                    spiderfyOnMaxZoom: true,
-                    showCoverageOnHover: false,
-                    zoomToBoundsOnClick: true,
-                    iconCreateFunction: (cluster) => this.createClusterIcon(cluster)
-                });
-
-                this.map.addLayer(this.markers);
-
-                // Cluster hover events
-                this.markers.on('clustermouseover', (e) => this.showClusterTooltip(e));
-                this.markers.on('clustermouseout', () => this.scheduleHideTooltip());
-
-                // Keep tooltip visible when mouse enters it
                 const tooltipEl = document.getElementById('cluster-tooltip');
                 tooltipEl.addEventListener('mouseenter', () => this.cancelHideTooltip());
                 tooltipEl.addEventListener('mouseleave', () => this.hideClusterTooltip());
@@ -2263,7 +2213,7 @@
 
                 const cls = colocated ? 'custom-cluster cluster-colocated' : 'custom-cluster';
 
-                return L.divIcon({
+                return {
                     html: `
                         <div class="cluster-inner" style="${bgStyle}">
                             <div class="cluster-count">${count}</div>
@@ -2271,66 +2221,55 @@
                         </div>
                     `,
                     className: cls,
-                    iconSize: L.point(size, size)
-                });
+                    size: size
+                };
             }
 
             renderMarkers() {
-                this.markers.clearLayers();
                 const stations = this.tsneData.stations;
-                let markerCount = 0;
-                const totalCount = stations.length;
-                const batch = [];
+                const groups = new Map();
+                const items = [];
 
                 stations.forEach(station => {
                     const settlement = station.n || station.settlement_name;
                     const ballot = station.b || station.ballot_number;
                     const key = `${settlement}|${ballot}`;
 
-                    // Get coordinates - try exact match first, then settlement fallback
                     let coordData = this.coordinates?.stations?.[key];
                     if (!coordData || !coordData.lat || !coordData.lng) {
                         coordData = this.settlementCoords?.[settlement]
                             || this.settlementCoords?.[this.normalizeName(settlement)];
                     }
-                    if (!coordData || !coordData.lat || !coordData.lng) {
-                        return; // Skip stations without coordinates
-                    }
+                    if (!coordData || !coordData.lat || !coordData.lng) return;
 
-                    const color = this.getStationColor(station);
                     const voters = station.v || station.total_voters || 0;
-
-                    // Size based on voter count
-                    const radius = Math.max(5, Math.min(15, Math.sqrt(voters / 50) * 3));
-
-                    const marker = L.circleMarker([coordData.lat, coordData.lng], {
-                        radius: radius,
-                        fillColor: color,
-                        color: '#000',
-                        weight: 1,
-                        opacity: 0.8,
-                        fillOpacity: 0.7,
-                        stationData: { ...station, l: station.l || coordData.location || '' }  // Prefer tsne-stamped venue; fall back to coords file (some stations have only one of the two)
-                    });
-
-                    // Popup content
-                    const popupContent = this.createPopupContent(station, coordData);
-                    marker.bindPopup(popupContent, {
-                        maxWidth: 300,
-                        className: 'station-popup-container'
-                    });
-
-                    // Hover tooltip for single markers
-                    marker.on('mouseover', (e) => this.showMarkerTooltip(e, station, coordData));
-                    marker.on('mouseout', () => this.scheduleHideTooltip());
-
-                    batch.push(marker);
-                    markerCount++;
+                    const record = {
+                        lng: coordData.lng,
+                        lat: coordData.lat,
+                        origLng: coordData.lng,
+                        origLat: coordData.lat,
+                        color: this.getStationColor(station),
+                        radius: Math.max(5, Math.min(15, Math.sqrt(voters / 50) * 3)),
+                        station: { ...station, l: station.l || coordData.location || '' }
+                    };
+                    const pile = `${coordData.lat.toFixed(5)},${coordData.lng.toFixed(5)}`;
+                    if (!groups.has(pile)) groups.set(pile, []);
+                    groups.get(pile).push(record);
+                    items.push(record);
                 });
 
-                this.markers.addLayers(batch);
-                document.getElementById('station-count').textContent = i18n.fmtNum(markerCount);
-                document.getElementById('total-count').textContent = i18n.fmtNum(totalCount);
+                groups.forEach(group => {
+                    if (group.length < 2) return;
+                    group.forEach((record, i) => {
+                        const angle = (i / group.length) * Math.PI * 2;
+                        record.lat += Math.sin(angle) * 0.00012;
+                        record.lng += Math.cos(angle) * 0.00012;
+                    });
+                });
+
+                this.stationsLayer.setStations(items);
+                document.getElementById('station-count').textContent = i18n.fmtNum(items.length);
+                document.getElementById('total-count').textContent = i18n.fmtNum(stations.length);
             }
 
             createPopupContent(station, coordData) {
