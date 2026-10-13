@@ -11,7 +11,7 @@
     <title>בחירות אזוריות - קולות נודדים</title>
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
@@ -21,8 +21,7 @@
             height: 100%;
         }
 
-        .leaflet-tile-pane { filter: brightness(0.7) saturate(0.8); }
-        .leaflet-popup-pane, .leaflet-marker-pane, .leaflet-overlay-pane { filter: none; }
+        .maplibregl-map { background: var(--bg); }
 
         /* Region labels on map */
         .region-label {
@@ -471,7 +470,7 @@
         <a href="discussions.html"><span class="tab-icon">💬</span><span data-i18n="nav_discussions">דיונים</span></a>
     </nav>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="../basemap.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
@@ -846,12 +845,15 @@
 
         // ── Map ──
         function initMap() {
-            map = L.map('map', {
-                center: [31.4, 35.0], zoom: 7.5, minZoom: 7, maxZoom: 18, zoomControl: false,
-                maxBounds: [[28.5, 33.5], [34.0, 36.5]], maxBoundsViscosity: 1.0,
+            map = createMap('map', {
+                center: [35.0, 31.4],
+                zoom: 7.5,
+                minZoom: 7,
+                maxZoom: 18,
+                maxBounds: [[33.5, 28.5], [36.5, 34.0]],
+                basemap: 'positron',
+                zoomPosition: 'bottom-right'
             });
-            addBasemap(map, 'positron');
-            L.control.zoom({ position: 'bottomright' }).addTo(map);
         }
 
         // Sutherland-Hodgman clipping
@@ -896,10 +898,7 @@
         }
 
         function renderMap(regResults) {
-            if (cellLayer) { map.removeLayer(cellLayer); cellLayer = null; }
-            if (boundaryLayer) { map.removeLayer(boundaryLayer); boundaryLayer = null; }
-            if (maskLayer) { maskLayer.remove(); maskLayer = null; }
-            regionLabels.forEach(l => map.removeLayer(l));
+            regionLabels.forEach(l => l.remove());
             regionLabels = [];
 
             const stationToRegion = new Map();
@@ -943,51 +942,79 @@
                 }
             }
 
-            const canvasRenderer = L.canvas({ padding: 0.5 });
-            cellLayer = L.geoJSON({ type: 'FeatureCollection', features }, {
-                renderer: canvasRenderer,
-                style: f => ({ fillColor: f.properties.color, fillOpacity: 0.22, stroke: false }),
-                onEachFeature: (f, layer) => { layer.on('click', () => showRegionDetail(f.properties.region)); },
-            }).addTo(map);
-
-            // Boundaries
             const boundaryLines = [];
             for (let i = 0; i < geoStations.length; i++) {
-                const rI = regionForStation[i]; if (rI < 0) continue;
+                const rI = regionForStation[i];
+                if (rI < 0) continue;
                 for (const j of delaunay.neighbors(i)) {
                     if (j <= i) continue;
-                    const rJ = regionForStation[j]; if (rJ < 0 || rI === rJ) continue;
-                    const cellI = voronoi.cellPolygon(i), cellJ = voronoi.cellPolygon(j);
+                    const rJ = regionForStation[j];
+                    if (rJ < 0 || rI === rJ) continue;
+                    const cellI = voronoi.cellPolygon(i);
+                    const cellJ = voronoi.cellPolygon(j);
                     if (!cellI || !cellJ) continue;
                     const shared = findSharedVertices(cellI, cellJ);
                     if (shared.length >= 2) boundaryLines.push([[shared[0][1], shared[0][0]], [shared[1][1], shared[1][0]]]);
                 }
             }
-            if (boundaryLines.length > 0) {
-                boundaryLayer = L.polyline(boundaryLines, { color: '#f3f5f8', weight: 3, opacity: 0.6, renderer: canvasRenderer, interactive: false }).addTo(map);
-            }
 
-            // Mask outside Israel
-            const outerRing = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
-            const innerRing = israelBorder.concat([israelBorder[0]]);
-            const maskMain = L.geoJSON({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [outerRing, innerRing] } }, {
-                style: { fillColor: '#0f172a', fillOpacity: 1.0, stroke: true, color: '#3a4050', weight: 1.5, opacity: 0.8 }, interactive: false,
-            }).addTo(map);
-            maskLayer = { remove() { map.removeLayer(maskMain); } };
-
-            // Labels
-            regResults.forEach((region, idx) => {
-                const c = getRegionCentroid(region.stations);
-                const displayName = getDisplayName(idx);
-                const label = L.marker([c.lat, c.lng], {
-                    icon: L.divIcon({
-                        className: 'region-label',
-                        html: `${displayName}<span class="region-label-seats">${region.seatCount} ${i18n.t('seats_mandatim')}</span>`,
-                        iconSize: [90, 28], iconAnchor: [45, 14],
-                    }),
-                    interactive: false,
-                }).addTo(map);
-                regionLabels.push(label);
+            whenMapReady(map, () => {
+                upsertGeoJSON(map, 'region-cells', { type: 'FeatureCollection', features });
+                if (!map.getLayer('region-cells')) {
+                    map.addLayer({
+                        id: 'region-cells',
+                        type: 'fill',
+                        source: 'region-cells',
+                        paint: { 'fill-color': ['get', 'color'], 'fill-opacity': 0.22 }
+                    });
+                }
+                const lineFeatures = boundaryLines.map(seg => ({
+                    type: 'Feature',
+                    properties: {},
+                    geometry: { type: 'LineString', coordinates: seg.map(([lat, lng]) => [lng, lat]) }
+                }));
+                upsertGeoJSON(map, 'region-lines', { type: 'FeatureCollection', features: lineFeatures });
+                if (!map.getLayer('region-lines')) {
+                    map.addLayer({
+                        id: 'region-lines',
+                        type: 'line',
+                        source: 'region-lines',
+                        paint: { 'line-color': '#f3f5f8', 'line-width': 2, 'line-opacity': 0.6 }
+                    });
+                }
+                const outerRing = [[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]];
+                const innerRing = israelBorder.concat([israelBorder[0]]);
+                upsertGeoJSON(map, 'region-mask', {
+                    type: 'Feature',
+                    properties: {},
+                    geometry: { type: 'Polygon', coordinates: [outerRing, innerRing] }
+                });
+                if (!map.getLayer('region-mask')) {
+                    map.addLayer({
+                        id: 'region-mask',
+                        type: 'fill',
+                        source: 'region-mask',
+                        paint: { 'fill-color': '#0f172a', 'fill-opacity': 1 }
+                    });
+                }
+                if (!map._regionHooked) {
+                    map._regionHooked = true;
+                    map.on('click', 'region-cells', (e) => {
+                        showRegionDetail(Number(e.features[0].properties.region));
+                    });
+                }
+                regionLabels.forEach(l => l.remove());
+                regionLabels = [];
+                regResults.forEach((region, idx) => {
+                    const c = getRegionCentroid(region.stations);
+                    const displayName = getDisplayName(idx);
+                    const el = document.createElement('div');
+                    el.className = 'region-label';
+                    el.innerHTML = `${displayName}<span class="region-label-seats">${region.seatCount} ${i18n.t('seats_mandatim')}</span>`;
+                    regionLabels.push(
+                        new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([c.lng, c.lat]).addTo(map)
+                    );
+                });
             });
         }
 

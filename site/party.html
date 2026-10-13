@@ -15,8 +15,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="basemap.js"></script>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="i18n.css">
@@ -1455,28 +1455,50 @@
             const mapEl = document.getElementById('strongholds-map');
             if (!mapEl) return;
 
-            const map = L.map('strongholds-map', {
-                center: [31.5, 35.0],
+            const map = createMap('strongholds-map', {
+                center: [35.0, 31.5],
                 zoom: 7,
                 zoomControl: false,
+                basemap: 'dark_matter',
+                darken: false
             });
-            addBasemap(map, 'dark_matter');
-
-            // Color scale: low support → grey, high support → party color
             const maxPct = withSupport.length > 0 ? withSupport[0].pct : 50;
+            const features = [];
             withSupport.forEach(s => {
                 if (!s.lat || !s.lng) return;
                 const intensity = Math.min(s.pct / maxPct, 1);
-                const alpha = 0.2 + intensity * 0.65;
-                L.circleMarker([s.lat, s.lng], {
-                    radius: 4 + intensity * 6,
-                    fillColor: family.color,
-                    color: '#fff',
-                    weight: 0.5,
-                    fillOpacity: alpha,
-                }).addTo(map).bindPopup(
-                    '<strong>' + s.name + '</strong><br>' + s.pct.toFixed(1) + '%'
-                );
+                features.push({
+                    type: 'Feature',
+                    properties: {
+                        name: s.name,
+                        pct: s.pct.toFixed(1),
+                        radius: 4 + intensity * 6,
+                        alpha: 0.2 + intensity * 0.65
+                    },
+                    geometry: { type: 'Point', coordinates: [s.lng, s.lat] }
+                });
+            });
+            whenMapReady(map, () => {
+                map.addSource('strongholds', { type: 'geojson', data: { type: 'FeatureCollection', features } });
+                map.addLayer({
+                    id: 'strongholds',
+                    type: 'circle',
+                    source: 'strongholds',
+                    paint: {
+                        'circle-radius': ['get', 'radius'],
+                        'circle-color': family.color,
+                        'circle-opacity': ['get', 'alpha'],
+                        'circle-stroke-width': 0.5,
+                        'circle-stroke-color': '#fff'
+                    }
+                });
+                map.on('click', 'strongholds', (e) => {
+                    const p = e.features[0].properties;
+                    new maplibregl.Popup({ closeButton: false })
+                        .setLngLat(e.lngLat)
+                        .setHTML('<strong>' + p.name + '</strong><br>' + p.pct + '%')
+                        .addTo(map);
+                });
             });
         }
 
