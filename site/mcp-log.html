@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <title>יומן MCP</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; background: #12151c; color: #f3f5f8; font-family: Heebo, sans-serif; }
+        main { max-width: 52rem; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
+        h1 { font-size: 1.4rem; font-weight: 600; }
+        p { color: #c8ceda; line-height: 1.5; }
+        form, .meter { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+        input, button { font: inherit; border-radius: 8px; }
+        input { background: #1e212a; color: inherit; border: 1px solid #3a4050; padding: 0.55rem 0.7rem; min-width: 16rem; }
+        button { background: #f0b429; color: #1a1406; border: 0; padding: 0.55rem 0.9rem; cursor: pointer; font-weight: 600; }
+        .meter { margin: 1rem 0; }
+        article { background: #1e212a; border: 1px solid #3a4050; border-radius: 8px; padding: 0.8rem; margin: 0.6rem 0; }
+        .meta { color: #9aa3b5; font-size: 0.85rem; }
+        pre { white-space: pre-wrap; word-break: break-word; margin: 0.4rem 0 0; direction: ltr; text-align: left; }
+        .err { color: #fdba74; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>יומן השאילתות</h1>
+        <p>כאן מופיעות הקריאות שנשלחו אל הכתובת, לא התשובות. הכתובת של השולח נשמרת כדי לזהות עומס. הדף לא מקושר מהאתר.</p>
+        <form id="gate">
+            <input id="token" type="password" autocomplete="current-password" placeholder="MCP_LOG_TOKEN">
+            <button type="submit">הצגה</button>
+        </form>
+        <p id="status"></p>
+        <div id="meter" class="meter" hidden></div>
+        <div id="list"></div>
+    </main>
+    <script>
+        var tokenBox = document.getElementById('token');
+        var note = document.getElementById('status');
+        var meter = document.getElementById('meter');
+        var list = document.getElementById('list');
+        tokenBox.value = sessionStorage.getItem('mcp_log_token') || '';
+
+        function show(data) {
+            meter.hidden = false;
+            meter.textContent = data.count + ' / ' + data.daily_limit + ' היום (' + data.day + '). עד ' + data.ip_daily_limit + ' לכתובת, ' + data.per_minute + ' לדקה.';
+            list.replaceChildren();
+            if (!data.queries.length) {
+                note.textContent = 'אין עדיין קריאות ביומן הזה.';
+                return;
+            }
+            note.textContent = '';
+            data.queries.forEach(function (row) {
+                var article = document.createElement('article');
+                var meta = document.createElement('div');
+                meta.className = 'meta';
+                meta.textContent = row.t + ' · ' + row.ip + ' · ' + row.status + (row.reason ? ' · ' + row.reason : '');
+                var pre = document.createElement('pre');
+                pre.textContent = JSON.stringify(row.queries, null, 2);
+                article.append(meta, pre);
+                list.appendChild(article);
+            });
+        }
+
+        async function load(token) {
+            note.className = '';
+            note.textContent = 'טוען…';
+            var response = await fetch('/mcp-log', { headers: { Authorization: 'Bearer ' + token } });
+            if (response.status === 404) {
+                note.className = 'err';
+                note.textContent = 'היומן כבוי. צריך להגדיר MCP_LOG_TOKEN בסביבה של Netlify.';
+                return;
+            }
+            if (response.status === 401) {
+                note.className = 'err';
+                note.textContent = 'הסיסמה לא נכונה.';
+                return;
+            }
+            if (!response.ok) {
+                note.className = 'err';
+                note.textContent = 'היומן לא נטען (' + response.status + ').';
+                return;
+            }
+            sessionStorage.setItem('mcp_log_token', token);
+            show(await response.json());
+        }
+
+        document.getElementById('gate').addEventListener('submit', function (event) {
+            event.preventDefault();
+            load(tokenBox.value.trim());
+        });
+        if (tokenBox.value) load(tokenBox.value);
+    </script>
+</body>
+</html>

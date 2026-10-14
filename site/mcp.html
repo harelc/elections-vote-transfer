@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/mcp.html'+(lp?'?lang='+lp:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — שאל את הנתונים">
+    <meta property="og:description" content="Connect your own chat to the Knesset election data. No key. Your chat pays for the answers.">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>שאל את הנתונים - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+    <style>
+        html[lang="he"] .prose-en { display: none; }
+        html[lang="en"] .prose-he { display: none; }
+        .guide {
+            max-width: 42rem;
+            margin: 0 auto;
+            padding: 1.5rem 1.25rem 4rem;
+            line-height: 1.6;
+        }
+        .guide h2 { font-size: 1.35rem; margin: 2rem 0 0.6rem; }
+        .guide p { margin: 0 0 0.8rem; color: var(--text-secondary, #c8ceda); }
+        .guide ol { margin: 0 0 1rem; padding-inline-start: 1.3rem; }
+        .guide li { margin: 0.35rem 0; }
+        .endpoint {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            background: #1e212a;
+            border: 1px solid #3a4050;
+            border-radius: 8px;
+            padding: 0.7rem 0.8rem;
+            margin: 1rem 0 1.4rem;
+        }
+        .endpoint code {
+            flex: 1;
+            direction: ltr;
+            text-align: left;
+            font-size: 0.95rem;
+            color: #f3f5f8;
+            word-break: break-all;
+        }
+        .endpoint button, .ask {
+            font-family: inherit;
+            cursor: pointer;
+            border-radius: 6px;
+            border: 1px solid #f0b429;
+            background: transparent;
+            color: #f0b429;
+        }
+        .endpoint button { padding: 0.35rem 0.7rem; }
+        .asks { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.6rem 0 1rem; }
+        .ask {
+            text-align: start;
+            padding: 0.65rem 0.8rem;
+            color: #f3f5f8;
+            border-color: #3a4050;
+            background: #1e212a;
+        }
+        .ask:hover, .endpoint button:hover { border-color: #f0b429; }
+        .fine { color: #939aab; font-size: 0.92rem; }
+    </style>
+</head>
+<body>
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="site-title"><span data-i18n="site_title">קולות נודדים</span></h1>
+                <p class="site-subtitle" data-i18n="nav_mcp">שאל את הנתונים</p>
+            </div>
+            <nav class="view-switcher"></nav>
+        </header>
+        <main class="guide">
+            <div class="prose-he">
+                <p>מדביקים כתובת אחת בצ׳אט שלכם, ושואלים בעברית או באנגלית. הצ׳אט שלכם משלם על התשובה. האתר לא קורא למודל ולא גובה תשלום.</p>
+                <div class="endpoint">
+                    <code id="endpoint">https://kolot-nodedim.netlify.app/mcp</code>
+                    <button type="button" id="copy-url">העתקה</button>
+                </div>
+                <h2>איך מחברים</h2>
+                <p>ב-Claude פותחים Settings, אחר כך Connectors, ומוסיפים connector. מדביקים את הכתובת. אם מבקשים טוקן, משאירים אותו ריק.</p>
+                <p>ב-Cursor פותחים Settings, אחר כך MCP, ומוסיפים שרת שהכתובת שלו היא הכתובת למעלה. אין צורך בכותרת אימות.</p>
+                <p>ב-Claude Code, מתוך הטרמינל:</p>
+                <p><code dir="ltr">claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code></p>
+                <p>אחר כך שואלים בעברית או באנגלית. הצ׳אט בוחר לבד איזה נתון לבקש.</p>
+                <p>יש תקרה לדקה ולכל היום, כדי שהפונקציה לא תרוקן את תקציב האתר. אם היא נגמרת, הצ׳אט מקבל בקשה לחכות.</p>
+                <h2>שאלות שאפשר להעתיק</h2>
+                <div class="asks">
+                    <button type="button" class="ask">איזו מפלגה הייתה הכי חזקה בכפר סבא בבחירות לכנסת ה-24?</button>
+                    <button type="button" class="ask">באילו בחירות הייתה מרצ הכי חזקה בחיפה?</button>
+                    <button type="button" class="ask">כמה מנדטים וקולות היו ליש עתיד בכל בחירות שבהן רצה?</button>
+                    <button type="button" class="ask">איפה ש״ס הייתה הכי חזקה בכנסת ה-25, ביישובים עם לפחות 500 מצביעים?</button>
+                    <button type="button" class="ask">איזה אחוז מכחול לבן בכנסת ה-23 עבר ליש עתיד בכנסת ה-24, ומה רווח בר-הסמך?</button>
+                    <button type="button" class="ask">איזו קלפי מחוץ לירושלים הכי דומה לקלפי 485.1 בירושלים בכנסת ה-25, ב-t-SNE?</button>
+                    <button type="button" class="ask">אילו יישובים יושבים ליד רהט במפת ה-UMAP של כנסת ה-25?</button>
+                    <button type="button" class="ask">כמה השתנתה תערובת המפלגות בנצרת בין בחירות לבחירות?</button>
+                </div>
+                <p class="fine">הנדידה בין בחירות היא אומדן ארצי, לא ספירת אנשים. כשיש רווח בר-סמך, הוא של 95% מבוטסטראפ של קלפיות. כנסת 26 היא תרחיש מדומה. מרחקים ב-t-SNE משמעותיים רק בין קלפיות קרובות, וזו לא מפה של ישראל. מחשבון המנדטים והבחירות האזוריות לא כלולים כאן.</p>
+            </div>
+            <div class="prose-en">
+                <p>Paste one address into your own chat and ask in Hebrew or English. Your chat pays for the answer. This site does not call a model and does not charge you.</p>
+                <div class="endpoint">
+                    <code id="endpoint-en">https://kolot-nodedim.netlify.app/mcp</code>
+                    <button type="button" id="copy-url-en">Copy</button>
+                </div>
+                <h2>Connect it</h2>
+                <p>In Claude, open Settings, then Connectors, and add a connector. Paste the address. If it asks for a token, leave that blank.</p>
+                <p>In Cursor, open Settings, then MCP, and add a server whose URL is the address above. No authorization header is required.</p>
+                <p>In Claude Code, from a terminal:</p>
+                <p><code>claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code></p>
+                <p>Then ask in Hebrew or English. The chat decides which figure to fetch.</p>
+                <p>There is a per-minute cap and a daily cap, so the function cannot run down the site’s budget. Past the cap, the chat is asked to wait.</p>
+                <h2>Questions you can copy</h2>
+                <div class="asks">
+                    <button type="button" class="ask">Which party was strongest in Kfar Saba in the election for the 24th Knesset?</button>
+                    <button type="button" class="ask">In which election was Meretz strongest in Haifa?</button>
+                    <button type="button" class="ask">How many seats and votes did Yesh Atid get in each election it ran?</button>
+                    <button type="button" class="ask">Where was Shas strongest in the 25th Knesset, among settlements with at least 500 voters?</button>
+                    <button type="button" class="ask">What share of Blue and White in the 23rd Knesset went to Yesh Atid in the 24th, and what is the confidence interval?</button>
+                    <button type="button" class="ask">Which ballot outside Jerusalem is closest to ballot 485.1 in Jerusalem in the 25th Knesset, in t-SNE?</button>
+                    <button type="button" class="ask">Which settlements sit nearest Rahat on the 25th Knesset UMAP?</button>
+                    <button type="button" class="ask">How much did Nazareth’s party mix change from election to election?</button>
+                </div>
+                <p class="fine">A transfer between elections is a national estimate, not a count of people. When a confidence interval is present, it is a 95% ballot bootstrap. Knesset 26 is a simulated scenario. t-SNE distance matters only among nearby ballots, and it is not a map of Israel. The seat calculator and the regional simulator are not included.</p>
+            </div>
+        </main>
+    </div>
+    <script>
+        i18n.renderNav('mcp');
+        function copyText(text, button) {
+            navigator.clipboard.writeText(text).then(function () {
+                var previous = button.textContent;
+                button.textContent = document.documentElement.lang === 'he' ? 'הועתק' : 'Copied';
+                setTimeout(function () { button.textContent = previous; }, 1200);
+            });
+        }
+        document.getElementById('copy-url').onclick = function () { copyText(document.getElementById('endpoint').textContent, this); };
+        document.getElementById('copy-url-en').onclick = function () { copyText(document.getElementById('endpoint-en').textContent, this); };
+        document.querySelectorAll('.ask').forEach(function (button) {
+            button.addEventListener('click', function () { copyText(button.textContent, button); });
+        });
+    </script>
+</body>
+</html>

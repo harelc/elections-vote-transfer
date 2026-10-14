@@ -2,6 +2,20 @@
 command = "echo 'Static site'"
 publish = "site"
 
+# Claimed before the site-wide rewrite below. /mcp is not a file in site/,
+# so without this rule the splat would serve index.html to MCP clients.
+[[redirects]]
+from = "/mcp"
+to = "/.netlify/functions/mcp"
+status = 200
+force = true
+
+[[redirects]]
+from = "/mcp-log"
+to = "/.netlify/functions/mcp-log"
+status = 200
+force = true
+
 [[redirects]]
 from = "/*"
 to = "/index.html"

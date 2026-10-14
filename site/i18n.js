@@ -428,6 +428,8 @@
         regional_methodology_text: { he: 'הסימולטור מחלק את כלל הקלפיות בעלות קואורדינטות גיאוגרפיות למחוזות בחירה באמצעות חלוקה בינארית חוזרת: בכל שלב, המחוז בעל מספר הבוחרים הגדול ביותר נחצה לשניים לאורך הציר שמייצר את החלוקה המרובעת ביותר, כך שמספר הבוחרים מתחלק שווה בשווה. התוצאה היא מחוזות רציפים גיאוגרפית ומאוזנים באוכלוסייה. המנדטים מחולקים למחוזות לפי מכסת הייר (<bdi><a href="https://en.wikipedia.org/wiki/Hare_quota" target="_blank" style="color:var(--accent-primary)">Hare quota</a></bdi>) עם שארית גדולה ביותר. בכל מחוז מוקצים מנדטים לפי שיטת באדר-עופר או לפי זוכה-לוקח-הכל (<bdi>FPTP</bdi>), בהתאם לבחירת המשתמש. במצב מעורב, חלק מהמנדטים מוקצים ארצית (עם אחוז חסימה) והשאר אזורית. ככל שמספר המחוזות עולה ומספר המנדטים לכל מחוז יורד, מפלגות גדולות מרוויחות על חשבון מפלגות קטנות — עד למקרה הקיצוני של מחוזות עם מנדט אחד כל אחד, שהוא למעשה שיטת <bdi>FPTP</bdi> מלאה.', en: 'The simulator partitions all ballot stations with geographic coordinates into electoral districts using recursive binary splitting: at each step, the district with the most eligible voters is split in two along whichever axis produces squarer children, balancing the voter population evenly. This produces geographically contiguous, population-balanced districts. Seats are apportioned to districts using the <a href="https://en.wikipedia.org/wiki/Hare_quota" target="_blank" style="color:var(--accent-primary)">Hare quota</a> with largest remainder. Within each district, seats are allocated using D\'Hondt or winner-takes-all (FPTP), depending on user selection. In mixed mode, some seats are allocated nationally (with an electoral threshold) and the rest regionally. As the number of districts increases and seats per district decreases, large parties gain at the expense of smaller ones — reaching the extreme case of single-seat districts, which is effectively a full FPTP system.' },
         feedback_question:     { he: 'רעיונות? מחשבות? הצעות? דונו כאן', en: 'Ideas? Thoughts? Suggestions? Discuss them here' },
         nav_methodology:       { he: 'מתודולוגיה', en: 'Methodology' },
+        nav_mcp:               { he: 'שאל את הנתונים', en: 'Ask the data' },
+        card_mcp_desc:         { he: 'חברו צ׳אט משלכם אל נתוני האתר, בלי מפתח', en: 'Connect your own chat to the site data, no key' },
         e26_widget_label:      { he: 'מצב כנסת 26 (סימולציה)', en: 'Knesset 26 mode (simulation)' },
         e26_why_link:          { he: 'מה זה?', en: 'Why?' },
         e26_modal_title:       { he: 'מצב כנסת 26 — מהי הסימולציה הזו?', en: 'Knesset 26 mode — what is this simulation?' },
@@ -469,6 +471,8 @@
         e26_ballots:           { he: '{n} קלפיות', en: '{n} ballots' },
         e26_ballots_of:        { he: '{n} מתוך {total} קלפיות', en: '{n} of {total} ballots' },
         e26_close:             { he: 'סגור', en: 'Close' },
+        e26_reopen_sim:        { he: 'הסבר על הסימולציה', en: 'About the simulation' },
+        e26_reopen_official:   { he: 'פרטי הספירה', en: 'About this count' },
         nav_discussions:       { he: 'דיונים', en: 'Discussions' },
         discussions_title:     { he: 'דיונים', en: 'Discussions' },
         discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
@@ -796,6 +800,7 @@
             { id: 'party',      href: 'party.html',      i18n: 'party_profile',      text: 'פרופיל מפלגה' },
             { id: 'rankings',   href: 'rankings.html',   i18n: 'nav_rankings',       text: 'דירוגים' },
             { id: 'methodology', href: 'methodology.html', i18n: 'nav_methodology',  text: 'מתודולוגיה' },
+            { id: 'mcp', href: 'mcp.html', i18n: 'nav_mcp', text: 'שאל את הנתונים' },
             { id: 'discussions', href: 'discussions.html', i18n: 'nav_discussions',    text: 'דיונים' },
         ];
 
@@ -984,6 +989,28 @@
                 color: rgba(255, 237, 213, 0.75);
             }
             #e26-widget.official .e26-kicker { color: rgba(248, 241, 222, 0.72); }
+            #e26-widget.collapsed.sim {
+                background: rgba(42, 20, 8, 0.94);
+                border-color: #f97316;
+                color: #ffedd5;
+            }
+            #e26-widget.collapsed.official {
+                background: rgba(28, 24, 16, 0.94);
+                border-color: #f0b429;
+                color: #f8f1de;
+            }
+            #e26-widget.collapsed .e26-dot { background: currentColor; }
+            #e26-widget.collapsed .e26-reopen {
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                background: none;
+                border: none;
+                color: inherit;
+                font: inherit;
+                padding: 0;
+            }
             #e26-widget.provenance .e26-close {
                 border: 1px solid currentColor;
                 border-radius: 999px;
@@ -1110,12 +1137,15 @@
 
         function paint() {
             if (SHOW_E26 && noticeClosed) {
-                widget.className = '';
-                widget.innerHTML = '';
-                widget.hidden = true;
+                const official = k26Status.kind === 'official';
+                widget.className = 'collapsed ' + (official ? 'official' : 'sim');
+                widget.innerHTML =
+                    '<button type="button" class="e26-reopen">' +
+                        '<span class="e26-dot"></span>' +
+                        '<span>' + esc(t(official ? 'e26_reopen_official' : 'e26_reopen_sim')) + '</span>' +
+                    '</button>';
                 return;
             }
-            widget.hidden = false;
             const official = SHOW_E26 && k26Status.kind === 'official';
             if (!SHOW_E26) {
                 widget.className = '';
@@ -1230,10 +1260,19 @@
             noticeClosed = true;
             try { sessionStorage.setItem('e26_notice_closed', '1'); } catch (e) {}
             paint();
+            placeCard();
+        }
+
+        function reopenNotice() {
+            noticeClosed = false;
+            try { sessionStorage.removeItem('e26_notice_closed'); } catch (e) {}
+            paint();
+            placeCard();
         }
 
         widget.addEventListener('click', (e) => {
             if (e.target.closest('.e26-close')) closeNotice();
+            else if (e.target.closest('.e26-reopen')) reopenNotice();
             else if (e.target.closest('.e26-switch')) toggleE26();
             else if (e.target.closest('.e26-why')) openModal();
         });

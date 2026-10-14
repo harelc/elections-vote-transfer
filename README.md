@@ -226,6 +226,22 @@ python simulate_election_26.py                          # alpha=55 (noise), seed
 python prepare_election_26.py --real-csv ballot26.csv   # runs tsne/transfer/map for K26
 ```
 
+## MCP connector
+
+`https://kolot-nodedim.netlify.app/mcp` is a read-only MCP endpoint on a Netlify Function. A visitor’s own chat client calls it and pays for its own tokens. The function answers from trimmed tables (settlement results, the Sankey, t-SNE/UMAP neighbors). It does not call a model.
+
+The dataset is already public, so the endpoint has no API key. Seat allocation and the regional simulator are not included.
+
+Calls stop at 20 per minute per IP, 300 per IP per day, and 1,500 per day for the whole site (Jerusalem time). Raise the daily caps with `MCP_DAILY_LIMIT` and `MCP_IP_DAILY_LIMIT` in the Netlify environment. Each call is one function invocation.
+
+Recent calls are stored for the site owner. Set `MCP_LOG_TOKEN` in the Netlify environment, then open `/mcp-log.html` and paste that token. The page is not linked from the site. It shows the raw JSON-RPC call (tool name and arguments) and the caller IP. It does not show the answer.
+
+After regenerating `site/data`, rebuild the tables:
+
+```bash
+python netlify/lib/mcp/build_mcp_data.py
+```
+
 ## Project Structure
 
 ```
