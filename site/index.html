@@ -384,9 +384,9 @@
         cards.forEach(c => {
             const a = document.createElement('a');
             a.className = 'view-card';
-            // animation.html opts out only via ?e26=0 (it does not load i18n.js)
-            a.href = (!i18n.SHOW_E26 && c.href.indexOf('animation.html') !== -1)
-                ? c.href + (c.href.includes('?') ? '&' : '?') + 'e26=0'
+            // animation.html does not load i18n.js, so the flag has to be in the URL
+            a.href = c.href.indexOf('animation.html') !== -1
+                ? c.href + (c.href.includes('?') ? '&' : '?') + (i18n.SHOW_E26 ? 'e26=1' : 'e26=0')
                 : c.href;
             a.innerHTML =
                 '<span class="view-card-title" data-i18n="' + c.i18n_title + '">' + i18n.t(c.i18n_title) + '</span>' +

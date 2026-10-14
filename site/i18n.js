@@ -468,7 +468,7 @@
         e26_as_of_missing:     { he: 'חותמת הזמן של הספירה חסרה', en: 'The count has no timestamp' },
         e26_ballots:           { he: '{n} קלפיות', en: '{n} ballots' },
         e26_ballots_of:        { he: '{n} מתוך {total} קלפיות', en: '{n} of {total} ballots' },
-        e26_turn_off:          { he: 'כבה', en: 'Turn off' },
+        e26_close:             { he: 'סגור', en: 'Close' },
         nav_discussions:       { he: 'דיונים', en: 'Discussions' },
         discussions_title:     { he: 'דיונים', en: 'Discussions' },
         discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
@@ -777,10 +777,10 @@
         // Preserve export button if present
         const exportBtn = nav.querySelector('.header-export');
 
-        // Opt-out has to travel with the link. The on state is the default.
+        // On keeps ?e26=1. Off keeps ?e26=0.
         function addE26(href) {
-            if (SHOW_E26) return href;
-            return href + (href.includes('?') ? '&' : '?') + 'e26=0';
+            if (href.indexOf('e26=') !== -1) return href;
+            return href + (href.includes('?') ? '&' : '?') + (SHOW_E26 ? 'e26=1' : 'e26=0');
         }
 
         function viewLink(v) {
@@ -984,12 +984,16 @@
                 color: rgba(255, 237, 213, 0.75);
             }
             #e26-widget.official .e26-kicker { color: rgba(248, 241, 222, 0.72); }
-            #e26-widget.provenance .e26-switch {
+            #e26-widget.provenance .e26-close {
                 border: 1px solid currentColor;
                 border-radius: 999px;
                 padding: 2px 9px;
                 font-size: 0.72rem;
                 opacity: 0.9;
+                cursor: pointer;
+                background: none;
+                color: inherit;
+                font: inherit;
             }
             #e26-widget .e26-status {
                 font-size: 1.35rem;
@@ -1101,7 +1105,17 @@
             }).format(d);
         }
 
+        let noticeClosed = false;
+        try { noticeClosed = sessionStorage.getItem('e26_notice_closed') === '1'; } catch (e) {}
+
         function paint() {
+            if (SHOW_E26 && noticeClosed) {
+                widget.className = '';
+                widget.innerHTML = '';
+                widget.hidden = true;
+                return;
+            }
+            widget.hidden = false;
             const official = SHOW_E26 && k26Status.kind === 'official';
             if (!SHOW_E26) {
                 widget.className = '';
@@ -1117,7 +1131,7 @@
                 widget.innerHTML =
                     '<div class="e26-head">' +
                         '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
-                        '<button type="button" class="e26-switch">' + esc(t('e26_turn_off')) + '</button>' +
+                        '<button type="button" class="e26-close">' + esc(t('e26_close')) + '</button>' +
                     '</div>' +
                     '<div class="e26-status">' + esc(t('e26_sim_headline')) + '</div>' +
                     '<p class="e26-detail">' + esc(t('e26_sim_detail')) + '</p>' +
@@ -1138,7 +1152,7 @@
             widget.innerHTML =
                 '<div class="e26-head">' +
                     '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
-                    '<button type="button" class="e26-switch">' + esc(t('e26_turn_off')) + '</button>' +
+                    '<button type="button" class="e26-close">' + esc(t('e26_close')) + '</button>' +
                 '</div>' +
                 '<div class="e26-status">' + esc(t('e26_official_headline')) + '</div>' +
                 '<p class="e26-detail">' + whenHtml +
@@ -1208,13 +1222,19 @@
                 else localStorage.setItem('e26', '0');
             } catch (e) {}
             const u = new URL(location.href);
-            if (turningOn) u.searchParams.delete('e26');
-            else u.searchParams.set('e26', '0');
+            u.searchParams.set('e26', turningOn ? '1' : '0');
             location.href = u.toString();
         }
 
+        function closeNotice() {
+            noticeClosed = true;
+            try { sessionStorage.setItem('e26_notice_closed', '1'); } catch (e) {}
+            paint();
+        }
+
         widget.addEventListener('click', (e) => {
-            if (e.target.closest('.e26-switch')) toggleE26();
+            if (e.target.closest('.e26-close')) closeNotice();
+            else if (e.target.closest('.e26-switch')) toggleE26();
             else if (e.target.closest('.e26-why')) openModal();
         });
 
