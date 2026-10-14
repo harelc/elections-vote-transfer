@@ -2,8 +2,20 @@
 command = "echo 'Static site'"
 publish = "site"
 
-# /mcp and /mcp-log are claimed by the functions' own path config.
-# A force redirect onto /.netlify/functions/* hides those routes.
+# Custom function paths plus this catch-all come back as an empty 500
+# before the function runs. These two rules hit the default function URL.
+
+[[redirects]]
+from = "/mcp"
+to = "/.netlify/functions/mcp"
+status = 200
+force = true
+
+[[redirects]]
+from = "/mcp-log"
+to = "/.netlify/functions/mcp-log"
+status = 200
+force = true
 
 [[redirects]]
 from = "/*"

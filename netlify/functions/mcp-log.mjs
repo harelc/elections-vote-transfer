@@ -16,7 +16,3 @@ export default async function handler(req) {
   if (req.method !== "GET") return new Response("Method not allowed", { status: 405, headers: CORS });
   return Response.json(await recentQueries(), { headers: CORS });
 }
-
-export const config = {
-  path: "/mcp-log",
-};

@@ -264,7 +264,6 @@ export default async function handler(req) {
 }
 
 export const config = {
-  path: "/mcp",
   includedFiles: ["netlify/lib/mcp/mcp-data/**"],
   rateLimit: {
     windowSize: 60,
