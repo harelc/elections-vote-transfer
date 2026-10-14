@@ -1243,7 +1243,7 @@
                     ? 'ציון מסנן מותאם (Matched Filter) — היטל השארית על ציר התרחיש'
                     : 'ציון L2 (לא-מותאם) — נורמת השארית המלאה';
                 const toYear = DATA.meta.to_year;
-                const settlementQuery = toYear === '26' ? '&e26=1' : '';
+                const settlementQuery = '';
                 meta.innerHTML =
                     `<span class="rank">#${order.indexOf(idx) + 1}</span>` +
                     `<span class="name"><a href="settlement.html?name=${encodeURIComponent(b.n)}${settlementQuery}">${b.n}</a></span>` +
@@ -1286,7 +1286,7 @@
             pills.innerHTML = '';
             for (const [tid, from, to] of [['24_25', '24', '25'], ['25_26', '25', '26']]) {
                 const a = document.createElement('a');
-                const extra = location.search.includes('e26=1') ? '&e26=1' : '';
+                const extra = location.search.includes('e26=0') ? '&e26=0' : '';
                 a.href = '?t=' + tid + extra;
                 a.className = 'nav-btn' + (tid === t ? ' active' : '');
                 a.innerHTML = `<span class="nav-from">${from}</span><span class="nav-arrow">←</span><span class="nav-to">${to}</span>`;

@@ -799,8 +799,8 @@
         }
 
         function withE26(href) {
-            if (!i18n.SHOW_E26) return href;
-            return href + (href.includes('?') ? '&' : '?') + 'e26=1';
+            if (i18n.SHOW_E26) return href;
+            return href + (href.includes('?') ? '&' : '?') + 'e26=0';
         }
 
         function activeFamilies() {

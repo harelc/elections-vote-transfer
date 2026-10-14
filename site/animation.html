@@ -334,7 +334,7 @@
 <body>
 
 <a id="back-link" href="sankey.html">← נדידת קולות</a>
-<script>if(new URLSearchParams(location.search).get('e26')==='1'){var bl=document.getElementById('back-link');bl.href+='?e26=1'}</script>
+<script>(function(){var p=new URLSearchParams(location.search).get('e26');var off=p==='0';if(!off&&p!=='1'){try{off=localStorage.getItem('e26')==='0'}catch(e){}}if(off)document.getElementById('back-link').href='sankey.html?e26=0'})();</script>
 <div id="watermark">© kolot-nodedim.netlify.app · קולות נודדים</div>
 <div id="loading">טוען נתונים...</div>
 <div id="tooltip"></div>
@@ -369,7 +369,11 @@
 </div>
 
 <script>
-const SHOW_E26 = new URLSearchParams(window.location.search).get('e26') === '1';
+const _e26Param = new URLSearchParams(window.location.search).get('e26');
+let SHOW_E26 = _e26Param !== '0';
+if (_e26Param !== '0' && _e26Param !== '1') {
+    try { if (localStorage.getItem('e26') === '0') SHOW_E26 = false; } catch (e) {}
+}
 if (SHOW_E26) {
     document.querySelector('.outro-subtitle').textContent = 'עשרים ושלוש שנה של בחירות לכנסת ישראל';
 }

@@ -5,17 +5,14 @@
 (function () {
     'use strict';
 
-    /* ── Election 26 feature flag (URL ?e26=1 OR localStorage) ── */
-    const _urlE26 = new URLSearchParams(location.search).has('e26');
-    let _storageE26 = false;
-    try { _storageE26 = localStorage.getItem('e26') === '1'; } catch (e) {}
-    // URL takes precedence if present (?e26=0 turns it off; ?e26=1 turns it on)
+    /* ── Election 26 is on by default. ?e26=0 is the explicit opt-out. ── */
     const _urlE26Param = new URLSearchParams(location.search).get('e26');
-    const SHOW_E26 = _urlE26Param === '0' ? false : (_urlE26Param === '1' ? true : _storageE26);
-    // Sync localStorage with URL choice so future pages remember
+    let _optedOut = false;
+    try { _optedOut = localStorage.getItem('e26') === '0'; } catch (e) {}
+    const SHOW_E26 = _urlE26Param === '0' ? false : (_urlE26Param === '1' ? true : !_optedOut);
     try {
-        if (_urlE26Param === '1') localStorage.setItem('e26', '1');
-        if (_urlE26Param === '0') localStorage.removeItem('e26');
+        if (_urlE26Param === '0') localStorage.setItem('e26', '0');
+        if (_urlE26Param === '1') localStorage.removeItem('e26');
     } catch (e) {}
 
     /* ── Translation dictionary ─────────────────────────────────── */
@@ -274,6 +271,7 @@
         dashboard_stat_lists:      { he: 'רשימות', en: 'Lists' },
         card_sankey_desc:          { he: 'תרשים נדידת קולות בין בחירות עוקבות', en: 'Vote flow diagram between consecutive elections' },
         card_animation_desc:       { he: 'אנימציה של נדידת קולות מ-2003 עד 2022', en: 'Animated vote flow from 2003 to 2022' },
+        card_animation_desc_e26:   { he: 'אנימציה של נדידת קולות מ-2003 עד 2026', en: 'Animated vote flow from 2003 to 2026' },
         card_tsne_desc:            { he: 'מיפוי קלפיות לפי דמיון דפוסי הצבעה', en: 'Ballot box mapping by voting pattern similarity' },
         card_geomap_desc:          { he: 'מפה גיאוגרפית של קלפיות הצבעה', en: 'Geographic map of polling stations' },
         card_primer_desc:          { he: 'מדריך מאויר לקלפיות, אחוזי הצבעה, ומפלגות', en: 'Animated guide to ballots, turnout, and parties' },
@@ -454,12 +452,23 @@
             en: '<strong>Population growth estimate:</strong> the expected number of eligible voters in K26 (~7.3 million) is estimated from the historical growth rate of Israel\'s adult population.'
         },
         e26_modal_p2:          {
-            he: '<strong>מטרת המצב הזה:</strong> לבדוק את מוכנות האתר לבחירות הקרובות ולהדגים בפני המשתמשים איך עשויה להיראות התפלגות ההצבעה ברחבי הארץ. כל המספרים שתראו ב"מצב כנסת 26" הם <em>תרחיש</em>, לא נתונים אמיתיים.',
-            en: '<strong>Purpose:</strong> to test the site\'s readiness for the upcoming election and to show users what a plausible nationwide vote distribution might look like. All numbers you see in "Knesset 26 mode" are a <em>scenario</em>, not real data.'
+            he: '<strong>המטרה העיקרית:</strong> לבדוק את מוכנות האתר לבחירות. כל המספרים שתראו ב"מצב כנסת 26" הם <em>תרחיש</em>, לא נתונים אמיתיים.',
+            en: '<strong>Main goal:</strong> to test the site\'s preparedness for the election. All numbers you see in "Knesset 26 mode" are a <em>scenario</em>, not real data.'
         },
         e26_modal_dismiss:     { he: 'הבנתי', en: 'Got it' },
         e26_off_state:         { he: 'מצב כנסת 26: כבוי', en: 'K26 mode: off' },
         e26_on_state:          { he: 'מצב כנסת 26: דלוק (סימולציה)', en: 'K26 mode: on (simulated)' },
+        e26_kicker:            { he: 'כנסת 26', en: 'Knesset 26' },
+        e26_sim_headline:      { he: 'סימולציה', en: 'Simulation' },
+        e26_sim_detail:        {
+            he: 'המספרים במצב הזה אינם נתוני אמת עדיין, אלא נתוני סימולציה שתואמת את ממוצע הסקרים. המטרה העיקרית היא לבדוק את מוכנות האתר.',
+            en: 'These figures are not real data yet. They are a simulation matched to the polling average. Its main goal is to test the site\'s preparedness.'
+        },
+        e26_official_headline: { he: 'תוצאות אמת', en: 'Official results' },
+        e26_as_of_missing:     { he: 'חותמת הזמן של הספירה חסרה', en: 'The count has no timestamp' },
+        e26_ballots:           { he: '{n} קלפיות', en: '{n} ballots' },
+        e26_ballots_of:        { he: '{n} מתוך {total} קלפיות', en: '{n} of {total} ballots' },
+        e26_turn_off:          { he: 'כבה', en: 'Turn off' },
         nav_discussions:       { he: 'דיונים', en: 'Discussions' },
         discussions_title:     { he: 'דיונים', en: 'Discussions' },
         discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
@@ -768,10 +777,10 @@
         // Preserve export button if present
         const exportBtn = nav.querySelector('.header-export');
 
-        // Propagate e26 flag across nav links
+        // Opt-out has to travel with the link. The on state is the default.
         function addE26(href) {
-            if (!SHOW_E26) return href;
-            return href + (href.includes('?') ? '&' : '?') + 'e26=1';
+            if (SHOW_E26) return href;
+            return href + (href.includes('?') ? '&' : '?') + 'e26=0';
         }
 
         function viewLink(v) {
@@ -882,12 +891,16 @@
         applyTranslations();
     }
 
-    /* ── E26 toggle widget ─────────────────────────────────────────
-       Floating bottom-right chip:
-       - shows current K26 mode state (off / on-simulation)
-       - clicking toggles localStorage and reloads the page
-       - "?" link opens the explainer modal
-       - first time the user turns K26 on, modal opens automatically       ──────────────────────────────────────────────────────────────── */
+    /* ── E26 provenance widget ─────────────────────────────────────
+       Off: compact switch.
+       On: a card that says what the K26 numbers are.
+       site/data/k26_status.json decides which:
+         { "kind": "simulated" }
+         { "kind": "official", "as_of": "2026-10-27T22:40:00+03:00",
+           "ballots": 4820, "ballots_total": 12018,
+           "source_he": "ספירה חלקית, ועדת הבחירות המרכזית",
+           "source_en": "Partial count, Central Elections Committee" }
+       ──────────────────────────────────────────────────────────────── */
     function setupE26Widget() {
         if (document.getElementById('e26-widget')) return;  // already injected
 
@@ -911,31 +924,109 @@
                 box-shadow: 0 4px 12px rgba(0,0,0,0.3);
                 backdrop-filter: blur(8px);
                 user-select: none;
+                text-align: start;
             }
-            #e26-widget.on { background: rgba(249,115,22,0.18); border-color: #f97316; color: #fed7aa; }
             #e26-widget .e26-switch {
                 cursor: pointer;
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
+                background: none;
+                border: none;
+                color: inherit;
+                font: inherit;
+                padding: 0;
             }
             #e26-widget .e26-dot {
                 width: 10px;
                 height: 10px;
                 border-radius: 50%;
                 background: #939aab;
-                transition: background 0.15s;
+                flex: none;
             }
-            #e26-widget.on .e26-dot { background: #f97316; box-shadow: 0 0 6px #f97316; }
             #e26-widget .e26-why {
-                color: rgba(226, 232, 240, 0.7);
-                text-decoration: none;
-                font-size: 0.72rem;
-                border-inline-start: 1px solid rgba(148, 163, 184, 0.3);
-                padding-inline-start: 8px;
                 cursor: pointer;
+                background: none;
+                border: none;
+                color: inherit;
+                font: inherit;
+                padding: 0;
+                text-decoration: underline;
+                text-underline-offset: 2px;
             }
-            #e26-widget .e26-why:hover { color: #fff; }
+            #e26-widget.provenance {
+                width: min(19rem, calc(100vw - 28px));
+                border-radius: 14px;
+                padding: 12px 14px 11px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+                line-height: 1.35;
+            }
+            #e26-widget.provenance.sim {
+                background: rgba(42, 20, 8, 0.94);
+                border-color: #f97316;
+                color: #ffedd5;
+            }
+            #e26-widget.provenance.official {
+                background: rgba(28, 24, 16, 0.94);
+                border-color: #f0b429;
+                color: #f8f1de;
+            }
+            #e26-widget .e26-head {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+            }
+            #e26-widget .e26-kicker {
+                font-size: 0.78rem;
+                color: rgba(255, 237, 213, 0.75);
+            }
+            #e26-widget.official .e26-kicker { color: rgba(248, 241, 222, 0.72); }
+            #e26-widget.provenance .e26-switch {
+                border: 1px solid currentColor;
+                border-radius: 999px;
+                padding: 2px 9px;
+                font-size: 0.72rem;
+                opacity: 0.9;
+            }
+            #e26-widget .e26-status {
+                font-size: 1.35rem;
+                font-weight: 700;
+                line-height: 1.15;
+            }
+            #e26-widget.sim .e26-status { color: #fdba74; }
+            #e26-widget.official .e26-status { color: #f0b429; font-size: 1.05rem; font-weight: 600; }
+            #e26-widget .e26-detail {
+                margin: 0;
+                font-size: 0.86rem;
+                line-height: 1.45;
+            }
+            #e26-widget .e26-when {
+                display: block;
+                margin-top: 2px;
+                font-size: 1.2rem;
+                font-weight: 700;
+                font-variant-numeric: tabular-nums;
+                color: #fff;
+            }
+            #e26-widget .e26-source {
+                display: block;
+                margin-top: 3px;
+                font-size: 0.8rem;
+                color: rgba(248, 241, 222, 0.78);
+            }
+            #e26-widget .e26-ballots {
+                display: block;
+                margin-top: 2px;
+                font-size: 0.98rem;
+                font-weight: 600;
+                font-variant-numeric: tabular-nums;
+                color: #fff;
+            }
+            #e26-widget .e26-why { align-self: start; font-size: 0.8rem; margin-top: 4px; color: #fed7aa; }
+            #e26-widget button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
             #e26-modal-overlay {
                 position: fixed; inset: 0;
                 background: rgba(0,0,0,0.85);
@@ -979,19 +1070,101 @@
         `;
         document.head.appendChild(css);
 
-        const isOn = SHOW_E26;
         const widget = document.createElement('div');
         widget.id = 'e26-widget';
-        widget.className = isOn ? 'on' : '';
-        const labelText = isOn ? t('e26_on_state') : t('e26_off_state');
-        widget.innerHTML = `
-            <span class="e26-switch" role="button" tabindex="0">
-                <span class="e26-dot"></span>
-                <span class="e26-label">${labelText}</span>
-            </span>
-            <span class="e26-why" role="button" tabindex="0">${t('e26_why_link')}</span>
-        `;
         document.body.appendChild(widget);
+
+        let k26Status = { kind: 'simulated', as_of: null, source_he: '', source_en: '' };
+
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        function countOrNull(value) {
+            if (value == null || value === '') return null;
+            const n = Number(value);
+            return Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
+        }
+
+        function formatAsOf(iso) {
+            const d = new Date(iso);
+            if (!iso || Number.isNaN(d.getTime())) return '';
+            return new Intl.DateTimeFormat(currentLang === 'he' ? 'he-IL' : 'en-GB', {
+                timeZone: 'Asia/Jerusalem',
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(d);
+        }
+
+        function paint() {
+            const official = SHOW_E26 && k26Status.kind === 'official';
+            if (!SHOW_E26) {
+                widget.className = '';
+                widget.innerHTML =
+                    '<button type="button" class="e26-switch">' +
+                        '<span class="e26-dot"></span>' +
+                        '<span class="e26-label">' + esc(t('e26_off_state')) + '</span>' +
+                    '</button>';
+                return;
+            }
+            widget.className = 'provenance ' + (official ? 'official' : 'sim');
+            if (!official) {
+                widget.innerHTML =
+                    '<div class="e26-head">' +
+                        '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
+                        '<button type="button" class="e26-switch">' + esc(t('e26_turn_off')) + '</button>' +
+                    '</div>' +
+                    '<div class="e26-status">' + esc(t('e26_sim_headline')) + '</div>' +
+                    '<p class="e26-detail">' + esc(t('e26_sim_detail')) + '</p>' +
+                    '<button type="button" class="e26-why">' + esc(t('e26_why_link')) + '</button>';
+                return;
+            }
+            const when = formatAsOf(k26Status.as_of);
+            const source = currentLang === 'he' ? (k26Status.source_he || '') : (k26Status.source_en || '');
+            const whenHtml = when
+                ? '<time class="e26-when" datetime="' + esc(k26Status.as_of) + '">' + esc(when) + '</time>'
+                : '<span class="e26-when">' + esc(t('e26_as_of_missing')) + '</span>';
+            const counted = countOrNull(k26Status.ballots);
+            const roster = countOrNull(k26Status.ballots_total);
+            const ballotsText = counted == null ? ''
+                : (roster == null
+                    ? t('e26_ballots', { n: fmtNum(counted) })
+                    : t('e26_ballots_of', { n: fmtNum(counted), total: fmtNum(roster) }));
+            widget.innerHTML =
+                '<div class="e26-head">' +
+                    '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
+                    '<button type="button" class="e26-switch">' + esc(t('e26_turn_off')) + '</button>' +
+                '</div>' +
+                '<div class="e26-status">' + esc(t('e26_official_headline')) + '</div>' +
+                '<p class="e26-detail">' + whenHtml +
+                    (ballotsText ? '<span class="e26-ballots">' + esc(ballotsText) + '</span>' : '') +
+                    (source ? '<span class="e26-source">' + esc(source) + '</span>' : '') +
+                '</p>';
+        }
+
+        function placeCard() {
+            widget.style.top = '';
+            if (!widget.classList.contains('provenance')) return;
+            if (document.querySelector('.top-bar')) {
+                widget.style.top = '52px';
+                return;
+            }
+            const anchor = document.querySelector('.election-nav') || document.querySelector('.main-header');
+            if (!anchor) return;
+            const edge = anchor.getBoundingClientRect().bottom;
+            widget.style.top = Math.max(14, Math.round(edge + 8)) + 'px';
+        }
+
+        paint();
+        placeCard();
+        requestAnimationFrame(placeCard);
+        window.addEventListener('scroll', placeCard, { passive: true });
+        window.addEventListener('resize', placeCard);
 
         function buildModal() {
             const overlay = document.createElement('div');
@@ -1031,48 +1204,39 @@
         function toggleE26() {
             const turningOn = !SHOW_E26;
             try {
-                if (turningOn) localStorage.setItem('e26', '1');
-                else localStorage.removeItem('e26');
+                if (turningOn) localStorage.removeItem('e26');
+                else localStorage.setItem('e26', '0');
             } catch (e) {}
-            // If turning on for the first time, mark unseen so the modal opens on the next page load
-            if (turningOn) {
-                try {
-                    if (localStorage.getItem('e26_seen') !== '1') {
-                        // Open immediately; modal will set e26_seen on dismiss
-                    }
-                } catch (e) {}
-            }
-            // Update URL: add or remove ?e26=1
             const u = new URL(location.href);
-            if (turningOn) u.searchParams.set('e26', '1');
-            else u.searchParams.delete('e26');
-            location.href = u.toString();  // reload so all pages re-init with new state
+            if (turningOn) u.searchParams.delete('e26');
+            else u.searchParams.set('e26', '0');
+            location.href = u.toString();
         }
 
-        widget.querySelector('.e26-switch').addEventListener('click', toggleE26);
-        widget.querySelector('.e26-switch').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleE26(); }
-        });
-        widget.querySelector('.e26-why').addEventListener('click', openModal);
-        widget.querySelector('.e26-why').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openModal(); }
+        widget.addEventListener('click', (e) => {
+            if (e.target.closest('.e26-switch')) toggleE26();
+            else if (e.target.closest('.e26-why')) openModal();
         });
 
-        // First-time-on auto-open of the modal
-        if (isOn) {
-            try {
-                if (localStorage.getItem('e26_seen') !== '1') {
-                    openModal();
-                }
-            } catch (e) {}
+        if (SHOW_E26) {
+            const script = document.querySelector('script[src*="i18n.js"]');
+            const src = script ? script.getAttribute('src') : 'i18n.js';
+            const url = src.replace(/i18n\.js(?:\?.*)?$/, 'data/k26_status.json');
+            fetch(url, { cache: 'no-store' })
+                .then((r) => r.ok ? r.json() : null)
+                .then((data) => {
+                    if (data && (data.kind === 'official' || data.kind === 'simulated')) k26Status = data;
+                    paint();
+                    placeCard();
+                })
+                .catch(() => {});
         }
 
-        // Re-render widget + modal labels on language change
         window.addEventListener('langchange', () => {
-            widget.querySelector('.e26-label').textContent = SHOW_E26 ? t('e26_on_state') : t('e26_off_state');
-            widget.querySelector('.e26-why').textContent = t('e26_why_link');
+            paint();
+            placeCard();
             const overlay = document.getElementById('e26-modal-overlay');
-            if (overlay) { overlay.remove(); }  // rebuild on next open with new lang
+            if (overlay) overlay.remove();
         });
     }
 

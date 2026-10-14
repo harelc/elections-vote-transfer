@@ -368,7 +368,7 @@
             { icon: '🗺️', i18n_title: 'nav_geomap',    i18n_desc: 'card_geomap_desc',    href: 'geomap.html' },
             { icon: '🔵', i18n_title: 'nav_tsne',      i18n_desc: 'card_tsne_desc',      href: 'tsne.html' },
             { icon: '🔀', i18n_title: 'nav_sankey',    i18n_desc: 'card_sankey_desc',    href: 'sankey.html' },
-            { icon: '▶', i18n_title: 'nav_animation',  i18n_desc: 'card_animation_desc', href: 'animation.html' },
+            { icon: '▶', i18n_title: 'nav_animation',  i18n_desc: i18n.SHOW_E26 ? 'card_animation_desc_e26' : 'card_animation_desc', href: 'animation.html' },
             { icon: '📈', i18n_title: 'nav_scatter',    i18n_desc: 'card_scatter_desc',   href: 'scatter.html' },
             { icon: '📍', i18n_title: 'settlement_profile', i18n_desc: 'card_settlement_desc', href: 'settlement.html' },
             { icon: '🎪', i18n_title: 'party_profile', i18n_desc: 'card_party_desc', href: 'party.html' },
@@ -384,9 +384,9 @@
         cards.forEach(c => {
             const a = document.createElement('a');
             a.className = 'view-card';
-            // animation.html reads ?e26=1 itself (it does not load i18n.js / localStorage)
-            a.href = (i18n.SHOW_E26 && c.href.indexOf('animation.html') !== -1)
-                ? c.href + (c.href.includes('?') ? '&' : '?') + 'e26=1'
+            // animation.html opts out only via ?e26=0 (it does not load i18n.js)
+            a.href = (!i18n.SHOW_E26 && c.href.indexOf('animation.html') !== -1)
+                ? c.href + (c.href.includes('?') ? '&' : '?') + 'e26=0'
                 : c.href;
             a.innerHTML =
                 '<span class="view-card-title" data-i18n="' + c.i18n_title + '">' + i18n.t(c.i18n_title) + '</span>' +
