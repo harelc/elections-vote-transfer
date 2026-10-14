@@ -240,7 +240,7 @@
             });
             // Animation link
             const animBtn = document.createElement('a');
-            animBtn.href = '../animation.html';
+            animBtn.href = '../animation.html' + (i18n.SHOW_E26 ? '?e26=1' : '');
             animBtn.className = 'transition-pill';
             animBtn.style.cssText = 'background:#f0b429;color:#1a1408;text-decoration:none;';
             animBtn.textContent = '▶';

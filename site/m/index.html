@@ -277,7 +277,10 @@
         cards.forEach(c => {
             const a = document.createElement('a');
             a.className = 'm-card';
-            a.href = c.href;
+            // animation.html reads ?e26=1 itself (it does not load i18n.js / localStorage)
+            a.href = (i18n.SHOW_E26 && c.href.indexOf('animation.html') !== -1)
+                ? c.href + (c.href.includes('?') ? '&' : '?') + 'e26=1'
+                : c.href;
             a.innerHTML =
                 '<div class="m-card-text">' +
                 '<div class="m-card-title" data-i18n="' + c.i18n_title + '">' + i18n.t(c.i18n_title) + '</div>' +
