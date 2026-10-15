@@ -304,10 +304,6 @@
                     <span class="hero-stat-value" id="stat-voted">—</span>
                     <span class="hero-stat-label" data-i18n="voted">הצביעו</span>
                 </div>
-                <div class="hero-stat">
-                    <span class="hero-stat-value" id="stat-visitors">—</span>
-                    <span class="hero-stat-label" data-i18n="dashboard_stat_visitors">מבקרים באתר</span>
-                </div>
             </div>
         </section>
 
@@ -421,36 +417,18 @@
             const maps = all.filter(Boolean);
             if (!maps.length) return;
             const latest = maps[maps.length - 1];
+            // The map omits ballots it cannot place and ballots under 50 major-party votes.
+            // K26 eligible voters are the formal roster total, 7,331,981.
+            const eligible = latest.election && latest.election.id === '26'
+                ? 7331981
+                : latest.stats.totalEligible;
             animateNumber(document.getElementById('stat-elections'), maps.length, 800);
             animateNumber(document.getElementById('stat-ballots'), latest.stats.totalBallots, 1200);
             animateNumber(document.getElementById('stat-settlements'), latest.stats.totalSettlements, 1200);
-            animateNumber(document.getElementById('stat-eligible'), latest.stats.totalEligible, 1500);
+            animateNumber(document.getElementById('stat-eligible'), eligible, 1500);
             animateNumber(document.getElementById('stat-voted'), latest.stats.totalVoters, 1500);
             animateNumber(document.getElementById('stat-lists'), latest.stats.totalLists, 800);
         }).catch(() => {});
-
-        // Visitor counter using CountAPI
-        (function loadVisitorCount() {
-            const STORAGE_KEY = 'kolot_visit_counted';
-            const API_NS = 'kolot-nodedim';
-            const API_KEY = 'page-visits';
-
-            const alreadyCounted = sessionStorage.getItem(STORAGE_KEY);
-            const endpoint = alreadyCounted
-                ? 'https://api.counterapi.dev/v1/' + API_NS + '/' + API_KEY + '/'
-                : 'https://api.counterapi.dev/v1/' + API_NS + '/' + API_KEY + '/up';
-
-            fetch(endpoint)
-                .then(r => r.json())
-                .then(data => {
-                    const count = data.count || data.value || 0;
-                    if (count > 0) {
-                        animateNumber(document.getElementById('stat-visitors'), count, 1200);
-                        if (!alreadyCounted) sessionStorage.setItem(STORAGE_KEY, '1');
-                    }
-                })
-                .catch(() => {});
-        })();
 
         // Random archive photos
         (function() {

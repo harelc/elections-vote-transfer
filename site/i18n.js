@@ -267,7 +267,6 @@
         dashboard_stat_elections:  { he: 'כנסות', en: 'Elections' },
         dashboard_stat_ballots:    { he: 'קלפיות', en: 'Ballot boxes' },
         dashboard_stat_settlements:{ he: 'יישובים', en: 'Settlements' },
-        dashboard_stat_visitors:   { he: 'מבקרים באתר', en: 'Site visitors' },
         dashboard_stat_lists:      { he: 'רשימות', en: 'Lists' },
         card_sankey_desc:          { he: 'תרשים נדידת קולות בין בחירות עוקבות', en: 'Vote flow diagram between consecutive elections' },
         card_animation_desc:       { he: 'אנימציה של נדידת קולות מ-2003 עד 2022', en: 'Animated vote flow from 2003 to 2022' },

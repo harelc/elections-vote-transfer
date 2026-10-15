@@ -205,10 +205,6 @@
                 <span class="m-stat-value" id="stat-voted">—</span>
                 <span class="m-stat-label" data-i18n="voted">הצביעו</span>
             </div>
-            <div>
-                <span class="m-stat-value" id="stat-visitors">—</span>
-                <span class="m-stat-label" data-i18n="dashboard_stat_visitors">מבקרים באתר</span>
-            </div>
         </div>
 
         <div class="m-cards" id="cards"></div>
@@ -315,30 +311,18 @@
             const maps = all.filter(Boolean);
             if (!maps.length) return;
             const latest = maps[maps.length - 1];
+            // The map omits ballots it cannot place and ballots under 50 major-party votes.
+            // K26 eligible voters are the formal roster total, 7,331,981.
+            const eligible = latest.election && latest.election.id === '26'
+                ? 7331981
+                : latest.stats.totalEligible;
             animateNumber(document.getElementById('stat-elections'), maps.length, 800);
             animateNumber(document.getElementById('stat-ballots'), latest.stats.totalBallots, 1200);
             animateNumber(document.getElementById('stat-settlements'), latest.stats.totalSettlements, 1200);
-            animateNumber(document.getElementById('stat-eligible'), latest.stats.totalEligible, 1500);
+            animateNumber(document.getElementById('stat-eligible'), eligible, 1500);
             animateNumber(document.getElementById('stat-voted'), latest.stats.totalVoters, 1500);
             animateNumber(document.getElementById('stat-lists'), latest.stats.totalLists, 800);
         }).catch(() => {});
-
-        // Visitor counter
-        (function() {
-            const KEY = 'kolot_visit_counted';
-            const ns = 'kolot-nodedim', k = 'page-visits';
-            const counted = sessionStorage.getItem(KEY);
-            const url = counted
-                ? 'https://api.counterapi.dev/v1/' + ns + '/' + k + '/'
-                : 'https://api.counterapi.dev/v1/' + ns + '/' + k + '/up';
-            fetch(url).then(r => r.json()).then(d => {
-                const n = d.count || d.value || 0;
-                if (n > 0) {
-                    animateNumber(document.getElementById('stat-visitors'), n, 1200);
-                    if (!counted) sessionStorage.setItem(KEY, '1');
-                }
-            }).catch(() => {});
-        })();
 
         window.addEventListener('langchange', () => i18n.applyTranslations());
     })();
