@@ -5,8 +5,8 @@ Ballot-level bootstrap intervals for the Sankey transfer percentages.
 Each draw resamples the matched ballots and re-solves the same constrained
 least-squares problem the page displays (rows sum to 1, cells in range,
 forbidden cells fixed at zero). The interval is the 2.5 and 97.5 percentiles
-of that cell. The simulated 25→26 transition is omitted: resampling those
-ballots measures solver noise, not uncertainty about the next election.
+of that cell. 25→26 is omitted from the default run. refresh_k26.py adds it
+with --only 25_to_26 once a real count crosses a coverage milestone.
 """
 
 import argparse
@@ -189,6 +189,7 @@ def probe():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--probe', action='store_true')
+    parser.add_argument('--only', default='', help='one transition key, e.g. 25_to_26; merged into the existing file')
     parser.add_argument('--B', type=int, default=B)
     parser.add_argument('--workers', type=int, default=max(1, (os.cpu_count() or 4) - 1))
     args = parser.parse_args()
@@ -196,18 +197,29 @@ def main():
         probe()
         return
 
+    pairs = list(PAIRS)
+    if args.only:
+        left, right = args.only.split('_to_')
+        pairs = [(left, right)]
+
     specs = []
-    for pair in PAIRS:
+    for pair in pairs:
         specs.append((*pair, False, args.B, SEED))
         if pair not in NO_ABSTENTION:
             specs.append((*pair, True, args.B, SEED))
 
-    out = {
-        'B': args.B,
-        'level': 0.95,
-        'estimator': 'constrained least squares, ballot bootstrap',
-        'transitions': {},
-    }
+    out_path = 'site/data/transfer_ci.json'
+    if args.only and os.path.exists(out_path):
+        with open(out_path, encoding='utf-8') as f:
+            out = json.load(f)
+        out.setdefault('transitions', {})
+    else:
+        out = {
+            'B': args.B,
+            'level': 0.95,
+            'estimator': 'constrained least squares, ballot bootstrap',
+            'transitions': {},
+        }
     print(f'{len(specs)} transitions, B={args.B}, workers={args.workers}', flush=True)
     with ProcessPoolExecutor(max_workers=args.workers) as pool:
         futures = {pool.submit(job, spec): spec for spec in specs}
@@ -215,10 +227,10 @@ def main():
             key, payload, point_s, draw_s, failed = fut.result()
             out['transitions'][key] = payload
             print(f'{key}: point {point_s}s, draw {draw_s}s, failed {failed}', flush=True)
-            with open('site/data/transfer_ci.json', 'w', encoding='utf-8') as f:
+            with open(out_path, 'w', encoding='utf-8') as f:
                 json.dump(out, f, ensure_ascii=False)
 
-    print(f'wrote site/data/transfer_ci.json ({len(out["transitions"])} transitions)')
+    print(f'wrote {out_path} ({len(out["transitions"])} transitions)')
 
 
 if __name__ == '__main__':

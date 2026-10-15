@@ -467,6 +467,7 @@
             en: 'These figures are not real data yet. They are a simulation matched to the polling average. Its main goal is to test the site\'s preparedness.'
         },
         e26_official_headline: { he: 'תוצאות אמת', en: 'Official results' },
+        e26_partial_headline:  { he: 'ספירה חלקית', en: 'Partial count' },
         e26_as_of_missing:     { he: 'חותמת הזמן של הספירה חסרה', en: 'The count has no timestamp' },
         e26_ballots:           { he: '{n} קלפיות', en: '{n} ballots' },
         e26_ballots_of:        { he: '{n} מתוך {total} קלפיות', en: '{n} of {total} ballots' },
@@ -903,10 +904,11 @@
        On: a card that says what the K26 numbers are.
        site/data/k26_status.json decides which:
          { "kind": "simulated" }
-         { "kind": "official", "as_of": "2026-10-27T22:40:00+03:00",
+         { "kind": "partial", "as_of": "2026-10-27T22:40:00+03:00",
            "ballots": 4820, "ballots_total": 12018,
            "source_he": "ספירה חלקית, ועדת הבחירות המרכזית",
            "source_en": "Partial count, Central Elections Committee" }
+         { "kind": "official", ...same fields, once ballots reach the roster }
        ──────────────────────────────────────────────────────────────── */
     function setupE26Widget() {
         if (document.getElementById('e26-widget')) return;  // already injected
@@ -1137,18 +1139,22 @@
         let noticeClosed = false;
         try { noticeClosed = sessionStorage.getItem('e26_notice_closed') === '1'; } catch (e) {}
 
+        function isLiveCount() {
+            return k26Status.kind === 'official' || k26Status.kind === 'partial';
+        }
+
         function paint() {
             if (SHOW_E26 && noticeClosed) {
-                const official = k26Status.kind === 'official';
-                widget.className = 'collapsed ' + (official ? 'official' : 'sim');
+                const live = isLiveCount();
+                widget.className = 'collapsed ' + (live ? 'official' : 'sim');
                 widget.innerHTML =
                     '<button type="button" class="e26-reopen">' +
                         '<span class="e26-dot"></span>' +
-                        '<span>' + esc(t(official ? 'e26_reopen_official' : 'e26_reopen_sim')) + '</span>' +
+                        '<span>' + esc(t(live ? 'e26_reopen_official' : 'e26_reopen_sim')) + '</span>' +
                     '</button>';
                 return;
             }
-            const official = SHOW_E26 && k26Status.kind === 'official';
+            const live = SHOW_E26 && isLiveCount();
             if (!SHOW_E26) {
                 widget.className = '';
                 widget.innerHTML =
@@ -1158,8 +1164,8 @@
                     '</button>';
                 return;
             }
-            widget.className = 'provenance ' + (official ? 'official' : 'sim');
-            if (!official) {
+            widget.className = 'provenance ' + (live ? 'official' : 'sim');
+            if (!live) {
                 widget.innerHTML =
                     '<div class="e26-head">' +
                         '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
@@ -1186,7 +1192,7 @@
                     '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
                     '<button type="button" class="e26-close">' + esc(t('e26_close')) + '</button>' +
                 '</div>' +
-                '<div class="e26-status">' + esc(t('e26_official_headline')) + '</div>' +
+                '<div class="e26-status">' + esc(t(k26Status.kind === 'partial' ? 'e26_partial_headline' : 'e26_official_headline')) + '</div>' +
                 '<p class="e26-detail">' + whenHtml +
                     (ballotsText ? '<span class="e26-ballots">' + esc(ballotsText) + '</span>' : '') +
                     (source ? '<span class="e26-source">' + esc(source) + '</span>' : '') +
@@ -1286,7 +1292,7 @@
             fetch(url, { cache: 'no-store' })
                 .then((r) => r.ok ? r.json() : null)
                 .then((data) => {
-                    if (data && (data.kind === 'official' || data.kind === 'simulated')) k26Status = data;
+                    if (data && (data.kind === 'official' || data.kind === 'partial' || data.kind === 'simulated')) k26Status = data;
                     paint();
                     placeCard();
                 })

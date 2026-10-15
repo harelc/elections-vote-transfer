@@ -59,8 +59,11 @@ SCENARIOS_BY_YEAR = {
     ],
 }
 
-# Which transitions yield simulated destination data
+# Which transitions yield simulated destination data.
+# K26_REAL=1 is set by refresh_k26.py once a CEC file is being published.
 SIMULATED_TARGETS = {'26'}
+if os.environ.get('K26_REAL') == '1':
+    SIMULATED_TARGETS.discard('26')
 
 
 def load_ballot_lookup(tsne):

@@ -2,6 +2,19 @@
 command = "echo 'Static site'"
 publish = "site"
 
+# Fires every 10 minutes all year. k26_control.json limits fetching to
+# 27 Oct 2026 21:00 through 31 Oct 2026 23:59, Asia/Jerusalem.
+# Dispatch stays off while auto is false. K26_AUTO=0 stops it even after that file is set true.
+# K26_POLL=0 stops fetching before the window ends.
+[functions."k26-poll"]
+schedule = "*/10 * * * *"
+included_files = ["k26_control.json"]
+
+[[headers]]
+  for = "/data/k26_status.json"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 # Custom function paths plus this catch-all come back as an empty 500
 # before the function runs. These two rules hit the default function URL.
 

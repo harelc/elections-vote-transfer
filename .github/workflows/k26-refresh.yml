@@ -1,0 +1,128 @@
+name: Refresh K26 count
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha256:
+        description: sha256 of the results file the poller accepted
+        required: true
+        type: string
+      ballot_count:
+        description: ballot rows in that file
+        required: true
+        type: string
+      as_of:
+        description: source timestamp
+        required: false
+        type: string
+        default: ""
+      final:
+        description: mark the count official even below the roster
+        required: false
+        type: string
+        default: "false"
+      force:
+        description: rebuild even though k26_control.json auto is false
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: k26-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the chicken bit
+        id: gate
+        run: |
+          python - <<'PY'
+          import json, os
+          forced = os.environ["K26_FORCE"] == "true"
+          auto = json.load(open("k26_control.json", encoding="utf-8")).get("auto") is True
+          proceed = forced or auto
+          if not proceed:
+              print("k26_control.json auto is false; leaving the site as it is")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write("proceed=" + ("true" if proceed else "false") + "\n")
+          PY
+        env:
+          K26_FORCE: ${{ inputs.force }}
+
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.proceed == 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+        if: steps.gate.outputs.proceed == 'true'
+
+      - name: Download the results file
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          K26_RESULTS_URL: ${{ secrets.K26_RESULTS_URL }}
+        run: |
+          if [ -z "$K26_RESULTS_URL" ]; then
+            echo "K26_RESULTS_URL is not set on this GitHub repo"
+            exit 1
+          fi
+          mkdir -p data/k26_inbox
+          curl -fsSL "$K26_RESULTS_URL" -o data/k26_inbox/snapshot.bin
+
+      - name: Rebuild K26
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          python refresh_k26.py \
+            --csv data/k26_inbox/snapshot.bin \
+            --sha256 "${{ inputs.sha256 }}" \
+            --ballots "${{ inputs.ballot_count }}" \
+            --as-of "${{ inputs.as_of }}" \
+            ${{ inputs.final == 'true' && '--final' || '' }} \
+            ${{ inputs.force == true && '--force' || '' }} \
+            --ci
+
+      - name: Commit the snapshot
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            ballot26.csv \
+            party_config.py \
+            data/transfer_25_to_26.json \
+            data/transfer_25_to_26_abstention.json \
+            data/all_transfers.json \
+            data/all_transfers_abstention.json \
+            data/tsne_26.json \
+            site/data/tsne_26.json \
+            site/data/map_26.json \
+            site/data/transfer_25_to_26.json \
+            site/data/transfer_25_to_26_abstention.json \
+            site/data/all_transfers.json \
+            site/data/all_transfers_abstention.json \
+            site/data/fraud_sim_25_26.json \
+            site/data/wiki_official_results.json \
+            site/data/k26_status.json \
+            site/data/transfer_ci.json \
+            site/dhondt.html \
+            site/m/dhondt.html \
+            site/party.html \
+            site/m/party.html \
+            netlify/lib/mcp/mcp-data/settlements_26.json \
+            netlify/lib/mcp/mcp-data/embeddings_26.json \
+            netlify/lib/mcp/mcp-data/meta.json \
+            netlify/lib/mcp/mcp-data/transfers.json
+          if git diff --cached --quiet; then
+            echo "no file changes"
+            exit 0
+          fi
+          git commit -m "Update K26 from the latest accepted count"
+          git push
