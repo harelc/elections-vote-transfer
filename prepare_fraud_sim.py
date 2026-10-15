@@ -102,9 +102,12 @@ def build_geo_neighborhoods(coords):
             continue
         key = (float(rounded[i, 0]), float(rounded[i, 1]))
         sib = [j for j in groups[key] if j != i]
-        if len(sib) < 1:
-            _, neigh = tree.query(coords[i], k=GEO_K_FALLBACK + 1)
-            sib = [int(valid_idx[j]) for j in neigh if int(valid_idx[j]) != i][:GEO_K_FALLBACK]
+        if len(sib) < 1 and tree is not None and len(valid_idx) > 1:
+            _, neigh = tree.query(coords[i], k=min(GEO_K_FALLBACK + 1, len(valid_idx)))
+            sib = [
+                int(valid_idx[j]) for j in np.atleast_1d(neigh)
+                if 0 <= int(j) < len(valid_idx) and int(valid_idx[j]) != i
+            ][:GEO_K_FALLBACK]
         neighbors.append(sib)
     return neighbors
 
@@ -114,14 +117,19 @@ def build_manifold_neighborhoods(coords, k=MANIFOLD_K):
     n = len(coords)
     has = ~np.isnan(coords[:, 0])
     valid_idx = np.where(has)[0]
+    if len(valid_idx) == 0:
+        return [[] for _ in range(n)]
     tree = cKDTree(coords[has])
     neighbors = []
     for i in range(n):
         if not has[i]:
             neighbors.append([])
             continue
-        _, neigh = tree.query(coords[i], k=k + 1)
-        neighbors.append([int(valid_idx[j]) for j in neigh if int(valid_idx[j]) != i][:k])
+        _, neigh = tree.query(coords[i], k=min(k + 1, len(valid_idx)))
+        neighbors.append([
+            int(valid_idx[j]) for j in np.atleast_1d(neigh)
+            if 0 <= int(j) < len(valid_idx) and int(valid_idx[j]) != i
+        ][:k])
     return neighbors
 
 
