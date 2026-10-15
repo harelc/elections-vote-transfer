@@ -683,7 +683,8 @@
         }
 
         .color-scale-bar {
-            width: 120px;
+            width: 100%;
+            min-width: 160px;
             height: 10px;
             border-radius: 4px;
             margin-bottom: 0.25rem;
@@ -696,6 +697,19 @@
             color: var(--text-muted);
             direction: ltr;
         }
+
+        .color-scale-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.35rem;
+            cursor: pointer;
+        }
+
+        .color-scale-toggle.hidden { display: none; }
+        .color-scale-toggle input { cursor: pointer; }
 
         /* Cluster legend */
         .cluster-legend {
@@ -993,6 +1007,10 @@
                         <span id="legend-min"></span>
                         <span id="legend-max"></span>
                     </div>
+                    <label class="color-scale-toggle hidden" id="color-scale-toggle">
+                        <input type="checkbox" id="dynamic-range-toggle" checked>
+                        <span data-i18n="dynamic_range">טווח דינמי</span>
+                    </label>
                     <div class="cluster-legend" id="cluster-legend">
                         <div class="cluster-legend-row">
                             <span class="cluster-legend-icon" style="background: #2563eb; border: 2px solid rgba(255,255,255,0.3); width:14px; height:14px;"></span>
@@ -1049,6 +1067,8 @@
                 this.parties = [];
                 this.colorMode = 'winner';
                 this.selectedParty = null;
+                this.dynamicRange = true;
+                this.partyScaleMax = 50;
                 this.currentElection = i18n.SHOW_E26 ? '26' : '25';
                 this.settlements = [];
                 this.compareElection = null;
@@ -1422,6 +1442,13 @@
                     });
                 });
 
+                document.getElementById('dynamic-range-toggle').addEventListener('change', (e) => {
+                    this.dynamicRange = e.target.checked;
+                    this.updatePartyScale();
+                    this.updateLegend();
+                    if (this.colorMode === 'party' && !this.compareElection) this.renderMarkers();
+                });
+
                 // Color mode options
                 document.querySelectorAll('.color-option').forEach(opt => {
                     opt.addEventListener('click', () => {
@@ -1644,6 +1671,7 @@
                     }
                 }
 
+                this.updatePartyScale();
                 this.updateCompareRow();
                 this.updateLegend();
                 this.renderMarkers();
@@ -1712,6 +1740,8 @@
                 const legendBar = document.getElementById('legend-bar');
                 const legendMin = document.getElementById('legend-min');
                 const legendMax = document.getElementById('legend-max');
+                const rangeToggle = document.getElementById('color-scale-toggle');
+                rangeToggle.classList.add('hidden');
                 const isEn = i18n.getLang() === 'en';
                 document.getElementById('cluster-legend').classList.remove('visible');
                 const embedCanvas = document.getElementById('embed-legend');
@@ -1773,9 +1803,23 @@
                         legendBar.style.display = '';
                         legendBar.style.background = `linear-gradient(to left, ${this.selectedParty.color}, ${this.lightenColor(this.selectedParty.color, 0.8)})`;
                         legendMin.textContent = '0%';
-                        legendMax.textContent = '50%';
+                        legendMax.textContent = `${this.partyScaleMax}%`;
+                        rangeToggle.classList.remove('hidden');
                     }
                 }
+            }
+
+            updatePartyScale() {
+                this.partyScaleMax = 50;
+                if (!this.dynamicRange || !this.selectedParty || !this.tsneData) return;
+                const name = this.selectedParty.name;
+                const values = this.tsneData.stations
+                    .map(s => (s.p || s.proportions || {})[name] || 0)
+                    .filter(v => v > 0)
+                    .sort((a, b) => a - b);
+                if (!values.length) return;
+                const p98 = values[Math.floor(values.length * 0.98)] || 50;
+                this.partyScaleMax = Math.ceil(p98) || 50;
             }
 
             lightenColor(color, factor) {
@@ -1896,7 +1940,7 @@
                         return this.getDiffColor(currentPct - comparePct);
                     }
 
-                    const t = Math.min(currentPct / 50, 1);
+                    const t = Math.min(currentPct / this.partyScaleMax, 1);
                     return this.interpolateColor(this.lightenColor(this.selectedParty.color, 0.85), this.selectedParty.color, t);
                 }
 
@@ -2141,7 +2185,7 @@
                     } else {
                         const partyPct = totalVoters > 0 && partyVotes[this.selectedParty.name] ?
                             Math.round(partyVotes[this.selectedParty.name] / totalVoters * 100) : 0;
-                        const t = Math.min(partyPct / 50, 1);
+                        const t = Math.min(partyPct / this.partyScaleMax, 1);
                         bgColor = this.interpolateColor(
                             this.lightenColor(this.selectedParty.color, 0.85),
                             this.selectedParty.color,

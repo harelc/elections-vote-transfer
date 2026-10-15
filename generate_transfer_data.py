@@ -42,6 +42,30 @@ FORBIDDEN_CELLS = {
         ('יהדות התורה', 'כחול לבן'),
         ('הציונות הדתית', 'הדמוקרטים'),
         ('הציונות הדתית', 'כחול לבן'),
+        # הציבור החרדי is fed only by the Haredi lists; Noam only by
+        # Religious Zionism. Other cells are solver noise.
+        ('הליכוד', 'הציבור החרדי'),
+        ('הליכוד', 'נעם'),
+        ('יש עתיד', 'הציבור החרדי'),
+        ('יש עתיד', 'נעם'),
+        ('הציונות הדתית', 'הציבור החרדי'),
+        ('המחנה הממלכתי', 'הציבור החרדי'),
+        ('המחנה הממלכתי', 'נעם'),
+        ('ש״ס', 'נעם'),
+        ('יהדות התורה', 'נעם'),
+        ('ישראל ביתנו', 'הציבור החרדי'),
+        ('ישראל ביתנו', 'נעם'),
+        ('רע״ם', 'הציבור החרדי'),
+        ('רע״ם', 'נעם'),
+        ('חד״ש-תע״ל', 'הציבור החרדי'),
+        ('חד״ש-תע״ל', 'נעם'),
+        ('העבודה', 'הציבור החרדי'),
+        ('העבודה', 'נעם'),
+        ('מרצ', 'הציבור החרדי'),
+        ('מרצ', 'נעם'),
+        ('בל״ד', 'הציבור החרדי'),
+        ('בל״ד', 'נעם'),
+        ('הבית היהודי', 'הציבור החרדי'),
     ],
 }
 
@@ -354,6 +378,7 @@ class VoteTransferAnalyzer:
             'Y': Y,
             'row_sum': row_sum,
             'zero_cells': zero_cells,
+            'n_matched': len(matched_pairs),
         }
 
     def compute_transfer(self, election_from, election_to):
@@ -518,7 +543,7 @@ class VoteTransferAnalyzer:
             'nodes_to': nodes_to,
             'transfers': transfers,
             'stats': {
-                'common_precincts': len(matched_pairs),
+                'common_precincts': design['n_matched'],
                 'r_squared': round(r_squared, 4),
                 'total_votes_from': int(total_votes_from.sum()),
                 'total_votes_to': int(total_votes_to.sum()),

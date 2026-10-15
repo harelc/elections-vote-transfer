@@ -549,6 +549,8 @@
         'עמך ישראל': 'Amcha Yisrael',
         'הנדל–זליכה': 'Hendel–Zelicha–Wilf',
         'המילואימניקים': 'The Reservists',
+        'הציבור החרדי': 'Haredi Public',
+        'נעם': 'Noam',
     };
 
     /* ── State ── */

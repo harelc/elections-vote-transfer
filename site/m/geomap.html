@@ -182,6 +182,16 @@
             color: var(--text-muted);
             font-size: 0.65rem;
         }
+        .color-scale-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            margin-top: 4px;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            cursor: pointer;
+        }
+        .color-scale-toggle.hidden { display: none; }
         .cluster-legend {
             margin-top: 6px;
             padding-top: 6px;
@@ -358,6 +368,10 @@
             <span id="scale-min"></span>
             <span id="scale-max"></span>
         </div>
+        <label class="color-scale-toggle hidden" id="color-scale-toggle">
+            <input type="checkbox" id="dynamic-range-toggle" checked>
+            <span data-i18n="dynamic_range">טווח דינמי</span>
+        </label>
         <div class="cluster-legend" id="cluster-legend">
             <div class="cluster-legend-row">
                 <span class="cluster-legend-icon" style="background: #2563eb; border: 2px solid rgba(255,255,255,0.3); width:12px; height:12px;"></span>
@@ -417,6 +431,8 @@
             this.compareData = null;
             this.compareLookup = {};
             this.compareCache = {};
+            this.dynamicRange = true;
+            this.partyScaleMax = 50;
 
             this.initElectionPills();
             this.initMap();
@@ -495,6 +511,13 @@
 
             // Sheet backdrop
             document.getElementById('sheet-backdrop').onclick = () => this.hideSheet();
+
+            document.getElementById('dynamic-range-toggle').onchange = (e) => {
+                this.dynamicRange = e.target.checked;
+                this.updatePartyScale();
+                this.updateColorScale();
+                if (this.colorMode === 'party' && !this.compareElection) this.renderMarkers();
+            };
         }
 
         async loadData() {
@@ -618,6 +641,7 @@
         setColorMode(mode, party = null) {
             this.colorMode = mode;
             this.selectedParty = party;
+            this.updatePartyScale();
 
             // Clear compare when switching away from party mode
             if (mode !== 'party' || !party) {
@@ -644,12 +668,27 @@
             this.renderMarkers();
         }
 
+        updatePartyScale() {
+            this.partyScaleMax = 50;
+            if (!this.dynamicRange || !this.selectedParty || !this.tsneData) return;
+            const name = this.selectedParty.name;
+            const values = this.tsneData.stations
+                .map(s => (s.p || {})[name] || 0)
+                .filter(v => v > 0)
+                .sort((a, b) => a - b);
+            if (!values.length) return;
+            const p98 = values[Math.floor(values.length * 0.98)] || 50;
+            this.partyScaleMax = Math.ceil(p98) || 50;
+        }
+
         updateColorScale() {
             const el = document.getElementById('color-scale');
             const bar = document.getElementById('scale-bar');
             const title = document.getElementById('scale-title');
             const min = document.getElementById('scale-min');
             const max = document.getElementById('scale-max');
+            const rangeToggle = document.getElementById('color-scale-toggle');
+            rangeToggle.classList.add('hidden');
             const clusterLegend = document.getElementById('cluster-legend');
             clusterLegend.classList.remove('visible');
             const embedCanvas = document.getElementById('embed-legend');
@@ -692,7 +731,8 @@
                     const c = this.selectedParty.color;
                     bar.style.background = `linear-gradient(to left, ${c}, ${this.lightenColor(c, 0.85)})`;
                     min.textContent = '0%';
-                    max.textContent = '50%';
+                    max.textContent = this.partyScaleMax + '%';
+                    rangeToggle.classList.remove('hidden');
                 }
             } else if (this.colorMode === 'winner') {
                 el.style.display = 'block';
@@ -833,7 +873,7 @@
                 } else {
                     const pv = partyVotes[this.selectedParty.name] || 0;
                     const pct = totalVoters > 0 ? Math.round(pv / totalVoters * 100) : 0;
-                    const t = Math.min(pct / 50, 1);
+                    const t = Math.min(pct / this.partyScaleMax, 1);
                     bgColor = this.hexToRgba(this.interpolateHex(
                         this.lightenColor(this.selectedParty.color, 0.85),
                         this.selectedParty.color, t), 0.8);
@@ -1116,7 +1156,7 @@
                     return this.getDiffColor(currentPct - comparePct);
                 }
 
-                const t = Math.min(currentPct / 50, 1);
+                const t = Math.min(currentPct / this.partyScaleMax, 1);
                 return this.interpolateHex(
                     this.lightenColor(this.selectedParty.color, 0.85),
                     this.selectedParty.color, t);
