@@ -432,10 +432,10 @@
         card_mcp_desc:         { he: 'חברו צ׳אט משלכם אל נתוני האתר, בלי מפתח', en: 'Connect your own chat to the site data, no key' },
         e26_widget_label:      { he: 'מצב כנסת 26 (סימולציה)', en: 'Knesset 26 mode (simulation)' },
         e26_why_link:          { he: 'מה זה?', en: 'Why?' },
-        e26_modal_title:       { he: 'מצב כנסת 26 — מהי הסימולציה הזו?', en: 'Knesset 26 mode — what is this simulation?' },
+        e26_modal_title:       { he: 'כנסת 26 — מהי הסימולציה הזו?', en: 'Knesset 26 — what is this simulation?' },
         e26_modal_p1:          {
-            he: 'אתר זה כולל "מצב כנסת 26" אופציונלי, המציג נתונים <strong>מסולמצים</strong> של הבחירות הקרובות לכנסת ה־26, הצפויות באוקטובר 2026. הנתונים אינם אמיתיים — הם הופקו על ידי שילוב של מספר מקורות:',
-            en: 'This site includes an optional "Knesset 26 mode" that shows <strong>simulated</strong> data for the upcoming Knesset 26 election, expected October 2026. The data is not real — it is produced by combining several sources:'
+            he: 'עד לפרסום התוצאות, האתר מציג נתוני <strong>סימולציה</strong> של הבחירות לכנסת ה־26, שייערכו ב־27 באוקטובר 2026. הנתונים אינם אמיתיים — הם הופקו על ידי שילוב של מספר מקורות:',
+            en: 'Until the results are published, the site shows <strong>simulated</strong> data for the Knesset 26 election, to be held on 27 October 2026. The data is not real — it is produced by combining several sources:'
         },
         e26_modal_li1:         {
             he: '<strong>ממוצעי סקרים:</strong> שיעור המצביעים הצפוי לכל מפלגה מבוסס על ממוצעי סקרים מעודכנים.',
@@ -454,8 +454,8 @@
             en: '<strong>Population growth estimate:</strong> the expected number of eligible voters in K26 (~7.3 million) is estimated from the historical growth rate of Israel\'s adult population.'
         },
         e26_modal_p2:          {
-            he: '<strong>המטרה העיקרית:</strong> לבדוק את מוכנות האתר לבחירות. כל המספרים שתראו ב"מצב כנסת 26" הם <em>תרחיש</em>, לא נתונים אמיתיים.',
-            en: '<strong>Main goal:</strong> to test the site\'s preparedness for the election. All numbers you see in "Knesset 26 mode" are a <em>scenario</em>, not real data.'
+            he: '<strong>המטרה העיקרית:</strong> לבדוק את מוכנות האתר לבחירות. כל המספרים של כנסת 26 שתראו באתר עד אז הם <em>תרחיש</em>, לא נתונים אמיתיים.',
+            en: '<strong>Main goal:</strong> to test the site\'s preparedness for the election. Until then, every Knesset 26 number you see on the site is a <em>scenario</em>, not real data.'
         },
         e26_modal_dismiss:     { he: 'הבנתי', en: 'Got it' },
         e26_off_state:         { he: 'מצב כנסת 26: כבוי', en: 'K26 mode: off' },
@@ -474,6 +474,37 @@
         e26_close:             { he: 'סגור', en: 'Close' },
         e26_reopen_sim:        { he: 'הסבר על הסימולציה', en: 'About the simulation' },
         e26_reopen_official:   { he: 'פרטי הספירה', en: 'About this count' },
+        k26_intro_title:       { he: 'מוכנים לבחירות לכנסת ה־26', en: 'Ready for the Knesset 26 election' },
+        k26_intro_lead:        {
+            he: 'בליל הבחירות, 27 באוקטובר, התוצאות ייכנסו לאתר קלפי אחר קלפי, ממש כשוועדת הבחירות תפרסם אותן: למפה, לתרשים נדידת הקולות ולמפת התפלגות הקלפיות. עד אז מוצגת כאן סימולציה ברמת הקלפי, המכוילת כך שבסכימה הארצית היא תתאים לממוצע הסקרים.',
+            en: 'On 27 October, each ballot the committee publishes takes the place of the simulation in the map, the vote flow, and the clusters. Until then the figures are a scenario: one row per ballot, fitted to the polling average.'
+        },
+        k26_intro_title_partial: { he: 'התוצאות כבר מגיעות', en: 'The count is already coming in' },
+        k26_intro_lead_partial: {
+            he: 'כל קלפי שתוצאותיה פורסמו מוצגת כבר עם התוצאות האמיתיות. קלפיות שטרם נספרו עדיין מציגות את הסימולציה.',
+            en: 'A published ballot replaces the scenario in place. A ballot still uncounted still shows the simulation.'
+        },
+        k26_intro_now:         { he: 'עכשיו', en: 'Now' },
+        k26_intro_now_d:       { he: 'סימולציה ברמת הקלפי, לפי הסקרים', en: 'A per-ballot scenario, fitted to the polls' },
+        k26_intro_night:       { he: 'בליל הבחירות', en: 'Election night' },
+        k26_intro_night_d:     { he: 'התוצאות האמיתיות מחליפות את הסימולציה, תוך דקות בודדות ממועד פרסומן באתר ועדת הבחירות המרכזית', en: 'Real results replace the simulation within minutes of their publication on the Central Elections Committee site' },
+        k26_intro_done:        { he: 'בתום הספירה', en: 'When it is done' },
+        k26_intro_done_d:      { he: 'התוצאות הרשמיות מצטרפות לעשר מערכות הבחירות הקודמות', en: 'The official result stays, beside the ten previous Knessets' },
+        k26_intro_countdown_label: { he: 'עד סגירת הקלפיות, יום שלישי 27 באוקטובר, 22:00', en: 'until the polls close, Tuesday 27 October, 22:00' },
+        k26_intro_day:         { he: 'יום', en: 'day' },
+        k26_intro_days:        { he: 'ימים', en: 'days' },
+        k26_intro_hour:        { he: 'שעה', en: 'hour' },
+        k26_intro_hours:       { he: 'שעות', en: 'hours' },
+        k26_intro_minute:      { he: 'דקה', en: 'minute' },
+        k26_intro_minutes:     { he: 'דקות', en: 'minutes' },
+        k26_intro_second:      { he: 'שנייה', en: 'second' },
+        k26_intro_seconds:     { he: 'שניות', en: 'seconds' },
+        k26_intro_ready_title: { he: 'מה כבר מוכן', en: 'What is already in place' },
+        k26_intro_ready_1:     { he: 'כל התצוגות באתר כבר עובדות על נתוני כנסת 26, ברמת הקלפי הבודדת', en: 'Every view on the site already runs on Knesset 26 data, down to the single ballot' },
+        k26_intro_ready_2:     { he: 'מליל הבחירות ועד 31 באוקטובר, האתר יבדוק כל עשר דקות אם ועדת הבחירות פרסמה תוצאות חדשות, ויכניס כל מידע חדש לתצוגות, לאנליזות ולמחשבונים השונים', en: 'From election night through 31 October, the site will check every ten minutes for new results from the committee, and feed anything new into the views, analyses, and calculators' },
+        k26_intro_ready_3:     { he: 'ערכנו חזרה גנרלית: ספירה חלקית נקלטה, עובדה ופורסמה באתר מקצה לקצה', en: 'We ran a full drill: a partial count was taken in, processed, and published end to end' },
+        k26_intro_got_it:      { he: 'הבנתי', en: 'Got it' },
+        k26_intro_close:       { he: 'סגור', en: 'Close' },
         nav_discussions:       { he: 'דיונים', en: 'Discussions' },
         discussions_title:     { he: 'דיונים', en: 'Discussions' },
         discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
@@ -1295,8 +1326,31 @@
                     if (data && (data.kind === 'official' || data.kind === 'partial' || data.kind === 'simulated')) k26Status = data;
                     paint();
                     placeCard();
+                    maybeK26Intro(k26Status.kind);
                 })
-                .catch(() => {});
+                .catch(() => { maybeK26Intro('simulated'); });
+        }
+
+        function maybeK26Intro(kind) {
+            if (!SHOW_E26) return;
+            if (/fraud-sim\.html/.test(location.pathname)) return;
+            const force = new URLSearchParams(location.search).get('k26intro') === '1';
+            if (!force && kind === 'official') return;
+            try {
+                if (!force && localStorage.getItem('k26_intro_v1') === '1') return;
+            } catch (e) {}
+            if (window.K26Intro) {
+                window.K26Intro.open(force && kind === 'official' ? 'simulated' : kind);
+                return;
+            }
+            const script = document.querySelector('script[src*="i18n.js"]');
+            const src = script ? script.getAttribute('src') : 'i18n.js';
+            const intro = document.createElement('script');
+            intro.src = src.replace(/i18n\.js(?:\?.*)?$/, 'k26-intro.js');
+            intro.onload = () => {
+                if (window.K26Intro) window.K26Intro.open(force && kind === 'official' ? 'simulated' : kind);
+            };
+            document.head.appendChild(intro);
         }
 
         window.addEventListener('langchange', () => {
