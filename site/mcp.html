@@ -21,52 +21,113 @@
         html[lang="he"] .prose-en { display: none; }
         html[lang="en"] .prose-he { display: none; }
         .guide {
-            max-width: 42rem;
+            max-width: 46rem;
             margin: 0 auto;
-            padding: 1.5rem 1.25rem 4rem;
-            line-height: 1.6;
+            padding: 1.75rem 1.5rem 4.5rem;
         }
-        .guide h2 { font-size: 1.35rem; margin: 2rem 0 0.6rem; }
-        .guide p { margin: 0 0 0.8rem; color: var(--text-secondary, #c8ceda); }
-        .guide ol { margin: 0 0 1rem; padding-inline-start: 1.3rem; }
-        .guide li { margin: 0.35rem 0; }
+        .lede {
+            margin: 0 0 1.15rem;
+            font-size: 1.2rem;
+            font-weight: 400;
+            line-height: 1.55;
+            color: var(--text-primary);
+        }
         .endpoint {
             display: flex;
-            gap: 0.6rem;
-            align-items: center;
-            background: #1e212a;
-            border: 1px solid #3a4050;
-            border-radius: 8px;
-            padding: 0.7rem 0.8rem;
-            margin: 1rem 0 1.4rem;
+            align-items: stretch;
+            margin: 0 0 2.25rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
         }
         .endpoint code {
             flex: 1;
+            padding: 0.9rem 1rem;
             direction: ltr;
             text-align: left;
             font-size: 0.95rem;
-            color: #f3f5f8;
+            color: var(--text-primary);
             word-break: break-all;
         }
         .endpoint button, .ask {
             font-family: inherit;
             cursor: pointer;
-            border-radius: 6px;
-            border: 1px solid #f0b429;
+        }
+        .endpoint button {
+            flex: none;
+            border: 0;
+            border-inline-start: 1px solid var(--border-color);
             background: transparent;
-            color: #f0b429;
+            color: var(--accent-primary);
+            font-weight: 600;
+            padding: 0 1rem;
         }
-        .endpoint button { padding: 0.35rem 0.7rem; }
-        .asks { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.6rem 0 1rem; }
+        .endpoint button:hover { background: var(--bg-hover); }
+        .guide h2 {
+            margin: 0 0 0.15rem;
+            font-size: 1.55rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .way {
+            padding: 0.95rem 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .way:first-of-type { border-top: 1px solid var(--border-color); margin-top: 0.85rem; }
+        .way h3 { margin: 0 0 0.25rem; font-size: 1.02rem; font-weight: 600; }
+        .way p { margin: 0; color: var(--text-secondary); line-height: 1.55; }
+        .way code {
+            display: block;
+            margin-top: 0.6rem;
+            padding: 0.6rem 0.75rem;
+            direction: ltr;
+            text-align: left;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            font-size: 0.86rem;
+            white-space: nowrap;
+            overflow-x: auto;
+        }
+        .cap {
+            margin: 1rem 0 2.4rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+        .asks { margin-top: 0.7rem; }
         .ask {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            width: 100%;
+            padding: 0.9rem 0.1rem;
+            border: 0;
+            border-top: 1px solid var(--border-color);
+            background: transparent;
+            color: var(--text-primary);
             text-align: start;
-            padding: 0.65rem 0.8rem;
-            color: #f3f5f8;
-            border-color: #3a4050;
-            background: #1e212a;
+            font-size: 1.05rem;
+            line-height: 1.45;
         }
-        .ask:hover, .endpoint button:hover { border-color: #f0b429; }
-        .fine { color: #939aab; font-size: 0.92rem; }
+        .ask:last-child { border-bottom: 1px solid var(--border-color); }
+        .ask-text { flex: 1; }
+        .ask-copy {
+            flex: none;
+            color: var(--accent-primary);
+            font-size: 0.88rem;
+            font-weight: 600;
+        }
+        .ask:hover .ask-text { color: var(--accent-secondary); }
+        .endpoint button:focus-visible, .ask:focus-visible {
+            outline: 2px solid var(--accent-primary);
+            outline-offset: 2px;
+        }
+        .fine {
+            margin: 1.6rem 0 0;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
     </style>
 </head>
 <body>
@@ -85,54 +146,70 @@
         </header>
         <main class="guide">
             <div class="prose-he">
-                <p>מדביקים כתובת אחת בצ׳אט שלכם, ושואלים בעברית או באנגלית. הצ׳אט שלכם משלם על התשובה. האתר לא קורא למודל ולא גובה תשלום.</p>
+                <p class="lede">מדביקים כתובת אחת בצ׳אט שלכם, ושואלים בעברית או באנגלית. הצ׳אט שלכם משלם על התשובה. האתר לא קורא למודל ולא גובה תשלום.</p>
                 <div class="endpoint">
                     <code id="endpoint">https://kolot-nodedim.netlify.app/mcp</code>
                     <button type="button" id="copy-url">העתקה</button>
                 </div>
                 <h2>איך מחברים</h2>
-                <p>ב-Claude פותחים Settings, אחר כך Connectors, ומוסיפים connector. מדביקים את הכתובת. אם מבקשים טוקן, משאירים אותו ריק.</p>
-                <p>ב-Cursor פותחים Settings, אחר כך MCP, ומוסיפים שרת שהכתובת שלו היא הכתובת למעלה. אין צורך בכותרת אימות.</p>
-                <p>ב-Claude Code, מתוך הטרמינל:</p>
-                <p><code dir="ltr">claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code></p>
-                <p>אחר כך שואלים בעברית או באנגלית. הצ׳אט בוחר לבד איזה נתון לבקש.</p>
-                <p>יש תקרה לדקה ולכל היום, כדי שהפונקציה לא תרוקן את תקציב האתר. אם היא נגמרת, הצ׳אט מקבל בקשה לחכות.</p>
-                <h2>שאלות שאפשר להעתיק</h2>
+                <div class="way">
+                    <h3>Claude</h3>
+                    <p>פותחים Settings, אחר כך Connectors, ומוסיפים connector. מדביקים את הכתובת. אם מבקשים טוקן, משאירים אותו ריק.</p>
+                </div>
+                <div class="way">
+                    <h3>Cursor</h3>
+                    <p>פותחים Settings, אחר כך MCP, ומוסיפים שרת שהכתובת שלו היא הכתובת למעלה. אין צורך בכותרת אימות.</p>
+                </div>
+                <div class="way">
+                    <h3>Claude Code</h3>
+                    <p>מהטרמינל:</p>
+                    <code dir="ltr">claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code>
+                </div>
+                <p class="cap">אחר כך שואלים בעברית או באנגלית. הצ׳אט בוחר לבד איזה נתון לבקש. יש תקרה לדקה ולכל היום, כדי שהפונקציה לא תרוקן את תקציב האתר. אם היא נגמרת, הצ׳אט מקבל בקשה לחכות.</p>
+                <h2>שאלות לדוגמה שאפשר לשאול</h2>
                 <div class="asks">
-                    <button type="button" class="ask">איזו מפלגה הייתה הכי חזקה בכפר סבא בבחירות לכנסת ה-24?</button>
-                    <button type="button" class="ask">באילו בחירות הייתה מרצ הכי חזקה בחיפה?</button>
-                    <button type="button" class="ask">כמה מנדטים וקולות היו ליש עתיד בכל בחירות שבהן רצה?</button>
-                    <button type="button" class="ask">איפה ש״ס הייתה הכי חזקה בכנסת ה-25, ביישובים עם לפחות 500 מצביעים?</button>
-                    <button type="button" class="ask">איזה אחוז מכחול לבן בכנסת ה-23 עבר ליש עתיד בכנסת ה-24, ומה רווח בר-הסמך?</button>
-                    <button type="button" class="ask">איזו קלפי מחוץ לירושלים הכי דומה לקלפי 485.1 בירושלים בכנסת ה-25, ב-t-SNE?</button>
-                    <button type="button" class="ask">אילו יישובים יושבים ליד רהט במפת ה-UMAP של כנסת ה-25?</button>
-                    <button type="button" class="ask">כמה השתנתה תערובת המפלגות בנצרת בין בחירות לבחירות?</button>
+                    <button type="button" class="ask"><span class="ask-text">איזו מפלגה הייתה הכי חזקה בכפר סבא בבחירות לכנסת ה-24?</span><span class="ask-copy">העתקה</span></button>
+                    <button type="button" class="ask"><span class="ask-text">באילו בחירות הייתה מרצ הכי חזקה בחיפה?</span><span class="ask-copy">העתקה</span></button>
+                    <button type="button" class="ask"><span class="ask-text">כמה מנדטים וקולות היו ליש עתיד בכל בחירות שבהן רצה?</span><span class="ask-copy">העתקה</span></button>
+                    <button type="button" class="ask"><span class="ask-text">איפה ש״ס הייתה הכי חזקה בכנסת ה-25, ביישובים עם לפחות 500 מצביעים?</span><span class="ask-copy">העתקה</span></button>
+                    <button type="button" class="ask"><span class="ask-text">איזה אחוז מכחול לבן בכנסת ה-23 עבר ליש עתיד בכנסת ה-24, ומה רווח בר-הסמך?</span><span class="ask-copy">העתקה</span></button>
+                    <button type="button" class="ask"><span class="ask-text">איזו קלפי מחוץ לירושלים הכי דומה לקלפי 485.1 בירושלים בכנסת ה-25, ב-t-SNE?</span><span class="ask-copy">העתקה</span></button>
+                    <button type="button" class="ask"><span class="ask-text">אילו יישובים יושבים ליד רהט במפת ה-UMAP של כנסת ה-25?</span><span class="ask-copy">העתקה</span></button>
+                    <button type="button" class="ask"><span class="ask-text">כמה השתנתה תערובת המפלגות בנצרת בין בחירות לבחירות?</span><span class="ask-copy">העתקה</span></button>
                 </div>
                 <p class="fine">הנדידה בין בחירות היא אומדן ארצי, לא ספירת אנשים. כשיש רווח בר-סמך, הוא של 95% מבוטסטראפ של קלפיות. כנסת 26 היא תרחיש מדומה. מרחקים ב-t-SNE משמעותיים רק בין קלפיות קרובות, וזו לא מפה של ישראל. מחשבון המנדטים והבחירות האזוריות לא כלולים כאן.</p>
             </div>
             <div class="prose-en">
-                <p>Paste one address into your own chat and ask in Hebrew or English. Your chat pays for the answer. This site does not call a model and does not charge you.</p>
+                <p class="lede">Paste one address into your own chat and ask in Hebrew or English. Your chat pays for the answer. This site does not call a model and does not charge you.</p>
                 <div class="endpoint">
                     <code id="endpoint-en">https://kolot-nodedim.netlify.app/mcp</code>
                     <button type="button" id="copy-url-en">Copy</button>
                 </div>
                 <h2>Connect it</h2>
-                <p>In Claude, open Settings, then Connectors, and add a connector. Paste the address. If it asks for a token, leave that blank.</p>
-                <p>In Cursor, open Settings, then MCP, and add a server whose URL is the address above. No authorization header is required.</p>
-                <p>In Claude Code, from a terminal:</p>
-                <p><code>claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code></p>
-                <p>Then ask in Hebrew or English. The chat decides which figure to fetch.</p>
-                <p>There is a per-minute cap and a daily cap, so the function cannot run down the site’s budget. Past the cap, the chat is asked to wait.</p>
-                <h2>Questions you can copy</h2>
+                <div class="way">
+                    <h3>Claude</h3>
+                    <p>Open Settings, then Connectors, and add a connector. Paste the address. If it asks for a token, leave that blank.</p>
+                </div>
+                <div class="way">
+                    <h3>Cursor</h3>
+                    <p>Open Settings, then MCP, and add a server whose URL is the address above. No authorization header is required.</p>
+                </div>
+                <div class="way">
+                    <h3>Claude Code</h3>
+                    <p>From a terminal:</p>
+                    <code>claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code>
+                </div>
+                <p class="cap">Then ask in Hebrew or English. The chat decides which figure to fetch. There is a per-minute cap and a daily cap, so the function cannot run down the site’s budget. Past the cap, the chat is asked to wait.</p>
+                <h2>Example questions you can ask</h2>
                 <div class="asks">
-                    <button type="button" class="ask">Which party was strongest in Kfar Saba in the election for the 24th Knesset?</button>
-                    <button type="button" class="ask">In which election was Meretz strongest in Haifa?</button>
-                    <button type="button" class="ask">How many seats and votes did Yesh Atid get in each election it ran?</button>
-                    <button type="button" class="ask">Where was Shas strongest in the 25th Knesset, among settlements with at least 500 voters?</button>
-                    <button type="button" class="ask">What share of Blue and White in the 23rd Knesset went to Yesh Atid in the 24th, and what is the confidence interval?</button>
-                    <button type="button" class="ask">Which ballot outside Jerusalem is closest to ballot 485.1 in Jerusalem in the 25th Knesset, in t-SNE?</button>
-                    <button type="button" class="ask">Which settlements sit nearest Rahat on the 25th Knesset UMAP?</button>
-                    <button type="button" class="ask">How much did Nazareth’s party mix change from election to election?</button>
+                    <button type="button" class="ask"><span class="ask-text">Which party was strongest in Kfar Saba in the election for the 24th Knesset?</span><span class="ask-copy">Copy</span></button>
+                    <button type="button" class="ask"><span class="ask-text">In which election was Meretz strongest in Haifa?</span><span class="ask-copy">Copy</span></button>
+                    <button type="button" class="ask"><span class="ask-text">How many seats and votes did Yesh Atid get in each election it ran?</span><span class="ask-copy">Copy</span></button>
+                    <button type="button" class="ask"><span class="ask-text">Where was Shas strongest in the 25th Knesset, among settlements with at least 500 voters?</span><span class="ask-copy">Copy</span></button>
+                    <button type="button" class="ask"><span class="ask-text">What share of Blue and White in the 23rd Knesset went to Yesh Atid in the 24th, and what is the confidence interval?</span><span class="ask-copy">Copy</span></button>
+                    <button type="button" class="ask"><span class="ask-text">Which ballot outside Jerusalem is closest to ballot 485.1 in Jerusalem in the 25th Knesset, in t-SNE?</span><span class="ask-copy">Copy</span></button>
+                    <button type="button" class="ask"><span class="ask-text">Which settlements sit nearest Rahat on the 25th Knesset UMAP?</span><span class="ask-copy">Copy</span></button>
+                    <button type="button" class="ask"><span class="ask-text">How much did Nazareth’s party mix change from election to election?</span><span class="ask-copy">Copy</span></button>
                 </div>
                 <p class="fine">A transfer between elections is a national estimate, not a count of people. When a confidence interval is present, it is a 95% ballot bootstrap. Knesset 26 is a simulated scenario. t-SNE distance matters only among nearby ballots, and it is not a map of Israel. The seat calculator and the regional simulator are not included.</p>
             </div>
@@ -150,7 +227,9 @@
         document.getElementById('copy-url').onclick = function () { copyText(document.getElementById('endpoint').textContent, this); };
         document.getElementById('copy-url-en').onclick = function () { copyText(document.getElementById('endpoint-en').textContent, this); };
         document.querySelectorAll('.ask').forEach(function (button) {
-            button.addEventListener('click', function () { copyText(button.textContent, button); });
+            button.addEventListener('click', function () {
+                copyText(button.querySelector('.ask-text').textContent, button.querySelector('.ask-copy'));
+            });
         });
     </script>
 </body>

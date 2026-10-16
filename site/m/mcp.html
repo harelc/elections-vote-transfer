@@ -18,14 +18,25 @@
     <style>
         html[lang="he"] .prose-en { display: none; }
         html[lang="en"] .prose-he { display: none; }
-        .guide { padding: 56px 16px 72px; line-height: 1.55; }
-        .guide h2 { font-size: 1.15rem; margin: 1.4rem 0 0.4rem; }
-        .guide p, .guide li { color: var(--text-secondary); }
-        .guide ol { padding-inline-start: 1.2rem; }
-        .endpoint { margin: 0.8rem 0; }
-        .endpoint code { display: block; direction: ltr; text-align: left; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 8px; padding: 0.7rem; word-break: break-all; }
-        .endpoint button, .ask { font-family: inherit; width: 100%; margin-top: 0.45rem; padding: 0.6rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-secondary); color: var(--text-primary); }
-        .fine { color: var(--text-muted); font-size: 0.88rem; }
+        .guide { padding: 60px 16px 88px; }
+        .lede { margin: 0 0 0.9rem; font-size: 1.05rem; line-height: 1.5; color: var(--text-primary); }
+        .endpoint { display: flex; flex-direction: column; margin: 0 0 1.6rem; }
+        .endpoint code { display: block; direction: ltr; text-align: left; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 0.75rem; word-break: break-all; }
+        .endpoint button, .ask { font-family: inherit; cursor: pointer; }
+        .endpoint button { margin-top: 0.45rem; padding: 0.65rem; border-radius: 8px; border: 1px solid var(--accent); background: transparent; color: var(--accent); font-weight: 600; }
+        .guide h2 { margin: 0 0 0.15rem; font-size: 1.25rem; font-weight: 600; }
+        .way { padding: 0.75rem 0; border-bottom: 1px solid var(--border); }
+        .way:first-of-type { border-top: 1px solid var(--border); margin-top: 0.55rem; }
+        .way h3 { margin: 0 0 0.2rem; font-size: 0.98rem; }
+        .way p { margin: 0; color: var(--text-secondary); line-height: 1.5; }
+        .way code { display: block; margin-top: 0.45rem; padding: 0.55rem 0.65rem; direction: ltr; text-align: left; background: var(--bg-tertiary); border-radius: 6px; font-size: 0.78rem; white-space: nowrap; overflow-x: auto; }
+        .cap { margin: 0.8rem 0 1.6rem; color: var(--text-muted); line-height: 1.5; font-size: 0.92rem; }
+        .ask { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.8rem 0; border: 0; border-top: 1px solid var(--border); background: transparent; color: var(--text-primary); text-align: start; font-size: 0.98rem; line-height: 1.4; }
+        .ask:last-child { border-bottom: 1px solid var(--border); }
+        .ask-text { flex: 1; }
+        .ask-copy { flex: none; color: var(--accent); font-size: 0.82rem; font-weight: 600; }
+        .endpoint button:focus-visible, .ask:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .fine { margin: 1.2rem 0 0; color: var(--text-muted); font-size: 0.86rem; line-height: 1.5; }
     </style>
 </head>
 <body>
@@ -36,45 +47,67 @@
     </div>
     <main class="guide">
         <div class="prose-he">
-            <p>מדביקים כתובת אחת בצ׳אט שלכם ושואלים בעברית או באנגלית. הצ׳אט שלכם משלם על התשובה. האתר לא קורא למודל.</p>
+            <p class="lede">מדביקים כתובת אחת בצ׳אט שלכם ושואלים בעברית או באנגלית. הצ׳אט שלכם משלם על התשובה. האתר לא קורא למודל.</p>
             <div class="endpoint">
                 <code id="endpoint">https://kolot-nodedim.netlify.app/mcp</code>
                 <button type="button" id="copy-url">העתקת הכתובת</button>
             </div>
             <h2>איך מחברים</h2>
-            <p>ב-Claude: Settings, אחר כך Connectors, מוסיפים connector ומדביקים את הכתובת. אם מבקשים טוקן, משאירים ריק.</p>
-            <p>ב-Cursor: Settings, אחר כך MCP, ומוסיפים שרת עם הכתובת למעלה. אין צורך בכותרת אימות.</p>
-            <p>ב-Claude Code, מהטרמינל: <code dir="ltr">claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code></p>
-            <p>אחר כך שואלים. הצ׳אט בוחר לבד איזה נתון לבקש.</p>
-            <p>יש תקרה לדקה ולכל היום, כדי שהפונקציה לא תרוקן את תקציב האתר. אם היא נגמרת, הצ׳אט מקבל בקשה לחכות.</p>
-            <h2>שאלות שאפשר להעתיק</h2>
-            <button type="button" class="ask">איזו מפלגה הייתה הכי חזקה בכפר סבא בבחירות לכנסת ה-24?</button>
-            <button type="button" class="ask">באילו בחירות הייתה מרצ הכי חזקה בחיפה?</button>
-            <button type="button" class="ask">כמה מנדטים היו ליש עתיד בכל בחירות שבהן רצה?</button>
-            <button type="button" class="ask">איפה ש״ס הייתה הכי חזקה בכנסת ה-25?</button>
-            <button type="button" class="ask">איזה אחוז מכחול לבן בכנסת ה-23 עבר ליש עתיד בכנסת ה-24?</button>
-            <button type="button" class="ask">אילו יישובים יושבים ליד רהט במפת ה-UMAP של כנסת ה-25?</button>
+            <div class="way">
+                <h3>Claude</h3>
+                <p>Settings, אחר כך Connectors. מוסיפים connector ומדביקים את הכתובת. אם מבקשים טוקן, משאירים ריק.</p>
+            </div>
+            <div class="way">
+                <h3>Cursor</h3>
+                <p>Settings, אחר כך MCP. מוסיפים שרת עם הכתובת למעלה. אין צורך בכותרת אימות.</p>
+            </div>
+            <div class="way">
+                <h3>Claude Code</h3>
+                <p>מהטרמינל:</p>
+                <code dir="ltr">claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code>
+            </div>
+            <p class="cap">אחר כך שואלים. הצ׳אט בוחר לבד איזה נתון לבקש. יש תקרה לדקה ולכל היום. אם היא נגמרת, הצ׳אט מקבל בקשה לחכות.</p>
+            <h2>שאלות לדוגמה שאפשר לשאול</h2>
+            <div class="asks">
+                <button type="button" class="ask"><span class="ask-text">איזו מפלגה הייתה הכי חזקה בכפר סבא בבחירות לכנסת ה-24?</span><span class="ask-copy">העתקה</span></button>
+                <button type="button" class="ask"><span class="ask-text">באילו בחירות הייתה מרצ הכי חזקה בחיפה?</span><span class="ask-copy">העתקה</span></button>
+                <button type="button" class="ask"><span class="ask-text">כמה מנדטים היו ליש עתיד בכל בחירות שבהן רצה?</span><span class="ask-copy">העתקה</span></button>
+                <button type="button" class="ask"><span class="ask-text">איפה ש״ס הייתה הכי חזקה בכנסת ה-25?</span><span class="ask-copy">העתקה</span></button>
+                <button type="button" class="ask"><span class="ask-text">איזה אחוז מכחול לבן בכנסת ה-23 עבר ליש עתיד בכנסת ה-24?</span><span class="ask-copy">העתקה</span></button>
+                <button type="button" class="ask"><span class="ask-text">אילו יישובים יושבים ליד רהט במפת ה-UMAP של כנסת ה-25?</span><span class="ask-copy">העתקה</span></button>
+            </div>
             <p class="fine">נדידת קולות היא אומדן, לא ספירת אנשים. רווח בר-הסמך הוא 95%. כנסת 26 היא תרחיש מדומה. t-SNE אינו מפה של ישראל.</p>
         </div>
         <div class="prose-en">
-            <p>Paste one address into your own chat and ask in Hebrew or English. Your chat pays for the answer. This site does not call a model.</p>
+            <p class="lede">Paste one address into your own chat and ask in Hebrew or English. Your chat pays for the answer. This site does not call a model.</p>
             <div class="endpoint">
                 <code id="endpoint-en">https://kolot-nodedim.netlify.app/mcp</code>
                 <button type="button" id="copy-url-en">Copy the address</button>
             </div>
             <h2>Connect it</h2>
-            <p>In Claude: Settings, then Connectors, add a connector and paste the address. If it asks for a token, leave it blank.</p>
-            <p>In Cursor: Settings, then MCP, and add a server with the address above. No authorization header is required.</p>
-            <p>In Claude Code, from a terminal: <code>claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code></p>
-            <p>Then ask. The chat decides which figure to fetch.</p>
-            <p>There is a per-minute cap and a daily cap, so the function cannot run down the site’s budget. Past the cap, the chat is asked to wait.</p>
-            <h2>Questions you can copy</h2>
-            <button type="button" class="ask">Which party was strongest in Kfar Saba in the election for the 24th Knesset?</button>
-            <button type="button" class="ask">In which election was Meretz strongest in Haifa?</button>
-            <button type="button" class="ask">How many seats did Yesh Atid get in each election it ran?</button>
-            <button type="button" class="ask">Where was Shas strongest in the 25th Knesset?</button>
-            <button type="button" class="ask">What share of Blue and White in the 23rd Knesset went to Yesh Atid in the 24th?</button>
-            <button type="button" class="ask">Which settlements sit nearest Rahat on the 25th Knesset UMAP?</button>
+            <div class="way">
+                <h3>Claude</h3>
+                <p>Settings, then Connectors. Add a connector and paste the address. If it asks for a token, leave it blank.</p>
+            </div>
+            <div class="way">
+                <h3>Cursor</h3>
+                <p>Settings, then MCP. Add a server with the address above. No authorization header is required.</p>
+            </div>
+            <div class="way">
+                <h3>Claude Code</h3>
+                <p>From a terminal:</p>
+                <code>claude mcp add --transport http kolot https://kolot-nodedim.netlify.app/mcp</code>
+            </div>
+            <p class="cap">Then ask. The chat decides which figure to fetch. There is a per-minute cap and a daily cap. Past the cap, the chat is asked to wait.</p>
+            <h2>Example questions you can ask</h2>
+            <div class="asks">
+                <button type="button" class="ask"><span class="ask-text">Which party was strongest in Kfar Saba in the election for the 24th Knesset?</span><span class="ask-copy">Copy</span></button>
+                <button type="button" class="ask"><span class="ask-text">In which election was Meretz strongest in Haifa?</span><span class="ask-copy">Copy</span></button>
+                <button type="button" class="ask"><span class="ask-text">How many seats did Yesh Atid get in each election it ran?</span><span class="ask-copy">Copy</span></button>
+                <button type="button" class="ask"><span class="ask-text">Where was Shas strongest in the 25th Knesset?</span><span class="ask-copy">Copy</span></button>
+                <button type="button" class="ask"><span class="ask-text">What share of Blue and White in the 23rd Knesset went to Yesh Atid in the 24th?</span><span class="ask-copy">Copy</span></button>
+                <button type="button" class="ask"><span class="ask-text">Which settlements sit nearest Rahat on the 25th Knesset UMAP?</span><span class="ask-copy">Copy</span></button>
+            </div>
             <p class="fine">A vote transfer is an estimate, not a count of people. The interval is 95%. Knesset 26 is simulated. t-SNE is not a map of Israel.</p>
         </div>
     </main>
@@ -98,7 +131,9 @@
         document.getElementById('copy-url').onclick = function () { copyText(document.getElementById('endpoint').textContent, this); };
         document.getElementById('copy-url-en').onclick = function () { copyText(document.getElementById('endpoint-en').textContent, this); };
         document.querySelectorAll('.ask').forEach(function (button) {
-            button.addEventListener('click', function () { copyText(button.textContent, button); });
+            button.addEventListener('click', function () {
+                copyText(button.querySelector('.ask-text').textContent, button.querySelector('.ask-copy'));
+            });
         });
     </script>
 </body>
