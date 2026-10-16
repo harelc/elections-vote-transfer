@@ -156,6 +156,7 @@
         /* ── d'Hondt page ── */
         dhondt_title:          { he: 'מחשבון באדר-עופר', en: 'D\'Hondt Calculator' },
         dhondt_subtitle:       { he: 'מחשבון חלוקת מנדטים בשיטת באדר-עופר', en: 'Seat allocation calculator using the D\'Hondt method' },
+        turnout_banner:        { he: 'מה אם יותר אנשים יצביעו? ראו איך אחוז ההצבעה מזיז את המנדטים בכנסת 26 ←', en: 'What if more people vote? See how turnout moves the Knesset 26 seats →' },
         threshold:             { he: 'אחוז חסימה', en: 'Electoral threshold' },
         threshold_pct:         { he: 'אחוז חסימה:', en: 'Threshold:' },
         mandate_quotient:      { he: 'מודד למנדט', en: 'Votes per seat' },

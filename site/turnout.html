@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — מה אם יותר אנשים יצביעו?">
+    <meta property="og:description" content="סימולציית הכנסת ה-26: מעלים את אחוז ההצבעה ורואים איך זזים המנדטים — What if more people vote? Knesset 26 simulation">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <title>מה אם יותר אנשים יצביעו? - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #16181d;
+            --bg-secondary: #1e212a;
+            --bg-tertiary: #272b36;
+            --text-primary: #f3f5f8;
+            --text-secondary: #c8ceda;
+            --text-muted: #939aab;
+            --border-color: #3a4050;
+            --accent-primary: #f0b429;
+            --bloc-right: #4f7cff;
+            --bloc-leftcenter: #f97316;
+            --bloc-arab: #10b981;
+            --gain: #22c55e;
+            --lose: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        .main-header {
+            text-align: center;
+            padding: 1.2rem 1.5rem 0.8rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .main-header h1 { font-size: 2.2rem; font-weight: 700; letter-spacing: -0.02em; }
+        .main-header h1::after {
+            content: ''; display: block; width: 3.25rem; height: 2px;
+            margin: 0.55rem auto 0; background: var(--accent-primary);
+        }
+        .main-header .subtitle { color: var(--text-secondary); font-size: 1.05rem; }
+        .view-switcher {
+            display: flex; justify-content: center; align-items: center; gap: 0.25rem;
+            margin-top: 0.6rem; flex-wrap: wrap;
+        }
+        .view-btn {
+            padding: 0.5rem 1.5rem; background: var(--bg-tertiary); color: var(--text-secondary);
+            text-decoration: none; border-radius: 8px; font-size: 0.9rem; line-height: 1.25;
+            border: 1px solid var(--border-color); cursor: pointer;
+        }
+        .view-btn:hover { background: #252535; color: var(--text-primary); }
+        .view-btn.active { background: var(--accent-primary); color: #1a1408; border-color: var(--accent-primary); }
+        .nav-extras { display:flex; justify-content:center; align-items:center; gap:0.25rem; margin-top:0.35rem; flex-wrap: wrap; }
+        .nav-extras .view-btn { font-size:0.8rem; padding:0.3rem 0.7rem; opacity:0.7; border:none; background:transparent; }
+        .nav-extras .view-btn:hover { opacity:1; background:var(--bg-tertiary); }
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            padding: 1.25rem 1rem 3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .back-link {
+            color: var(--accent-primary); text-decoration: none; font-size: 0.9rem; align-self: flex-start;
+        }
+        .back-link:hover { text-decoration: underline; }
+
+        /* Controls */
+        .controls {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+        .scenario-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+        .scenario-pill {
+            padding: 0.45rem 0.95rem; border-radius: 999px; border: 1px solid var(--border-color);
+            background: var(--bg-tertiary); color: var(--text-secondary); font-family: inherit;
+            font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;
+        }
+        .scenario-pill .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .scenario-pill.active { background: var(--accent-primary); color: #1a1408; border-color: var(--accent-primary); font-weight: 600; }
+        .slider-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+        .slider-wrap { position: relative; flex: 1; min-width: 240px; padding-top: 1.1rem; }
+        .slider-wrap input[type=range] { width: 100%; accent-color: var(--accent-primary); direction: ltr; }
+        .forecast-notch {
+            position: absolute; top: 0; transform: translateX(-50%);
+            font-size: 0.7rem; color: var(--accent-primary); white-space: nowrap; pointer-events: none;
+        }
+        .forecast-notch::after {
+            content: ''; display: block; width: 2px; height: 0.9rem; margin: 0 auto; background: var(--accent-primary);
+        }
+        .ctl-btn {
+            padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);
+            background: var(--bg-tertiary); color: var(--text-primary); font-family: inherit;
+            font-size: 0.9rem; cursor: pointer; white-space: nowrap;
+        }
+        .ctl-btn:hover { border-color: var(--accent-primary); }
+        .ctl-btn.primary { background: var(--accent-primary); color: #1a1408; border-color: var(--accent-primary); font-weight: 600; }
+        .scenario-note { font-size: 0.85rem; color: var(--text-secondary); }
+        .scenario-pills { align-items: center; }
+        .scenario-pills .lbl, .motivation .lbl { font-size: 0.85rem; color: var(--text-secondary); margin-inline-end: 0.3rem; }
+        .motivation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem 1.2rem; }
+        .motivation .lbl { grid-column: 1 / -1; }
+        .w-row { display: grid; grid-template-columns: 10px auto 1fr 3.4em; gap: 0.5rem; align-items: center; font-size: 0.9rem; }
+        .w-row .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .cap-row { padding-top: 0.4rem; border-top: 1px dashed var(--border-color, rgba(255,255,255,0.12)); }
+        .cap-row .dot { background: var(--text-muted); border-radius: 2px; }
+        .w-row input { width: 100%; direction: ltr; accent-color: var(--accent-primary); }
+        .w-row .w-val { font-family: 'Inter', 'Heebo', sans-serif; font-weight: 700; font-variant-numeric: tabular-nums; text-align: end; }
+        @media (max-width: 800px) { .motivation { grid-template-columns: 1fr; } }
+
+        /* Stage: the shareable card, also the video frame */
+        .stage {
+            position: relative;
+            background: radial-gradient(120% 80% at 50% 0%, #232734 0%, #16181d 70%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.4rem 1.6rem 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            overflow: hidden;
+        }
+        .stage-top { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+        .stage-brand { font-size: 0.85rem; color: var(--text-muted); letter-spacing: 0.02em; }
+        .stage-brand b { color: var(--accent-primary); font-weight: 700; }
+        .stage-scenario { font-size: 1.7rem; font-weight: 800; line-height: 1.15; }
+        .stage-scenario .sw { display: inline-block; width: 0.7em; height: 0.7em; border-radius: 50%; margin-inline-end: 0.35em; vertical-align: 0.05em; }
+
+        .readout { display: flex; align-items: flex-end; gap: 1.2rem; flex-wrap: wrap; }
+        .turnout-num {
+            font-family: 'Inter', 'Heebo', sans-serif; font-size: 4.2rem; font-weight: 800; line-height: 0.95;
+            font-variant-numeric: tabular-nums; direction: ltr;
+        }
+        .turnout-meta { display: flex; flex-direction: column; gap: 0.1rem; padding-bottom: 0.35rem; }
+        .turnout-label { font-size: 0.95rem; color: var(--text-secondary); }
+        .turnout-delta { font-size: 1.05rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+        .turnout-delta.up { color: var(--gain); }
+        .turnout-delta.down { color: var(--lose); }
+        .turnout-sub { font-size: 0.82rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+        .vote-stats { display: flex; flex-wrap: wrap; gap: 0.3rem 1.6rem; font-size: 0.9rem; color: var(--text-secondary); font-variant-numeric: tabular-nums; }
+        .vote-stats b { color: var(--text-primary); font-weight: 700; }
+        .vote-stats .d { direction: ltr; unicode-bidi: isolate; color: var(--text-muted); font-size: 0.85em; }
+        .track { position: relative; height: 10px; background: rgba(255,255,255,0.07); border-radius: 5px; direction: ltr; }
+        .track-fill { position: absolute; inset-block: 0; left: 0; border-radius: 5px; background: linear-gradient(90deg, #8a6a1c, var(--accent-primary)); }
+        .track-forecast { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--text-primary); opacity: 0.8; }
+        .track-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); direction: ltr; margin-top: 0.2rem; position: relative; height: 1rem; }
+        .track-labels span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+
+        .stage-body { display: grid; grid-template-columns: 1.25fr 1fr; gap: 1.2rem; align-items: center; }
+        #hemi { width: 100%; height: auto; display: block; }
+        .bloc-bars { display: flex; flex-direction: column; gap: 0.7rem; }
+        .bloc-row { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 0.6rem; align-items: baseline; }
+        .bloc-name { font-size: 0.95rem; font-weight: 600; }
+        .bloc-seats { font-family: 'Inter', 'Heebo', sans-serif; font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1; display: inline-flex; align-items: baseline; gap: 0.3em; justify-self: end; }
+        .bloc-delta { font-size: 0.85rem; font-weight: 700; direction: ltr; unicode-bidi: isolate; }
+        .bloc-delta.up { color: var(--gain); }
+        .bloc-delta.down { color: var(--lose); }
+        .bloc-bar { grid-column: 1 / -1; position: relative; height: 12px; background: rgba(255,255,255,0.06); border-radius: 6px; }
+        .bloc-bar .fill { position: absolute; inset-block: 0; inset-inline-start: 0; border-radius: 6px; }
+        .bloc-bar .fill.second { border-radius: 0 6px 6px 0; }
+        .bloc-bar .majority { position: absolute; top: -4px; bottom: -4px; width: 0; border-inline-start: 2px dashed var(--text-primary); opacity: 0.85; }
+        .bloc-row.combined .bloc-name { font-weight: 500; color: var(--text-secondary); font-size: 0.85rem; }
+        .bloc-row.combined .bloc-seats { font-size: 1.2rem; color: var(--text-secondary); }
+        .bloc-row.has-majority .bloc-seats { color: var(--gain); }
+        .majority-note { font-size: 0.75rem; color: var(--text-muted); }
+
+        .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.35rem 0.6rem; }
+        .chip { display: grid; grid-template-columns: 6px 1fr auto auto; gap: 0.4rem; align-items: center; font-size: 0.82rem; padding: 0.15rem 0; }
+        .chip .c { width: 6px; height: 1.1rem; border-radius: 3px; }
+        .chip .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chip .s { font-weight: 800; font-variant-numeric: tabular-nums; font-family: 'Inter', 'Heebo', sans-serif; }
+        .chip .d { font-size: 0.72rem; font-weight: 700; min-width: 1.8em; text-align: end; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
+        .chip .d.up { color: var(--gain); }
+        .chip .d.down { color: var(--lose); }
+        .chip.out .n, .chip.out .s { color: var(--text-muted); }
+        .chip.out .s { font-weight: 500; font-size: 0.7rem; }
+
+        .stage-caption {
+            position: absolute; inset-inline: 1.6rem; bottom: 4.2rem;
+            background: #1b1e26; border: 1px solid var(--accent-primary); box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            border-radius: 12px; padding: 0.9rem 1.2rem; text-align: center;
+            font-size: 1.5rem; font-weight: 800; line-height: 1.3;
+            opacity: 0; transition: opacity 250ms ease; pointer-events: none;
+        }
+        .stage-caption small { display: block; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); margin-top: 0.2rem; }
+        .stage-caption.visible { opacity: 1; }
+        .stage-foot { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-color); padding-top: 0.5rem; flex-wrap: wrap; }
+        .stage-foot .url { color: var(--accent-primary); font-weight: 600; direction: ltr; }
+
+        /* Chart + notes */
+        .panel { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 12px; padding: 1rem 1.2rem; }
+        .panel h3 { font-size: 1.05rem; margin-bottom: 0.6rem; }
+        #chart { width: 100%; height: 300px; display: block; cursor: crosshair; }
+        .chart-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem; }
+        .chart-legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-inline-end: 0.3rem; border-radius: 2px; }
+        .notes { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
+        .notes p + p { margin-top: 0.6rem; }
+        .notes strong { color: var(--text-primary); }
+        .notes code { font-family: 'Inter', monospace; font-size: 0.85em; direction: ltr; unicode-bidi: embed; }
+
+        .main-footer { padding: 1.2rem; text-align: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--border-color); }
+        .main-footer a { color: var(--accent-primary); text-decoration: none; }
+
+        @media (max-width: 800px) {
+            .main-header h1 { font-size: 1.6rem; }
+            .stage { padding: 1rem; }
+            .stage-body { grid-template-columns: 1fr; }
+            .turnout-num { font-size: 3.2rem; }
+            .stage-scenario { font-size: 1.3rem; }
+            .stage-caption { font-size: 1.1rem; bottom: 3.5rem; inset-inline: 1rem; }
+            .chips { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Recording: only the stage, as a fixed 1080×1080 frame */
+        body.record { background: #16181d; overflow: hidden; }
+        body.record .main-header,
+        body.record .back-link,
+        body.record .controls,
+        body.record .panel,
+        body.record .main-footer,
+        body.record #e26-widget,
+        body.record .bmc-float { display: none !important; }
+        body.record .page { padding: 0; max-width: none; gap: 0; }
+        body.record .stage {
+            width: 1080px; height: 1080px; border-radius: 0; border: none;
+            padding: 36px 56px 24px; gap: 16px;
+        }
+        body.record .stage-brand { font-size: 22px; }
+        body.record .stage-scenario { font-size: 50px; }
+        body.record .readout { flex-wrap: nowrap; gap: 36px; }
+        body.record .turnout-num { font-size: 104px; flex: 0 0 auto; }
+        body.record .turnout-meta { flex: 1; min-width: 0; }
+        body.record .turnout-label { font-size: 26px; }
+        body.record .turnout-delta { font-size: 30px; }
+        body.record .turnout-sub { font-size: 19px; }
+        body.record .vote-stats { font-size: 21px; gap: 6px 40px; }
+        body.record .track { height: 14px; border-radius: 7px; }
+        body.record .track-labels { font-size: 18px; height: 24px; }
+        body.record .stage-body { grid-template-columns: 1.3fr 1fr; gap: 30px; }
+        body.record .bloc-bars { gap: 12px; }
+        body.record .bloc-name { font-size: 25px; }
+        body.record .bloc-seats { font-size: 42px; }
+        body.record .bloc-delta { font-size: 24px; }
+        body.record .bloc-bar { height: 16px; }
+        body.record .bloc-row.combined .bloc-name { font-size: 21px; }
+        body.record .bloc-row.combined .bloc-seats { font-size: 32px; }
+        body.record .majority-note { font-size: 18px; }
+        body.record .chips { grid-template-columns: repeat(4, 1fr); gap: 2px 22px; }
+        body.record .chip { font-size: 20px; grid-template-columns: 8px 1fr auto auto; padding: 0; }
+        body.record .chip .c { width: 8px; height: 22px; }
+        body.record .chip .d { font-size: 18px; }
+        body.record .chip.out .s { font-size: 16px; }
+        body.record .stage-caption { font-size: 44px; bottom: 120px; inset-inline: 56px; padding: 26px 30px; border-width: 2px; }
+        body.record .stage-caption small { font-size: 26px; }
+        body.record .stage-foot { font-size: 20px; margin-top: auto; padding-top: 14px; }
+    </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+</head>
+<body>
+    <header class="main-header">
+        <h1 data-t="title">מה אם יותר אנשים יצביעו?</h1>
+        <p class="subtitle" data-t="subtitle"></p>
+        <nav class="view-switcher"></nav>
+    </header>
+
+    <main class="page">
+        <a class="back-link" href="dhondt.html" data-t="back"></a>
+
+        <section class="controls">
+            <div class="scenario-pills" id="presets"></div>
+            <div class="motivation" id="motivation"></div>
+            <div class="slider-row">
+                <button class="ctl-btn primary" id="play-btn"></button>
+                <div class="slider-wrap">
+                    <span class="forecast-notch" id="forecast-notch"></span>
+                    <input type="range" id="turnout-slider" min="0" max="1" step="0.001">
+                </div>
+                <button class="ctl-btn" id="reset-btn" data-t="reset"></button>
+            </div>
+            <div class="scenario-note" id="scenario-note"></div>
+        </section>
+
+        <section class="stage" id="stage">
+            <div class="stage-top">
+                <div class="stage-scenario" id="stage-scenario"></div>
+                <div class="stage-brand" id="stage-brand"></div>
+            </div>
+            <div class="readout">
+                <div class="turnout-num" id="turnout-num">—</div>
+                <div class="turnout-meta">
+                    <div class="turnout-label" data-t="national_turnout"></div>
+                    <div class="turnout-delta" id="turnout-delta"></div>
+                    <div class="turnout-sub" id="turnout-sub"></div>
+                </div>
+            </div>
+            <div>
+                <div class="track" id="track">
+                    <div class="track-fill" id="track-fill"></div>
+                    <div class="track-forecast" id="track-forecast"></div>
+                </div>
+                <div class="track-labels" id="track-labels"></div>
+            </div>
+            <div class="vote-stats" id="vote-stats"></div>
+            <div class="stage-body">
+                <svg id="hemi" viewBox="0 0 600 315"></svg>
+                <div class="bloc-bars" id="bloc-bars"></div>
+            </div>
+            <div class="chips" id="chips"></div>
+            <div class="stage-caption" id="stage-caption"></div>
+            <div class="stage-foot">
+                <span id="foot-note"></span>
+                <span class="url">kolot-nodedim.netlify.app/turnout</span>
+            </div>
+        </section>
+
+        <section class="panel">
+            <h3 data-t="chart_title"></h3>
+            <svg id="chart"></svg>
+            <div class="chart-legend" id="chart-legend"></div>
+        </section>
+
+        <section class="panel notes" id="notes"></section>
+    </main>
+
+    <footer class="main-footer">
+        <span data-i18n="credits_line">© הראל קין</span> |
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+        <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a>
+    </footer>
+
+    <script>
+    (function () {
+        const STR = {
+            title:            { he: 'מה אם יותר אנשים יצביעו?', en: 'What if more people vote?' },
+            subtitle:         { he: 'סימולציית הכנסת ה-26: מזיזים את אחוז ההצבעה ואת המוטיבציה של כל גוש, ורואים איך זזים המנדטים', en: 'Knesset 26 simulation: move turnout and each bloc\'s motivation, and watch the seats move' },
+            back:             { he: '→ חזרה למחשבון באדר-עופר', en: '← Back to the D\'Hondt calculator' },
+            brand:            { he: '<b>קולות נודדים</b> · כנסת 26 · תרחיש מדומה', en: '<b>Kolot Nodedim</b> · Knesset 26 · simulated scenario' },
+            presets_label:    { he: 'תרחישים:', en: 'Scenarios:' },
+            motivation_label: { he: 'מוטיבציה יחסית של מי שלא הצביע:', en: 'Relative motivation of non-voters:' },
+            preset_everyone:  { he: 'כולם באותה מידה', en: 'Everyone alike' },
+            preset_right:     { he: 'ימין ×{r}', en: 'Right ×{r}' },
+            preset_leftcenter:{ he: 'מרכז-שמאל ×{r}', en: 'Center-left ×{r}' },
+            preset_arab:      { he: 'ערביות ×{r}', en: 'Arab ×{r}' },
+            preset_leftcenter_arab: { he: 'מרכז-שמאל + ערביות ×{r}', en: 'Center-left + Arab ×{r}' },
+            scen_everyone:    { he: 'כולם מצביעים יותר', en: 'Everyone votes more' },
+            scen_one:         { he: '{camp} פי {r}', en: '{camp} {r}× as motivated' },
+            scen_mixed:       { he: 'מוטיבציה: {list}', en: 'Motivation: {list}' },
+            camp_right:       { he: 'גוש הימין מתגייס', en: 'Right bloc' },
+            camp_leftcenter:  { he: 'גוש המרכז-שמאל מתגייס', en: 'Center-left' },
+            camp_arab:        { he: 'מצביעי המפלגות הערביות מתגייסים', en: 'Arab-party voters' },
+            camp_leftcenter_arab: { he: 'המרכז-שמאל והמפלגות הערביות מתגייסים', en: 'Center-left and Arab parties' },
+            camp_right_leftcenter: { he: 'הימין והמרכז-שמאל מתגייסים', en: 'Right and center-left' },
+            camp_right_arab:  { he: 'הימין והמפלגות הערביות מתגייסים', en: 'Right and Arab parties' },
+            short_right:      { he: 'ימין', en: 'Right' },
+            short_leftcenter: { he: 'מרכז-שמאל', en: 'Center-left' },
+            short_arab:       { he: 'ערביות', en: 'Arab' },
+            note:             { he: 'כל קלפי סוגרת חלק מהפער שלה ל-100%, עד תקרה של {cap}: קלפיות עם הצבעה נמוכה מתקדמות מהר יותר. מניחים שמי שלא הצביע בקלפי נוטה כמו מי שהצביע בה. גוש עם מוטיבציה פי 2 מביא לקלפי פי 2 ממי שלא הצביע אצלו, ובקלפיות שבהן הוא חזק נוספים יותר מצביעים. כשכל המחוונים שווים, זה פשוט "כולם מצביעים יותר".', en: 'Every ballot box closes part of its gap to 100%, up to a {cap} ceiling, so low-turnout boxes rise fastest. A box\'s non-voters are assumed to lean like its voters. A bloc at 2× brings out twice the share of its non-voters, so boxes where it is strong gain more voters. With all sliders equal, this is simply "everyone votes more".' },
+            note_unreachable: { he: 'עם המוטיבציות האלה אחוז ההצבעה הארצי לא יכול לעבור את {max}: הקלפיות הרלוונטיות כבר בתקרה.', en: 'With these motivations national turnout can\'t pass {max}: the relevant boxes are at the ceiling.' },
+            national_turnout: { he: 'אחוז הצבעה ארצי', en: 'National turnout' },
+            forecast:         { he: 'תחזית', en: 'Forecast' },
+            at_forecast:      { he: 'כמו בתחזית', en: 'Same as the forecast' },
+            delta_pts:        { he: '{sign}{n} נק׳ אחוז מהתחזית', en: '{sign}{n} pts vs. forecast' },
+            voters_more:      { he: '{n} מצביעים נוספים', en: '{n} more voters' },
+            voters_fewer:     { he: '{n} מצביעים פחות', en: '{n} fewer voters' },
+            stuck:            { he: '{n} קלפיות בתקרת {cap}', en: '{n} boxes at the {cap} ceiling' },
+            cap_label:        { he: 'תקרת הצבעה לקלפי', en: 'Per-box turnout ceiling' },
+            bloc_change:      { he: 'קולות {bloc}: {pct}', en: '{bloc} votes: {pct}' },
+            threshold_stat:   { he: 'אחוז החסימה (3.25%): {n} קולות', en: 'Threshold (3.25%): {n} votes' },
+            quota_stat:       { he: 'מודד למנדט: {n} קולות', en: 'Votes per seat: {n}' },
+            bloc_right:       { he: 'גוש הימין', en: 'Right bloc' },
+            bloc_leftcenter:  { he: 'גוש המרכז-שמאל', en: 'Center-left bloc' },
+            bloc_arab:        { he: 'המפלגות הערביות', en: 'Arab parties' },
+            bloc_combined:    { he: 'מרכז-שמאל + ערביות', en: 'Center-left + Arab' },
+            majority_note:    { he: 'הקו המקווקו: 61, רוב בכנסת', en: 'Dashed line: 61, a Knesset majority' },
+            play:             { he: '▶ הפעל', en: '▶ Play' },
+            pause:            { he: '⏸ עצור', en: '⏸ Pause' },
+            reset:            { he: 'חזרה לתחזית', en: 'Back to forecast' },
+            foot:             { he: 'הכנסת ה-26 היא תרחיש מדומה, לא תוצאה אמיתית', en: 'Knesset 26 is a simulated scenario, not a real result' },
+            chart_title:      { he: 'מנדטים לכל גוש לפי אחוז ההצבעה הארצי (במוטיבציות הנוכחיות)', en: 'Seats per bloc by national turnout (at the current motivations)' },
+            cap_everyone:     { he: 'כולם מתגייסים באותה מידה, והמפה כמעט לא זזה', en: 'Everyone turns out alike, and the map barely moves' },
+            cap_bloc:         { he: '{bloc}: {a} ← {b} מנדטים', en: '{bloc}: {a} → {b} seats' },
+            cap_sub:          { he: 'באחוז הצבעה ארצי של {t}', en: 'at {t} national turnout' },
+            cap_sub_everyone: { he: 'הימין {r} · מרכז-שמאל {l} · ערביות {a}, באחוז הצבעה של {t}', en: 'Right {r} · Center-left {l} · Arab {a}, at {t} turnout' },
+            outro:            { he: 'מי שמגיע לקלפי מחליט', en: 'Whoever shows up decides' },
+            outro_sub:        { he: 'נסו בעצמכם: kolot-nodedim.netlify.app/turnout', en: 'Try it: kolot-nodedim.netlify.app/turnout' },
+            notes: {
+                he: '<p><strong>מאיפה מתחילים.</strong> התחזית היא הכנסת ה-26 המדומה של האתר: אחוז ההצבעה של כל קלפי הוא אחוז ההצבעה של הקלפי המקבילה בכנסת 25, כפול מקדם ארצי אחד (בערך 1.05) כדי להגיע ל-74.3%. לקלפי חדשה בלי מקבילה מוצמדים אחוז ההצבעה וחלוקת הקולות של קלפיות כנסת 25 הסמוכות.</p>' +
+                    '<p><strong>כמה מצביעים נוספים.</strong> כל קלפי סוגרת חלק מהפער שלה ל-100%, עד תקרה של {cap}. קלפי ב-60% מתקדמת מהר יותר מקלפי ב-85%, וקלפיות גבוהות נעצרות בתקרה מוקדם יותר. מתחת לתחזית, מצביעים נשארים בבית.</p>' +
+                    '<p><strong>מי הם.</strong> מניחים שמי שלא הצביע בקלפי נוטה כמו מי שהצביע בה. לכל גוש יש מוטיבציה יחסית: בפי 2, מי שלא הצביע מקרב הגוש מגיע לקלפי בסיכוי כפול משאר מי שלא הצביע (ומתחת לתחזית, נשאר בבית בסיכוי חצי). רק היחס בין המחוונים משנה. כשכולם שווים, כל קלפי שומרת על חלוקת הקולות שלה והמפה כמעט לא זזה: אחוז ההצבעה משנה את המפה רק כשהוא עולה אצל צד אחד יותר מאשר אצל האחר.</p>' +
+                    '<p><strong>מגבלות.</strong> חלוקת הגושים כמו בשאר האתר (עמך ישראל והנדל–זליכה בגוש הימין). המנדטים מחושבים בבאדר-עופר עם אחוז חסימה של 3.25% והסכמי העודפים של התרחיש. הקוד: <code>generate_turnout_sim.py</code>.</p>',
+                en: '<p><strong>Starting point.</strong> The forecast is the site\'s simulated Knesset 26. Each ballot box\'s turnout is its matching K25 box\'s turnout times one national factor (about 1.05) to reach 74.3%. A new box with no match borrows the turnout and vote mix of nearby K25 boxes.</p>' +
+                    '<p><strong>How many more voters.</strong> Every box closes part of its gap to 100%, up to a {cap} ceiling. A box at 60% rises faster than one at 85%, and high boxes hit the ceiling sooner. Below the forecast, voters stay home.</p>' +
+                    '<p><strong>Who they are.</strong> A box\'s non-voters are assumed to lean like its voters. Each bloc has a relative motivation: at 2×, the bloc\'s non-voters are twice as likely to show up as other non-voters (and, below the forecast, half as likely to stay home). Only the ratios between sliders matter. With all equal, every box keeps its own vote mix and the map barely moves: turnout changes the map only when it rises more on one side than the other.</p>' +
+                    '<p><strong>Limits.</strong> Blocs are grouped as elsewhere on the site (Amcha Yisrael and Hendel–Zelicha in the right bloc). Seats are allocated by Bader-Ofer with a 3.25% threshold and the scenario\'s surplus agreements. Code: <code>generate_turnout_sim.py</code>.</p>',
+            },
+        };
+        function T(key, params) {
+            const e = STR[key];
+            let s = e ? (e[i18n.getLang()] || e.he) : key;
+            if (params) for (const k in params) s = s.split('{' + k + '}').join(params[k]);
+            return s.split('{cap}').join(fmtPct(cap, 0));
+        }
+
+        const POLITICAL_ORDER = {
+            'הרשימה המשותפת': 0.5, 'רע״ם': 3, 'הדמוקרטים': 5, 'ישר': 6.5, 'ישראל ביתנו': 8,
+            'ביחד': 8.5, 'כחול לבן': 8.7, 'ש״ס': 9, 'יהדות התורה': 10, 'הציבור החרדי': 10.3,
+            'הנדל–זליכה': 10.7, 'הליכוד': 11, 'עמך ישראל': 11.5, 'הציונות הדתית': 12,
+            'נעם': 12.2, 'עוצמה יהודית': 12.5,
+        };
+        const BLOCS = ['right', 'leftcenter', 'arab'];
+        const BLOC_COLORS = { right: '#4f7cff', leftcenter: '#f97316', arab: '#10b981' };
+        const PRESETS = {
+            everyone:        [1, 1, 1],
+            right:           [2, 1, 1],
+            leftcenter:      [1, 2, 1],
+            arab:            [1, 1, 2],
+            leftcenter_arab: [1, 2, 2],
+        };
+        const RANGE = [0.67, 0.883];
+        const W_RANGE = [0.5, 3];
+        const CAP_RANGE = [0.8, 1];
+        const THRESHOLD_PCT = 3.25;
+        const SEATS = 120;
+        const GLOW_FRAMES = 14;
+
+        const params = new URLSearchParams(location.search);
+        const RECORD = params.get('record') === '1';
+        if (RECORD) document.body.classList.add('record');
+
+        let D, symbols, agreements, blocOfParty, baselineVotes, baselineSeats;
+        let weights = [1, 1, 1];
+        let cap = 0.9;
+        let turnout;
+        let playing = false, rafId = null;
+        let chartTimer = null;
+
+        const fmtPct = (x, d = 1) => (100 * x).toFixed(d) + '%';
+        const fmtInt = (n) => i18n.fmtNum(Math.round(n));
+        const fmtW = (w) => String(+w.toFixed(2));
+
+        /* Engine: per-ballot catch-up with bloc motivations */
+        const M = {};
+        function buildEngine() {
+            const n = D.E.length, k = D.P.length;
+            M.n = n; M.k = k;
+            M.E = Float64Array.from(D.E);
+            M.V = Float64Array.from(D.V);
+            M.P = D.P.map(col => Float64Array.from(col));
+            M.valid = new Float64Array(n);
+            M.B = BLOCS.map(() => new Float64Array(n));
+            for (let p = 0; p < k; p++) {
+                const col = M.P[p], Bj = M.B[blocOfParty[p]];
+                for (let b = 0; b < n; b++) { M.valid[b] += col[b]; Bj[b] += col[b]; }
+            }
+            M.N = new Float64Array(n); M.room = new Float64Array(n); M.vf = new Float64Array(n);
+            M.sumE = 0; M.sumV = 0;
+            for (let b = 0; b < n; b++) {
+                M.N[b] = M.E[b] - M.V[b];
+                M.vf[b] = M.valid[b] > 0 ? M.V[b] / M.valid[b] : 1;
+                M.sumE += M.E[b]; M.sumV += M.V[b];
+            }
+            M.want = new Float64Array(n);
+            M.down = new Float64Array(n);
+            computeRoom();
+        }
+
+        function computeRoom() {
+            for (let b = 0; b < M.n; b++) M.room[b] = Math.max(0, cap * M.E[b] - M.V[b]);
+        }
+
+        function prepareWeights(w) {
+            for (let b = 0; b < M.n; b++) {
+                let up = 0, down = 0;
+                for (let j = 0; j < 3; j++) { up += M.B[j][b] * w[j]; down += M.B[j][b] / w[j]; }
+                M.want[b] = M.valid[b] > 0 ? M.N[b] * up / M.valid[b] : 0;
+                M.down[b] = down;
+            }
+        }
+
+        function nationalAt(q) {
+            let added = 0;
+            if (q >= 0) {
+                for (let b = 0; b < M.n; b++) added += Math.min(q * M.want[b], M.room[b]) * M.vf[b];
+            } else {
+                for (let b = 0; b < M.n; b++) added += q * M.down[b] * M.vf[b];
+            }
+            return (M.sumV + added) / M.sumE;
+        }
+
+        function maxReachable() {
+            let added = 0;
+            for (let b = 0; b < M.n; b++) if (M.want[b] > 0) added += M.room[b] * M.vf[b];
+            return (M.sumV + added) / M.sumE;
+        }
+
+        function solveQ(target) {
+            const base = M.sumV / M.sumE;
+            if (Math.abs(target - base) < 1e-9) return 0;
+            if (target < base) {
+                let s = 0;
+                for (let b = 0; b < M.n; b++) s += M.down[b] * M.vf[b];
+                return (target * M.sumE - M.sumV) / s;
+            }
+            let lo = 0, hi = 1;
+            while (nationalAt(hi) < target && hi < 1e4) hi *= 2;
+            for (let it = 0; it < 45; it++) {
+                const mid = (lo + hi) / 2;
+                if (nationalAt(mid) < target) lo = mid; else hi = mid;
+            }
+            return (lo + hi) / 2;
+        }
+
+        function computeVotes(w, target) {
+            const q = solveQ(target);
+            const totals = new Float64Array(M.k);
+            const f = [new Float64Array(M.n), new Float64Array(M.n), new Float64Array(M.n)];
+            let capped = 0;
+            for (let b = 0; b < M.n; b++) {
+                if (q >= 0) {
+                    const want = q * M.want[b];
+                    const c = want > 0 ? Math.min(1, M.room[b] / want) : 0;
+                    if (want > 0 && want >= M.room[b] && M.V[b] < cap * M.E[b]) capped++;
+                    const base = M.valid[b] > 0 ? q * M.N[b] * c / M.valid[b] : 0;
+                    for (let j = 0; j < 3; j++) f[j][b] = base * w[j];
+                } else {
+                    for (let j = 0; j < 3; j++) f[j][b] = q / w[j];
+                }
+            }
+            for (let p = 0; p < M.k; p++) {
+                const col = M.P[p], fj = f[blocOfParty[p]];
+                let s = 0;
+                for (let b = 0; b < M.n; b++) s += col[b] * (1 + fj[b]);
+                totals[p] = s;
+            }
+            return { votes: Array.from(totals), capped };
+        }
+
+        function baderOfer(votes) {
+            const total = votes.reduce((a, b) => a + b, 0);
+            const thresh = total * THRESHOLD_PCT / 100;
+            const passed = votes.map(v => v >= thresh);
+            const partner = {};
+            agreements.forEach(([a, b]) => {
+                if (passed[a] && passed[b]) { partner[a] = b; partner[b] = a; }
+            });
+            const groups = [], seen = new Set();
+            votes.forEach((v, i) => {
+                if (!passed[i] || seen.has(i)) return;
+                const members = partner[i] != null ? [i, partner[i]] : [i];
+                members.forEach(m => seen.add(m));
+                groups.push({ members, votes: members.reduce((s, m) => s + votes[m], 0), seats: 0 });
+            });
+            for (let k = 0; k < SEATS; k++) {
+                let best = null, bq = -1;
+                groups.forEach(g => { const q = g.votes / (g.seats + 1); if (q > bq) { bq = q; best = g; } });
+                best.seats++;
+            }
+            const seats = votes.map(() => 0);
+            groups.forEach(g => {
+                if (g.members.length === 1) { seats[g.members[0]] = g.seats; return; }
+                for (let k = 0; k < g.seats; k++) {
+                    let bi = g.members[0], bq = -1;
+                    g.members.forEach(m => { const q = votes[m] / (seats[m] + 1); if (q > bq) { bq = q; bi = m; } });
+                    seats[bi]++;
+                }
+            });
+            const quota = votes.reduce((a, v, i) => a + (passed[i] ? v : 0), 0) / SEATS;
+            return { seats, thresh, passed, quota };
+        }
+
+        function blocSeats(seats) {
+            const out = { right: 0, leftcenter: 0, arab: 0 };
+            seats.forEach((s, i) => { out[BLOCS[blocOfParty[i]]] += s; });
+            return out;
+        }
+
+        function range() {
+            return [RANGE[0], Math.min(RANGE[1], Math.floor(maxReachable() * 1000) / 1000)];
+        }
+
+        /* Which blocs are "more motivated" relative to the least motivated one */
+        function motivated() {
+            const lo = Math.min(...weights);
+            const rel = weights.map(w => w / lo);
+            const up = BLOCS.filter((b, j) => rel[j] > 1.001);
+            if (!up.length) return { kind: 'everyone' };
+            const rs = up.map(b => rel[BLOCS.indexOf(b)]);
+            if (rs.every(r => Math.abs(r - rs[0]) < 0.001)) return { kind: 'one', blocs: up, r: rs[0] };
+            return { kind: 'mixed', rel };
+        }
+
+        function scenarioTitle() {
+            const m = motivated();
+            if (m.kind === 'everyone') return T('scen_everyone');
+            if (m.kind === 'one') {
+                const sw = m.blocs.length === 1
+                    ? BLOC_COLORS[m.blocs[0]]
+                    : `linear-gradient(90deg, ${BLOC_COLORS[m.blocs[0]]} 50%, ${BLOC_COLORS[m.blocs[1]]} 50%)`;
+                return `<span class="sw" style="background:${sw}"></span>` + T('scen_one', { camp: T('camp_' + m.blocs.join('_')), r: fmtW(m.r) });
+            }
+            return T('scen_mixed', { list: BLOCS.map((b, j) => `${T('short_' + b)} ×${fmtW(m.rel[j])}`).join(' · ') });
+        }
+
+        /* Hemicycle */
+        const HEMI = { cx: 300, cy: 300, radii: [118, 160, 202, 244, 286] };
+        let seatPositions = null;
+        let lastColors = [], changedAt = [], frameNo = 0;
+        function buildPositions() {
+            const sumR = HEMI.radii.reduce((a, b) => a + b, 0);
+            const counts = HEMI.radii.map(r => Math.round(SEATS * r / sumR));
+            counts[counts.length - 1] += SEATS - counts.reduce((a, b) => a + b, 0);
+            const pos = [];
+            HEMI.radii.forEach((r, row) => {
+                const n = counts[row];
+                for (let s = 0; s < n; s++) {
+                    const angle = Math.PI - (Math.PI * (s + 0.5)) / n;
+                    pos.push({ x: HEMI.cx + r * Math.cos(angle), y: HEMI.cy - r * Math.sin(angle), angle, row });
+                }
+            });
+            pos.sort((a, b) => b.angle - a.angle || a.row - b.row);
+            seatPositions = pos;
+        }
+
+        function drawHemi(seats) {
+            if (!seatPositions) buildPositions();
+            const order = symbols.map((s, i) => i)
+                .filter(i => seats[i] > 0)
+                .sort((a, b) => (POLITICAL_ORDER[D.parties[a].name] ?? 50) - (POLITICAL_ORDER[D.parties[b].name] ?? 50));
+            const colors = [];
+            order.forEach(i => { for (let k = 0; k < seats[i]; k++) colors.push(D.parties[i].color); });
+            frameNo++;
+            colors.forEach((c, k) => {
+                if (lastColors[k] !== undefined && lastColors[k] !== c) changedAt[k] = frameNo;
+            });
+            lastColors = colors;
+            const data = seatPositions.slice(0, colors.length).map((p, k) => ({
+                ...p, color: colors[k],
+                glow: changedAt[k] ? Math.max(0, 1 - (frameNo - changedAt[k]) / GLOW_FRAMES) : 0,
+            }));
+            const svg = d3.select('#hemi');
+            svg.selectAll('circle.seat').data(data).join('circle')
+                .attr('class', 'seat')
+                .attr('cx', d => d.x).attr('cy', d => d.y)
+                .attr('r', d => 10.5 + d.glow * 2.5)
+                .attr('fill', d => d.color)
+                .attr('stroke', d => d.glow > 0 ? '#fff' : 'rgba(0,0,0,0.45)')
+                .attr('stroke-width', d => d.glow > 0 ? 1 + d.glow * 2.5 : 0.8)
+                .attr('stroke-opacity', d => d.glow > 0 ? d.glow : 1);
+            let label = svg.select('text.hemi-label');
+            if (label.empty()) label = svg.append('text').attr('class', 'hemi-label')
+                .attr('x', HEMI.cx).attr('y', HEMI.cy - 8).attr('text-anchor', 'middle')
+                .attr('fill', '#939aab').attr('font-size', 22).attr('font-weight', 600);
+            label.text(i18n.getLang() === 'en' ? '120 seats' : '120 מנדטים');
+        }
+
+        function blocBarsHtml(bs, base) {
+            const scale = 75;
+            const pct = n => Math.min(100, 100 * n / scale);
+            const delta = (n, b) => {
+                const d = n - b;
+                if (!d) return '';
+                return `<span class="bloc-delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '+' : '−'}${Math.abs(d)}</span>`;
+            };
+            const row = (label, n, b, fills, extra = '') => `
+                <div class="bloc-row ${extra} ${n >= 61 ? 'has-majority' : ''}">
+                    <div class="bloc-name">${label}</div>
+                    <div class="bloc-seats">${n}${delta(n, b)}</div>
+                    <div class="bloc-bar">${fills}<div class="majority" style="inset-inline-start:${pct(61)}%"></div></div>
+                </div>`;
+            const fill = (n, color, start = 0) =>
+                `<div class="fill" style="inset-inline-start:${pct(start)}%;width:${pct(n)}%;background:${color}"></div>`;
+            return row(T('bloc_right'), bs.right, base.right, fill(bs.right, BLOC_COLORS.right)) +
+                row(T('bloc_leftcenter'), bs.leftcenter, base.leftcenter, fill(bs.leftcenter, BLOC_COLORS.leftcenter)) +
+                row(T('bloc_arab'), bs.arab, base.arab, fill(bs.arab, BLOC_COLORS.arab)) +
+                row(T('bloc_combined'), bs.leftcenter + bs.arab, base.leftcenter + base.arab,
+                    fill(bs.leftcenter, BLOC_COLORS.leftcenter) + fill(bs.arab, BLOC_COLORS.arab, bs.leftcenter), 'combined') +
+                `<div class="majority-note">${T('majority_note')}</div>`;
+        }
+
+        function chipsHtml(votes, res) {
+            const total = votes.reduce((a, b) => a + b, 0);
+            const baseTotal = baselineVotes.reduce((a, b) => a + b, 0);
+            return symbols.map((s, i) => i)
+                .filter(i => baselineVotes[i] / baseTotal >= 0.01 || res.seats[i] > 0)
+                .sort((a, b) => res.seats[b] - res.seats[a] || votes[b] - votes[a])
+                .map(i => {
+                    const p = D.parties[i];
+                    const n = res.seats[i], d = n - baselineSeats[i];
+                    const out = !res.passed[i];
+                    const dTxt = d ? `${d > 0 ? '+' : '−'}${Math.abs(d)}` : '';
+                    return `<div class="chip ${out ? 'out' : ''}">
+                        <span class="c" style="background:${p.color}"></span>
+                        <span class="n">${i18n.partyName(p.name)}</span>
+                        <span class="s">${out ? (100 * votes[i] / total).toFixed(1) + '%' : n}</span>
+                        <span class="d ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${dTxt}</span>
+                    </div>`;
+                }).join('');
+        }
+
+        let current = null;
+        function render() {
+            const { votes, capped } = computeVotes(weights, turnout);
+            const res = baderOfer(votes);
+            const bs = blocSeats(res.seats);
+            const base = blocSeats(baselineSeats);
+            const t0 = D.baseline_turnout;
+            current = { votes, res, bs, base };
+
+            document.getElementById('stage-scenario').innerHTML = scenarioTitle();
+            document.getElementById('turnout-num').textContent = fmtPct(turnout);
+            const dPts = 100 * (turnout - t0);
+            const deltaEl = document.getElementById('turnout-delta');
+            if (Math.abs(dPts) < 0.05) {
+                deltaEl.textContent = T('at_forecast');
+                deltaEl.className = 'turnout-delta';
+            } else {
+                deltaEl.textContent = T('delta_pts', { sign: dPts > 0 ? '+' : '−', n: Math.abs(dPts).toFixed(1) });
+                deltaEl.className = 'turnout-delta ' + (dPts > 0 ? 'up' : 'down');
+            }
+            const extra = (turnout - t0) * M.sumE;
+            const sub = [];
+            if (Math.abs(extra) >= 500) sub.push(T(extra > 0 ? 'voters_more' : 'voters_fewer', { n: fmtInt(Math.abs(extra)) }));
+            const m = motivated();
+            if (m.kind === 'one') {
+                const idx = symbols.map((s, i) => i).filter(i => m.blocs.includes(BLOCS[blocOfParty[i]]));
+                const now = idx.reduce((a, i) => a + votes[i], 0);
+                const was = idx.reduce((a, i) => a + baselineVotes[i], 0);
+                const ch = 100 * (now / was - 1);
+                const label = m.blocs.length === 1 ? T('bloc_' + m.blocs[0]) : T('bloc_combined');
+                if (Math.abs(ch) >= 0.05) sub.push(T('bloc_change', { bloc: label, pct: (ch > 0 ? '+' : '−') + Math.abs(ch).toFixed(1) + '%' }));
+            }
+            if (capped) sub.push(T('stuck', { n: fmtInt(capped) }));
+            document.getElementById('turnout-sub').textContent = sub.join(' · ');
+
+            const baseRes = baderOfer(baselineVotes);
+            const stat = (key, now, was) => {
+                const d = Math.round(now - was);
+                const dTxt = Math.abs(d) >= 1 ? ` <span class="d">(${d > 0 ? '+' : '−'}${fmtInt(Math.abs(d))})</span>` : '';
+                return `<span>${T(key, { n: `<b>${fmtInt(Math.round(now))}</b>` })}${dTxt}</span>`;
+            };
+            document.getElementById('vote-stats').innerHTML =
+                stat('threshold_stat', res.thresh, baseRes.thresh) + stat('quota_stat', res.quota, baseRes.quota);
+
+            const span = RANGE[1] - RANGE[0];
+            const pos = x => Math.max(0, Math.min(100, 100 * (x - RANGE[0]) / span));
+            document.getElementById('track-fill').style.width = pos(turnout) + '%';
+            document.getElementById('track-forecast').style.left = `calc(${pos(t0)}% - 1px)`;
+
+            drawHemi(res.seats);
+            document.getElementById('bloc-bars').innerHTML = blocBarsHtml(bs, base);
+            document.getElementById('chips').innerHTML = chipsHtml(votes, res);
+
+            const slider = document.getElementById('turnout-slider');
+            if (document.activeElement !== slider) slider.value = turnout;
+            drawChartCursor();
+        }
+
+        function placeNotch() {
+            const notch = document.getElementById('forecast-notch');
+            notch.textContent = T('forecast') + ' ' + fmtPct(D.baseline_turnout);
+            const p = 100 * (D.baseline_turnout - RANGE[0]) / (RANGE[1] - RANGE[0]);
+            notch.style.left = `calc(${p}% + ${(0.5 - p / 100) * 16}px)`;
+        }
+        /* The slider's top is whatever national turnout the per-box ceiling allows */
+        function updateRange() {
+            RANGE[1] = Math.floor(maxReachable() * 1000) / 1000;
+            const slider = document.getElementById('turnout-slider');
+            slider.min = RANGE[0];
+            slider.max = RANGE[1];
+            placeNotch();
+            trackLabels();
+        }
+        function trackLabels() {
+            const span = RANGE[1] - RANGE[0];
+            const pos = x => 100 * (x - RANGE[0]) / span;
+            const ticks = [];
+            for (let x = 0.70; x <= RANGE[1] - 0.015; x += 0.05) ticks.push(Math.round(x * 100) / 100);
+            document.getElementById('track-labels').innerHTML =
+                ticks.map(x => `<span style="left:${pos(x)}%">${fmtPct(x, 0)}</span>`).join('') +
+                `<span style="left:${pos(D.baseline_turnout)}%;color:var(--text-primary);top:${RECORD ? 24 : 14}px">${T('forecast')} ${fmtPct(D.baseline_turnout)}</span>`;
+            document.getElementById('track-labels').style.height = RECORD ? '50px' : '30px';
+        }
+
+        /* Chart */
+        let chartX, chartY;
+        function drawChart() {
+            if (RECORD) return;
+            const svg = d3.select('#chart');
+            svg.selectAll('*').remove();
+            const node = svg.node();
+            const W = node.clientWidth || 900, H = 300;
+            const m = { top: 14, right: 18, bottom: 32, left: 40 };
+            svg.attr('viewBox', `0 0 ${W} ${H}`);
+            chartX = d3.scaleLinear().domain(RANGE).range([m.left, W - m.right]);
+            chartY = d3.scaleLinear().domain([0, 75]).range([H - m.bottom, m.top]);
+            const g = svg.append('g').attr('direction', 'ltr');
+            g.append('g').attr('transform', `translate(0,${H - m.bottom})`)
+                .call(d3.axisBottom(chartX).ticks(8).tickFormat(d => fmtPct(d, 0)))
+                .call(a => a.selectAll('text').attr('fill', '#939aab'))
+                .call(a => a.selectAll('line,path').attr('stroke', '#3a4050'));
+            g.append('g').attr('transform', `translate(${m.left},0)`)
+                .call(d3.axisLeft(chartY).tickValues([0, 15, 30, 45, 61, 75]))
+                .call(a => a.selectAll('text').attr('fill', '#939aab'))
+                .call(a => a.selectAll('line,path').attr('stroke', '#3a4050'));
+            g.append('line').attr('x1', m.left).attr('x2', W - m.right)
+                .attr('y1', chartY(61)).attr('y2', chartY(61))
+                .attr('stroke', '#f3f5f8').attr('stroke-dasharray', '5 4').attr('opacity', 0.6);
+            g.append('line').attr('x1', chartX(D.baseline_turnout)).attr('x2', chartX(D.baseline_turnout))
+                .attr('y1', m.top).attr('y2', H - m.bottom)
+                .attr('stroke', '#f0b429').attr('stroke-width', 1.5).attr('opacity', 0.8);
+            const [lo, hi] = range();
+            const series = [];
+            for (let t = lo; t <= hi + 1e-9; t += 0.0025) {
+                series.push({ t, ...blocSeats(baderOfer(computeVotes(weights, t).votes).seats) });
+            }
+            BLOCS.forEach(b => {
+                g.append('path').datum(series)
+                    .attr('fill', 'none').attr('stroke', BLOC_COLORS[b]).attr('stroke-width', 2.5)
+                    .attr('d', d3.line().curve(d3.curveStepAfter).x(d => chartX(d.t)).y(d => chartY(d[b])));
+            });
+            g.append('line').attr('class', 'cursor').attr('y1', m.top).attr('y2', H - m.bottom)
+                .attr('stroke', '#f3f5f8').attr('stroke-width', 1.5);
+            svg.on('click', (ev) => {
+                const [x] = d3.pointer(ev);
+                stop();
+                setTurnout(chartX.invert(x));
+            });
+            document.getElementById('chart-legend').innerHTML =
+                BLOCS.map(b => `<span><i style="background:${BLOC_COLORS[b]}"></i>${T('bloc_' + b)}</span>`).join('') +
+                `<span><i style="background:#f0b429"></i>${T('forecast')}</span><span><i style="background:#f3f5f8;opacity:.6"></i>61</span>`;
+            drawChartCursor();
+        }
+        function scheduleChart() {
+            clearTimeout(chartTimer);
+            chartTimer = setTimeout(drawChart, 150);
+        }
+        function drawChartCursor() {
+            if (!chartX) return;
+            d3.select('#chart .cursor').attr('x1', chartX(turnout)).attr('x2', chartX(turnout));
+        }
+
+        /* Controls */
+        function setTurnout(t) {
+            const [lo, hi] = range();
+            turnout = Math.max(lo, Math.min(hi, Math.round(t * 10000) / 10000));
+            render();
+        }
+        function setWeights(w, { resetGlow = false } = {}) {
+            weights = w.map(x => Math.max(W_RANGE[0], Math.min(W_RANGE[1], x)));
+            prepareWeights(weights);
+            if (resetGlow) { lastColors = []; changedAt = []; }
+            syncControls();
+            if (!RECORD) {
+                const u = new URL(location.href);
+                if (motivated().kind === 'everyone') u.searchParams.delete('w');
+                else u.searchParams.set('w', weights.map(fmtW).join(','));
+                history.replaceState(null, '', u);
+            }
+            setTurnout(turnout);
+            scheduleChart();
+        }
+        function setCap(c) {
+            cap = Math.max(CAP_RANGE[0], Math.min(CAP_RANGE[1], Math.round(c * 100) / 100));
+            computeRoom();
+            updateRange();
+            const input = document.getElementById('cap-input');
+            if (input && document.activeElement !== input) input.value = cap;
+            const val = document.getElementById('cap-val');
+            if (val) val.textContent = fmtPct(cap, 0);
+            document.getElementById('notes').innerHTML = T('notes');
+            if (!RECORD) {
+                const u = new URL(location.href);
+                if (Math.abs(cap - 0.9) < 1e-9) u.searchParams.delete('cap');
+                else u.searchParams.set('cap', cap.toFixed(2));
+                history.replaceState(null, '', u);
+            }
+            syncControls();
+            setTurnout(turnout);
+            scheduleChart();
+        }
+        function syncControls() {
+            BLOCS.forEach((b, j) => {
+                const input = document.getElementById('w-' + b);
+                if (input && document.activeElement !== input) input.value = weights[j];
+                const val = document.getElementById('wv-' + b);
+                if (val) val.textContent = '×' + weights[j].toFixed(2);
+            });
+            document.querySelectorAll('#presets .scenario-pill').forEach(p => {
+                const pw = PRESETS[p.dataset.p];
+                p.classList.toggle('active', pw.every((x, j) => Math.abs(x - weights[j]) < 1e-6));
+            });
+            const [, hi] = range();
+            let note = T('note');
+            if (hi < RANGE[1] - 1e-9) note += ' ' + T('note_unreachable', { max: fmtPct(hi) });
+            document.getElementById('scenario-note').textContent = note;
+        }
+        function renderControls() {
+            document.getElementById('presets').innerHTML = `<span class="lbl">${T('presets_label')}</span>` +
+                Object.keys(PRESETS).map(k => {
+                    const w = PRESETS[k];
+                    const up = BLOCS.filter((b, j) => w[j] > 1);
+                    const dot = !up.length ? '' : `<span class="dot" style="background:${up.length === 1 ? BLOC_COLORS[up[0]] : `linear-gradient(90deg, ${BLOC_COLORS[up[0]]} 50%, ${BLOC_COLORS[up[1]]} 50%)`}"></span>`;
+                    return `<button class="scenario-pill" data-p="${k}">${dot}${T('preset_' + k, { r: 2 })}</button>`;
+                }).join('');
+            document.getElementById('motivation').innerHTML = `<div class="lbl">${T('motivation_label')}</div>` +
+                BLOCS.map(b => `
+                    <label class="w-row">
+                        <span class="dot" style="background:${BLOC_COLORS[b]}"></span>
+                        <span class="w-name">${T('bloc_' + b)}</span>
+                        <input type="range" id="w-${b}" data-b="${b}" min="${W_RANGE[0]}" max="${W_RANGE[1]}" step="0.05">
+                        <span class="w-val" id="wv-${b}"></span>
+                    </label>`).join('') + `
+                    <label class="w-row cap-row">
+                        <span class="dot"></span>
+                        <span class="w-name">${T('cap_label')}</span>
+                        <input type="range" id="cap-input" min="${CAP_RANGE[0]}" max="${CAP_RANGE[1]}" step="0.01" value="${cap}">
+                        <span class="w-val" id="cap-val">${fmtPct(cap, 0)}</span>
+                    </label>`;
+            syncControls();
+        }
+        function stop() {
+            playing = false;
+            if (rafId) cancelAnimationFrame(rafId);
+            rafId = null;
+            document.getElementById('play-btn').textContent = T('play');
+        }
+        function play() {
+            const [lo, hi] = range();
+            if (turnout >= hi - 0.0005) turnout = lo;
+            playing = true;
+            document.getElementById('play-btn').textContent = T('pause');
+            const ptsPerSec = 2.2;
+            let last = null;
+            const step = (ts) => {
+                if (!playing) return;
+                if (last != null) {
+                    const next = turnout + (ts - last) / 1000 * ptsPerSec / 100;
+                    if (next >= hi) { setTurnout(hi); stop(); return; }
+                    setTurnout(next);
+                }
+                last = ts;
+                rafId = requestAnimationFrame(step);
+            };
+            rafId = requestAnimationFrame(step);
+        }
+
+        function applyStatic() {
+            document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T(el.dataset.t); });
+            document.getElementById('stage-brand').innerHTML = T('brand');
+            document.getElementById('foot-note').textContent = T('foot');
+            document.getElementById('notes').innerHTML = T('notes');
+            document.getElementById('play-btn').textContent = playing ? T('pause') : T('play');
+            placeNotch();
+            document.title = T('title') + ' - ' + (i18n.getLang() === 'en' ? 'Kolot Nodedim' : 'קולות נודדים');
+            renderControls();
+            trackLabels();
+        }
+
+        /* Recorder hooks */
+        window.TurnoutSim = {
+            presets: PRESETS,
+            range: () => range(),
+            baseline: () => D.baseline_turnout,
+            setWeights: (w) => setWeights(w, { resetGlow: true }),
+            setCap: (c) => setCap(c),
+            setTurnout: (t) => setTurnout(t),
+            clearGlow: () => { changedAt = []; render(); },
+            caption(kind) {
+                const el = document.getElementById('stage-caption');
+                if (!kind) { el.classList.remove('visible'); return; }
+                if (kind === 'outro') {
+                    el.innerHTML = `${T('outro')}<small>${T('outro_sub')}</small>`;
+                } else {
+                    const { bs, base } = current;
+                    const m = motivated();
+                    if (m.kind === 'one') {
+                        const label = m.blocs.length === 1 ? T('bloc_' + m.blocs[0]) : T('bloc_combined');
+                        const a = m.blocs.reduce((s, b) => s + base[b], 0);
+                        const b = m.blocs.reduce((s, x) => s + bs[x], 0);
+                        el.innerHTML = `${T('cap_bloc', { bloc: label, a, b })}<small>${T('cap_sub', { t: fmtPct(turnout) })}</small>`;
+                    } else {
+                        el.innerHTML = `${T('cap_everyone')}<small>${T('cap_sub_everyone', { r: bs.right, l: bs.leftcenter, a: bs.arab, t: fmtPct(turnout) })}</small>`;
+                    }
+                }
+                el.classList.add('visible');
+            },
+        };
+
+        fetch('data/turnout_ballots_26.json')
+            .then(r => r.json())
+            .then(data => {
+                D = data;
+                symbols = D.parties.map(p => p.symbol);
+                agreements = D.agreements.map(([a, b]) => [symbols.indexOf(a), symbols.indexOf(b)]);
+                const blocOf = {};
+                Object.entries(D.blocs).forEach(([b, syms]) => syms.forEach(s => { blocOf[s] = BLOCS.indexOf(b); }));
+                blocOfParty = symbols.map(s => blocOf[s]);
+                const cp = parseFloat(params.get('cap'));
+                if (isFinite(cp)) cap = Math.max(CAP_RANGE[0], Math.min(CAP_RANGE[1], cp > 1 ? cp / 100 : cp));
+                buildEngine();
+                baselineVotes = D.P.map(col => col.reduce((a, b) => a + b, 0));
+                baselineSeats = baderOfer(baselineVotes).seats;
+
+                const t = parseFloat(params.get('t'));
+                turnout = isFinite(t) ? t / (t > 1 ? 100 : 1) : D.baseline_turnout;
+                const wp = (params.get('w') || '').split(',').map(parseFloat);
+                const preset = PRESETS[params.get('scenario')];
+                const initial = wp.length === 3 && wp.every(isFinite) ? wp : (preset || PRESETS.everyone);
+
+                prepareWeights(initial);
+                updateRange();
+                applyStatic();
+                document.getElementById('presets').addEventListener('click', e => {
+                    const b = e.target.closest('.scenario-pill');
+                    if (b) { stop(); setWeights(PRESETS[b.dataset.p].slice(), { resetGlow: true }); }
+                });
+                document.getElementById('motivation').addEventListener('input', e => {
+                    if (e.target.id === 'cap-input') { setCap(parseFloat(e.target.value)); return; }
+                    if (!e.target.dataset.b) return;
+                    const j = BLOCS.indexOf(e.target.dataset.b);
+                    const w = weights.slice();
+                    w[j] = parseFloat(e.target.value);
+                    setWeights(w);
+                });
+                document.getElementById('turnout-slider').addEventListener('input', e => {
+                    stop();
+                    setTurnout(parseFloat(e.target.value));
+                });
+                document.getElementById('play-btn').addEventListener('click', () => playing ? stop() : play());
+                document.getElementById('reset-btn').addEventListener('click', () => { stop(); setTurnout(D.baseline_turnout); });
+                window.addEventListener('resize', () => scheduleChart());
+                window.addEventListener('langchange', () => { applyStatic(); render(); scheduleChart(); });
+
+                setWeights(initial);
+                drawChart();
+                window.TurnoutSim.ready = true;
+            });
+    })();
+    </script>
+    <script>if (!document.body.classList.contains('record')) { i18n.renderNav('turnout'); }</script>
+</body>
+</html>
