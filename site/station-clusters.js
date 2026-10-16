@@ -29,6 +29,7 @@
 
     StationClusterLayer.prototype.setStations = function (items) {
         this.items = items;
+        this.dirty = true;
         const data = {
             type: 'FeatureCollection',
             features: items.map(function (item, i) {
@@ -95,14 +96,35 @@
             map.getCanvas().style.cursor = '';
             if (self.handlers.onStationLeave) self.handlers.onStationLeave();
         });
-        map.on('click', 'station-circles', function (e) {
-            const feature = e.features && e.features[0];
-            if (!feature) return;
-            const item = self.items[Number(feature.properties.i)];
+        map.on('click', function (e) {
+            const item = self.stationAt(e.point);
             if (item && self.handlers.onStationClick) self.handlers.onStationClick(item);
         });
         map.on('moveend', function () { self.syncClusters(); });
-        map.on('idle', function () { self.syncClusters(); });
+        map.on('idle', function () { self.syncClusters(true); });
+    };
+
+    // Dots are 4-12px; a fingertip needs a wider target than the painted circle.
+    StationClusterLayer.prototype.stationAt = function (point) {
+        if (!this.map.getLayer('station-circles')) return null;
+        const coarse = global.matchMedia && global.matchMedia('(pointer: coarse)').matches;
+        const pad = coarse ? 16 : 3;
+        const features = this.map.queryRenderedFeatures(
+            [[point.x - pad, point.y - pad], [point.x + pad, point.y + pad]],
+            { layers: ['station-circles'] }
+        );
+        let best = null;
+        let bestGap = Infinity;
+        features.forEach(function (feature) {
+            const p = this.map.project(feature.geometry.coordinates);
+            const gap = Math.hypot(p.x - point.x, p.y - point.y) - Number(feature.properties.radius || 0);
+            if (gap < bestGap) {
+                bestGap = gap;
+                best = feature;
+            }
+        }, this);
+        if (!best || bestGap > pad) return null;
+        return this.items[Number(best.properties.i)] || null;
     };
 
     StationClusterLayer.prototype.clearClusterMarkers = function () {
@@ -110,9 +132,9 @@
         this.clusterMarkers = [];
     };
 
-    StationClusterLayer.prototype.syncClusters = async function () {
+    // Rebuilding swaps every cluster element, which drops a tap that lands mid-swap.
+    StationClusterLayer.prototype.syncClusters = async function (settled) {
         if (!this.ready || !this.map.getSource('stations')) return;
-        const token = ++this.token;
         const features = this.map.querySourceFeatures('stations', {
             filter: ['has', 'point_count'],
         });
@@ -124,6 +146,9 @@
             seen.add(id);
             clusters.push(feature);
         });
+        const key = Array.from(seen).sort(function (a, b) { return a - b; }).join(',');
+        if (!this.dirty && key === this.clusterKey && this.clusterMarkers.length === clusters.length) return;
+        const token = ++this.token;
         const source = this.map.getSource('stations');
         const built = [];
         for (let c = 0; c < clusters.length; c++) {
@@ -168,6 +193,8 @@
         }
         if (token !== this.token) return;
         this.clearClusterMarkers();
+        this.clusterKey = key;
+        if (settled) this.dirty = false;
         const self = this;
         built.forEach(function (marker) {
             marker.addTo(self.map);
