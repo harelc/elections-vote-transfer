@@ -789,10 +789,78 @@
             border-color: var(--accent-primary);
             color: #1a1408;
         }
+        .compare-pill:disabled,
+        .compare-pill:disabled:hover {
+            opacity: 0.35;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+            color: var(--text-muted);
+        }
         .compare-msg {
             font-size: 0.65rem;
             color: #ef4444;
             margin-top: 3px;
+        }
+        .compare-group-toggle {
+            display: block;
+            margin-top: 5px;
+            padding: 0;
+            border: none;
+            background: none;
+            color: var(--accent-primary);
+            font-family: inherit;
+            font-size: 0.68rem;
+            cursor: pointer;
+        }
+        .compare-group-toggle:hover { text-decoration: underline; }
+
+        /* Party-group comparison editor */
+        .set-compare-hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            margin-bottom: 0.5rem;
+        }
+        .set-group {
+            margin-bottom: 0.6rem;
+        }
+        .set-group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        .set-group-sum {
+            font-weight: 500;
+            color: var(--text-muted);
+            direction: ltr;
+        }
+        .set-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.2rem 0.3rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+        .set-item:hover { background: var(--bg-tertiary); }
+        .set-item input { cursor: pointer; margin: 0; }
+        .set-item .party-color { width: 12px; height: 12px; }
+        .set-item-pct {
+            margin-inline-start: auto;
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            direction: ltr;
+        }
+        .set-group-msg {
+            font-size: 0.68rem;
+            color: #f59e0b;
+            margin-top: 0.2rem;
         }
 
         /* Stats badge */
@@ -986,6 +1054,16 @@
 
                 <div class="panel-divider"></div>
 
+                <div id="set-compare" style="display:none;">
+                    <div class="panel-section">
+                        <div class="panel-title" id="set-compare-title"></div>
+                        <div class="set-compare-hint" id="set-compare-hint"></div>
+                        <div class="set-group" id="set-group-cur"></div>
+                        <div class="set-group" id="set-group-cmp"></div>
+                    </div>
+                    <div class="panel-divider"></div>
+                </div>
+
                 <div class="panel-section">
                     <div class="panel-title" data-i18n="party_support">תמיכה במפלגה</div>
                     <div class="party-list" id="party-list"></div>
@@ -1009,11 +1087,16 @@
                     <div id="embed-note" style="display:none;font-size:0.72rem;color:var(--text-muted);max-width:168px;line-height:1.4;margin-top:0.35rem"></div>
                     <div class="color-scale-labels">
                         <span id="legend-min"></span>
+                        <span id="legend-mid"></span>
                         <span id="legend-max"></span>
                     </div>
                     <label class="color-scale-toggle hidden" id="color-scale-toggle">
                         <input type="checkbox" id="dynamic-range-toggle" checked>
                         <span data-i18n="dynamic_range">טווח דינמי</span>
+                    </label>
+                    <label class="color-scale-toggle hidden" id="center-mean-wrap">
+                        <input type="checkbox" id="center-mean-toggle" checked>
+                        <span id="center-mean-label"></span>
                     </label>
                     <div class="cluster-legend" id="cluster-legend">
                         <div class="cluster-legend-row">
@@ -1033,6 +1116,7 @@
                     <div class="compare-row" id="compare-row" style="display:none;">
                         <div class="compare-row-label" id="compare-label">השוואה לכנסת:</div>
                         <div class="compare-pills" id="compare-pills"></div>
+                        <button class="compare-group-toggle" id="compare-group-toggle"></button>
                         <div class="compare-msg" id="compare-msg" style="display:none;"></div>
                     </div>
                 </div>
@@ -1046,8 +1130,8 @@
                 <span data-i18n="credits_line">© הראל קין</span> |
                 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
                 <a href="https://github.com/harelc/elections-vote-transfer/" target="_blank" data-i18n="source_code">קוד מקור</a> |
-                <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-footer-link" rel="noopener noreferrer" style="color:#d97706;display:inline-flex;align-items:center;gap:0.3rem">
-                    <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="" style="width:14px;height:14px;vertical-align:middle">
+                <a href="https://www.buymeacoffee.com/harelc" target="_blank" class="bmc-footer-link" rel="noopener noreferrer" style="color:#d97706;white-space:nowrap">
+                    <img src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg" alt="" style="width:14px;height:14px;vertical-align:-2px">
                     <span data-i18n="bmc_short">Buy me a coffee</span>
                 </a> |
                 מפות: <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>
@@ -1079,6 +1163,15 @@
                 this.compareData = null;
                 this.compareLookup = {};
                 this.compareCache = {};
+                // Group A: party names in the current election; group B: party names in the compare election
+                this.currentSet = new Set();
+                this.compareSet = new Set();
+                // In group mode every Knesset can be compared, even if no group-A party ran in it
+                this.groupMode = false;
+                this.centerOnMean = true;
+                this.diffMean = 0;
+                this.diffCenter = 0;
+                this.diffHalfRange = 20;
 
                 this.init();
             }
@@ -1094,6 +1187,7 @@
                 this.applyDynamicLang();
 
                 // Load data
+                this.loadElectionSymbols();
                 await this.loadSocioeconomicData();
                 await this.loadCoordinates();
                 await this.loadElection(this.currentElection);
@@ -1263,20 +1357,18 @@
                     childMarkers.forEach(m => {
                         const s = m.options.stationData;
                         if (!s) return;
+                        const d = this.getStationDiff(s);
+                        if (d === undefined) return;
                         const v = s.v || s.total_voters || 0;
-                        const cp = this.getComparePct(s);
-                        if (cp === undefined) return;
-                        const curP = (s.p || s.proportions || {})[this.selectedParty.name] || 0;
-                        wDiff += (curP - cp) * v;
+                        wDiff += d * v;
                         totalW += v;
                     });
                     if (totalW > 0) {
                         const avg = wDiff / totalW;
-                        const sign = avg >= 0 ? '+' : '';
                         const isEn = i18n.getLang() === 'en';
                         clusterDiffRow = `<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border-color,#3a4050);font-size:0.8rem;">
-                            <span dir="ltr" style="color:${avg >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${avg.toFixed(1)}%</span>
-                            <span style="color:var(--text-muted);">(${isEn ? 'avg change' : 'שינוי ממוצע'})</span>
+                            <span dir="ltr" style="color:${avg >= this.diffCenter ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${this.fmtSigned(avg)}</span>
+                            <span style="color:var(--text-muted);">(${isEn ? 'avg change' : 'שינוי ממוצע'}${this.vsMeanText(avg)})</span>
                         </div>`;
                     }
                 }
@@ -1371,15 +1463,16 @@
 
                 let diffRow = '';
                 if (this.compareElection && this.selectedParty) {
-                    const curPct = proportions[this.selectedParty.name] || 0;
+                    const curPct = this.getCurrentSetPct(station);
                     const cmpPct = this.getComparePct(station);
                     if (cmpPct !== undefined) {
                         const diff = curPct - cmpPct;
-                        const sign = diff >= 0 ? '+' : '';
                         const isEn = i18n.getLang() === 'en';
+                        const meanText = this.vsMeanText(diff);
                         diffRow = `<div style="margin-top:0.4rem;padding-top:0.4rem;border-top:1px solid var(--border-color);font-size:0.8rem;">
-                            <span dir="ltr" style="color:${diff >= 0 ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${sign}${diff.toFixed(1)}%</span>
+                            <span dir="ltr" style="color:${diff >= this.diffCenter ? '#0d9488' : '#d97706'};font-weight:600;display:inline-block;">${this.fmtSigned(diff)}</span>
                             <span dir="ltr" style="color:var(--text-muted);margin-right:4px;display:inline-block;">${isEn ? 'K.' : 'כ.'}${this.compareElection}: ${cmpPct.toFixed(1)}% ← ${isEn ? 'K.' : 'כ.'}${this.currentElection}: ${curPct.toFixed(1)}%</span>
+                            ${meanText ? `<div style="color:var(--text-muted);font-size:0.75rem;">${meanText.replace(/^, /, '')}</div>` : ''}
                         </div>`;
                     }
                 }
@@ -1449,8 +1542,16 @@
                 document.getElementById('dynamic-range-toggle').addEventListener('change', (e) => {
                     this.dynamicRange = e.target.checked;
                     this.updatePartyScale();
+                    if (this.compareElection) this.computeDiffScale();
                     this.updateLegend();
-                    if (this.colorMode === 'party' && !this.compareElection) this.renderMarkers();
+                    if (this.colorMode === 'party') this.renderMarkers();
+                });
+
+                document.getElementById('center-mean-toggle').addEventListener('change', (e) => {
+                    this.centerOnMean = e.target.checked;
+                    this.computeDiffScale();
+                    this.updateLegend();
+                    this.renderMarkers();
                 });
 
                 // Color mode options
@@ -1576,14 +1677,18 @@
                 this.currentElection = electionId;
                 document.getElementById('loading').classList.remove('hidden');
 
-                // Remember selected party symbol to restore after loading
+                // Remember selected party + group A symbols to restore after loading
                 const prevSymbol = this.selectedParty ? this.selectedParty.symbol : null;
+                const prevGroupSymbols = new Set([...this.currentSet]
+                    .map(n => this.parties.find(p => p.name === n)?.symbol)
+                    .filter(Boolean));
 
                 // If compare election is same as new current, clear compare
                 if (this.compareElection === electionId) {
                     this.compareElection = null;
                     this.compareData = null;
                     this.compareLookup = {};
+                    this.compareSet = new Set();
                 }
 
                 try {
@@ -1597,9 +1702,11 @@
 
                     // Restore party selection by symbol (party family)
                     if (prevSymbol && this.colorMode === 'party') {
-                        const match = this.parties.find(p => p.symbol === prevSymbol);
+                        const groupMatches = this.parties.filter(p => prevGroupSymbols.has(p.symbol));
+                        const match = this.parties.find(p => p.symbol === prevSymbol) || groupMatches[0];
                         if (match) {
-                            this.selectParty(match);
+                            const names = groupMatches.length ? groupMatches.map(p => p.name) : null;
+                            this.selectParty(match, names, true);
                         } else {
                             this.selectedParty = null;
                             this.setColorMode('winner');
@@ -1655,26 +1762,26 @@
                 });
             }
 
-            selectParty(party) {
+            selectParty(party, groupNames = null, keepCompareSet = false) {
                 this.selectedParty = party;
                 this.colorMode = 'party';
-
-                // Update UI
-                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
-                document.querySelectorAll('.party-item').forEach(p => {
-                    p.classList.toggle('active', p.dataset.party === party.name);
-                });
-
-                // Rebuild compare lookup for new party
-                if (this.compareElection && this.compareData) {
-                    if (!this.buildCompareLookup()) {
-                        // Party doesn't exist in compare election
-                        this.compareElection = null;
-                        this.compareData = null;
-                        this.compareLookup = {};
-                    }
+                this.currentSet = new Set(groupNames || [party.name]);
+                if (!groupNames) this.groupMode = false;
+                if (this.compareElection && !this.groupRanIn(this.compareElection)) {
+                    this.compareElection = null;
+                    this.compareData = null;
+                    this.compareLookup = {};
+                    this.compareSet = new Set();
                 }
 
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+
+                if (this.compareElection && this.compareData) {
+                    if (!keepCompareSet) this.compareSet = this.defaultCompareSet();
+                    this.buildCompareLookup();
+                }
+
+                this.highlightPartyList();
                 this.updatePartyScale();
                 this.updateCompareRow();
                 this.updateLegend();
@@ -1734,6 +1841,9 @@
                 this.compareElection = null;
                 this.compareData = null;
                 this.compareLookup = {};
+                this.currentSet = new Set();
+                this.compareSet = new Set();
+                this.groupMode = false;
                 this.updateCompareRow();
                 this.updateLegend();
                 this.renderMarkers();
@@ -1746,6 +1856,10 @@
                 const legendMax = document.getElementById('legend-max');
                 const rangeToggle = document.getElementById('color-scale-toggle');
                 rangeToggle.classList.add('hidden');
+                const centerToggle = document.getElementById('center-mean-wrap');
+                centerToggle.classList.add('hidden');
+                const legendMid = document.getElementById('legend-mid');
+                legendMid.textContent = '';
                 const isEn = i18n.getLang() === 'en';
                 document.getElementById('cluster-legend').classList.remove('visible');
                 const embedCanvas = document.getElementById('embed-legend');
@@ -1787,7 +1901,13 @@
                 } else if (this.colorMode === 'party' && this.selectedParty) {
                     const displayName = i18n.partyName(this.selectedParty);
                     if (this.compareElection) {
-                        if (isEn) {
+                        if (!this.isSingleFamilyCompare()) {
+                            const a = this.groupLabel(this.currentSet, this.parties);
+                            const b = this.groupLabel(this.compareSet, this.compareData?.parties || []);
+                            legendTitle.textContent = isEn
+                                ? `${a} (K.${this.currentElection}) − ${b} (K.${this.compareElection})`
+                                : `${a} (כנסת ${this.currentElection}) − ${b} (כנסת ${this.compareElection})`;
+                        } else if (isEn) {
                             legendTitle.textContent = `${displayName}: K.${this.compareElection} ← K.${this.currentElection}`;
                         } else {
                             const heName = this.selectedParty.name.startsWith('ה') ? this.selectedParty.name.slice(1) : this.selectedParty.name;
@@ -1795,8 +1915,14 @@
                         }
                         legendBar.style.display = '';
                         legendBar.style.background = 'linear-gradient(to left, #0d9488, #f5f5f5, #d97706)';
-                        legendMin.textContent = '-20%';
-                        legendMax.textContent = '+20%';
+                        legendMin.textContent = this.fmtSigned(this.diffCenter - this.diffHalfRange, 0);
+                        legendMid.textContent = this.fmtSigned(this.diffCenter);
+                        legendMax.textContent = this.fmtSigned(this.diffCenter + this.diffHalfRange, 0);
+                        rangeToggle.classList.remove('hidden');
+                        centerToggle.classList.remove('hidden');
+                        document.getElementById('center-mean-label').textContent = isEn
+                            ? `Center on mean change (${this.fmtSigned(this.diffMean)})`
+                            : `מרכז בשינוי הממוצע (${this.fmtSigned(this.diffMean)})`;
                     } else {
                         if (isEn) {
                             legendTitle.textContent = `${displayName} support`;
@@ -1939,9 +2065,9 @@
                     const currentPct = proportions[this.selectedParty.name] || 0;
 
                     if (this.compareElection) {
-                        const comparePct = this.getComparePct(station);
-                        if (comparePct === undefined) return 'rgba(102,102,102,0.5)';
-                        return this.getDiffColor(currentPct - comparePct);
+                        const diff = this.getStationDiff(station);
+                        if (diff === undefined) return 'rgba(102,102,102,0.5)';
+                        return this.getDiffColor(diff);
                     }
 
                     const t = Math.min(currentPct / this.partyScaleMax, 1);
@@ -1997,18 +2123,177 @@
                 return dot >= 0 ? s.slice(0, dot) : s;
             }
 
+            defaultCompareSet() {
+                if (!this.compareData) return new Set();
+                const symbols = new Set([...this.currentSet]
+                    .map(n => this.parties.find(p => p.name === n)?.symbol)
+                    .filter(Boolean));
+                return new Set(this.compareData.parties.filter(p => symbols.has(p.symbol)).map(p => p.name));
+            }
+
+            isSingleFamilyCompare() {
+                if (this.currentSet.size !== 1 || this.compareSet.size !== 1 || !this.compareData) return false;
+                const b = this.compareData.parties.find(p => this.compareSet.has(p.name));
+                return !!b && b.symbol === this.selectedParty?.symbol;
+            }
+
             buildCompareLookup() {
                 this.compareLookup = {};
-                if (!this.compareData || !this.selectedParty) return false;
-                const compareParty = this.compareData.parties.find(p => p.symbol === this.selectedParty.symbol);
-                if (!compareParty) return false;
+                if (!this.compareData) return;
+                const names = [...this.compareSet];
                 this.compareData.stations.forEach(s => {
-                    const val = (s.p || {})[compareParty.name] || 0;
+                    const p = s.p || {};
+                    let val = 0;
+                    names.forEach(n => { val += p[n] || 0; });
                     // Store under both raw and normalized key
                     this.compareLookup[`${s.n}|${s.b}`] = val;
                     this.compareLookup[`${s.n}|${this.normalizeBallot(s.b)}`] = val;
                 });
-                return true;
+                this.computeDiffScale();
+            }
+
+            getCurrentSetPct(station) {
+                const p = station.p || station.proportions || {};
+                let sum = 0;
+                this.currentSet.forEach(n => { sum += p[n] || 0; });
+                return sum;
+            }
+
+            getStationDiff(station) {
+                const cmp = this.getComparePct(station);
+                if (cmp === undefined) return undefined;
+                return this.getCurrentSetPct(station) - cmp;
+            }
+
+            // Mean is weighted by current-election voters over matched ballots, so it tracks
+            // the aggregate swing of those ballots rather than the average small-ballot swing.
+            computeDiffScale() {
+                const diffs = [];
+                let sw = 0, w = 0;
+                (this.tsneData?.stations || []).forEach(s => {
+                    const d = this.getStationDiff(s);
+                    if (d === undefined) return;
+                    const v = s.v || s.total_voters || 0;
+                    sw += d * v;
+                    w += v;
+                    diffs.push(d);
+                });
+                this.diffMean = w > 0 ? sw / w : 0;
+                this.diffCenter = this.centerOnMean ? this.diffMean : 0;
+                this.diffHalfRange = 20;
+                if (this.dynamicRange && diffs.length) {
+                    const dev = diffs.map(d => Math.abs(d - this.diffCenter)).sort((a, b) => a - b);
+                    this.diffHalfRange = Math.max(5, Math.ceil(dev[Math.floor(dev.length * 0.95)] || 20));
+                }
+            }
+
+            fmtSigned(x, digits = 1) {
+                const v = Number(x.toFixed(digits));
+                return `${v > 0 ? '+' : v < 0 ? '−' : ''}${Math.abs(v).toFixed(digits)}%`;
+            }
+
+            vsMeanText(diff) {
+                if (!this.centerOnMean) return '';
+                const rel = diff - this.diffMean;
+                return i18n.getLang() === 'en'
+                    ? `, ${this.fmtSigned(rel)} vs. mean`
+                    : `, ${this.fmtSigned(rel)} ביחס לממוצע`;
+            }
+
+            groupLabel(set, parties) {
+                const names = parties.filter(p => set.has(p.name)).map(p => i18n.partyName(p));
+                if (!names.length) return '∅';
+                if (names.length <= 3) return names.join(' + ');
+                const more = names.length - 2;
+                return `${names.slice(0, 2).join(' + ')} ${i18n.getLang() === 'en' ? `+${more} more` : `+${more} נוספות`}`;
+            }
+
+            highlightPartyList() {
+                document.querySelectorAll('.party-item').forEach(p => {
+                    p.classList.toggle('active', this.currentSet.has(p.dataset.party));
+                });
+            }
+
+            nationalShares(data) {
+                const votes = {};
+                let total = 0;
+                (data?.stations || []).forEach(s => {
+                    const v = s.v || 0;
+                    total += v;
+                    Object.entries(s.p || {}).forEach(([n, pct]) => { votes[n] = (votes[n] || 0) + v * pct / 100; });
+                });
+                const out = {};
+                Object.keys(votes).forEach(n => { out[n] = total > 0 ? votes[n] / total * 100 : 0; });
+                return out;
+            }
+
+            renderSetEditor() {
+                const section = document.getElementById('set-compare');
+                if (this.colorMode !== 'party' || !this.selectedParty || !this.compareElection || !this.compareData) {
+                    section.style.display = 'none';
+                    return;
+                }
+                section.style.display = '';
+                const isEn = i18n.getLang() === 'en';
+                document.getElementById('set-compare-title').textContent = isEn ? 'Compare party groups' : 'השוואת קבוצות מפלגות';
+                document.getElementById('set-compare-hint').textContent = isEn
+                    ? 'Change per ballot = group A share now − group B share then.'
+                    : 'השינוי בכל קלפי = שיעור קבוצה א׳ כעת פחות שיעור קבוצה ב׳ אז.';
+
+                this.sharesCache = this.sharesCache || new WeakMap();
+                const sharesOf = d => {
+                    if (!this.sharesCache.has(d)) this.sharesCache.set(d, this.nationalShares(d));
+                    return this.sharesCache.get(d);
+                };
+                const curShares = sharesOf(this.tsneData);
+                const cmpShares = sharesOf(this.compareData);
+                const renderGroup = (el, key, letter, electionId, parties, set, shares) => {
+                    const sum = parties.filter(p => set.has(p.name)).reduce((s, p) => s + (shares[p.name] || 0), 0);
+                    const header = isEn ? `Group ${letter} — Knesset ${electionId}` : `קבוצה ${letter} — כנסת ${electionId}`;
+                    const empty = key === 'cmp' && set.size === 0
+                        ? `<div class="set-group-msg">${isEn
+                            ? `No matching list in Knesset ${electionId}. Pick one or more below.`
+                            : `אין רשימה תואמת בכנסת ${electionId}. בחרו רשימה אחת או יותר.`}</div>`
+                        : '';
+                    el.innerHTML = `
+                        <div class="set-group-header"><span>${header}</span><span class="set-group-sum">${sum.toFixed(1)}%</span></div>
+                        ${parties.map((p, i) => `
+                            <label class="set-item">
+                                <input type="checkbox" data-set="${key}" data-idx="${i}"${set.has(p.name) ? ' checked' : ''}>
+                                <span class="party-color" style="background:${p.color}"></span>
+                                <span>${i18n.partyName(p)}</span>
+                                <span class="set-item-pct">${(shares[p.name] || 0).toFixed(1)}%</span>
+                            </label>`).join('')}
+                        ${empty}`;
+                    el.querySelectorAll('input[type=checkbox]').forEach(cb => {
+                        cb.addEventListener('change', () => this.toggleGroupMember(key, parties[+cb.dataset.idx], cb));
+                    });
+                };
+                renderGroup(document.getElementById('set-group-cur'), 'cur', isEn ? 'A' : 'א׳',
+                    this.currentElection, this.parties, this.currentSet, curShares);
+                renderGroup(document.getElementById('set-group-cmp'), 'cmp', isEn ? 'B' : 'ב׳',
+                    this.compareElection, this.compareData.parties, this.compareSet, cmpShares);
+            }
+
+            toggleGroupMember(key, party, checkbox) {
+                const set = key === 'cur' ? this.currentSet : this.compareSet;
+                if (checkbox.checked) {
+                    set.add(party.name);
+                } else if (key === 'cur' && set.size === 1) {
+                    checkbox.checked = true;
+                    return;
+                } else {
+                    set.delete(party.name);
+                }
+                this.groupMode = true;
+                if (key === 'cur' && !this.currentSet.has(this.selectedParty.name)) {
+                    this.selectedParty = this.parties.find(p => this.currentSet.has(p.name));
+                }
+                this.buildCompareLookup();
+                this.highlightPartyList();
+                this.updateCompareRow();
+                this.updateLegend();
+                this.renderMarkers();
             }
 
             getComparePct(station) {
@@ -2026,7 +2311,7 @@
             }
 
             getDiffColor(diff) {
-                const t = Math.max(-1, Math.min(1, diff / 20));
+                const t = Math.max(-1, Math.min(1, (diff - this.diffCenter) / this.diffHalfRange));
                 if (t < 0) {
                     return this.interpolateColor('#f5f5f5', '#d97706', Math.abs(t));
                 } else {
@@ -2043,6 +2328,7 @@
 
                 if (this.colorMode !== 'party' || !this.selectedParty) {
                     row.style.display = 'none';
+                    this.renderSetEditor();
                     return;
                 }
 
@@ -2053,39 +2339,93 @@
                 const electionIds = ['16','17','18','19','20','21','22','23','24','25'];
                 if (i18n.SHOW_E26) electionIds.push('26');
 
+                const missingTitle = id => isEn
+                    ? `Did not run in Knesset ${id}`
+                    : `לא התמודדה בכנסת ${id}`;
                 pills.innerHTML = electionIds
                     .filter(id => id !== this.currentElection)
-                    .map(id => `<button class="compare-pill${this.compareElection === id ? ' active' : ''}" data-cmp="${id}">${id}</button>`)
+                    .map(id => {
+                        const active = this.compareElection === id;
+                        const disabled = !active && !this.groupRanIn(id);
+                        return `<button class="compare-pill${active ? ' active' : ''}" data-cmp="${id}"${disabled ? ` disabled title="${missingTitle(id)}"` : ''}>${id}</button>`;
+                    })
                     .join('');
 
-                pills.querySelectorAll('.compare-pill').forEach(btn => {
+                pills.querySelectorAll('.compare-pill:not(:disabled)').forEach(btn => {
                     btn.addEventListener('click', () => this.toggleCompare(btn.dataset.cmp));
                 });
+
+                const groupBtn = document.getElementById('compare-group-toggle');
+                groupBtn.textContent = this.groupMode
+                    ? (isEn ? '← Back to single-party comparison' : '← חזרה להשוואת מפלגה בודדת')
+                    : (isEn ? 'Compare party groups (any Knesset) →' : 'השוואת קבוצות מפלגות (כל כנסת) ←');
+                groupBtn.onclick = () => this.setGroupMode(!this.groupMode);
+                if (this.groupMode && !this.compareElection) {
+                    msg.style.color = 'var(--text-muted)';
+                    msg.textContent = isEn ? 'Pick a Knesset to compare to.' : 'בחרו כנסת להשוואה.';
+                    msg.style.display = 'block';
+                }
+                this.renderSetEditor();
+            }
+
+            setGroupMode(on) {
+                this.groupMode = on;
+                if (!on) {
+                    this.currentSet = new Set([this.selectedParty.name]);
+                    if (this.compareElection && !this.groupRanIn(this.compareElection)) {
+                        this.compareElection = null;
+                        this.compareData = null;
+                        this.compareLookup = {};
+                        this.compareSet = new Set();
+                    } else if (this.compareData) {
+                        this.compareSet = this.defaultCompareSet();
+                        this.buildCompareLookup();
+                    }
+                    this.highlightPartyList();
+                }
+                this.updateCompareRow();
+                this.updateLegend();
+                this.renderMarkers();
+            }
+
+            async loadElectionSymbols() {
+                try {
+                    const res = await fetch('data/all_transfers.json');
+                    const { transitions } = await res.json();
+                    this.electionSymbols = {};
+                    Object.values(transitions).forEach(t => {
+                        [['nodes_from', t.from_election], ['nodes_to', t.to_election]].forEach(([side, el]) => {
+                            const set = this.electionSymbols[el.id] || (this.electionSymbols[el.id] = new Set());
+                            t[side].forEach(n => set.add(n.symbol));
+                        });
+                    });
+                    this.updateCompareRow();
+                } catch (e) {
+                    console.warn('Could not load election party symbols:', e);
+                }
+            }
+
+            // True if any group-A party (matched by letter-symbol) ran in the given election.
+            // Unknown until all_transfers.json loads, so pills stay enabled until then.
+            groupRanIn(electionId) {
+                const syms = this.electionSymbols?.[electionId];
+                if (this.groupMode || !syms) return true;
+                return [...this.currentSet].some(n => syms.has(this.parties.find(p => p.name === n)?.symbol));
             }
 
             async toggleCompare(electionId) {
-                const msg = document.getElementById('compare-msg');
-                msg.style.display = 'none';
-
                 if (this.compareElection === electionId) {
                     this.compareElection = null;
                     this.compareData = null;
                     this.compareLookup = {};
+                    this.compareSet = new Set();
+                    this.currentSet = new Set([this.selectedParty.name]);
+                    this.highlightPartyList();
                 } else {
                     this.compareElection = electionId;
                     this.compareData = await this.fetchCompareData(electionId);
-                    if (!this.buildCompareLookup()) {
-                        const isEn = i18n.getLang() === 'en';
-                        msg.textContent = isEn
-                            ? `Party not found in Knesset ${electionId}`
-                            : `המפלגה לא התמודדה בכנסת ${electionId}`;
-                        msg.style.display = 'block';
-                        this.compareElection = null;
-                        this.compareData = null;
-                        this.compareLookup = {};
-                        this.updateCompareRow();
-                        return;
-                    }
+                    this.compareSet = this.defaultCompareSet();
+                    this.buildCompareLookup();
                 }
                 this.updateCompareRow();
                 this.updateLegend();
@@ -2169,19 +2509,17 @@
                         childMarkers.forEach(m => {
                             const s = m.options.stationData;
                             if (!s) return;
+                            const d = this.getStationDiff(s);
+                            if (d === undefined) return;
                             const v = s.v || s.total_voters || 0;
-                            const cp = this.getComparePct(s);
-                            if (cp === undefined) return;
-                            const curP = (s.p || s.proportions || {})[this.selectedParty.name] || 0;
-                            weightedDiff += (curP - cp) * v;
+                            weightedDiff += d * v;
                             totalWeight += v;
                             hasAny = true;
                         });
                         if (hasAny && totalWeight > 0) {
                             const avgDiff = weightedDiff / totalWeight;
                             bgColor = this.getDiffColor(avgDiff);
-                            const sign = avgDiff >= 0 ? '+' : '';
-                            infoText = `${sign}${avgDiff.toFixed(1)}%`;
+                            infoText = this.fmtSigned(avgDiff);
                         } else {
                             bgColor = 'rgba(102,102,102,0.5)';
                             infoText = '?';
@@ -2453,12 +2791,7 @@
             if (geoViz.tsneData) {
                 geoViz.updatePartyList();
 
-                // Re-select the active party if one was selected
-                if (geoViz.selectedParty) {
-                    document.querySelectorAll('.party-item').forEach(p => {
-                        p.classList.toggle('active', p.dataset.party === geoViz.selectedParty.name);
-                    });
-                }
+                if (geoViz.selectedParty) geoViz.highlightPartyList();
             }
 
             // Re-render legend + compare row
