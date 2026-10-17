@@ -100,29 +100,15 @@
         }
         .scenario-pill .dot { width: 10px; height: 10px; border-radius: 50%; }
         .scenario-pill.active { background: var(--accent-primary); color: #1a1408; border-color: var(--accent-primary); font-weight: 600; }
-        .slider-row { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
-        .slider-wrap { position: relative; flex: 1; min-width: 240px; padding-top: 1.1rem; }
-        .slider-wrap input[type=range] { width: 100%; accent-color: var(--accent-primary); direction: ltr; }
-        .forecast-notch {
-            position: absolute; top: 0; transform: translateX(-50%);
-            font-size: 0.7rem; color: var(--accent-primary); white-space: nowrap; pointer-events: none;
-        }
-        .forecast-notch::after {
-            content: ''; display: block; width: 2px; height: 0.9rem; margin: 0 auto; background: var(--accent-primary);
-        }
-        .ctl-btn {
-            padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid var(--border-color);
-            background: var(--bg-tertiary); color: var(--text-primary); font-family: inherit;
-            font-size: 0.9rem; cursor: pointer; white-space: nowrap;
-        }
-        .ctl-btn:hover { border-color: var(--accent-primary); }
-        .ctl-btn.primary { background: var(--accent-primary); color: #1a1408; border-color: var(--accent-primary); font-weight: 600; }
         .scenario-note { font-size: 0.85rem; color: var(--text-secondary); }
         .scenario-pills { align-items: center; }
         .scenario-pills .lbl, .motivation .lbl { font-size: 0.85rem; color: var(--text-secondary); margin-inline-end: 0.3rem; }
         .motivation { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem 1.2rem; }
         .motivation .lbl { grid-column: 1 / -1; }
-        .w-row { display: grid; grid-template-columns: 10px auto 1fr 3.4em; gap: 0.5rem; align-items: center; font-size: 0.9rem; }
+        .w-row { display: grid; grid-template-columns: 10px auto 1fr 4.6em; gap: 0.5rem; align-items: center; font-size: 0.9rem; }
+        .w-row .w-val.up { color: var(--gain); }
+        .w-row .w-val.down { color: var(--lose); }
+        .w-row .w-val small { display: block; font-size: 0.68rem; font-weight: 500; color: var(--text-muted); }
         .w-row .dot { width: 10px; height: 10px; border-radius: 50%; }
         .cap-row { padding-top: 0.4rem; border-top: 1px dashed var(--border-color, rgba(255,255,255,0.12)); }
         .cap-row .dot { background: var(--text-muted); border-radius: 2px; }
@@ -190,7 +176,9 @@
         .chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.35rem 0.6rem; }
         .chip { display: grid; grid-template-columns: 6px 1fr auto auto; gap: 0.4rem; align-items: center; font-size: 0.82rem; padding: 0.15rem 0; }
         .chip .c { width: 6px; height: 1.1rem; border-radius: 3px; }
-        .chip .n { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chip .n { display: flex; flex-direction: column; min-width: 0; line-height: 1.15; }
+        .chip .n .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chip .n .v { font-size: 0.66rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
         .chip .s { font-weight: 800; font-variant-numeric: tabular-nums; font-family: 'Inter', 'Heebo', sans-serif; }
         .chip .d { font-size: 0.72rem; font-weight: 700; min-width: 1.8em; text-align: end; font-variant-numeric: tabular-nums; direction: ltr; unicode-bidi: isolate; }
         .chip .d.up { color: var(--gain); }
@@ -216,6 +204,21 @@
         #chart { width: 100%; height: 300px; display: block; cursor: crosshair; }
         .chart-legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem; }
         .chart-legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-inline-end: 0.3rem; border-radius: 2px; }
+        .ex-intro { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; }
+        .ex-rates { margin: 0.6rem 0 0.8rem; font-size: 0.9rem; display: flex; flex-wrap: wrap; gap: 0.3rem 1.2rem; }
+        .ex-rates .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: 0.35rem; }
+        .ex-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 0.8rem 1.4rem; }
+        .ex-box h4 { font-size: 0.95rem; margin-bottom: 0.35rem; }
+        .ex-box table { width: 100%; border-collapse: collapse; font-size: 0.88rem; font-variant-numeric: tabular-nums; }
+        .ex-box th { font-weight: 500; color: var(--text-muted); font-size: 0.78rem; text-align: start; padding: 0.2rem 0.3rem; border-bottom: 1px solid var(--border-color); }
+        .ex-box td { padding: 0.25rem 0.3rem; border-bottom: 1px solid rgba(255,255,255,0.04); }
+        .ex-box td.num, .ex-box th.num { text-align: end; }
+        .ex-box td.up { color: #22c55e; }
+        .ex-box td.down { color: #ef4444; }
+        .ex-box tr.total td { font-weight: 600; border-bottom: none; }
+        .ex-box .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-inline-end: 0.35rem; }
+        .ex-turnout { margin-top: 0.4rem; font-size: 0.88rem; color: var(--text-secondary); }
+        .ex-turnout b { color: var(--text-primary); }
         .notes { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.7; }
         .notes p + p { margin-top: 0.6rem; }
         .notes strong { color: var(--text-primary); }
@@ -272,6 +275,7 @@
         body.record .chip { font-size: 20px; grid-template-columns: 8px 1fr auto auto; padding: 0; }
         body.record .chip .c { width: 8px; height: 22px; }
         body.record .chip .d { font-size: 18px; }
+        body.record .chip .n .v { font-size: 14px; }
         body.record .chip.out .s { font-size: 16px; }
         body.record .stage-caption { font-size: 44px; bottom: 120px; inset-inline: 56px; padding: 26px 30px; border-width: 2px; }
         body.record .stage-caption small { font-size: 26px; }
@@ -293,14 +297,6 @@
         <section class="controls">
             <div class="scenario-pills" id="presets"></div>
             <div class="motivation" id="motivation"></div>
-            <div class="slider-row">
-                <button class="ctl-btn primary" id="play-btn"></button>
-                <div class="slider-wrap">
-                    <span class="forecast-notch" id="forecast-notch"></span>
-                    <input type="range" id="turnout-slider" min="0" max="1" step="0.001">
-                </div>
-                <button class="ctl-btn" id="reset-btn" data-t="reset"></button>
-            </div>
             <div class="scenario-note" id="scenario-note"></div>
         </section>
 
@@ -338,6 +334,13 @@
         </section>
 
         <section class="panel">
+            <h3 data-t="ex_title"></h3>
+            <p class="ex-intro" data-t="ex_intro"></p>
+            <div class="ex-rates" id="ex-rates"></div>
+            <div class="ex-grid" id="ex-grid"></div>
+        </section>
+
+        <section class="panel">
             <h3 data-t="chart_title"></h3>
             <svg id="chart"></svg>
             <div class="chart-legend" id="chart-legend"></div>
@@ -356,30 +359,26 @@
     (function () {
         const STR = {
             title:            { he: 'מה אם יותר אנשים יצביעו?', en: 'What if more people vote?' },
-            subtitle:         { he: 'סימולציית הכנסת ה-26: מזיזים את אחוז ההצבעה ואת המוטיבציה של כל גוש, ורואים איך זזים המנדטים', en: 'Knesset 26 simulation: move turnout and each bloc\'s motivation, and watch the seats move' },
+            subtitle:         { he: 'סימולציית הכנסת ה-26: מעלים או מורידים את אחוז ההצבעה בכל גוש, ורואים איך זזים המנדטים', en: 'Knesset 26 simulation: raise or lower each bloc\'s turnout, and watch the seats move' },
             back:             { he: '→ חזרה למחשבון באדר-עופר', en: '← Back to the D\'Hondt calculator' },
             brand:            { he: '<b>קולות נודדים</b> · כנסת 26 · תרחיש מדומה', en: '<b>Kolot Nodedim</b> · Knesset 26 · simulated scenario' },
             presets_label:    { he: 'תרחישים:', en: 'Scenarios:' },
-            motivation_label: { he: 'מוטיבציה יחסית של מי שלא הצביע:', en: 'Relative motivation of non-voters:' },
-            preset_everyone:  { he: 'כולם באותה מידה', en: 'Everyone alike' },
-            preset_right:     { he: 'ימין ×{r}', en: 'Right ×{r}' },
-            preset_leftcenter:{ he: 'מרכז-שמאל ×{r}', en: 'Center-left ×{r}' },
-            preset_arab:      { he: 'ערביות ×{r}', en: 'Arab ×{r}' },
-            preset_leftcenter_arab: { he: 'מרכז-שמאל + ערביות ×{r}', en: 'Center-left + Arab ×{r}' },
-            scen_everyone:    { he: 'כולם מצביעים יותר', en: 'Everyone votes more' },
-            scen_one:         { he: '{camp} פי {r}', en: '{camp} {r}× as motivated' },
-            scen_mixed:       { he: 'מוטיבציה: {list}', en: 'Motivation: {list}' },
-            camp_right:       { he: 'גוש הימין מתגייס', en: 'Right bloc' },
-            camp_leftcenter:  { he: 'גוש המרכז-שמאל מתגייס', en: 'Center-left' },
-            camp_arab:        { he: 'מצביעי המפלגות הערביות מתגייסים', en: 'Arab-party voters' },
-            camp_leftcenter_arab: { he: 'המרכז-שמאל והמפלגות הערביות מתגייסים', en: 'Center-left and Arab parties' },
-            camp_right_leftcenter: { he: 'הימין והמרכז-שמאל מתגייסים', en: 'Right and center-left' },
-            camp_right_arab:  { he: 'הימין והמפלגות הערביות מתגייסים', en: 'Right and Arab parties' },
+            shifts_label:     { he: 'שינוי באחוז ההצבעה של כל גוש (נקודות אחוז):', en: 'Change in each bloc\'s turnout (percentage points):' },
+            preset_forecast:  { he: 'התחזית', en: 'Forecast' },
+            preset_everyone:  { he: 'כולם +{n}', en: 'Everyone +{n}' },
+            preset_right_home:{ he: 'ימין נשאר בבית', en: 'Right stays home' },
+            preset_leftcenter:{ he: 'מרכז-שמאל מתגייס', en: 'Center-left turns out' },
+            preset_arab:      { he: 'ערביות מתגייסות', en: 'Arab parties turn out' },
+            preset_swap:      { he: 'ימין בבית, מרכז-שמאל מתגייס', en: 'Right home, center-left out' },
+            scen_forecast:    { he: 'התחזית', en: 'The forecast' },
+            scen_everyone_up: { he: 'כולם מצביעים יותר ({n})', en: 'Everyone votes more ({n})' },
+            scen_everyone_down: { he: 'כולם מצביעים פחות ({n})', en: 'Everyone votes less ({n})' },
+            scen_list:        { he: '{list} נק׳ הצבעה', en: '{list} turnout pts' },
             short_right:      { he: 'ימין', en: 'Right' },
             short_leftcenter: { he: 'מרכז-שמאל', en: 'Center-left' },
             short_arab:       { he: 'ערביות', en: 'Arab' },
-            note:             { he: 'כל קלפי סוגרת חלק מהפער שלה ל-100%, עד תקרה של {cap}: קלפיות עם הצבעה נמוכה מתקדמות מהר יותר. מניחים שמי שלא הצביע בקלפי נוטה כמו מי שהצביע בה. גוש עם מוטיבציה פי 2 מביא לקלפי פי 2 ממי שלא הצביע אצלו, ובקלפיות שבהן הוא חזק נוספים יותר מצביעים. כשכל המחוונים שווים, זה פשוט "כולם מצביעים יותר".', en: 'Every ballot box closes part of its gap to 100%, up to a {cap} ceiling, so low-turnout boxes rise fastest. A box\'s non-voters are assumed to lean like its voters. A bloc at 2× brings out twice the share of its non-voters, so boxes where it is strong gain more voters. With all sliders equal, this is simply "everyone votes more".' },
-            note_unreachable: { he: 'עם המוטיבציות האלה אחוז ההצבעה הארצי לא יכול לעבור את {max}: הקלפיות הרלוונטיות כבר בתקרה.', en: 'With these motivations national turnout can\'t pass {max}: the relevant boxes are at the ceiling.' },
+            actual:           { he: 'בפועל {n}', en: 'actual {n}' },
+            note:             { he: 'כל מחוון קובע בכמה נקודות עולה או יורד אחוז ההצבעה של הגוש. כלפי מעלה, אותו חלק ממי שלא הצביע מהגוש מגיע לקלפי בכל קלפי, ולכן קלפיות עם הצבעה נמוכה מתקדמות מהר יותר, עד תקרה של {cap}. כלפי מטה, אותו חלק ממצביעי הגוש נשאר בבית בכל קלפי. גוש אחד יכול לעלות בזמן שאחר יורד; אחוז ההצבעה הארצי הוא התוצאה.', en: 'Each slider sets how many points a bloc\'s turnout rises or falls. Going up, the same share of the bloc\'s non-voters shows up in every box, so low-turnout boxes rise fastest, up to a {cap} ceiling. Going down, the same share of the bloc\'s voters stays home in every box. One bloc can rise while another falls; national turnout is the result.' },
             national_turnout: { he: 'אחוז הצבעה ארצי', en: 'National turnout' },
             forecast:         { he: 'תחזית', en: 'Forecast' },
             at_forecast:      { he: 'כמו בתחזית', en: 'Same as the forecast' },
@@ -388,7 +387,6 @@
             voters_fewer:     { he: '{n} מצביעים פחות', en: '{n} fewer voters' },
             stuck:            { he: '{n} קלפיות בתקרת {cap}', en: '{n} boxes at the {cap} ceiling' },
             cap_label:        { he: 'תקרת הצבעה לקלפי', en: 'Per-box turnout ceiling' },
-            bloc_change:      { he: 'קולות {bloc}: {pct}', en: '{bloc} votes: {pct}' },
             threshold_stat:   { he: 'אחוז החסימה (3.25%): {n} קולות', en: 'Threshold (3.25%): {n} votes' },
             quota_stat:       { he: 'מודד למנדט: {n} קולות', en: 'Votes per seat: {n}' },
             bloc_right:       { he: 'גוש הימין', en: 'Right bloc' },
@@ -396,25 +394,42 @@
             bloc_arab:        { he: 'המפלגות הערביות', en: 'Arab parties' },
             bloc_combined:    { he: 'מרכז-שמאל + ערביות', en: 'Center-left + Arab' },
             majority_note:    { he: 'הקו המקווקו: 61, רוב בכנסת', en: 'Dashed line: 61, a Knesset majority' },
-            play:             { he: '▶ הפעל', en: '▶ Play' },
-            pause:            { he: '⏸ עצור', en: '⏸ Pause' },
-            reset:            { he: 'חזרה לתחזית', en: 'Back to forecast' },
             foot:             { he: 'הכנסת ה-26 היא תרחיש מדומה, לא תוצאה אמיתית', en: 'Knesset 26 is a simulated scenario, not a real result' },
-            chart_title:      { he: 'מנדטים לכל גוש לפי אחוז ההצבעה הארצי (במוטיבציות הנוכחיות)', en: 'Seats per bloc by national turnout (at the current motivations)' },
-            cap_everyone:     { he: 'כולם מתגייסים באותה מידה, והמפה כמעט לא זזה', en: 'Everyone turns out alike, and the map barely moves' },
+            chart_title:      { he: 'מנדטים לכל גוש אם, מעבר להגדרות הנוכחיות, כל הגושים מוסיפים או מורידים אותו מספר נקודות', en: 'Seats per bloc if, on top of the current settings, every bloc adds or loses the same number of points' },
+            chart_hint:       { he: 'לחיצה על הגרף מזיזה את כל המחוונים יחד.', en: 'Click the chart to move all sliders together.' },
+            ex_title:         { he: 'דוגמה: מה קורה בתוך הקלפי', en: 'Example: what happens inside a ballot box' },
+            ex_intro:         { he: 'שתי קלפיות להמחשה, בכל אחת 600 בעלי זכות בחירה ואותה חלוקת קולות: 50% ימין, 40% מרכז-שמאל, 10% ערביות. ההנחה היא שמי שלא הצביע בקלפי מתפלג כמו מי שהצביע בה. כך בקלפי א׳, מתוך 240 שלא הצביעו נספרים 120 כימין, 96 כמרכז-שמאל ו-24 כערביות. המספרים מתעדכנים עם המחוונים.', en: 'Two illustrative boxes, each with 600 eligible voters and the same vote mix: 50% right, 40% center-left, 10% Arab parties. The assumption is that a box\'s non-voters split like its voters. So in box A, of the 240 who didn\'t vote, 120 count as right, 96 as center-left and 24 as Arab parties. The numbers update with the sliders.' },
+            ex_rate_up:       { he: '{bloc}: {n} ממי שלא הצביע מגיעים', en: '{bloc}: {n} of non-voters show up' },
+            ex_rate_down:     { he: '{bloc}: {n} מהמצביעים נשארים בבית', en: '{bloc}: {n} of voters stay home' },
+            ex_rate_same:     { he: '(אותו שיעור בכל קלפי בארץ)', en: '(the same share in every box nationwide)' },
+            ex_rate_none:     { he: 'הזיזו מחוון כדי לראות מי מגיע ומי נשאר בבית.', en: 'Move a slider to see who shows up and who stays home.' },
+            ex_box_a:         { he: 'קלפי א׳: הצבעה נמוכה ({t})', en: 'Box A: low turnout ({t})' },
+            ex_box_b:         { he: 'קלפי ב׳: הצבעה גבוהה ({t})', en: 'Box B: high turnout ({t})' },
+            ex_bloc:          { he: 'גוש', en: 'Bloc' },
+            ex_voted:         { he: 'הצביעו', en: 'Voted' },
+            ex_stayed:        { he: 'לא הצביעו (הנחה)', en: 'Didn\'t vote (assumed)' },
+            ex_change:        { he: 'שינוי', en: 'Change' },
+            ex_after:         { he: 'אחרי', en: 'After' },
+            ex_total:         { he: 'סה״כ', en: 'Total' },
+            ex_turnout:       { he: 'אחוז הצבעה: <b>{a} ← {b}</b>', en: 'Turnout: <b>{a} → {b}</b>' },
+            ex_capped:        { he: ' · התקרה ({cap}) עצרה חלק מהעלייה', en: ' · the {cap} ceiling held back part of the rise' },
+            cap_everyone:     { he: 'המפה כמעט לא זזה', en: 'The map barely moves' },
             cap_bloc:         { he: '{bloc}: {a} ← {b} מנדטים', en: '{bloc}: {a} → {b} seats' },
             cap_sub:          { he: 'באחוז הצבעה ארצי של {t}', en: 'at {t} national turnout' },
-            cap_sub_everyone: { he: 'הימין {r} · מרכז-שמאל {l} · ערביות {a}, באחוז הצבעה של {t}', en: 'Right {r} · Center-left {l} · Arab {a}, at {t} turnout' },
             outro:            { he: 'מי שמגיע לקלפי מחליט', en: 'Whoever shows up decides' },
             outro_sub:        { he: 'נסו בעצמכם: kolot-nodedim.netlify.app/turnout', en: 'Try it: kolot-nodedim.netlify.app/turnout' },
             notes: {
                 he: '<p><strong>מאיפה מתחילים.</strong> התחזית היא הכנסת ה-26 המדומה של האתר: אחוז ההצבעה של כל קלפי הוא אחוז ההצבעה של הקלפי המקבילה בכנסת 25, כפול מקדם ארצי אחד (בערך 1.05) כדי להגיע ל-74.3%. לקלפי חדשה בלי מקבילה מוצמדים אחוז ההצבעה וחלוקת הקולות של קלפיות כנסת 25 הסמוכות.</p>' +
-                    '<p><strong>כמה מצביעים נוספים.</strong> כל קלפי סוגרת חלק מהפער שלה ל-100%, עד תקרה של {cap}. קלפי ב-60% מתקדמת מהר יותר מקלפי ב-85%, וקלפיות גבוהות נעצרות בתקרה מוקדם יותר. מתחת לתחזית, מצביעים נשארים בבית.</p>' +
-                    '<p><strong>מי הם.</strong> מניחים שמי שלא הצביע בקלפי נוטה כמו מי שהצביע בה. לכל גוש יש מוטיבציה יחסית: בפי 2, מי שלא הצביע מקרב הגוש מגיע לקלפי בסיכוי כפול משאר מי שלא הצביע (ומתחת לתחזית, נשאר בבית בסיכוי חצי). רק היחס בין המחוונים משנה. כשכולם שווים, כל קלפי שומרת על חלוקת הקולות שלה והמפה כמעט לא זזה: אחוז ההצבעה משנה את המפה רק כשהוא עולה אצל צד אחד יותר מאשר אצל האחר.</p>' +
+                    '<p><strong>מי הגוש בכל קלפי.</strong> מניחים שמי שלא הצביע בקלפי מתפלג כמו מי שהצביע בה. כך לכל גוש יש בכל קלפי מצביעים ולא-מצביעים, ואחוז הצבעה ארצי משלו (ראו את הדוגמה למעלה).</p>' +
+                    '<p><strong>עלייה.</strong> מחוון חיובי של +4 פירושו שאחוז ההצבעה של הגוש עולה ב-4 נקודות. אותו חלק ממי שלא הצביע מהגוש מגיע לקלפי בכל קלפי, ולכן קלפי ב-60% מתקדמת מהר יותר מקלפי ב-85%. אף קלפי לא עוברת את התקרה ({cap}); כשהתקרה עוצרת, העלייה בפועל קטנה מהמבוקש, והיא מוצגת ליד המחוון.</p>' +
+                    '<p><strong>ירידה.</strong> מחוון שלילי של −4 פירושו שאחוז ההצבעה של הגוש יורד ב-4 נקודות: אותו חלק ממצביעי הגוש נשאר בבית בכל קלפי. גוש אחד יכול לעלות בזמן שגוש אחר יורד. אחוז ההצבעה הארצי הוא התוצאה, לא הקלט. כשכל הגושים זזים באותה מידה, כל קלפי שומרת בערך על חלוקת הקולות שלה והמפה כמעט לא זזה: המנדטים זזים כשהפער בין הגושים משתנה.</p>' +
+                    '<p><strong>הגרף.</strong> מראה מה קורה אם, מעבר להגדרות הנוכחיות, כל הגושים מוסיפים או מורידים עוד אותו מספר נקודות. הציר האופקי הוא אחוז ההצבעה הארצי שמתקבל.</p>' +
                     '<p><strong>מגבלות.</strong> חלוקת הגושים כמו בשאר האתר (עמך ישראל והנדל–זליכה בגוש הימין). המנדטים מחושבים בבאדר-עופר עם אחוז חסימה של 3.25% והסכמי העודפים של התרחיש. הקוד: <code>generate_turnout_sim.py</code>.</p>',
                 en: '<p><strong>Starting point.</strong> The forecast is the site\'s simulated Knesset 26. Each ballot box\'s turnout is its matching K25 box\'s turnout times one national factor (about 1.05) to reach 74.3%. A new box with no match borrows the turnout and vote mix of nearby K25 boxes.</p>' +
-                    '<p><strong>How many more voters.</strong> Every box closes part of its gap to 100%, up to a {cap} ceiling. A box at 60% rises faster than one at 85%, and high boxes hit the ceiling sooner. Below the forecast, voters stay home.</p>' +
-                    '<p><strong>Who they are.</strong> A box\'s non-voters are assumed to lean like its voters. Each bloc has a relative motivation: at 2×, the bloc\'s non-voters are twice as likely to show up as other non-voters (and, below the forecast, half as likely to stay home). Only the ratios between sliders matter. With all equal, every box keeps its own vote mix and the map barely moves: turnout changes the map only when it rises more on one side than the other.</p>' +
+                    '<p><strong>Each bloc in each box.</strong> A box\'s non-voters are assumed to split like its voters. So every bloc has voters and non-voters in every box, and its own national turnout (see the example above).</p>' +
+                    '<p><strong>Going up.</strong> A slider at +4 raises the bloc\'s turnout by 4 points. The same share of the bloc\'s non-voters shows up in every box, so a box at 60% rises faster than one at 85%. No box passes the {cap} ceiling; where the ceiling binds, the actual rise is smaller than requested and is shown next to the slider.</p>' +
+                    '<p><strong>Going down.</strong> A slider at −4 lowers the bloc\'s turnout by 4 points: the same share of its voters stays home in every box. One bloc can rise while another falls. National turnout is the result, not the input. When every bloc moves by the same amount, each box roughly keeps its vote mix and the map barely moves: seats move when the gap between blocs changes.</p>' +
+                    '<p><strong>The chart.</strong> Shows what happens if, on top of the current settings, every bloc adds or loses the same number of points. The horizontal axis is the resulting national turnout.</p>' +
                     '<p><strong>Limits.</strong> Blocs are grouped as elsewhere on the site (Amcha Yisrael and Hendel–Zelicha in the right bloc). Seats are allocated by Bader-Ofer with a 3.25% threshold and the scenario\'s surplus agreements. Code: <code>generate_turnout_sim.py</code>.</p>',
             },
         };
@@ -433,15 +448,18 @@
         };
         const BLOCS = ['right', 'leftcenter', 'arab'];
         const BLOC_COLORS = { right: '#4f7cff', leftcenter: '#f97316', arab: '#10b981' };
+        // Per-bloc turnout change in percentage points: [right, leftcenter, arab]
         const PRESETS = {
-            everyone:        [1, 1, 1],
-            right:           [2, 1, 1],
-            leftcenter:      [1, 2, 1],
-            arab:            [1, 1, 2],
-            leftcenter_arab: [1, 2, 2],
+            forecast:   [0, 0, 0],
+            everyone:   [4, 4, 4],
+            right_home: [-4, 0, 0],
+            leftcenter: [0, 4, 0],
+            arab:       [0, 0, 6],
+            swap:       [-3, 3, 0],
         };
-        const RANGE = [0.67, 0.883];
-        const W_RANGE = [0.5, 3];
+        const RANGE = [0.58, 0.9];
+        const S_RANGE = [-15, 15];
+        const S_STEP = 0.5;
         const CAP_RANGE = [0.8, 1];
         const THRESHOLD_PCT = 3.25;
         const SEATS = 120;
@@ -452,15 +470,18 @@
         if (RECORD) document.body.classList.add('record');
 
         let D, symbols, agreements, blocOfParty, baselineVotes, baselineSeats;
-        let weights = [1, 1, 1];
+        let shifts = [0, 0, 0];
         let cap = 0.9;
         let turnout;
-        let playing = false, rafId = null;
         let chartTimer = null;
 
         const fmtPct = (x, d = 1) => (100 * x).toFixed(d) + '%';
         const fmtInt = (n) => i18n.fmtNum(Math.round(n));
-        const fmtW = (w) => String(+w.toFixed(2));
+        const fmtS = (s, d = 1) => {
+            const v = +s.toFixed(d);
+            return v === 0 ? (0).toFixed(d) : `${v > 0 ? '+' : '−'}${Math.abs(v).toFixed(d)}`;
+        };
+        const fmtSShort = (s) => fmtS(s, Number.isInteger(+s.toFixed(1)) ? 0 : 1);
 
         /* Engine: per-ballot catch-up with bloc motivations */
         const M = {};
@@ -483,8 +504,18 @@
                 M.vf[b] = M.valid[b] > 0 ? M.V[b] / M.valid[b] : 1;
                 M.sumE += M.E[b]; M.sumV += M.V[b];
             }
-            M.want = new Float64Array(n);
-            M.down = new Float64Array(n);
+            // Each box's non-voters split like its voters, so every bloc has its own
+            // eligible (EJ), voters (VJ) and voter-weighted non-voters (NJ) nationally.
+            M.EJ = [0, 0, 0]; M.VJ = [0, 0, 0]; M.NJ = [0, 0, 0];
+            for (let b = 0; b < n; b++) {
+                if (!(M.valid[b] > 0)) continue;
+                for (let j = 0; j < 3; j++) {
+                    const share = M.B[j][b] / M.valid[b];
+                    M.EJ[j] += M.E[b] * share;
+                    M.VJ[j] += M.B[j][b] * M.vf[b];
+                    M.NJ[j] += M.N[b] * share * M.vf[b];
+                }
+            }
             computeRoom();
         }
 
@@ -492,71 +523,94 @@
             for (let b = 0; b < M.n; b++) M.room[b] = Math.max(0, cap * M.E[b] - M.V[b]);
         }
 
-        function prepareWeights(w) {
-            for (let b = 0; b < M.n; b++) {
-                let up = 0, down = 0;
-                for (let j = 0; j < 3; j++) { up += M.B[j][b] * w[j]; down += M.B[j][b] / w[j]; }
-                M.want[b] = M.valid[b] > 0 ? M.N[b] * up / M.valid[b] : 0;
-                M.down[b] = down;
-            }
+        // Points of bloc turnout → fraction of the bloc's non-voters who show up (s > 0)
+        // or of its voters who stay home (s < 0), uniform across boxes before the cap.
+        function fractions(s) {
+            return s.map((x, j) => {
+                const d = x / 100;
+                if (d >= 0) return M.NJ[j] > 0 ? Math.min(1, d * M.EJ[j] / M.NJ[j]) : 0;
+                return M.VJ[j] > 0 ? Math.max(-1, d * M.EJ[j] / M.VJ[j]) : 0;
+            });
         }
 
-        function nationalAt(q) {
-            let added = 0;
-            if (q >= 0) {
-                for (let b = 0; b < M.n; b++) added += Math.min(q * M.want[b], M.room[b]) * M.vf[b];
-            } else {
-                for (let b = 0; b < M.n; b++) added += q * M.down[b] * M.vf[b];
-            }
-            return (M.sumV + added) / M.sumE;
-        }
-
-        function maxReachable() {
-            let added = 0;
-            for (let b = 0; b < M.n; b++) if (M.want[b] > 0) added += M.room[b] * M.vf[b];
-            return (M.sumV + added) / M.sumE;
-        }
-
-        function solveQ(target) {
-            const base = M.sumV / M.sumE;
-            if (Math.abs(target - base) < 1e-9) return 0;
-            if (target < base) {
-                let s = 0;
-                for (let b = 0; b < M.n; b++) s += M.down[b] * M.vf[b];
-                return (target * M.sumE - M.sumV) / s;
-            }
-            let lo = 0, hi = 1;
-            while (nationalAt(hi) < target && hi < 1e4) hi *= 2;
-            for (let it = 0; it < 45; it++) {
-                const mid = (lo + hi) / 2;
-                if (nationalAt(mid) < target) lo = mid; else hi = mid;
-            }
-            return (lo + hi) / 2;
-        }
-
-        function computeVotes(w, target) {
-            const q = solveQ(target);
+        function computeVotes(s) {
+            const fr = fractions(s);
             const totals = new Float64Array(M.k);
-            const f = [new Float64Array(M.n), new Float64Array(M.n), new Float64Array(M.n)];
-            let capped = 0;
+            const g = [new Float64Array(M.n), new Float64Array(M.n), new Float64Array(M.n)];
+            const blocAdded = [0, 0, 0];
+            let capped = 0, addedVoters = 0;
             for (let b = 0; b < M.n; b++) {
-                if (q >= 0) {
-                    const want = q * M.want[b];
-                    const c = want > 0 ? Math.min(1, M.room[b] / want) : 0;
-                    if (want > 0 && want >= M.room[b] && M.V[b] < cap * M.E[b]) capped++;
-                    const base = M.valid[b] > 0 ? q * M.N[b] * c / M.valid[b] : 0;
-                    for (let j = 0; j < 3; j++) f[j][b] = base * w[j];
-                } else {
-                    for (let j = 0; j < 3; j++) f[j][b] = q / w[j];
+                const valid = M.valid[b];
+                if (!(valid > 0)) continue;
+                let want = 0, rem = 0;
+                for (let j = 0; j < 3; j++) {
+                    if (fr[j] > 0) want += fr[j] * M.N[b] * M.B[j][b] / valid * M.vf[b];
+                    else rem -= fr[j] * M.B[j][b] * M.vf[b];
+                }
+                // Voters who stay home free up room under the cap for the blocs that rise
+                const c = want > 0 ? Math.min(1, (M.room[b] + rem) / want) : 1;
+                if (c < 1 && M.V[b] < cap * M.E[b]) capped++;
+                addedVoters += want * c - rem;
+                for (let j = 0; j < 3; j++) {
+                    g[j][b] = fr[j] > 0 ? fr[j] * M.N[b] / valid * c : fr[j];
+                    blocAdded[j] += M.B[j][b] * g[j][b] * M.vf[b];
                 }
             }
             for (let p = 0; p < M.k; p++) {
-                const col = M.P[p], fj = f[blocOfParty[p]];
-                let s = 0;
-                for (let b = 0; b < M.n; b++) s += col[b] * (1 + fj[b]);
-                totals[p] = s;
+                const col = M.P[p], gj = g[blocOfParty[p]];
+                let sum = 0;
+                for (let b = 0; b < M.n; b++) sum += col[b] * (1 + gj[b]);
+                totals[p] = sum;
             }
-            return { votes: Array.from(totals), capped };
+            return {
+                votes: Array.from(totals),
+                capped,
+                turnout: (M.sumV + addedVoters) / M.sumE,
+                actual: blocAdded.map((a, j) => M.EJ[j] > 0 ? 100 * a / M.EJ[j] : 0),
+            };
+        }
+
+        /* Worked example: two illustrative boxes run through the same rule as computeVotes */
+        const EX_MIX = [0.5, 0.4, 0.1];
+        const EX_BOXES = [{ key: 'ex_box_a', E: 600, t: 0.6 }, { key: 'ex_box_b', E: 600, t: 0.85 }];
+        function renderExample() {
+            const fr = fractions(shifts);
+            const rates = BLOCS.map((b, j) => {
+                if (!fr[j]) return '';
+                const n = `<span dir="ltr">${fmtPct(Math.abs(fr[j]))}</span>`;
+                return `<span><span class="dot" style="background:${BLOC_COLORS[b]}"></span>${T(fr[j] > 0 ? 'ex_rate_up' : 'ex_rate_down', { bloc: T('bloc_' + b), n })}</span>`;
+            }).filter(Boolean);
+            document.getElementById('ex-rates').innerHTML = rates.length
+                ? rates.join('') + `<span style="color:var(--text-muted)">${T('ex_rate_same')}</span>`
+                : `<span style="color:var(--text-muted)">${T('ex_rate_none')}</span>`;
+
+            document.getElementById('ex-grid').innerHTML = EX_BOXES.map(box => {
+                const V = box.E * box.t;
+                const voted = EX_MIX.map(m => V * m);
+                const stayed = EX_MIX.map(m => (box.E - V) * m);
+                const room = Math.max(0, cap * box.E - V);
+                let want = 0, rem = 0;
+                fr.forEach((f, j) => { if (f > 0) want += f * stayed[j]; else rem -= f * voted[j]; });
+                const c = want > 0 ? Math.min(1, (room + rem) / want) : 1;
+                const change = fr.map((f, j) => Math.round(f > 0 ? f * stayed[j] * c : f * voted[j]));
+                const after = voted.map((v, j) => v + change[j]);
+                const sum = a => a.reduce((x, y) => x + y, 0);
+                const cell = x => `<td class="num${x > 0 ? ' up' : x < 0 ? ' down' : ''}" dir="ltr">${x ? fmtS(x, 0) : '0'}</td>`;
+                const rows = BLOCS.map((b, j) => `<tr>
+                        <td><span class="dot" style="background:${BLOC_COLORS[b]}"></span>${T('bloc_' + b)}</td>
+                        <td class="num">${fmtInt(voted[j])}</td><td class="num">${fmtInt(stayed[j])}</td>
+                        ${cell(change[j])}<td class="num">${fmtInt(after[j])}</td></tr>`).join('');
+                const total = `<tr class="total"><td>${T('ex_total')}</td>
+                        <td class="num">${fmtInt(V)}</td><td class="num">${fmtInt(box.E - V)}</td>
+                        ${cell(sum(change))}<td class="num">${fmtInt(sum(after))}</td></tr>`;
+                const tA = `<span dir="ltr">${fmtPct(box.t)}</span>`, tB = `<span dir="ltr">${fmtPct(sum(after) / box.E)}</span>`;
+                return `<div class="ex-box">
+                    <h4>${T(box.key, { t: fmtPct(box.t, 0) })}</h4>
+                    <table><thead><tr><th>${T('ex_bloc')}</th><th class="num">${T('ex_voted')}</th><th class="num">${T('ex_stayed')}</th><th class="num">${T('ex_change')}</th><th class="num">${T('ex_after')}</th></tr></thead>
+                    <tbody>${rows}${total}</tbody></table>
+                    <div class="ex-turnout">${T('ex_turnout', { a: tA, b: tB })}${c < 1 ? T('ex_capped') : ''}</div>
+                </div>`;
+            }).join('');
         }
 
         function baderOfer(votes) {
@@ -598,31 +652,17 @@
             return out;
         }
 
-        function range() {
-            return [RANGE[0], Math.min(RANGE[1], Math.floor(maxReachable() * 1000) / 1000)];
-        }
-
-        /* Which blocs are "more motivated" relative to the least motivated one */
-        function motivated() {
-            const lo = Math.min(...weights);
-            const rel = weights.map(w => w / lo);
-            const up = BLOCS.filter((b, j) => rel[j] > 1.001);
-            if (!up.length) return { kind: 'everyone' };
-            const rs = up.map(b => rel[BLOCS.indexOf(b)]);
-            if (rs.every(r => Math.abs(r - rs[0]) < 0.001)) return { kind: 'one', blocs: up, r: rs[0] };
-            return { kind: 'mixed', rel };
-        }
-
         function scenarioTitle() {
-            const m = motivated();
-            if (m.kind === 'everyone') return T('scen_everyone');
-            if (m.kind === 'one') {
-                const sw = m.blocs.length === 1
-                    ? BLOC_COLORS[m.blocs[0]]
-                    : `linear-gradient(90deg, ${BLOC_COLORS[m.blocs[0]]} 50%, ${BLOC_COLORS[m.blocs[1]]} 50%)`;
-                return `<span class="sw" style="background:${sw}"></span>` + T('scen_one', { camp: T('camp_' + m.blocs.join('_')), r: fmtW(m.r) });
+            if (shifts.every(x => x === 0)) return T('scen_forecast');
+            if (shifts.every(x => x === shifts[0])) {
+                return T(shifts[0] > 0 ? 'scen_everyone_up' : 'scen_everyone_down', { n: fmtSShort(shifts[0]) });
             }
-            return T('scen_mixed', { list: BLOCS.map((b, j) => `${T('short_' + b)} ×${fmtW(m.rel[j])}`).join(' · ') });
+            const moved = BLOCS.filter((b, j) => shifts[j] !== 0);
+            const sw = moved.length === 1 ? `<span class="sw" style="background:${BLOC_COLORS[moved[0]]}"></span>` : '';
+            const list = BLOCS.map((b, j) => shifts[j] === 0 ? null
+                : `<span style="color:${BLOC_COLORS[b]}">${T('short_' + b)}</span> <span dir="ltr">${fmtSShort(shifts[j])}</span>`)
+                .filter(Boolean).join(' · ');
+            return sw + T('scen_list', { list });
         }
 
         /* Hemicycle */
@@ -714,7 +754,7 @@
                     const dTxt = d ? `${d > 0 ? '+' : '−'}${Math.abs(d)}` : '';
                     return `<div class="chip ${out ? 'out' : ''}">
                         <span class="c" style="background:${p.color}"></span>
-                        <span class="n">${i18n.partyName(p.name)}</span>
+                        <span class="n"><span class="nm">${i18n.partyName(p.name)}</span><span class="v">${i18n.fmtNum(Math.round(votes[i]))}</span></span>
                         <span class="s">${out ? (100 * votes[i] / total).toFixed(1) + '%' : n}</span>
                         <span class="d ${d > 0 ? 'up' : d < 0 ? 'down' : ''}">${dTxt}</span>
                     </div>`;
@@ -723,12 +763,16 @@
 
         let current = null;
         function render() {
-            const { votes, capped } = computeVotes(weights, turnout);
+            const out = computeVotes(shifts);
+            const { votes, capped } = out;
+            turnout = out.turnout;
             const res = baderOfer(votes);
             const bs = blocSeats(res.seats);
             const base = blocSeats(baselineSeats);
-            const t0 = D.baseline_turnout;
-            current = { votes, res, bs, base };
+            const t0 = M.sumV / M.sumE;
+            current = { votes, res, bs, base, actual: out.actual };
+            syncActual(out.actual);
+            if (!RECORD) renderExample();
 
             document.getElementById('stage-scenario').innerHTML = scenarioTitle();
             document.getElementById('turnout-num').textContent = fmtPct(turnout);
@@ -744,15 +788,6 @@
             const extra = (turnout - t0) * M.sumE;
             const sub = [];
             if (Math.abs(extra) >= 500) sub.push(T(extra > 0 ? 'voters_more' : 'voters_fewer', { n: fmtInt(Math.abs(extra)) }));
-            const m = motivated();
-            if (m.kind === 'one') {
-                const idx = symbols.map((s, i) => i).filter(i => m.blocs.includes(BLOCS[blocOfParty[i]]));
-                const now = idx.reduce((a, i) => a + votes[i], 0);
-                const was = idx.reduce((a, i) => a + baselineVotes[i], 0);
-                const ch = 100 * (now / was - 1);
-                const label = m.blocs.length === 1 ? T('bloc_' + m.blocs[0]) : T('bloc_combined');
-                if (Math.abs(ch) >= 0.05) sub.push(T('bloc_change', { bloc: label, pct: (ch > 0 ? '+' : '−') + Math.abs(ch).toFixed(1) + '%' }));
-            }
             if (capped) sub.push(T('stuck', { n: fmtInt(capped) }));
             document.getElementById('turnout-sub').textContent = sub.join(' · ');
 
@@ -773,32 +808,14 @@
             drawHemi(res.seats);
             document.getElementById('bloc-bars').innerHTML = blocBarsHtml(bs, base);
             document.getElementById('chips').innerHTML = chipsHtml(votes, res);
-
-            const slider = document.getElementById('turnout-slider');
-            if (document.activeElement !== slider) slider.value = turnout;
             drawChartCursor();
         }
 
-        function placeNotch() {
-            const notch = document.getElementById('forecast-notch');
-            notch.textContent = T('forecast') + ' ' + fmtPct(D.baseline_turnout);
-            const p = 100 * (D.baseline_turnout - RANGE[0]) / (RANGE[1] - RANGE[0]);
-            notch.style.left = `calc(${p}% + ${(0.5 - p / 100) * 16}px)`;
-        }
-        /* The slider's top is whatever national turnout the per-box ceiling allows */
-        function updateRange() {
-            RANGE[1] = Math.floor(maxReachable() * 1000) / 1000;
-            const slider = document.getElementById('turnout-slider');
-            slider.min = RANGE[0];
-            slider.max = RANGE[1];
-            placeNotch();
-            trackLabels();
-        }
         function trackLabels() {
             const span = RANGE[1] - RANGE[0];
             const pos = x => 100 * (x - RANGE[0]) / span;
             const ticks = [];
-            for (let x = 0.70; x <= RANGE[1] - 0.015; x += 0.05) ticks.push(Math.round(x * 100) / 100);
+            for (let x = 0.60; x <= RANGE[1] + 1e-9; x += 0.05) ticks.push(Math.round(x * 100) / 100);
             document.getElementById('track-labels').innerHTML =
                 ticks.map(x => `<span style="left:${pos(x)}%">${fmtPct(x, 0)}</span>`).join('') +
                 `<span style="left:${pos(D.baseline_turnout)}%;color:var(--text-primary);top:${RECORD ? 24 : 14}px">${T('forecast')} ${fmtPct(D.baseline_turnout)}</span>`;
@@ -815,7 +832,14 @@
             const W = node.clientWidth || 900, H = 300;
             const m = { top: 14, right: 18, bottom: 32, left: 40 };
             svg.attr('viewBox', `0 0 ${W} ${H}`);
-            chartX = d3.scaleLinear().domain(RANGE).range([m.left, W - m.right]);
+            const series = [];
+            for (let u = -12; u <= 12 + 1e-9; u += 0.25) {
+                const out = computeVotes(shifts.map(x => x + u));
+                series.push({ u, t: out.turnout, ...blocSeats(baderOfer(out.votes).seats) });
+            }
+            chartX = d3.scaleLinear()
+                .domain([Math.min(series[0].t, D.baseline_turnout), Math.max(series[series.length - 1].t, D.baseline_turnout)])
+                .range([m.left, W - m.right]);
             chartY = d3.scaleLinear().domain([0, 75]).range([H - m.bottom, m.top]);
             const g = svg.append('g').attr('direction', 'ltr');
             g.append('g').attr('transform', `translate(0,${H - m.bottom})`)
@@ -832,11 +856,6 @@
             g.append('line').attr('x1', chartX(D.baseline_turnout)).attr('x2', chartX(D.baseline_turnout))
                 .attr('y1', m.top).attr('y2', H - m.bottom)
                 .attr('stroke', '#f0b429').attr('stroke-width', 1.5).attr('opacity', 0.8);
-            const [lo, hi] = range();
-            const series = [];
-            for (let t = lo; t <= hi + 1e-9; t += 0.0025) {
-                series.push({ t, ...blocSeats(baderOfer(computeVotes(weights, t).votes).seats) });
-            }
             BLOCS.forEach(b => {
                 g.append('path').datum(series)
                     .attr('fill', 'none').attr('stroke', BLOC_COLORS[b]).attr('stroke-width', 2.5)
@@ -845,13 +864,14 @@
             g.append('line').attr('class', 'cursor').attr('y1', m.top).attr('y2', H - m.bottom)
                 .attr('stroke', '#f3f5f8').attr('stroke-width', 1.5);
             svg.on('click', (ev) => {
-                const [x] = d3.pointer(ev);
-                stop();
-                setTurnout(chartX.invert(x));
+                const t = chartX.invert(d3.pointer(ev)[0]);
+                const near = series.reduce((a, d) => Math.abs(d.t - t) < Math.abs(a.t - t) ? d : a);
+                setShifts(shifts.map(x => x + near.u), { resetGlow: true });
             });
             document.getElementById('chart-legend').innerHTML =
                 BLOCS.map(b => `<span><i style="background:${BLOC_COLORS[b]}"></i>${T('bloc_' + b)}</span>`).join('') +
-                `<span><i style="background:#f0b429"></i>${T('forecast')}</span><span><i style="background:#f3f5f8;opacity:.6"></i>61</span>`;
+                `<span><i style="background:#f0b429"></i>${T('forecast')}</span><span><i style="background:#f3f5f8;opacity:.6"></i>61</span>` +
+                `<span style="color:var(--text-muted)">${T('chart_hint')}</span>`;
             drawChartCursor();
         }
         function scheduleChart() {
@@ -864,29 +884,25 @@
         }
 
         /* Controls */
-        function setTurnout(t) {
-            const [lo, hi] = range();
-            turnout = Math.max(lo, Math.min(hi, Math.round(t * 10000) / 10000));
-            render();
-        }
-        function setWeights(w, { resetGlow = false } = {}) {
-            weights = w.map(x => Math.max(W_RANGE[0], Math.min(W_RANGE[1], x)));
-            prepareWeights(weights);
+        const clampS = x => Math.max(S_RANGE[0], Math.min(S_RANGE[1], Math.round(x / S_STEP) * S_STEP));
+        function setShifts(s, { resetGlow = false } = {}) {
+            shifts = s.map(clampS);
             if (resetGlow) { lastColors = []; changedAt = []; }
             syncControls();
             if (!RECORD) {
                 const u = new URL(location.href);
-                if (motivated().kind === 'everyone') u.searchParams.delete('w');
-                else u.searchParams.set('w', weights.map(fmtW).join(','));
+                u.searchParams.delete('w');
+                u.searchParams.delete('t');
+                if (shifts.every(x => x === 0)) u.searchParams.delete('s');
+                else u.searchParams.set('s', shifts.join(','));
                 history.replaceState(null, '', u);
             }
-            setTurnout(turnout);
+            render();
             scheduleChart();
         }
         function setCap(c) {
             cap = Math.max(CAP_RANGE[0], Math.min(CAP_RANGE[1], Math.round(c * 100) / 100));
             computeRoom();
-            updateRange();
             const input = document.getElementById('cap-input');
             if (input && document.activeElement !== input) input.value = cap;
             const val = document.getElementById('cap-val');
@@ -899,39 +915,46 @@
                 history.replaceState(null, '', u);
             }
             syncControls();
-            setTurnout(turnout);
+            render();
             scheduleChart();
         }
         function syncControls() {
             BLOCS.forEach((b, j) => {
                 const input = document.getElementById('w-' + b);
-                if (input && document.activeElement !== input) input.value = weights[j];
-                const val = document.getElementById('wv-' + b);
-                if (val) val.textContent = '×' + weights[j].toFixed(2);
+                if (input) input.value = shifts[j];
             });
             document.querySelectorAll('#presets .scenario-pill').forEach(p => {
-                const pw = PRESETS[p.dataset.p];
-                p.classList.toggle('active', pw.every((x, j) => Math.abs(x - weights[j]) < 1e-6));
+                const ps = PRESETS[p.dataset.p];
+                p.classList.toggle('active', ps.every((x, j) => x === shifts[j]));
             });
-            const [, hi] = range();
-            let note = T('note');
-            if (hi < RANGE[1] - 1e-9) note += ' ' + T('note_unreachable', { max: fmtPct(hi) });
-            document.getElementById('scenario-note').textContent = note;
+            document.getElementById('scenario-note').textContent = T('note');
+        }
+        // Requested points next to each slider, plus what the cap actually allowed
+        function syncActual(actual) {
+            BLOCS.forEach((b, j) => {
+                const val = document.getElementById('wv-' + b);
+                if (!val) return;
+                const s = shifts[j];
+                val.className = 'w-val' + (s > 0 ? ' up' : s < 0 ? ' down' : '');
+                const short = Math.abs(actual[j] - s) >= 0.1;
+                val.innerHTML = `<span dir="ltr">${fmtS(s)}</span>` +
+                    (short ? `<small>${T('actual', { n: `<span dir="ltr">${fmtS(actual[j])}</span>` })}</small>` : '');
+            });
         }
         function renderControls() {
             document.getElementById('presets').innerHTML = `<span class="lbl">${T('presets_label')}</span>` +
                 Object.keys(PRESETS).map(k => {
-                    const w = PRESETS[k];
-                    const up = BLOCS.filter((b, j) => w[j] > 1);
-                    const dot = !up.length ? '' : `<span class="dot" style="background:${up.length === 1 ? BLOC_COLORS[up[0]] : `linear-gradient(90deg, ${BLOC_COLORS[up[0]]} 50%, ${BLOC_COLORS[up[1]]} 50%)`}"></span>`;
-                    return `<button class="scenario-pill" data-p="${k}">${dot}${T('preset_' + k, { r: 2 })}</button>`;
+                    const ps = PRESETS[k];
+                    const moved = BLOCS.filter((b, j) => ps[j] !== 0 && !ps.every(x => x === ps[0]));
+                    const dot = !moved.length ? '' : `<span class="dot" style="background:${moved.length === 1 ? BLOC_COLORS[moved[0]] : `linear-gradient(90deg, ${BLOC_COLORS[moved[0]]} 50%, ${BLOC_COLORS[moved[1]]} 50%)`}"></span>`;
+                    return `<button class="scenario-pill" data-p="${k}">${dot}${T('preset_' + k, { n: ps[0] })}</button>`;
                 }).join('');
-            document.getElementById('motivation').innerHTML = `<div class="lbl">${T('motivation_label')}</div>` +
+            document.getElementById('motivation').innerHTML = `<div class="lbl">${T('shifts_label')}</div>` +
                 BLOCS.map(b => `
                     <label class="w-row">
                         <span class="dot" style="background:${BLOC_COLORS[b]}"></span>
                         <span class="w-name">${T('bloc_' + b)}</span>
-                        <input type="range" id="w-${b}" data-b="${b}" min="${W_RANGE[0]}" max="${W_RANGE[1]}" step="0.05">
+                        <input type="range" id="w-${b}" data-b="${b}" min="${S_RANGE[0]}" max="${S_RANGE[1]}" step="${S_STEP}">
                         <span class="w-val" id="wv-${b}"></span>
                     </label>`).join('') + `
                     <label class="w-row cap-row">
@@ -942,39 +965,11 @@
                     </label>`;
             syncControls();
         }
-        function stop() {
-            playing = false;
-            if (rafId) cancelAnimationFrame(rafId);
-            rafId = null;
-            document.getElementById('play-btn').textContent = T('play');
-        }
-        function play() {
-            const [lo, hi] = range();
-            if (turnout >= hi - 0.0005) turnout = lo;
-            playing = true;
-            document.getElementById('play-btn').textContent = T('pause');
-            const ptsPerSec = 2.2;
-            let last = null;
-            const step = (ts) => {
-                if (!playing) return;
-                if (last != null) {
-                    const next = turnout + (ts - last) / 1000 * ptsPerSec / 100;
-                    if (next >= hi) { setTurnout(hi); stop(); return; }
-                    setTurnout(next);
-                }
-                last = ts;
-                rafId = requestAnimationFrame(step);
-            };
-            rafId = requestAnimationFrame(step);
-        }
-
         function applyStatic() {
             document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T(el.dataset.t); });
             document.getElementById('stage-brand').innerHTML = T('brand');
             document.getElementById('foot-note').textContent = T('foot');
             document.getElementById('notes').innerHTML = T('notes');
-            document.getElementById('play-btn').textContent = playing ? T('pause') : T('play');
-            placeNotch();
             document.title = T('title') + ' - ' + (i18n.getLang() === 'en' ? 'Kolot Nodedim' : 'קולות נודדים');
             renderControls();
             trackLabels();
@@ -983,11 +978,8 @@
         /* Recorder hooks */
         window.TurnoutSim = {
             presets: PRESETS,
-            range: () => range(),
-            baseline: () => D.baseline_turnout,
-            setWeights: (w) => setWeights(w, { resetGlow: true }),
+            setShifts: (s) => setShifts(s),
             setCap: (c) => setCap(c),
-            setTurnout: (t) => setTurnout(t),
             clearGlow: () => { changedAt = []; render(); },
             caption(kind) {
                 const el = document.getElementById('stage-caption');
@@ -996,15 +988,10 @@
                     el.innerHTML = `${T('outro')}<small>${T('outro_sub')}</small>`;
                 } else {
                     const { bs, base } = current;
-                    const m = motivated();
-                    if (m.kind === 'one') {
-                        const label = m.blocs.length === 1 ? T('bloc_' + m.blocs[0]) : T('bloc_combined');
-                        const a = m.blocs.reduce((s, b) => s + base[b], 0);
-                        const b = m.blocs.reduce((s, x) => s + bs[x], 0);
-                        el.innerHTML = `${T('cap_bloc', { bloc: label, a, b })}<small>${T('cap_sub', { t: fmtPct(turnout) })}</small>`;
-                    } else {
-                        el.innerHTML = `${T('cap_everyone')}<small>${T('cap_sub_everyone', { r: bs.right, l: bs.leftcenter, a: bs.arab, t: fmtPct(turnout) })}</small>`;
-                    }
+                    const mover = BLOCS.reduce((a, b) => Math.abs(bs[b] - base[b]) > Math.abs(bs[a] - base[a]) ? b : a);
+                    el.innerHTML = bs[mover] === base[mover]
+                        ? `${T('cap_everyone')}<small>${T('cap_sub', { t: fmtPct(turnout) })}</small>`
+                        : `${T('cap_bloc', { bloc: T('bloc_' + mover), a: base[mover], b: bs[mover] })}<small>${T('cap_sub', { t: fmtPct(turnout) })}</small>`;
                 }
                 el.classList.add('visible');
             },
@@ -1025,37 +1012,27 @@
                 baselineVotes = D.P.map(col => col.reduce((a, b) => a + b, 0));
                 baselineSeats = baderOfer(baselineVotes).seats;
 
-                const t = parseFloat(params.get('t'));
-                turnout = isFinite(t) ? t / (t > 1 ? 100 : 1) : D.baseline_turnout;
-                const wp = (params.get('w') || '').split(',').map(parseFloat);
+                const sp = (params.get('s') || '').split(',').map(parseFloat);
                 const preset = PRESETS[params.get('scenario')];
-                const initial = wp.length === 3 && wp.every(isFinite) ? wp : (preset || PRESETS.everyone);
+                const initial = sp.length === 3 && sp.every(isFinite) ? sp : (preset || PRESETS.forecast);
 
-                prepareWeights(initial);
-                updateRange();
                 applyStatic();
                 document.getElementById('presets').addEventListener('click', e => {
                     const b = e.target.closest('.scenario-pill');
-                    if (b) { stop(); setWeights(PRESETS[b.dataset.p].slice(), { resetGlow: true }); }
+                    if (b) setShifts(PRESETS[b.dataset.p].slice(), { resetGlow: true });
                 });
                 document.getElementById('motivation').addEventListener('input', e => {
                     if (e.target.id === 'cap-input') { setCap(parseFloat(e.target.value)); return; }
                     if (!e.target.dataset.b) return;
                     const j = BLOCS.indexOf(e.target.dataset.b);
-                    const w = weights.slice();
-                    w[j] = parseFloat(e.target.value);
-                    setWeights(w);
+                    const s = shifts.slice();
+                    s[j] = parseFloat(e.target.value);
+                    setShifts(s);
                 });
-                document.getElementById('turnout-slider').addEventListener('input', e => {
-                    stop();
-                    setTurnout(parseFloat(e.target.value));
-                });
-                document.getElementById('play-btn').addEventListener('click', () => playing ? stop() : play());
-                document.getElementById('reset-btn').addEventListener('click', () => { stop(); setTurnout(D.baseline_turnout); });
                 window.addEventListener('resize', () => scheduleChart());
                 window.addEventListener('langchange', () => { applyStatic(); render(); scheduleChart(); });
 
-                setWeights(initial);
+                setShifts(initial);
                 drawChart();
                 window.TurnoutSim.ready = true;
             });

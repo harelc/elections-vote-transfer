@@ -2,24 +2,23 @@
 /**
  * Records the turnout sweep (site/turnout.html) to a square MP4 for social media.
  *
- * Each scenario: hold at the start, sweep national turnout up at a constant
- * rate (pausing on the forecast), then hold with a summary caption. The page
- * renders synchronously per call, so frames are driven directly, not by time.
+ * Each scenario is one of the page's presets (per-bloc turnout shifts): hold on
+ * the forecast, ramp the shifts from zero to the preset at a constant rate,
+ * then hold with a summary caption. The page renders synchronously per call,
+ * so frames are driven directly, not by time.
  *
  * Usage:
  *   node record_turnout.js [options]
  *
  * Options:
- *   --scenarios LIST  Comma list of everyone,right,leftcenter,arab,leftcenter_arab (default: all)
+ *   --scenarios LIST  Comma list of presets: everyone,right_home,leftcenter,arab,swap (default: all)
  *   --lang he|en      Language (default: he)
- *   --ratio N         Relative motivation of the scenario's camp (default: 2)
- *   --from N          Start turnout, % (default: 67)
- *   --to N            End turnout, % (default: 85; capped per scenario)
- *   --seconds N       Sweep length per scenario (default: 6)
+ *   --scale N         Multiply each preset's shifts (default: 1)
+ *   --seconds N       Ramp length per scenario (default: 6)
  *   --fps N           Frame rate (default: 30)
  *   --size N          Square frame size (default: 1080)
  *   --output FILE     Output file (default: turnout_<lang>.mp4)
- *   --still PCT       Write one PNG at this turnout per scenario and exit
+ *   --still           Write one PNG per scenario at its full shift and exit
  */
 
 const puppeteer = require('puppeteer');
@@ -34,20 +33,17 @@ function getArg(name, defaultVal) {
     return idx >= 0 && args[idx + 1] ? args[idx + 1] : defaultVal;
 }
 
-const SCENARIOS = getArg('scenarios', 'everyone,right,leftcenter,arab,leftcenter_arab').split(',');
+const SCENARIOS = getArg('scenarios', 'everyone,right_home,leftcenter,arab,swap').split(',');
 const LANG = getArg('lang', 'he');
-const RATIO = parseFloat(getArg('ratio', '2'));
-const FROM = parseFloat(getArg('from', '67')) / 100;
-const TO = parseFloat(getArg('to', '85')) / 100;
+const SCALE = parseFloat(getArg('scale', '1'));
 const SWEEP_S = parseFloat(getArg('seconds', '6'));
 const FPS = parseInt(getArg('fps', '30'));
 const SIZE = parseInt(getArg('size', '1080'));
 const OUTPUT = getArg('output', `turnout_${LANG}.mp4`);
-const STILL = getArg('still', null);
+const STILL = args.includes('--still');
 const FRAMES_DIR = path.join(__dirname, '.turnout-frames');
 
 const HOLD_START_S = 1.0;
-const HOLD_FORECAST_S = 0.6;
 const HOLD_END_S = 2.8;
 const OUTRO_S = 3.0;
 
@@ -88,15 +84,15 @@ async function main() {
     }
 
     const sim = (fn, ...a) => page.evaluate((fn, a) => window.TurnoutSim[fn](...a), fn, a);
-    const weightsFor = (s) => ({
-        everyone: [1, 1, 1], right: [RATIO, 1, 1], leftcenter: [1, RATIO, 1],
-        arab: [1, 1, RATIO], leftcenter_arab: [1, RATIO, RATIO],
-    })[s];
+    const presets = await page.evaluate(() => window.TurnoutSim.presets);
+    const shiftsFor = (s, k = 1) => {
+        if (!presets[s]) throw new Error(`Unknown scenario "${s}"; presets: ${Object.keys(presets).join(', ')}`);
+        return presets[s].map(x => x * SCALE * k);
+    };
 
     if (STILL) {
         for (const s of SCENARIOS) {
-            await sim('setWeights', weightsFor(s));
-            await sim('setTurnout', parseFloat(STILL) / 100);
+            await sim('setShifts', shiftsFor(s));
             await sim('clearGlow');
             const out = `turnout_still_${s}_${LANG}.png`;
             await page.screenshot({ path: out });
@@ -115,25 +111,14 @@ async function main() {
     };
     const hold = async (seconds) => { for (let i = 0; i < Math.round(seconds * FPS); i++) await shoot(); };
 
-    const baseline = await sim('baseline');
     for (const s of SCENARIOS) {
-        await sim('setWeights', weightsFor(s));
         await sim('caption', null);
-        const [lo, hi] = await sim('range');
-        const start = Math.max(lo, FROM), end = Math.min(hi, TO);
-        await sim('setTurnout', start);
+        await sim('setShifts', shiftsFor(s, 0));
         await sim('clearGlow');
         await hold(HOLD_START_S);
         const n = Math.round(SWEEP_S * FPS);
-        let pausedAtForecast = false;
         for (let i = 1; i <= n; i++) {
-            const t = start + (end - start) * i / n;
-            if (!pausedAtForecast && t >= baseline && start < baseline) {
-                await sim('setTurnout', baseline);
-                await hold(HOLD_FORECAST_S);
-                pausedAtForecast = true;
-            }
-            await sim('setTurnout', t);
+            await sim('setShifts', shiftsFor(s, i / n));
             await shoot();
         }
         await sim('caption', 'summary');
