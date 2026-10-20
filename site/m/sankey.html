@@ -305,8 +305,11 @@
                 const res = await fetch(`../data/transfer_${id}${suffix}.json`);
                 this.data = await res.json();
                 await this.loadFlowCI();
-                const ciKey = id + suffix;
-                this.flowCI = (this.flowCIFile.transitions || {})[ciKey] || null;
+                const ci = (this.flowCIFile.transitions || {})[id + suffix];
+                const stats = this.data.stats || {};
+                const stale = ci && ci.common_precincts != null &&
+                    (ci.common_precincts !== stats.common_precincts || ci.r_squared !== stats.r_squared);
+                this.flowCI = ci && !stale ? ci : null;
                 this.updateElectionStrip();
                 this.render();
             } catch (e) { console.error(e); }
@@ -510,7 +513,9 @@
                     const capped = Math.min(100, Math.max(0, v));
                     return (Math.round(capped * 10) / 10).toFixed(1);
                 };
-                ciText = `${i18n.t('ci_95')}: ${fmt(Math.min(lo, hi))}–${fmt(Math.max(lo, hi))}`;
+                const draws = this.flowCI && this.flowCI.B;
+                const note = draws && draws < this.flowCIFile.B ? ` (${i18n.t('ci_draws', { n: draws })})` : '';
+                ciText = `${i18n.t('ci_95')}: ${fmt(Math.min(lo, hi))}–${fmt(Math.max(lo, hi))}${note}`;
             }
 
             document.getElementById('sheet-content').innerHTML = `

@@ -118,8 +118,12 @@ def slim_flows(transfer, intervals):
     return rows
 
 
-def ci_block(ci_file, key):
+def ci_block(ci_file, key, stats):
     block = (ci_file.get("transitions") or {}).get(key) or {}
+    if "common_precincts" in block and (
+        block["common_precincts"] != stats.get("common_precincts") or block.get("r_squared") != stats.get("r_squared")
+    ):
+        return None, {}
     return block.get("r2_ci"), block.get("cells") or {}
 
 
@@ -134,7 +138,7 @@ def build_transfers():
         stem = path.stem.replace("transfer_", "")
         from_id, to_id = stem.split("_to_")
         transfer = load_json(path)
-        r2_ci, cells = ci_block(ci_file, f"{from_id}_to_{to_id}")
+        r2_ci, cells = ci_block(ci_file, f"{from_id}_to_{to_id}", transfer["stats"])
         abstention_path = path.with_name(f"{path.stem}_abstention.json")
         entry = {
             "from": int(from_id),
@@ -146,7 +150,7 @@ def build_transfers():
         }
         if abstention_path.exists():
             abstention = load_json(abstention_path)
-            _, abstention_cells = ci_block(ci_file, f"{from_id}_to_{to_id}_abstention")
+            _, abstention_cells = ci_block(ci_file, f"{from_id}_to_{to_id}_abstention", abstention["stats"])
             entry["abstention_flows"] = slim_flows(abstention, abstention_cells)
             entry["abstention_unreliable"] = (from_id, to_id) in UNRELIABLE_ABSTENTION
         pairs[f"{from_id}_to_{to_id}"] = entry

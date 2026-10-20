@@ -587,7 +587,7 @@ class VoteTransferSankey {
             console.log('Data loaded:', this.data);
 
             const ciFile = await this.loadFlowCI();
-            this.flowCI = (ciFile.transitions || {})[transitionId + suffix] || null;
+            this.flowCI = this.matchingCI(ciFile, transitionId + suffix);
 
             // Apply color overrides
             applyColorOverrides(this.data.nodes_from);
@@ -654,6 +654,17 @@ class VoteTransferSankey {
         return this.flowCIFile;
     }
 
+    matchingCI(ciFile, key) {
+        const block = (ciFile.transitions || {})[key];
+        if (!block) return null;
+        const stats = this.data.stats || {};
+        if (block.common_precincts != null &&
+            (block.common_precincts !== stats.common_precincts || block.r_squared !== stats.r_squared)) {
+            return null;
+        }
+        return block;
+    }
+
     formatCI(link, reversePercent) {
         if (link.ciLow == null || link.ciHigh == null) return '';
         let lo = link.ciLow;
@@ -669,7 +680,10 @@ class VoteTransferSankey {
         };
         const a = Math.min(lo, hi);
         const b = Math.max(lo, hi);
-        return `${i18n.t('ci_95')}: ${fmt(a)}–${fmt(b)}`;
+        const draws = this.flowCI && this.flowCI.B;
+        const note = draws && this.flowCIFile && draws < this.flowCIFile.B
+            ? ` (${i18n.t('ci_draws', { n: draws })})` : '';
+        return `${i18n.t('ci_95')}: ${fmt(a)}–${fmt(b)}${note}`;
     }
 
     formatDate(dateStr, estimated) {

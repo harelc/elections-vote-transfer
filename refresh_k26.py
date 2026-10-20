@@ -10,6 +10,7 @@ import argparse
 import hashlib
 import json
 import os
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -17,18 +18,50 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 CONTROL = ROOT / "k26_control.json"
 STATUS = ROOT / "site" / "data" / "k26_status.json"
+CI_FILE = ROOT / "site" / "data" / "transfer_ci.json"
+CI_KEYS = ("25_to_26", "25_to_26_abstention")
 MILESTONES = (0.25, 0.5, 0.8, 1.0)
+# The poller fires every 10 minutes and skips while a rebuild runs.
+LIVE_CI_B = 50
+LIVE_CI_TIMEOUT = 8 * 60
 
 
 def auto_enabled():
     return json.loads(CONTROL.read_text(encoding="utf-8")).get("auto") is True
 
 
-def run(cmd, env=None):
+def run(cmd, env=None, timeout=None):
     print("+", " ".join(cmd), flush=True)
-    result = subprocess.run(cmd, cwd=ROOT, env=env)
-    if result.returncode != 0:
-        raise SystemExit(result.returncode)
+    proc = subprocess.Popen(cmd, cwd=ROOT, env=env, start_new_session=True)
+    try:
+        returncode = proc.wait(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        os.killpg(proc.pid, signal.SIGKILL)
+        proc.wait()
+        raise SystemExit(f"timed out after {timeout}s")
+    if returncode != 0:
+        raise SystemExit(returncode)
+
+
+def drop_stale_ci():
+    """Remove K26 intervals that were computed against an older transfer matrix."""
+    if not CI_FILE.exists():
+        return
+    ci = json.loads(CI_FILE.read_text(encoding="utf-8"))
+    transitions = ci.get("transitions") or {}
+    dropped = []
+    for key in CI_KEYS:
+        block = transitions.get(key)
+        if block is None:
+            continue
+        path = ROOT / "site" / "data" / f"transfer_{key}.json"
+        stats = json.loads(path.read_text(encoding="utf-8"))["stats"] if path.exists() else {}
+        if block.get("common_precincts") != stats.get("common_precincts") or block.get("r_squared") != stats.get("r_squared"):
+            del transitions[key]
+            dropped.append(key)
+    if dropped:
+        CI_FILE.write_text(json.dumps(ci, ensure_ascii=False), encoding="utf-8")
+        print(f"dropped stale confidence intervals: {', '.join(dropped)}")
 
 
 def normalize(source, dest):
@@ -69,6 +102,9 @@ def main():
     parser.add_argument("--final", action="store_true")
     parser.add_argument("--force", action="store_true")
     parser.add_argument("--ci", action="store_true")
+    parser.add_argument("--ci-b", type=int, default=LIVE_CI_B)
+    parser.add_argument("--ci-abstention", action="store_true")
+    parser.add_argument("--ci-timeout", type=int, default=LIVE_CI_TIMEOUT)
     args = parser.parse_args()
 
     if not auto_enabled() and not args.force:
@@ -98,11 +134,15 @@ def main():
     milestone = ci_milestone(summary["ballots"], ROSTER, args.final, previous_ci) if args.ci else None
     ci_coverage = previous_ci
     if milestone:
+        cmd = [sys.executable, "generate_transfer_ci.py", "--only", "25_to_26", "--B", str(args.ci_b)]
+        if not args.ci_abstention:
+            cmd.append("--no-abstention")
         try:
-            run([sys.executable, "generate_transfer_ci.py", "--only", "25_to_26"])
+            run(cmd, timeout=args.ci_timeout or None)
             ci_coverage = milestone
         except SystemExit as error:
             print(f"confidence intervals were not updated ({error})")
+    drop_stale_ci()
 
     run([
         sys.executable, "k26_live.py",
