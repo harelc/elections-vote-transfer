@@ -31,17 +31,13 @@ pd.options.mode.chained_assignment = None
 
 # Cells the unconstrained least-squares solver would otherwise fill with
 # multicollinearity noise. 25→26: right-bloc sources should not feed
-# Democrats or Gantz (Blue and White comes from the centre).
+# the Democrats.
 FORBIDDEN_CELLS = {
     ('25', '26'): [
         ('הליכוד', 'הדמוקרטים'),
-        ('הליכוד', 'כחול לבן'),
         ('ש״ס', 'הדמוקרטים'),
-        ('ש״ס', 'כחול לבן'),
         ('יהדות התורה', 'הדמוקרטים'),
-        ('יהדות התורה', 'כחול לבן'),
         ('הציונות הדתית', 'הדמוקרטים'),
-        ('הציונות הדתית', 'כחול לבן'),
         # הציבור החרדי is fed only by the Haredi lists; Noam only by
         # Religious Zionism. Other cells are solver noise.
         ('הליכוד', 'הציבור החרדי'),

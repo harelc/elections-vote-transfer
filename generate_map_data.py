@@ -5,6 +5,7 @@ Aggregates ballot data by settlement, merges with coordinates and socioeconomic 
 Output: site/data/map_*.json (one per election)
 """
 
+import argparse
 import json
 import os
 from collections import defaultdict
@@ -243,8 +244,8 @@ def aggregate_by_settlement(tsne_data, coordinates, socioeconomic):
     return result, missing_coords
 
 
-def generate_map_data():
-    """Generate map data files for all elections."""
+def generate_map_data(elections=ELECTIONS):
+    """Generate map data files for the given elections (default: all)."""
     print("Loading coordinates...")
     coordinates, coord_unmatched = load_coordinates()
     print(f"  Loaded {len(coordinates)} settlement coordinates")
@@ -257,7 +258,7 @@ def generate_map_data():
 
     all_missing = set()
 
-    for election_id in ELECTIONS:
+    for election_id in elections:
         print(f"\nProcessing election {election_id}...")
 
         tsne_data = load_tsne_data(election_id)
@@ -293,7 +294,7 @@ def generate_map_data():
             print(f"  Missing coordinates for {len(missing)} settlements")
 
     if all_missing:
-        print(f"\n=== Settlements missing coordinates across all elections ===")
+        print(f"\n=== Settlements missing coordinates across processed elections ===")
         for name in sorted(all_missing):
             print(f"  - {name}")
 
@@ -301,4 +302,8 @@ def generate_map_data():
 
 
 if __name__ == '__main__':
-    generate_map_data()
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--elections', nargs='+', choices=ELECTIONS, default=ELECTIONS,
+                        help='Only regenerate these election IDs (default: all)')
+    args = parser.parse_args()
+    generate_map_data(args.elections)

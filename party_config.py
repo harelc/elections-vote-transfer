@@ -507,84 +507,6 @@ PARTIES = {
         'ideology': 'ליברלית',
         'description': 'מפלגה ליברלית התומכת בלגליזציה של הקנאביס'
     },
-
-    # ===== Election 26 new parties =====
-    'נב': {
-        'name': 'ביחד',
-        'name_en': 'Together (Beyachad)',
-        'color': PARTY_COLORS['together'],
-        'leader': 'נפתלי בנט',
-        'leader_en': 'Naftali Bennett',
-        'leader_image': 'images/leaders/bennett.jpg',
-        'logo': 'images/logos/yesh_atid.png',
-        'ideology': 'מרכז-ימין, ממלכתיות, ליברליזם',
-        'founded': 2026,
-        'description': 'רשימה משותפת של בנט 26 ויש עתיד בראשות נפתלי בנט'
-    },
-    'דמ': {
-        'name': 'הדמוקרטים',
-        'name_en': 'The Democrats',
-        'color': '#16a34a',
-        'leader': 'יאיר גולן',
-        'leader_en': 'Yair Golan',
-        'leader_image': 'images/leaders/golan.jpg',
-        'ideology': 'שמאל-מרכז, סוציאל-דמוקרטיה',
-        'description': 'מיזוג של העבודה ומרצ למפלגה דמוקרטית-חברתית'
-    },
-    'עי': {
-        'name': 'עוצמה יהודית',
-        'name_en': 'Jewish Power',
-        'color': '#7f1d1d',
-        'leader': 'איתמר בן גביר',
-        'leader_en': 'Itamar Ben Gvir',
-        'leader_image': 'images/leaders/ben_gvir.jpg',
-        'ideology': 'ימין קיצוני, לאומנות',
-        'description': 'מפלגת ימין קיצוני בראשות איתמר בן גביר'
-    },
-    'מי': {
-        'name': 'הנדל–זליכה',
-        'name_en': 'Hendel–Zelicha–Wilf',
-        'color': '#d97706',
-        'leader': 'יועז הנדל, ירון זליכה ועינת וילף',
-        'leader_en': 'Yoaz Hendel, Yaron Zelicha and Einat Wilf',
-        'leader_image': 'images/leaders/hendel.jpg',
-        'ideology': 'מרכז, כלכלה, ממלכתיות',
-        'founded': 2026,
-        'description': 'רשימה משותפת של יועז הנדל, ירון זליכה ועינת וילף; במדד 120 על סף אחוז החסימה'
-    },
-    'וי': {
-        'name': 'עמך ישראל',
-        'name_en': 'Amcha Yisrael',
-        'color': '#4d7c0f',
-        'leader': 'עופר וינטר',
-        'leader_en': 'Ofer Winter',
-        'leader_image': 'images/leaders/winter.jpg',
-        'ideology': 'ימין, ביטחון, שמרנות',
-        'founded': 2026,
-        'description': 'רשימת ימין בראשות תא״ל (מיל׳) עופר וינטר; הגישה רשימה עצמאית ב־7 בספטמבר 2026; במדד 120 על סף אחוז החסימה'
-    },
-    'כל': {
-        'name': 'כחול לבן',
-        'name_en': 'Blue and White',
-        'color': '#8b5cf6',
-        'leader': 'בני גנץ',
-        'leader_en': 'Benny Gantz',
-        'leader_image': 'images/leaders/gantz.jpg',
-        'ideology': 'מרכז, ממלכתיות',
-        'founded': 2019,
-        'description': 'רשימת בני גנץ; במדד 120 מתחת לאחוז החסימה (~1.2%)'
-    },
-    'יר': {
-        'name': 'ישר',
-        'name_en': 'Yashar',
-        'color': '#14b8a6',
-        'leader': 'גדי אייזנקוט',
-        'leader_en': 'Gadi Eisenkot',
-        'leader_image': 'images/leaders/eisenkot.jpg',
-        'ideology': 'מרכז, ממלכתיות, ביטחון',
-        'founded': 2026,
-        'description': 'מפלגת מרכז חדשה בראשות הרמטכ"ל לשעבר גדי אייזנקוט, מדגישה ממלכתיות, ביטחון ושיקום האמון במוסדות'
-    },
 }
 
 # Default party info for unknown symbols
@@ -809,12 +731,12 @@ ELECTIONS = {
         'valid_votes': 5415872,
         'turnout_percent': 74.3,
         'major_parties': {
-            'symbols': ['דרך', 'מחל', 'רק', 'אמת', 'ל', 'ודם', 'ג', 'שס', 'ב', 'ט', 'עם', 'ך', 'די', 'כן', 'זך', 'ני'],
+            'symbols': ['דרך', 'מחל', 'רק', 'אמת', 'ל', 'ודם', 'ג', 'שס', 'ב', 'ט', 'עם', 'ך', 'די', 'זך', 'ני'],
             'names': ['ישר', 'הליכוד', 'ביחד', 'הדמוקרטים', 'ישראל ביתנו',
                      'הרשימה המשותפת', 'יהדות התורה', 'ש״ס', 'עוצמה יהודית',
-                     'הציונות הדתית', 'רע״ם', 'עמך ישראל', 'הנדל–זליכה', 'כחול לבן',
+                     'הציונות הדתית', 'רע״ם', 'עמך ישראל', 'הנדל–זליכה',
                      'הציבור החרדי', 'נעם'],
-            'seats': [23, 21, 12, 9, 7, 8, 9, 8, 7, 5, 6, 5, 0, 0, 0, 0]
+            'seats': [23, 20, 11, 8, 7, 8, 9, 7, 7, 5, 6, 5, 4, 0, 0]
         }
     }
 }
@@ -1515,16 +1437,6 @@ PARTY_OVERRIDES = {
         'leader_image': 'images/leaders/hendel.jpg',
         'ideology': 'מרכז, כלכלה, ממלכתיות',
         'description': 'המילואימניקים והכלכלית בראשות יועז הנדל וירון זליכה. אותיות די.',
-    },
-    ('26', 'כן'): {
-        'name': 'כחול לבן',
-        'name_en': 'Blue and White',
-        'color': '#8b5cf6',
-        'leader': 'בני גנץ',
-        'leader_en': 'Benny Gantz',
-        'leader_image': 'images/leaders/gantz.jpg',
-        'ideology': 'מרכז, ממלכתיות',
-        'description': 'כחול לבן בראשות בני גנץ. אותיות כן.',
     },
     ('26', 'פה'): {
         'name': 'אני ואתה',

@@ -191,12 +191,12 @@ Madad 120 center forecast as of **7 Sep 2026** (50 days out; lists close 8 Sep 2
 | רע״ם | 5 | 4–6 | 5 |
 | עמך ישראל (Winter) | 0 / 4–5 | ~48% pass | 4 |
 | הנדל–זליכה | 0 / 4–5 | ~52% pass | 4 |
-| כחול לבן (Gantz) | below (~1.2%) | | 0 |
-
 Both threshold lists are included as passing (4 each); 1 seat shaved from Yashar / Likud / Beyachad so the 120 still add up. Turnout intent on Madad: opposition 82% / coalition 77% / Arab 75%.
 
 Provisional majors in `simulate_election_26.py` (`E26_PARTIES`):
-ישר, הליכוד, ביחד, הדמוקרטים, ישראל ביתנו, הרשימה המשותפת, יהדות התורה, ש״ס, עוצמה יהודית, הציונות הדתית, רע״ם, עמך ישראל, הנדל–זליכה, כחול לבן
+ישר, הליכוד, ביחד, הדמוקרטים, ישראל ביתנו, הרשימה המשותפת, יהדות התורה, ש״ס, עוצמה יהודית, הציונות הדתית, רע״ם, עמך ישראל, הנדל–זליכה (plus sub-threshold הציבור החרדי, נעם)
+
+כחול לבן (Gantz) is **not running** in K26: no column in `ballot26.csv`, no `(26, 'כן')` override, not in any K26 bloc or seat list. Its former matrix cells were split between ישר and הנדל–זליכה.
 
 Simulation knobs:
 - `TRANSFER_MATRIX`: per K25 source party → K26 destination distribution (rows must sum to 1.0)
@@ -212,7 +212,7 @@ Hardcoded K26 totals appear in 3 places that must stay in sync when re-tuning:
 2. `site/data/wiki_official_results.json` `"26"` entry (used by sankey side bar legend; has `_26_note` sibling key flagging simulation)
 3. `party_config.py` ELECTIONS['26'] major_parties seats list
 
-Current synced map: Yashar 22 / Likud 20 / Beyachad 13 / Democrats 9 / YB 8 / Joint List 8 / UTJ 8 / Shas 7 / Otzma 7 / RZ 5 / Ra'am 5 / Amcha 4 / Hendel–Zelicha 4 / Gantz 0. Surplus agreements in the simulator: Shas+UTJ, Otzma+RZ, Yashar+YB, Joint+Ra'am.
+Current synced map: Yashar 23 / Likud 20 / Beyachad 11 / UTJ 9 / Democrats 8 / Joint List 8 / Shas 7 / YB 7 / Otzma 7 / Ra'am 6 / RZ 5 / Amcha 5 / Hendel–Zelicha 4. Surplus agreements in the simulator: Shas+UTJ, Otzma+RZ, Yashar+YB, Joint+Ra'am.
 
 Set `min_flow_threshold=15000` in `generate_transfer_data.py` to hide solver multicollinearity noise (~1% spurious cells) from sankey. `sankey.js` also drops nodes with zero remaining flows.
 
@@ -340,7 +340,8 @@ python add_locations_to_tsne.py   # Adds venue names from ballot_locations_*.jso
 python normalize_tsne_names.py    # Normalize settlement names
 
 # Geographic map data (reads tsne, applies normalization, counts lists from CSV)
-python generate_map_data.py
+python generate_map_data.py # all elections
+python generate_map_data.py --elections 26 # just these
 
 # Wikipedia enrichment (rate-limited, ~3 min for 1100 settlements, resumes from cache)
 python enrich_settlements_wikipedia.py

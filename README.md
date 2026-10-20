@@ -170,7 +170,7 @@ K26 is a feature-flagged simulated scenario behind `?e26=1`. It's not real data 
 The list map follows [Madad 120](https://madad120.geva.workers.dev/) as of 7 Sep 2026 (CEC letter-symbols still provisional until the official harvest):
 
 - Passing: ישר 22, ליכוד 20, ביחד 13, הדמוקרטים 9, ישראל ביתנו 8, הרשימה המשותפת 8, יהדות התורה 8, ש״ס 7, עוצמה יהודית 7, הציונות הדתית 5, רע״ם 5, עמך ישראל 4, הנדל–זליכה 4
-- Below threshold: כחול לבן (Gantz)
+- Not running: כחול לבן (Gantz). Its share of the transfer matrix goes to ישר and הנדל–זליכה.
 
 Edit `simulate_election_26.py`'s `TRANSFER_MATRIX`, `ROW_TURNOUT`, and `POP_GROWTH` to re-tune, then sync dhondt / wiki_official_results / party_config seats.
 

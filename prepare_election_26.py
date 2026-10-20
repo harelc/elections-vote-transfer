@@ -26,7 +26,7 @@ import os
 # Add entries here when party names/symbols change
 # Format: {'old_column_name': 'new_column_name'}
 PARTY_REMAP_26 = {
-    # Example: 'פה': 'כן'  # if Blue and White symbol changes
+    # Example: 'פה': 'רק'
 }
 
 
