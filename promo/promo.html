@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>קולות נודדים · ליל הבחירות</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #16181d;
+    --card: #1e212a;
+    --line: #3a4050;
+    --text: #f3f5f8;
+    --text2: #c8ceda;
+    --muted: #939aab;
+    --gold: #f0b429;
+    --gold2: #f6d78a;
+    --green: #10b981;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #000; }
+body { font-family: 'Heebo', sans-serif; color: var(--text); }
+#stage {
+    position: relative;
+    width: 1080px;
+    height: 1920px;
+    overflow: hidden;
+    background:
+        radial-gradient(1100px 700px at 50% -8%, rgba(240,180,41,0.20), transparent 70%),
+        radial-gradient(900px 900px at 50% 115%, rgba(37,99,235,0.14), transparent 70%),
+        var(--bg);
+}
+body.preview { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+body.preview #stage { transform-origin: top center; }
+
+#dots { position: absolute; inset: 0; opacity: 0.5; }
+
+.topbar {
+    position: absolute; top: 0; inset-inline: 0; height: 128px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 56px; z-index: 5;
+}
+.brand { display: flex; align-items: center; gap: 18px; font-weight: 800; font-size: 40px; }
+.brand svg { width: 56px; height: 56px; }
+.date-pill {
+    display: flex; align-items: center; gap: 14px;
+    font-size: 30px; font-weight: 600; color: var(--text2);
+}
+.live {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: #b91c1c; color: #fff; font-weight: 800; font-size: 24px;
+    letter-spacing: 2px; padding: 6px 16px; border-radius: 6px; direction: ltr;
+}
+.live i { width: 12px; height: 12px; border-radius: 50%; background: #fff; display: block; }
+
+.footer {
+    position: absolute; bottom: 0; inset-inline: 0; height: 96px; z-index: 5;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; font-weight: 600; color: var(--muted); direction: ltr; letter-spacing: 0.5px;
+}
+
+.scene { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+.head { position: absolute; top: 170px; inset-inline: 64px; text-align: center; }
+.kicker { font-size: 34px; font-weight: 600; color: var(--gold); margin-bottom: 18px; }
+h1 { font-size: 100px; font-weight: 900; line-height: 1.05; letter-spacing: -1px; }
+h1 em { font-style: normal; color: var(--gold); }
+.sub { margin-top: 26px; font-size: 40px; line-height: 1.4; color: var(--text2); font-weight: 500; }
+
+[data-in] { opacity: 0; }
+
+/* Phone and browser frames */
+.phone {
+    position: absolute; left: 50%; top: 600px; width: 700px; height: 1210px;
+    margin-left: -350px; border-radius: 64px; overflow: hidden;
+    border: 14px solid #0b0c0f; outline: 2px solid #444b5c;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04) inset;
+    background: #16181d;
+}
+.phone img { width: 100%; display: block; will-change: transform; }
+.browser {
+    position: absolute; left: 50%; width: 980px; margin-left: -490px;
+    border-radius: 22px; overflow: hidden; background: #0f1115;
+    border: 2px solid #444b5c; box-shadow: 0 40px 120px rgba(0,0,0,0.6);
+}
+.browser .chrome {
+    height: 54px; display: flex; align-items: center; gap: 12px; padding: 0 22px;
+    background: #1b1e25; border-bottom: 1px solid var(--line); direction: ltr;
+}
+.browser .chrome b { width: 14px; height: 14px; border-radius: 50%; background: #3a4050; display: block; }
+.browser .chrome span {
+    margin-left: 18px; flex: 1; height: 32px; border-radius: 8px; background: #0f1115;
+    color: var(--muted); font-size: 18px; display: flex; align-items: center; padding: 0 14px;
+}
+.browser .shot { overflow: hidden; }
+.browser img { width: 100%; display: block; will-change: transform; }
+
+.tag {
+    position: absolute; z-index: 3; font-size: 24px; font-weight: 700;
+    padding: 8px 18px; border-radius: 999px; background: rgba(22,24,29,0.9);
+    border: 1px solid var(--line); color: var(--text2);
+}
+
+.tag.gold { background: var(--gold); color: #1a1408; border-color: var(--gold); font-size: 30px; font-weight: 800; padding: 10px 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.45); }
+
+/* Recreation of the site's partial-count card */
+.count-card {
+    position: absolute; z-index: 4; width: 420px; text-align: start;
+    background: rgba(28, 24, 16, 0.96); border: 2px solid var(--gold); color: #f8f1de;
+    border-radius: 22px; padding: 20px 24px 18px; box-shadow: 0 18px 50px rgba(0,0,0,0.55);
+}
+.count-card .k { font-size: 22px; color: rgba(248,241,222,0.72); display: flex; justify-content: space-between; align-items: center; }
+.count-card .s { font-size: 40px; font-weight: 800; color: var(--gold); line-height: 1.15; margin-top: 2px; }
+.count-card .w { font-size: 30px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; margin-top: 4px; }
+.count-card .n { font-size: 25px; font-weight: 600; color: #fff; font-variant-numeric: tabular-nums; }
+.count-card .src { font-size: 20px; color: rgba(248,241,222,0.75); margin-top: 4px; }
+.count-card .bar { height: 8px; border-radius: 4px; background: rgba(255,255,255,0.12); margin-top: 12px; overflow: hidden; }
+.count-card .bar i { display: block; height: 100%; background: var(--gold); width: 0; }
+
+/* Scene 1: clock */
+#s-hook .clock {
+    position: absolute; top: 640px; inset-inline: 0; text-align: center;
+    font-size: 300px; font-weight: 900; color: var(--gold); letter-spacing: -6px;
+    font-variant-numeric: tabular-nums; direction: ltr; line-height: 1;
+    text-shadow: 0 0 80px rgba(240,180,41,0.35);
+}
+#s-hook .clock small { font-size: 120px; color: rgba(240,180,41,0.55); letter-spacing: -2px; }
+#s-hook .after { position: absolute; top: 1080px; inset-inline: 64px; text-align: center; }
+#s-hook .after h1 { font-size: 110px; }
+#s-hook .after .sub { font-size: 46px; }
+#s-hook .ballots { position: absolute; top: 1440px; inset-inline: 90px; text-align: center; }
+#s-hook .ballots svg { width: 100%; height: 240px; display: block; }
+#s-hook .ballots .cap { margin-top: 26px; font-size: 34px; color: var(--muted); font-weight: 600; }
+#s-hook .ballots .cap b { color: var(--text); }
+
+/* Scene 2: pipeline */
+.pipe { position: absolute; top: 640px; inset-inline: 90px; }
+.step { position: relative; display: flex; gap: 34px; align-items: flex-start; padding-bottom: 62px; }
+.step .dot {
+    flex: none; width: 92px; height: 92px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 44px; font-weight: 900; background: var(--card); border: 3px solid var(--line); color: var(--muted);
+    position: relative; z-index: 2;
+}
+.step.on .dot { background: var(--gold); border-color: var(--gold); color: #1a1408; box-shadow: 0 0 40px rgba(240,180,41,0.45); }
+.step .t { font-size: 46px; font-weight: 800; line-height: 1.15; padding-top: 6px; }
+.step .d { font-size: 32px; color: var(--text2); margin-top: 6px; line-height: 1.35; }
+.step .d code { font-family: inherit; color: var(--gold2); direction: ltr; unicode-bidi: isolate; }
+.pipe .rail { position: absolute; top: 46px; bottom: 92px; inset-inline-start: 44px; width: 4px; background: var(--line); }
+.pipe .rail i { position: absolute; top: 0; inset-inline: 0; height: 0; background: var(--gold); }
+.meter { position: absolute; top: 1500px; inset-inline: 90px; }
+.meter .lbl { display: flex; justify-content: space-between; font-size: 32px; color: var(--text2); font-weight: 600; }
+.meter .lbl b { color: #fff; font-size: 44px; font-variant-numeric: tabular-nums; }
+.meter .track { position: relative; height: 26px; border-radius: 13px; background: #272b36; margin-top: 16px; }
+.meter .fill { position: absolute; inset-block: 0; inset-inline-start: 0; width: 0; border-radius: 13px; background: linear-gradient(90deg, var(--gold2), var(--gold)); }
+.meter .tick { position: absolute; top: -8px; width: 3px; height: 42px; background: #6b7280; }
+.meter .tick span { position: absolute; top: 48px; transform: translateX(50%); font-size: 22px; color: var(--muted); white-space: nowrap; }
+.meter .tick.hit { background: var(--gold); }
+.meter .tick.hit span { color: var(--gold); }
+.meter .note { margin-top: 64px; font-size: 28px; color: var(--muted); text-align: center; }
+
+.film {
+    position: absolute; left: 50%; top: 560px; width: 880px; margin-left: -440px;
+    border-radius: 26px; overflow: hidden; border: 10px solid #0b0c0f; outline: 2px solid #444b5c;
+    box-shadow: 0 40px 120px rgba(0,0,0,0.6); background: #101218;
+}
+.film img { width: 100%; display: block; }
+
+/* Scene: anomalies two-up */
+#s-anom .phone { width: 560px; height: 1000px; margin-left: 0; left: auto; right: 56px; top: 640px; border-radius: 52px; border-width: 12px; }
+#s-anom .browser { width: 760px; margin-left: 0; left: 40px; top: 1180px; }
+
+/* Wall */
+.wall { position: absolute; top: 540px; left: -60px; right: -60px; height: 960px; }
+.wall .tile {
+    position: absolute; width: 290px; height: 500px; border-radius: 30px; overflow: hidden;
+    border: 6px solid #0b0c0f; outline: 2px solid #444b5c; box-shadow: 0 24px 60px rgba(0,0,0,0.55);
+}
+.wall .tile img { width: 100%; display: block; }
+.chips { position: absolute; top: 1530px; inset-inline: 64px; display: flex; flex-wrap: wrap; gap: 18px; justify-content: center; }
+.chip {
+    font-size: 34px; font-weight: 700; padding: 14px 28px; border-radius: 999px;
+    background: var(--card); border: 2px solid var(--line);
+}
+.chip b { color: var(--gold); }
+
+/* CTA */
+#s-cta .center { position: absolute; top: 470px; inset-inline: 64px; text-align: center; }
+#s-cta .logo { width: 210px; height: 210px; margin: 0 auto 40px; display: block; filter: drop-shadow(0 0 60px rgba(240,180,41,0.35)); }
+#s-cta h1 { font-size: 128px; }
+#s-cta .tagline { margin-top: 18px; font-size: 44px; font-weight: 700; color: var(--text2); }
+#s-cta .when { margin-top: 34px; font-size: 64px; font-weight: 800; }
+#s-cta .when span { color: var(--gold); direction: ltr; unicode-bidi: isolate; }
+#s-cta .url {
+    display: inline-block; margin-top: 70px; padding: 26px 54px; border-radius: 20px;
+    background: var(--gold); color: #1a1408; font-size: 54px; font-weight: 900; direction: ltr;
+    box-shadow: 0 0 70px rgba(240,180,41,0.4);
+}
+#s-cta .checks { margin: 80px auto 0; display: inline-flex; flex-direction: column; gap: 22px; text-align: start; }
+#s-cta .checks div { font-size: 38px; color: var(--text2); font-weight: 600; }
+#s-cta .checks div::before { content: "✓"; color: var(--green); font-weight: 900; margin-inline-end: 18px; }
+#s-cta .fine { position: absolute; bottom: 130px; inset-inline: 80px; text-align: center; font-size: 25px; color: var(--muted); line-height: 1.45; }
+</style>
+</head>
+<body>
+<div id="stage">
+    <svg id="dots" viewBox="0 0 1080 1920" preserveAspectRatio="none"></svg>
+
+    <div class="topbar">
+        <div class="brand">
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+                <rect x="15" y="25" width="70" height="60" rx="5" fill="#2563eb" stroke="#1e40af" stroke-width="3"/>
+                <rect x="35" y="15" width="30" height="15" rx="3" fill="#1e40af"/>
+                <rect x="40" y="30" width="20" height="5" rx="2" fill="#fff"/>
+                <path d="M30 55 L45 70 L70 40" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            קולות נודדים
+        </div>
+        <div class="date-pill"><span id="top-date">27.10 · יום הבחירות</span><span class="live" id="live"><i></i>LIVE</span></div>
+    </div>
+
+    <!-- 1. Hook -->
+    <section class="scene" id="s-hook">
+        <div class="head">
+            <div class="kicker" data-in="0">יום שלישי · 27 באוקטובר 2026</div>
+            <h1 data-in="0.15">הבחירות לכנסת ה־26</h1>
+        </div>
+        <div class="clock" data-in="0.3"><span id="clock-hm">21:59</span><small id="clock-s">:56</small></div>
+        <div class="after">
+            <h1 data-in="2.35">הקלפיות נסגרות.</h1>
+            <div class="sub" data-in="2.7">ואנחנו מתחילים לעבוד.</div>
+        </div>
+        <div class="ballots" data-in="0.5">
+            <svg id="ballot-grid" viewBox="0 0 900 240"></svg>
+            <div class="cap"><b>12,018</b> קלפיות. כל אחת תגיע לכאן.</div>
+        </div>
+    </section>
+
+    <!-- 2. Pipeline -->
+    <section class="scene" id="s-pipe">
+        <div class="head">
+            <h1 data-in="0">כל 10 דקות.<br><em>אוטומטית.</em></h1>
+            <div class="sub" data-in="0.3">מוועדת הבחירות, ישר למסך שלכם</div>
+        </div>
+        <div class="pipe">
+            <div class="rail"><i id="rail"></i></div>
+            <div class="step" data-in="0.7" data-step="1.1"><div class="dot">1</div><div><div class="t">ועדת הבחירות מפרסמת</div></div></div>
+            <div class="step" data-in="1.3" data-step="1.9"><div class="dot">2</div><div><div class="t">אנחנו בודקים</div><div class="d">כל 10 דקות</div></div></div>
+            <div class="step" data-in="1.9" data-step="2.7"><div class="dot">3</div><div><div class="t">מאמתים</div><div class="d">טביעת אצבע וספירת קלפיות</div></div></div>
+            <div class="step" data-in="2.5" data-step="3.5"><div class="dot">4</div><div><div class="t">בונים הכול מחדש</div></div></div>
+            <div class="step" data-in="3.1" data-step="4.3"><div class="dot">5</div><div><div class="t">באוויר, תוך דקות</div></div></div>
+        </div>
+        <div class="meter" data-in="4.0">
+            <div class="lbl"><span>קלפיות שנספרו</span><span><b id="pipe-n">0</b> / 12,018</span></div>
+            <div class="track">
+                <div class="fill" id="pipe-fill"></div>
+                <div class="tick" style="inset-inline-start:25%"><span>25%</span></div>
+                <div class="tick" style="inset-inline-start:50%"><span>50%</span></div>
+                <div class="tick" style="inset-inline-start:80%"><span>80%</span></div>
+                <div class="tick" style="inset-inline-start:calc(100% - 3px)"><span>100%</span></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Map -->
+    <section class="scene media" id="s-map" data-count="3140" data-clock="23:40">
+        <div class="head">
+            <h1 data-in="0">מה קורה<br><em>בקלפי שלך?</em></h1>
+            <div class="sub" data-in="0.2">12,018 קלפיות, על המפה</div>
+        </div>
+        <div class="phone" data-in="0.35"><img src="screens/geomap_he.png" alt=""></div>
+    </section>
+
+    <!-- 4. Sankey -->
+    <section class="scene media" id="s-sankey" data-count="5870" data-clock="00:30">
+        <div class="head">
+            <h1 data-in="0">לאן <em>נדדו</em><br>הקולות?</h1>
+            <div class="sub" data-in="0.2">מכנסת 25 לכנסת 26, לפי מודל נדידת קולות ארצי</div>
+        </div>
+        <div class="phone" data-in="0.35"><img src="screens/sankey_he.png" alt=""></div>
+    </section>
+
+    <!-- 4b. Sankey film, K16 to K26 -->
+    <section class="scene" id="s-film">
+        <div class="head">
+            <h1 data-in="0"><em>23 שנה</em><br>של נדידת קולות</h1>
+            <div class="sub" data-in="0.2">כל מערכות הבחירות, 2003–2026</div>
+        </div>
+        <div class="film" data-in="0.3"><img id="film-img" src="film/f_0001.jpg" alt=""></div>
+    </section>
+
+    <!-- 5. Seats -->
+    <section class="scene media" id="s-seats" data-count="8460" data-clock="01:50">
+        <div class="head">
+            <h1 data-in="0">מחשבון<br><em>מנדטים</em></h1>
+            <div class="sub" data-in="0.2">כמה קולות צריך כדי להעביר מנדט בין הרשימות</div>
+        </div>
+        <div class="phone" data-in="0.35"><img src="screens/dhondt_he.png" alt=""></div>
+    </section>
+
+    <!-- 6. Turnout -->
+    <section class="scene" id="s-turnout">
+        <div class="head">
+            <h1 data-in="0">איזה גוש<br><em>יוצא להצביע?</em></h1>
+            <div class="sub" data-in="0.2">ומה זה עושה למנדטים</div>
+        </div>
+        <div class="browser" data-in="0.35" style="top:720px">
+            <div class="chrome"><b></b><b></b><b></b><span>kolot-nodedim.netlify.app/turnout</span></div>
+            <div class="shot" style="height:820px"><img src="screens/turnout_he.png" alt="" data-zoom="1.45,1.7" data-origin="62% 72%"></div>
+        </div>
+        <div class="tag" data-in="0.8" style="top:1620px; left:50%; transform:translateX(-50%)">דוגמה · סימולציה לפני הבחירות</div>
+    </section>
+
+    <!-- 7. Anomalies -->
+    <section class="scene" id="s-anom">
+        <div class="head">
+            <h1 data-in="0">קלפי <em>חריגה?</em><br>נראה אותה.</h1>
+            <div class="sub" data-in="0.2">ציון חריגות לכל קלפי</div>
+        </div>
+        <div class="phone" data-in="0.35"><img src="screens/irregular_he.png" alt=""></div>
+        <div class="browser" data-in="0.75">
+            <div class="chrome"><b></b><b></b><b></b><span>kolot-nodedim.netlify.app/fraud-sim</span></div>
+            <div class="shot" style="height:500px"><img src="screens/fraud_he.png" alt=""></div>
+        </div>
+        <div class="tag" data-in="1.0" style="top:1660px; right:56px">נתוני אמת · כנסת 25</div>
+        <div class="tag gold" data-in="1.2" style="top:1100px; left:40px">🔍 סימולטור לאיתור וזיהוי זיופי בחירות</div>
+    </section>
+
+    <!-- 8. Wall -->
+    <section class="scene" id="s-wall">
+        <div class="head">
+            <h1 data-in="0">וזה <em>רק חלק.</em></h1>
+            <div class="sub" data-in="0.2">11 מערכות בחירות, 2003–2026</div>
+        </div>
+        <div class="wall" id="wall"></div>
+        <div class="chips">
+            <div class="chip" data-in="1.0">פרופיל לכל יישוב ומפלגה</div>
+            <div class="chip" data-in="1.3">עברית / English</div>
+            <div class="chip" data-in="1.6">שאלו את הנתונים ב־Claude</div>
+        </div>
+    </section>
+
+    <!-- 9. CTA -->
+    <section class="scene" id="s-cta">
+        <div class="center">
+            <svg class="logo" viewBox="0 0 100 100" data-in="0" aria-hidden="true">
+                <rect x="15" y="25" width="70" height="60" rx="5" fill="#2563eb" stroke="#1e40af" stroke-width="3"/>
+                <rect x="35" y="15" width="30" height="15" rx="3" fill="#1e40af"/>
+                <rect x="40" y="30" width="20" height="5" rx="2" fill="#fff"/>
+                <path d="M30 55 L45 70 L70 40" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            </svg>
+            <h1 data-in="0.15">קולות נודדים</h1>
+            <div class="tagline" data-in="0.3">אתר נתוני הבחירות הגדול בישראל</div>
+            <div class="when" data-in="0.35">ליל הבחירות, <span>27.10</span>, מ־<span>22:00</span></div>
+            <div data-in="0.6"><div class="url">kolot-nodedim.netlify.app</div></div>
+            <div class="checks" data-in="0.95">
+                <div>נתונים רשמיים מוועדת הבחירות</div>
+                <div>כל קלפי, כל יישוב</div>
+            </div>
+        </div>
+        <div class="fine" data-in="1.2">הגרפים בסרטון: דוגמה, סימולציה לפי הסקרים</div>
+    </section>
+
+    <div class="footer">kolot-nodedim.netlify.app</div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var ROSTER = 12018;
+    var SCENES = [
+        { id: 's-hook', start: 0, end: 5.0 },
+        { id: 's-pipe', start: 5.0, end: 14.0 },
+        { id: 's-map', start: 14.0, end: 19.0 },
+        { id: 's-sankey', start: 19.0, end: 24.0 },
+        { id: 's-film', start: 24.0, end: 32.5 },
+        { id: 's-seats', start: 32.5, end: 37.5 },
+        { id: 's-turnout', start: 37.5, end: 42.3 },
+        { id: 's-anom', start: 42.3, end: 47.5 },
+        { id: 's-wall', start: 47.5, end: 52.5 },
+        { id: 's-cta', start: 52.5, end: 58.5 }
+    ];
+    var DURATION = SCENES[SCENES.length - 1].end;
+    var FADE = 0.5;
+    var FILM_FRAMES = 267;
+    var FILM_FPS = 39;
+    var FILM_START = 0.7;
+    var filmFrame = 1;
+    var WALL_SHOTS = ['geomap', 'sankey', 'tsne', 'dhondt', 'settlement', 'irregular'];
+
+    function clamp(x, a, b) { return Math.max(a, Math.min(b, x)); }
+    function easeOut(x) { x = clamp(x, 0, 1); return 1 - Math.pow(1 - x, 3); }
+    function easeInOut(x) { x = clamp(x, 0, 1); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; }
+    function fmt(n) { return Math.round(n).toLocaleString('en-US'); }
+
+    function mulberry32(a) {
+        return function () {
+            a |= 0; a = a + 0x6D2B79F5 | 0;
+            var t = Math.imul(a ^ a >>> 15, 1 | a);
+            t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+            return ((t ^ t >>> 14) >>> 0) / 4294967296;
+        };
+    }
+
+    // Background: a field of ballot dots in party colors that slowly twinkle.
+    var dotEls = [];
+    (function buildDots() {
+        var svg = document.getElementById('dots');
+        var rand = mulberry32(42);
+        var colors = ['#1f77b4', '#f0b429', '#10b981', '#ef4444', '#8b5cf6', '#14b8a6', '#64748b', '#f97316'];
+        for (var i = 0; i < 160; i++) {
+            var c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            c.setAttribute('cx', (rand() * 1080).toFixed(1));
+            c.setAttribute('cy', (rand() * 1920).toFixed(1));
+            c.setAttribute('r', (2 + rand() * 4).toFixed(1));
+            c.setAttribute('fill', colors[Math.floor(rand() * colors.length)]);
+            svg.appendChild(c);
+            dotEls.push({ el: c, phase: rand() * Math.PI * 2, speed: 0.4 + rand() * 1.2 });
+        }
+    })();
+
+    // Hook: a grid of ballot boxes that light up in party colors after 22:00.
+    var ballotDots = [];
+    (function buildBallotGrid() {
+        var svg = document.getElementById('ballot-grid');
+        var rand = mulberry32(7);
+        var colors = ['#14b8a6', '#2563eb', '#f97316', '#64748b', '#06b6d4', '#16a34a', '#1e3a8a', '#a16207', '#dc2626', '#22c55e'];
+        var cols = 45, rows = 12;
+        for (var r = 0; r < rows; r++) {
+            for (var c = 0; c < cols; c++) {
+                var el = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                el.setAttribute('x', c * 20 + 3);
+                el.setAttribute('y', r * 20 + 3);
+                el.setAttribute('width', 14);
+                el.setAttribute('height', 14);
+                el.setAttribute('rx', 3);
+                svg.appendChild(el);
+                ballotDots.push({ el: el, at: rand(), color: colors[Math.floor(Math.pow(rand(), 1.6) * colors.length)], lit: null });
+            }
+        }
+    })();
+
+    // Wall of thumbnails
+    var wallTiles = [];
+    (function buildWall() {
+        var wall = document.getElementById('wall');
+        var pos = [
+            [40, 40, -8], [380, 0, -3], [720, 50, 4], [1060, 20, 9],
+            [210, 430, -5], [550, 400, 3], [890, 450, 7]
+        ];
+        pos.forEach(function (p, i) {
+            var tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.innerHTML = '<img src="screens/' + WALL_SHOTS[i % WALL_SHOTS.length] + '_he.png" alt="">';
+            tile.style.left = p[0] + 'px';
+            tile.style.top = p[1] + 'px';
+            wall.appendChild(tile);
+            wallTiles.push({ el: tile, rot: p[2], delay: 0.2 + i * 0.09 });
+        });
+    })();
+
+    // Count card shown over the phone scenes; the count keeps rising across them.
+    function makeCountCard(scene) {
+        var card = document.createElement('div');
+        card.className = 'count-card';
+        card.setAttribute('data-in', '0.9');
+        card.style.top = '1180px';
+        card.style.right = '70px';
+        card.innerHTML =
+            '<div class="k"><span>כנסת 26</span><span class="live" style="font-size:18px;padding:3px 10px"><i style="width:9px;height:9px"></i>LIVE</span></div>' +
+            '<div class="s">ספירה חלקית</div>' +
+            '<div class="w">28 באוקטובר, <span class="clk"></span></div>' +
+            '<div class="n"><span class="cnt"></span> מתוך 12,018 קלפיות</div>' +
+            '<div class="bar"><i></i></div>' +
+            '<div class="src">ועדת הבחירות המרכזית</div>';
+        scene.appendChild(card);
+        var tag = document.createElement('div');
+        tag.className = 'tag';
+        tag.setAttribute('data-in', '1.1');
+        tag.style.top = '1712px';
+        tag.style.left = '50%';
+        tag.style.transform = 'translateX(-50%)';
+        tag.textContent = 'דוגמה · סימולציה לפני הבחירות';
+        scene.appendChild(tag);
+        return card;
+    }
+
+    var prevCount = 0;
+    SCENES.forEach(function (s) {
+        s.el = document.getElementById(s.id);
+        s.ins = Array.prototype.slice.call(s.el.querySelectorAll('[data-in]'));
+        if (s.el.classList.contains('media')) {
+            s.card = makeCountCard(s.el);
+            s.ins = Array.prototype.slice.call(s.el.querySelectorAll('[data-in]'));
+            s.countFrom = prevCount;
+            s.countTo = Number(s.el.dataset.count);
+            s.clock = s.el.dataset.clock;
+            prevCount = s.countTo;
+        }
+        s.phoneImg = s.el.querySelector('.phone img');
+        s.browserImg = s.el.querySelector('.browser img');
+        s.ins.forEach(function (el) {
+            el._base = el.style.transform || '';
+            el._delay = parseFloat(el.dataset.in);
+        });
+    });
+
+    function addMinutes(hm, minutes) {
+        var parts = hm.split(':').map(Number);
+        var total = (parts[0] * 60 + parts[1] + Math.round(minutes)) % 1440;
+        return String(Math.floor(total / 60)).padStart(2, '0') + ':' + String(total % 60).padStart(2, '0');
+    }
+
+    var updates = {
+        's-hook': function (lt) {
+            // 21:59:56 → 22:00:00 over the first ~2.2s, then hold.
+            var secs = Math.min(4, Math.floor(lt / 0.55));
+            var s = 56 + secs;
+            var hm = s >= 60 ? '22:00' : '21:59';
+            document.getElementById('clock-hm').textContent = hm;
+            document.getElementById('clock-s').textContent = ':' + String(s % 60).padStart(2, '0');
+            var p = easeInOut((lt - 2.3) / 2.0);
+            ballotDots.forEach(function (d) {
+                var lit = d.at < p;
+                if (lit === d.lit) return;
+                d.lit = lit;
+                d.el.setAttribute('fill', lit ? d.color : '#2a2e39');
+            });
+        },
+        's-pipe': function (lt, s) {
+            var steps = s.el.querySelectorAll('.step');
+            var lastOn = -1;
+            steps.forEach(function (st, i) {
+                var on = lt >= parseFloat(st.dataset.step);
+                st.classList.toggle('on', on);
+                if (on) lastOn = i;
+            });
+            var rail = document.getElementById('rail');
+            rail.style.height = (lastOn < 0 ? 0 : (lastOn / (steps.length - 1)) * 100) + '%';
+            var p = easeInOut((lt - 4.4) / 3.8);
+            var n = ROSTER * p;
+            document.getElementById('pipe-n').textContent = fmt(n);
+            document.getElementById('pipe-fill').style.width = (p * 100) + '%';
+            s.el.querySelectorAll('.tick').forEach(function (tk, i) {
+                tk.classList.toggle('hit', p + 1e-6 >= [0.25, 0.5, 0.8, 1][i]);
+            });
+        },
+        's-film': function (lt) {
+            filmFrame = clamp(Math.floor((lt - FILM_START) * FILM_FPS) + 1, 1, FILM_FRAMES);
+        }
+    };
+
+    function showFilmFrame() {
+        var img = document.getElementById('film-img');
+        var src = 'film/f_' + String(filmFrame).padStart(4, '0') + '.jpg';
+        if (img.getAttribute('src') === src) return Promise.resolve();
+        img.setAttribute('src', src);
+        return img.decode().catch(function () {});
+    }
+
+    function applyIns(s, lt) {
+        s.ins.forEach(function (el) {
+            var p = easeOut((lt - el._delay) / 0.75);
+            el.style.opacity = p;
+            el.style.transform = el._base + ' translateY(' + ((1 - p) * 60).toFixed(1) + 'px)';
+        });
+    }
+
+    function render(t) {
+        t = clamp(t, 0, DURATION);
+        var live = document.getElementById('live');
+        live.style.opacity = t < 2.2 ? 0 : 0.55 + 0.45 * Math.abs(Math.cos(t * 2.6));
+
+        dotEls.forEach(function (d) {
+            d.el.setAttribute('opacity', (0.15 + 0.35 * (0.5 + 0.5 * Math.sin(t * d.speed + d.phase))).toFixed(3));
+        });
+
+        SCENES.forEach(function (s, idx) {
+            var lt = t - s.start;
+            var dur = s.end - s.start;
+            if (lt < 0 || lt > dur) { s.el.style.opacity = 0; s.el.style.visibility = 'hidden'; return; }
+            var fadeIn = idx === 0 ? 1 : easeOut(lt / FADE);
+            var fadeOut = idx === SCENES.length - 1 ? 1 : easeOut((dur - lt) / FADE);
+            s.el.style.visibility = 'visible';
+            s.el.style.opacity = Math.min(fadeIn, fadeOut);
+            applyIns(s, lt);
+
+            var drift = easeInOut((lt - 0.6) / (dur - 0.8));
+            if (s.phoneImg) {
+                var frame = s.phoneImg.parentElement.clientHeight;
+                var extra = Math.max(0, s.phoneImg.clientHeight - frame);
+                s.phoneImg.style.transform = 'translateY(' + (-extra * drift).toFixed(1) + 'px)';
+            }
+            if (s.browserImg) {
+                var zoom = s.browserImg.dataset.zoom ? s.browserImg.dataset.zoom.split(',').map(Number) : [1, 1.14];
+                s.browserImg.style.transformOrigin = s.browserImg.dataset.origin || '70% 20%';
+                s.browserImg.style.transform = 'scale(' + (zoom[0] + (zoom[1] - zoom[0]) * drift).toFixed(4) + ')';
+            }
+            if (s.card) {
+                var cp = easeInOut((lt - 0.9) / (dur - 1.4));
+                var count = s.countFrom + (s.countTo - s.countFrom) * cp;
+                s.card.querySelector('.cnt').textContent = fmt(count);
+                s.card.querySelector('.clk').textContent = addMinutes(s.clock, cp * 40);
+                s.card.querySelector('.bar i').style.width = (count / ROSTER * 100).toFixed(2) + '%';
+            }
+            if (s.id === 's-wall') {
+                wallTiles.forEach(function (w) {
+                    var p = easeOut((lt - w.delay) / 0.6);
+                    var float = Math.sin(lt * 1.3 + w.rot) * 8;
+                    w.el.style.opacity = p;
+                    w.el.style.transform = 'translateY(' + ((1 - p) * 120 + float).toFixed(1) + 'px) rotate(' + w.rot + 'deg) scale(' + (0.85 + 0.15 * p).toFixed(3) + ')';
+                });
+            }
+            if (updates[s.id]) updates[s.id](lt, s);
+        });
+
+        var topDate = document.getElementById('top-date');
+        var night = SCENES.filter(function (s) { return s.id === 's-map' || s.id === 's-wall'; });
+        topDate.innerHTML = t >= night[0].start && t < night[1].start
+            ? 'ליל הבחירות · <bdi dir="ltr">27–28.10</bdi>'
+            : '<bdi dir="ltr">27.10</bdi> · יום הבחירות';
+        return showFilmFrame();
+    }
+
+    var recording = /[?&]record=1/.test(location.search);
+    window.Promo = { render: render, duration: DURATION, ready: false };
+
+    function waitImages() {
+        var imgs = Array.prototype.slice.call(document.images);
+        return Promise.all(imgs.map(function (img) {
+            return img.complete ? Promise.resolve() : new Promise(function (r) { img.onload = img.onerror = r; });
+        }));
+    }
+
+    Promise.all([document.fonts.ready, waitImages()]).then(function () {
+        render(0);
+        window.Promo.ready = true;
+        if (recording) return;
+        document.body.classList.add('preview');
+        var stage = document.getElementById('stage');
+        function fit() {
+            var k = Math.min(window.innerWidth / 1080, window.innerHeight / 1920);
+            stage.style.transform = 'scale(' + k + ')';
+        }
+        fit();
+        window.addEventListener('resize', fit);
+        var t0 = performance.now();
+        var seek = /[?&]t=([\d.]+)/.exec(location.search);
+        if (seek) { render(parseFloat(seek[1])); return; }
+        (function loop(now) {
+            render(((now - t0) / 1000) % (DURATION + 1));
+            requestAnimationFrame(loop);
+        })(t0);
+    });
+})();
+</script>
+</body>
+</html>

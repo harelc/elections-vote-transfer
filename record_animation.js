@@ -103,6 +103,12 @@ async function main() {
 
     // Inject time control BEFORE any scripts load
     await page.evaluateOnNewDocument((frameMs, speed) => {
+        // Date.now is faked to 0 below, which makes date-gated popups think they are still live.
+        try {
+            localStorage.setItem('kn_webinar_modal_2026_05_27_dismissed', '1');
+            localStorage.setItem('k26_intro_v1', '1');
+        } catch (e) {}
+
         // Controlled time
         window.__fakeTime = 0;
         window.__frameMs = frameMs;
