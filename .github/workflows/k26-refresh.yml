@@ -126,6 +126,10 @@ jobs:
             exit 0
           fi
           git commit -m "Update K26 from the latest accepted count"
+          # The rebuild also rewrites files that are not published (e.g. every
+          # tsne_*.json); drop them so the rebase below can run.
+          git reset -q --hard
+          git clean -fdq
           # Someone may push to master mid-run. Replay on top; on conflicts the
           # freshly generated files (the commit being replayed) win.
           for attempt in 1 2 3; do
