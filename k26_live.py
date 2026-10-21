@@ -234,9 +234,10 @@ def update_wiki(text, summary, kind):
     ]
     entries.sort(key=lambda entry: entry["votes"], reverse=True)
     body = json.dumps(entries, ensure_ascii=False, indent=4)
-    body = "\n".join(("  " + line) if line else line for line in body.splitlines())
+    first, *rest = body.splitlines()
+    body = "\n".join([first] + [("  " + line) if line else line for line in rest])
     text, count = re.subn(
-        r'"26": \[[\s\S]*?\](?=,?\s*"26_note")',
+        r'"26":\s*\[[\s\S]*?\](?=,?\s*"26_note")',
         '"26": ' + body,
         text,
         count=1,
