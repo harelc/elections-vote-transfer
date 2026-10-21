@@ -20,7 +20,8 @@ CONTROL = ROOT / "k26_control.json"
 STATUS = ROOT / "site" / "data" / "k26_status.json"
 CI_FILE = ROOT / "site" / "data" / "transfer_ci.json"
 CI_KEYS = ("25_to_26", "25_to_26_abstention")
-MILESTONES = (0.25, 0.5, 0.8, 1.0)
+# Intervals matter only near the final count; earlier polls skip them.
+MILESTONES = (0.95, 1.0)
 # The poller fires every 10 minutes and skips while a rebuild runs.
 LIVE_CI_B = 50
 LIVE_CI_TIMEOUT = 8 * 60
