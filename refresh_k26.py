@@ -65,6 +65,20 @@ def drop_stale_ci():
         print(f"dropped stale confidence intervals: {', '.join(dropped)}")
 
 
+def refresh_irregularities(ballots):
+    """Rebuild the K26 unusual-ballot list. A failure does not block the rest of the update."""
+    try:
+        run([sys.executable, "generate_irregularities_data.py", "--elections", "26"])
+    except SystemExit as error:
+        print(f"irregularities were not updated ({error})")
+        return
+    path = ROOT / "site" / "data" / "irregularities_26.json"
+    covered = json.loads(path.read_text(encoding="utf-8"))["election"]["total_ballots"]
+    if covered != ballots:
+        # The irregular page hides K26 while these disagree with k26_status.json.
+        print(f"irregularities_26.json covers {covered} ballots, not {ballots}")
+
+
 def normalize(source, dest):
     """Copy a CEC CSV, or a {columns, rows} JSON file, to ballot26.csv."""
     raw = Path(source).read_bytes()
@@ -128,6 +142,7 @@ def main():
 
     run([sys.executable, "prepare_election_26.py", "--real-csv", str(ballot_path)])
     run([sys.executable, "prepare_fraud_sim.py", "--transitions", "25_26"], env={**os.environ, "K26_REAL": "1"})
+    refresh_irregularities(counted)
 
     from k26_live import ROSTER, STATUS as status_path, publish_kind, summarize
 

@@ -51,9 +51,53 @@ function electionKey(election) {
   return String(id);
 }
 
-function simulatedNote(electionId) {
+function k26Note(electionId) {
   if (electionId !== "26") return undefined;
   return meta().notes["26"];
+}
+
+function k26Status() {
+  return meta().k26 || { kind: "simulated" };
+}
+
+/** Wording for election 26 that follows site/data/k26_status.json, as baked into meta.json. */
+export function k26Caveat(status = k26Status()) {
+  if (status.kind === "official") {
+    return {
+      kind: "official",
+      scope: "elections 16–26",
+      instruction: "Election 26 is the official Central Elections Committee count.",
+      sentence: "Election 26 is the official count.",
+      short: "26 is the official count.",
+    };
+  }
+  if (status.kind === "partial") {
+    const coverage = status.ballots != null && status.ballots_total
+      ? `${status.ballots} of ${status.ballots_total} ballots`
+      : "not all ballots";
+    const when = status.as_of ? ` as of ${status.as_of}` : "";
+    return {
+      kind: "partial",
+      scope: "elections 16–25, plus a partial count of election 26",
+      instruction: `Election 26 is a partial Central Elections Committee count${when} (${coverage}). Say so whenever you cite it; totals and seats can still change.`,
+      sentence: "Election 26 is a partial count and can still change.",
+      short: "26 is a partial count.",
+    };
+  }
+  return {
+    kind: "simulated",
+    scope: "elections 16–25, plus simulated election 26",
+    instruction: "Election 26 is not a real result. Say so whenever you cite it.",
+    sentence: "Election 26 is simulated.",
+    short: "26 is simulated.",
+  };
+}
+
+function k26Fields(...ids) {
+  if (!ids.includes("26")) return { simulated: false };
+  const { kind } = k26Status();
+  if (kind !== "partial" && kind !== "official") return { simulated: true };
+  return { simulated: false, count_status: kind, count_note: meta().notes["26"] };
 }
 
 function partiesFor(electionId) {
@@ -150,6 +194,7 @@ function sharesOf(row) {
 export function listElections() {
   return {
     elections: meta().elections,
+    k26: meta().k26,
     scope: meta().notes.scope,
   };
 }
@@ -161,8 +206,8 @@ export function officialResults(election) {
   if (!rows) return { error: `No official results stored for election ${electionId}.` };
   return {
     election: Number(electionId),
-    simulated: electionId === "26",
-    note: simulatedNote(electionId),
+    ...k26Fields(electionId),
+    note: k26Note(electionId),
     parties: rows,
   };
 }
@@ -187,8 +232,8 @@ export function settlementResults(name, election = 25) {
   const row = found.settlement;
   return {
     election: Number(electionId),
-    simulated: electionId === "26",
-    note: simulatedNote(electionId) || meta().notes.scope,
+    ...k26Fields(electionId),
+    note: k26Note(electionId) || meta().notes.scope,
     ...settlementRecord(electionId, row),
     winning_party: row.w,
     socioeconomic_cluster: row.c ?? null,
@@ -217,8 +262,8 @@ export function partyStrongholds(party, election = 25, limit = 10, minVoters = 5
     .slice(0, capped);
   return {
     election: Number(electionId),
-    simulated: electionId === "26",
-    note: simulatedNote(electionId),
+    ...k26Fields(electionId),
+    note: k26Note(electionId),
     party: name,
     party_en: resolved.party.name_en,
     min_voters: floor,
@@ -274,8 +319,8 @@ export function filterSettlements({
   shaped.sort(sorters[sort]);
   return {
     election: Number(electionId),
-    simulated: electionId === "26",
-    note: simulatedNote(electionId) || meta().notes.scope,
+    ...k26Fields(electionId),
+    note: k26Note(electionId) || meta().notes.scope,
     party: partyName,
     party_en: partyEn,
     sort,
@@ -323,7 +368,7 @@ export function transferFlows({
   return {
     from: Number(fromId),
     to: Number(toId),
-    simulated: toId === "26" || fromId === "26",
+    ...k26Fields(fromId, toId),
     note: meta().notes.transfers,
     abstention_unreliable: includeAbstention ? Boolean(table.abstention_unreliable) : undefined,
     r_squared: table.r_squared,
@@ -387,7 +432,7 @@ export function sankey(fromElection, toElection, includeAbstention = false) {
   return {
     from: Number(fromId),
     to: Number(toId),
-    simulated: toId === "26" || fromId === "26",
+    ...k26Fields(fromId, toId),
     note: meta().notes.transfers,
     abstention_unreliable: includeAbstention ? Boolean(found.table.abstention_unreliable) : undefined,
     r_squared: found.table.r_squared,
@@ -501,7 +546,7 @@ export function settlementEmbedding(name, election = 25, space = "tsne", limit =
     .slice(0, capped);
   return {
     election: Number(electionId),
-    simulated: electionId === "26",
+    ...k26Fields(electionId),
     space: which,
     note: EMBEDDING_NOTE[which],
     settlement: center.name,
@@ -545,7 +590,7 @@ export function ballotNeighbors(settlement, ballot, election = 25, space = "tsne
     .map((row) => ({ ...row, distance: Math.round(row.distance * 100) / 100 }));
   return {
     election: Number(electionId),
-    simulated: electionId === "26",
+    ...k26Fields(electionId),
     space: which,
     note: EMBEDDING_NOTE[which],
     ballot: ballotView(self),
@@ -573,7 +618,7 @@ export function settlementPartyHistory(party, name) {
     if (found.error) {
       series.push({
         election: id,
-        simulated: id === 26,
+        ...k26Fields(electionId),
         share_pct: null,
         note: "This settlement name is not in this election.",
       });
@@ -584,7 +629,7 @@ export function settlementPartyHistory(party, name) {
     if (resolved.error) {
       series.push({
         election: id,
-        simulated: id === 26,
+        ...k26Fields(electionId),
         settlement: canonical,
         share_pct: null,
         note: "No list with this name. A joint list keeps its own name.",
@@ -594,7 +639,7 @@ export function settlementPartyHistory(party, name) {
     const share = found.settlement.p[resolved.party.name];
     series.push({
       election: id,
-      simulated: id === 26,
+      ...k26Fields(electionId),
       settlement: canonical,
       name_en: englishFor(canonical),
       party: resolved.party.name,
@@ -638,7 +683,7 @@ export function partyNationalHistory(party) {
     if (!official) {
       series.push({
         election: id,
-        simulated: id === 26,
+        ...k26Fields(electionId),
         seats: null,
         votes: null,
         note: "No list with this name.",
@@ -647,7 +692,7 @@ export function partyNationalHistory(party) {
     }
     series.push({
       election: id,
-      simulated: id === 26,
+      ...k26Fields(electionId),
       party: official.name,
       party_en: resolved.party ? resolved.party.name_en : null,
       seats: official.seats,
@@ -658,7 +703,7 @@ export function partyNationalHistory(party) {
   if (!strongest) return { error: "No matching party.", series };
   return {
     party: strongest.party,
-    note: "Election 26 is simulated. Seats are the published totals for that election, not a new calculation.",
+    note: `${k26Caveat().sentence} Seats are the published totals for that election, not a new calculation.`,
     strongest: {
       election: strongest.election,
       seats: strongest.seats,

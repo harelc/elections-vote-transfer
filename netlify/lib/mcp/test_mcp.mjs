@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import {
   ballotNeighbors,
+  k26Caveat,
   officialResults,
   partyNationalHistory,
   partyStrongholds,
@@ -29,6 +30,13 @@ assert.ok(strongholds.settlements[0].share_pct >= strongholds.settlements[1].sha
 const simulated = officialResults(26);
 assert.equal(simulated.simulated, true);
 assert.match(simulated.note, /SIMULATED/);
+
+assert.equal(k26Caveat({ kind: "simulated" }).instruction, "Election 26 is not a real result. Say so whenever you cite it.");
+const partialCaveat = k26Caveat({ kind: "partial", as_of: "2026-10-27T22:40:00+03:00", ballots: 4820, ballots_total: 12018 });
+assert.match(partialCaveat.instruction, /4820 of 12018 ballots/);
+assert.match(partialCaveat.instruction, /2026-10-27T22:40:00\+03:00/);
+assert.doesNotMatch(JSON.stringify(partialCaveat), /simulat/i);
+assert.doesNotMatch(JSON.stringify(k26Caveat({ kind: "official" })), /simulat/i);
 
 const diagram = sankey(24, 25);
 assert.ok(diagram.r_squared > 0.5);

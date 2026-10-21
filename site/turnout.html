@@ -997,9 +997,30 @@
             },
         };
 
-        fetch('data/turnout_ballots_26.json')
-            .then(r => r.json())
+        function showPaused() {
+            document.querySelectorAll('main.page > section').forEach(el => { el.style.display = 'none'; });
+            const note = document.createElement('section');
+            note.className = 'panel';
+            const paint = () => {
+                note.innerHTML = `<h3>${i18n.t('turnout_k26_paused_title')}</h3><p>${i18n.t('turnout_k26_paused')}</p>`;
+                document.querySelector('.main-header h1').textContent = T('title');
+                document.querySelector('.main-header .subtitle').textContent = '';
+                document.querySelector('.back-link').textContent = T('back');
+                document.title = T('title') + ' - ' + (i18n.getLang() === 'en' ? 'Kolot Nodedim' : 'קולות נודדים');
+            };
+            document.querySelector('main.page').appendChild(note);
+            paint();
+            window.addEventListener('langchange', paint);
+        }
+
+        // The data is a what-if on the simulated forecast; it has no meaning next to a real count.
+        i18n.whenK26Status()
+            .then(() => {
+                if (i18n.k26Live()) { showPaused(); return null; }
+                return fetch('data/turnout_ballots_26.json').then(r => r.json());
+            })
             .then(data => {
+                if (!data) return;
                 D = data;
                 symbols = D.parties.map(p => p.symbol);
                 agreements = D.agreements.map(([a, b]) => [symbols.indexOf(a), symbols.indexOf(b)]);

@@ -639,7 +639,7 @@
             const sid = station.s || station.settlement_id;
             const ballot = station.b || station.ballot_number;
             if (!sid || !ballot) return '';
-            if (this.currentElection === '26') return '';
+            if (this.currentElection === '26' && !i18n.k26Live()) return '';
             let bn = String(ballot);
             if (bn.endsWith('.0')) bn = bn.slice(0, -2);
             const url = `https://votes${this.currentElection}.bechirot.gov.il/ballotresults?cityID=${sid}&BallotNumber=${bn}`;

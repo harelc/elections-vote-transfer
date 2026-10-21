@@ -535,7 +535,8 @@ def generate_irregularities(election_id):
             verified_irregularities.append(ballot)
 
         # Be nice to the server
-        time.sleep(0.2)
+        if election_id in OFFICIAL_URLS:
+            time.sleep(0.2)
 
     top_irregularities = verified_irregularities
 

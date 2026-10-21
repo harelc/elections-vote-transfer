@@ -5,6 +5,7 @@ import {
   ballotNeighbors,
   filterSettlements,
   findSettlement,
+  k26Caveat,
   listElections,
   officialResults,
   partyNationalHistory,
@@ -32,19 +33,19 @@ const READ_ONLY = {
   openWorldHint: false,
 };
 
-const election = z.coerce.number().int().min(16).max(26).describe("Knesset election number, 16 through 26. 26 is simulated.");
-
 function text(data) {
   return { content: [{ type: "text", text: JSON.stringify(data) }] };
 }
 
 function buildServer() {
+  const k26 = k26Caveat();
+  const election = z.coerce.number().int().min(16).max(26).describe(`Knesset election number, 16 through 26. ${k26.short}`);
   const server = new McpServer(
     { name: "kolot-nodedim", version: "0.1.0" },
     {
       instructions: [
-        "Read-only Israeli Knesset election data (elections 16–25, plus simulated election 26).",
-        "Election 26 is not a real result. Say so whenever you cite it.",
+        `Read-only Israeli Knesset election data (${k26.scope}).`,
+        k26.instruction,
         "Sankey figures are a national estimate, not a count of people. Quote the R² returned with them.",
         "t-SNE and UMAP are not maps of Israel. t-SNE distance matters only among nearby ballots.",
         "Seat allocation and regional-district scenarios are not available from these tools.",
@@ -55,12 +56,14 @@ function buildServer() {
   );
 
   server.registerTool("list_elections", {
-    description: "List elections 16–26 with date, turnout, and whether the election is simulated.",
+    description: k26.kind === "simulated"
+      ? "List elections 16–26 with date, turnout, and whether the election is simulated."
+      : "List elections 16–26 with date, turnout, and the count status of election 26.",
     annotations: READ_ONLY,
   }, async () => text(listElections()));
 
   server.registerTool("official_results", {
-    description: "National seats and votes for one election. Election 26 is simulated.",
+    description: `National seats and votes for one election. ${k26.sentence}`,
     inputSchema: { election },
     annotations: READ_ONLY,
   }, async ({ election: id }) => text(officialResults(id)));
@@ -186,7 +189,7 @@ function buildServer() {
   }, async ({ party, settlement }) => text(settlementPartyHistory(party, settlement)));
 
   server.registerTool("party_national_history", {
-    description: "National seats and votes for one party across elections 16–26, and which election was its high. Election 26 is simulated.",
+    description: `National seats and votes for one party across elections 16–26, and which election was its high. ${k26.sentence}`,
     inputSchema: {
       party: z.string().describe("Hebrew name, English name, or ballot symbol."),
     },

@@ -49,7 +49,34 @@ def write_json(path, payload):
     print(f"{path.relative_to(ROOT)}  {path.stat().st_size / 1024:.0f} KB")
 
 
-def build_elections():
+def load_k26_status():
+    path = DATA / "k26_status.json"
+    status = load_json(path) if path.exists() else {}
+    kind = status.get("kind")
+    return {
+        "kind": kind if kind in ("simulated", "partial", "official") else "simulated",
+        "as_of": status.get("as_of"),
+        "ballots": status.get("ballots"),
+        "ballots_total": status.get("ballots_total"),
+    }
+
+
+def k26_note(official, k26):
+    if k26["kind"] == "official":
+        return "Official count from the Central Elections Committee."
+    if k26["kind"] == "partial":
+        counted = k26["ballots"]
+        total = k26["ballots_total"]
+        coverage = f"{counted} of {total} ballots" if counted is not None and total else "an incomplete set of ballots"
+        when = f" as of {k26['as_of']}" if k26["as_of"] else ""
+        return (
+            f"Partial count from the Central Elections Committee{when}, covering {coverage}. "
+            "Totals, seats, and shares will change as more ballots are counted."
+        )
+    return official.get("_26_note") or official.get("26_note") or "Simulated scenario"
+
+
+def build_elections(k26):
     elections = []
     for election_id, meta in party_config.ELECTIONS.items():
         elections.append(
@@ -60,7 +87,7 @@ def build_elections():
                 "date": meta["date"],
                 "turnout_percent": meta.get("turnout_percent"),
                 "eligible_voters": meta.get("eligible_voters"),
-                "simulated": election_id == "26",
+                "simulated": election_id == "26" and k26["kind"] == "simulated",
             }
         )
     elections.sort(key=lambda row: row["id"])
@@ -188,6 +215,7 @@ def build_embeddings(tsne):
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
     official = load_json(DATA / "wiki_official_results.json")
+    k26 = load_k26_status()
     names_en = load_json(DATA / "settlement_names_en.json")
     parties = {}
     for map_path in sorted(DATA.glob("map_*.json"), key=lambda path: int(path.stem.split("_")[1])):
@@ -199,11 +227,12 @@ def main():
     write_json(
         OUT / "meta.json",
         {
-            "elections": build_elections(),
+            "elections": build_elections(k26),
+            "k26": k26,
             "parties": parties,
             "official": official,
             "notes": {
-                "26": official.get("_26_note") or official.get("26_note") or "Simulated scenario",
+                "26": k26_note(official, k26),
                 "transfers": (
                     "Transfer figures are a national least-squares estimate, not a count of "
                     "individual voters. percentage is the share of the source party. "

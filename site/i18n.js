@@ -15,6 +15,25 @@
         if (_urlE26Param === '1') localStorage.removeItem('e26');
     } catch (e) {}
 
+    /* ── K26 count status (site/data/k26_status.json): simulated | partial | official ── */
+    let k26Status = { kind: 'simulated', as_of: null, source_he: '', source_en: '' };
+    const k26Ready = (function () {
+        if (!SHOW_E26) return Promise.resolve(k26Status);
+        const script = document.currentScript || document.querySelector('script[src*="i18n.js"]');
+        const src = script ? script.getAttribute('src') : 'i18n.js';
+        const url = src.replace(/i18n\.js(?:\?.*)?$/, 'data/k26_status.json');
+        return fetch(url, { cache: 'no-store' })
+            .then((r) => r.ok ? r.json() : null)
+            .catch(() => null)
+            .then((data) => {
+                if (data && (data.kind === 'official' || data.kind === 'partial' || data.kind === 'simulated')) k26Status = data;
+                return k26Status;
+            });
+    })();
+    function k26Live() {
+        return k26Status.kind === 'official' || k26Status.kind === 'partial';
+    }
+
     /* ── Translation dictionary ─────────────────────────────────── */
     const dict = {
         /* ── Site-wide ── */
@@ -482,13 +501,16 @@
         },
         k26_intro_title_partial: { he: 'התוצאות כבר מגיעות', en: 'The count is already coming in' },
         k26_intro_lead_partial: {
-            he: 'כל קלפי שתוצאותיה פורסמו מוצגת כבר עם התוצאות האמיתיות. קלפיות שטרם נספרו עדיין מציגות את הסימולציה.',
-            en: 'A published ballot replaces the scenario in place. A ballot still uncounted still shows the simulation.'
+            he: 'הסימולציה כבר ירדה מהאתר. המפה, נדידת הקולות ומפת הקלפיות מציגות רק קלפיות שוועדת הבחירות פרסמה. קלפיות שטרם נספרו חסרות, והסיכומים הארציים עוד ישתנו.',
+            en: 'The simulation is gone. The map, the vote flow, and the clusters show only ballots the committee has published. Ballots not yet counted are missing, and the national totals will still change.'
         },
         k26_intro_now:         { he: 'עכשיו', en: 'Now' },
+        k26_intro_now_partial: { he: 'לפני הספירה', en: 'Before the count' },
         k26_intro_now_d:       { he: 'סימולציה ברמת הקלפי, לפי הסקרים', en: 'A per-ballot scenario, fitted to the polls' },
+        k26_intro_now_d_partial: { he: 'האתר הציג סימולציה ברמת הקלפי, לפי הסקרים', en: 'The site showed a per-ballot scenario, fitted to the polls' },
         k26_intro_night:       { he: 'בליל הבחירות', en: 'Election night' },
         k26_intro_night_d:     { he: 'התוצאות האמיתיות מחליפות את הסימולציה, תוך דקות בודדות ממועד פרסומן באתר ועדת הבחירות המרכזית', en: 'Real results replace the simulation within minutes of their publication on the Central Elections Committee site' },
+        k26_intro_night_d_partial: { he: 'התוצאות נכנסות לאתר תוך דקות בודדות ממועד פרסומן באתר ועדת הבחירות המרכזית', en: 'Results reach the site within minutes of their publication on the Central Elections Committee site' },
         k26_intro_done:        { he: 'בתום הספירה', en: 'When it is done' },
         k26_intro_done_d:      { he: 'התוצאות הרשמיות מצטרפות לעשר מערכות הבחירות הקודמות', en: 'The official result stays, beside the ten previous Knessets' },
         k26_intro_countdown_label: { he: 'עד סגירת הקלפיות, יום שלישי 27 באוקטובר, 22:00', en: 'until the polls close, Tuesday 27 October, 22:00' },
@@ -506,6 +528,19 @@
         k26_intro_ready_3:     { he: 'ערכנו חזרה גנרלית: ספירה חלקית נקלטה, עובדה ופורסמה באתר מקצה לקצה', en: 'We ran a full drill: a partial count was taken in, processed, and published end to end' },
         k26_intro_got_it:      { he: 'הבנתי', en: 'Got it' },
         k26_intro_close:       { he: 'סגור', en: 'Close' },
+        mcp_k26_note:          { he: 'כנסת 26 היא תרחיש מדומה.', en: 'Knesset 26 is a simulated scenario.' },
+        mcp_k26_note_partial:  { he: 'כנסת 26 היא ספירה חלקית של ועדת הבחירות המרכזית ({k26_count}, נכון ל־{k26_when}).', en: 'Knesset 26 is a partial Central Elections Committee count ({k26_count}, as of {k26_when}).' },
+        mcp_k26_note_official: { he: 'כנסת 26 היא הספירה הרשמית של ועדת הבחירות המרכזית.', en: 'Knesset 26 is the official Central Elections Committee count.' },
+        mcp_k26_note_short:    { he: 'כנסת 26 היא תרחיש מדומה.', en: 'Knesset 26 is simulated.' },
+        mcp_k26_note_short_partial: { he: 'כנסת 26 היא ספירה חלקית ({k26_count}).', en: 'Knesset 26 is a partial count ({k26_count}).' },
+        mcp_k26_note_short_official: { he: 'כנסת 26 היא הספירה הרשמית.', en: 'Knesset 26 is the official count.' },
+        fraud_k26_lede_partial: { he: '(כולל הספירה החלקית של כנסת ה-26)', en: '(including the partial Knesset 26 count)' },
+        fraud_k26_lede_official: { he: '(כולל כנסת ה-26)', en: '(including Knesset 26)' },
+        fraud_k26_pill_partial: { he: '📡 <b>25 ← 26</b> — ספירה חלקית של ועדת הבחירות ({k26_count}). זיוף סינתטי מוזרק על התוצאות שפורסמו עד כה.', en: '📡 <b>25 → 26</b> — partial CEC count ({k26_count}). Synthetic fraud is injected into the results published so far.' },
+        fraud_k26_pill_official: { he: '📡 <b>25 ← 26</b> — נתוני אמת. זיוף סינתטי מוזרק על תוצאות אמיתיות.', en: '📡 <b>25 → 26</b> — real data. Synthetic fraud is injected into real results.' },
+        irregular_k26_stale:    { he: 'רשימת הקלפיות החריגות של כנסת 26 עוד לא חושבה מחדש על הספירה האמיתית. נסו שוב בעוד כמה דקות.', en: 'The Knesset 26 unusual-ballot list has not been recomputed on the real count yet. Check back in a few minutes.' },
+        turnout_k26_paused_title: { he: 'מחשבון אחוז ההצבעה מושהה', en: 'The turnout calculator is paused' },
+        turnout_k26_paused:     { he: 'המחשבון נבנה על הכנסת ה-26 המדומה. עכשיו כשתוצאות אמת מגיעות מוועדת הבחירות, הוא לא מוצג כדי שתרחיש מדומה לא יופיע לצד נתוני אמת.', en: 'This calculator was built on the simulated Knesset 26. Now that real results are coming in from the committee, it is hidden so a simulated scenario does not sit next to real data.' },
         nav_discussions:       { he: 'דיונים', en: 'Discussions' },
         discussions_title:     { he: 'דיונים', en: 'Discussions' },
         discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
@@ -598,16 +633,48 @@
     /* ── Core functions ── */
 
     /** Translate a key, with optional {param} interpolation. */
+    /** While the K26 count is live, `key_partial` / `key_official` override `key`. */
     function t(key, params) {
-        const entry = dict[key];
+        const entry = (k26Status.kind !== 'simulated' && dict[key + '_' + k26Status.kind]) || dict[key];
         if (!entry) return key;
         let text = entry[currentLang] || entry.he || key;
+        if (text.indexOf('{k26_') !== -1) params = Object.assign(k26Params(), params);
         if (params) {
             Object.keys(params).forEach(k => {
                 text = text.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
             });
         }
         return text;
+    }
+
+    function countOrNull(value) {
+        if (value == null || value === '') return null;
+        const n = Number(value);
+        return Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
+    }
+
+    function formatAsOf(iso) {
+        const d = new Date(iso);
+        if (!iso || Number.isNaN(d.getTime())) return '';
+        return new Intl.DateTimeFormat(currentLang === 'he' ? 'he-IL' : 'en-GB', {
+            timeZone: 'Asia/Jerusalem',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        }).format(d);
+    }
+
+    /** {k26_count} and {k26_when} for status-dependent strings. */
+    function k26Params() {
+        const counted = countOrNull(k26Status.ballots);
+        const roster = countOrNull(k26Status.ballots_total);
+        const count = counted == null ? ''
+            : (roster == null
+                ? t('e26_ballots', { n: fmtNum(counted) })
+                : t('e26_ballots_of', { n: fmtNum(counted), total: fmtNum(roster) }));
+        return { k26_count: count || '—', k26_when: formatAsOf(k26Status.as_of) || '—' };
     }
 
     /** Get party display name: uses info.name_en from data or the static map. */
@@ -1141,43 +1208,18 @@
         widget.id = 'e26-widget';
         document.body.appendChild(widget);
 
-        let k26Status = { kind: 'simulated', as_of: null, source_he: '', source_en: '' };
-
         function esc(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({
                 '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
             }[c]));
         }
 
-        function countOrNull(value) {
-            if (value == null || value === '') return null;
-            const n = Number(value);
-            return Number.isFinite(n) && n >= 0 ? Math.round(n) : null;
-        }
-
-        function formatAsOf(iso) {
-            const d = new Date(iso);
-            if (!iso || Number.isNaN(d.getTime())) return '';
-            return new Intl.DateTimeFormat(currentLang === 'he' ? 'he-IL' : 'en-GB', {
-                timeZone: 'Asia/Jerusalem',
-                day: 'numeric',
-                month: 'long',
-                year: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            }).format(d);
-        }
-
         let noticeClosed = false;
         try { noticeClosed = sessionStorage.getItem('e26_notice_closed') === '1'; } catch (e) {}
 
-        function isLiveCount() {
-            return k26Status.kind === 'official' || k26Status.kind === 'partial';
-        }
-
         function paint() {
             if (SHOW_E26 && noticeClosed) {
-                const live = isLiveCount();
+                const live = k26Live();
                 widget.className = 'collapsed ' + (live ? 'official' : 'sim');
                 widget.innerHTML =
                     '<button type="button" class="e26-reopen">' +
@@ -1186,7 +1228,7 @@
                     '</button>';
                 return;
             }
-            const live = SHOW_E26 && isLiveCount();
+            const live = SHOW_E26 && k26Live();
             if (!SHOW_E26) {
                 widget.className = '';
                 widget.innerHTML =
@@ -1244,6 +1286,7 @@
             widget.style.top = Math.max(14, Math.round(edge + 8)) + 'px';
         }
 
+        if (SHOW_E26) widget.style.visibility = 'hidden';
         paint();
         placeCard();
         requestAnimationFrame(placeCard);
@@ -1317,20 +1360,18 @@
             else if (e.target.closest('.e26-why')) openModal();
         });
 
-        if (SHOW_E26) {
-            const script = document.querySelector('script[src*="i18n.js"]');
-            const src = script ? script.getAttribute('src') : 'i18n.js';
-            const url = src.replace(/i18n\.js(?:\?.*)?$/, 'data/k26_status.json');
-            fetch(url, { cache: 'no-store' })
-                .then((r) => r.ok ? r.json() : null)
-                .then((data) => {
-                    if (data && (data.kind === 'official' || data.kind === 'partial' || data.kind === 'simulated')) k26Status = data;
-                    paint();
-                    placeCard();
-                    maybeK26Intro(k26Status.kind);
-                })
-                .catch(() => { maybeK26Intro('simulated'); });
-        }
+        k26Ready.then((status) => {
+            if (k26Live()) {
+                applyTranslations();
+                document.querySelectorAll('.k26-sim-only').forEach((el) => { el.style.display = 'none'; });
+            }
+            window.dispatchEvent(new CustomEvent('k26statuschange', { detail: status }));
+            if (!SHOW_E26) return;
+            paint();
+            placeCard();
+            widget.style.visibility = '';
+            maybeK26Intro(status.kind);
+        });
 
         function maybeK26Intro(kind) {
             if (!SHOW_E26) return;
@@ -1390,5 +1431,8 @@
         dict,
         partyNameMap,
         SHOW_E26,
+        k26Status: () => k26Status,
+        whenK26Status: () => k26Ready,
+        k26Live,
     };
 })();

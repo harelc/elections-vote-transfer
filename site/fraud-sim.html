@@ -345,7 +345,7 @@
         <div class="modal-box">
             <h1>סימולציית זיוף לאיתור קלפיות חשודות</h1>
             <p class="lede">
-                הדף הזה מאפשר לכם <b>להזריק זיוף סינתטי</b> לתוצאות בחירות אמיתיות (או לסימולציה של כנסת ה-26),
+                הדף הזה מאפשר לכם <b>להזריק זיוף סינתטי</b> לתוצאות בחירות אמיתיות <span id="k26-lede">(או לסימולציה של כנסת ה-26)</span>,
                 להריץ עליהן <b>גלאי סטטיסטי</b>, ולראות עד כמה הגלאי מצליח לדוג את הקלפיות שזויפו.
                 זוהי תרגיל ״מה אם״ — לא טענה לזיוף בפועל.
             </p>
@@ -369,7 +369,7 @@
             <h2>שתי מערכות בחירות זמינות</h2>
             <div class="pill-row">
                 <span class="pill">📡 <b>24 ← 25</b> — נתוני אמת. זיוף סינתטי מוזרק על תוצאות אמיתיות.</span>
-                <span class="pill">🧪 <b>25 ← 26</b> — נתונים סינתטיים. כל ההצבעה היא סימולציה של תרחיש כנסת 26.</span>
+                <span class="pill" id="k26-pill">🧪 <b>25 ← 26</b> — נתונים סינתטיים. כל ההצבעה היא סימולציה של תרחיש כנסת 26.</span>
             </div>
 
             <h2>החרגת יישובים דרוזים</h2>
@@ -1331,6 +1331,11 @@
             SCENARIOS = DATA.meta.scenarios;
             const toYear = DATA.meta.to_year;
             setupIntro();
+            i18n.whenK26Status().then(() => {
+                if (!i18n.k26Live()) return;
+                document.getElementById('k26-lede').textContent = i18n.t('fraud_k26_lede');
+                document.getElementById('k26-pill').innerHTML = i18n.t('fraud_k26_pill');
+            });
             document.getElementById('top-title').textContent = `סימולציית זיופים — כנסת ${toYear}`;
             const simBadge = document.getElementById('sim-badge');
             simBadge.textContent = DATA.meta.is_simulated ? 'סימולציה' : 'סימולציה מעל נתוני אמת';

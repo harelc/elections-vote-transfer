@@ -989,6 +989,11 @@
                 const response = await fetch(`data/irregularities_${electionId}.json`);
                 currentData = await response.json();
                 currentElection = electionId;
+                await i18n.whenK26Status();
+                if (electionId === '26' && i18n.k26Live() && currentData.election.total_ballots !== i18n.k26Status().ballots) {
+                    container.innerHTML = `<div class="loading"><p>${i18n.t('irregular_k26_stale')}</p></div>`;
+                    return;
+                }
 
                 // Build party data map (full objects)
                 partyData = {};
