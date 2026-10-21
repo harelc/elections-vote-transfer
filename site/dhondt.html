@@ -1180,8 +1180,8 @@
 
         // Presets keyed by election
         const presets = {
-            '25': { parties: parties25, agreements: agreements25, eligible: 6788804, voters: 4794593 },
-            '26': { parties: parties26, agreements: agreements26, eligible: 7331981, voters: 5447662 },
+            '25': { parties: parties25, agreements: agreements25, eligible: 6788804, voters: 4794593, others: 26800 },
+            '26': { parties: parties26, agreements: agreements26, eligible: 7331981, voters: 5447662, others: 0 },
         };
 
         let currentElection = i18n.SHOW_E26 ? '26' : '25';
@@ -1194,6 +1194,8 @@
                 this.threshold = 3.25;
                 this.totalSeats = 120;
                 this.agreements = JSON.parse(JSON.stringify(defaultAgreements)); // Array of [partyIdx1, partyIdx2] pairs
+                // Valid votes for lists not shown; they count toward the threshold base only.
+                this.otherVotes = presets[currentElection].others || 0;
                 this.tooltip = d3.select('#tooltip');
 
                 this.init();
@@ -1324,6 +1326,7 @@
                 const preset = presets[electionId];
                 this.parties = JSON.parse(JSON.stringify(preset.parties));
                 this.agreements = JSON.parse(JSON.stringify(preset.agreements));
+                this.otherVotes = preset.others || 0;
                 this.threshold = 3.25;
                 this.totalSeats = 120;
                 document.getElementById('threshold').value = '3.25';
@@ -1457,7 +1460,7 @@
             }
 
             calculate() {
-                const totalVotes = this.parties.reduce((sum, p) => sum + p.votes, 0);
+                const totalVotes = this.parties.reduce((sum, p) => sum + p.votes, 0) + this.otherVotes;
                 const thresholdVotes = totalVotes * (this.threshold / 100);
 
                 // Update total + threshold-in-votes display
@@ -1693,7 +1696,7 @@
 
             // Simulate d'Hondt seat allocation for given parties array
             simulateSeats(parties) {
-                const totalVotes = parties.reduce((sum, p) => sum + p.votes, 0);
+                const totalVotes = parties.reduce((sum, p) => sum + p.votes, 0) + this.otherVotes;
                 const thresholdVotes = totalVotes * (this.threshold / 100);
 
                 const eligibleParties = parties

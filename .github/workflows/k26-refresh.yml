@@ -126,4 +126,11 @@ jobs:
             exit 0
           fi
           git commit -m "Update K26 from the latest accepted count"
-          git push
+          # Someone may push to master mid-run. Replay on top; on conflicts the
+          # freshly generated files (the commit being replayed) win.
+          for attempt in 1 2 3; do
+            git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          exit 1

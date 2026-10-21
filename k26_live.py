@@ -30,9 +30,12 @@ SURPLUS_AGREEMENTS = [
 ]
 
 
-def bader_ofer(votes, threshold_pct=3.25, total_seats=120, agreements=None):
-    """Same allocation as simulate_election_26.bader_ofer."""
-    total = sum(votes.values())
+def bader_ofer(votes, threshold_pct=3.25, total_seats=120, agreements=None, valid_total=None):
+    """Same allocation as simulate_election_26.bader_ofer.
+
+    The threshold is a share of all valid votes, including lists not in `votes`.
+    """
+    total = max(valid_total or 0, sum(votes.values()))
     thresh = total * threshold_pct / 100.0
     passed = {k: v for k, v in votes.items() if v >= thresh}
     partner = {}
@@ -117,7 +120,8 @@ def summarize(path):
     names = dict(zip(major["symbols"], major["names"]))
     unknown = sorted(symbol for symbol, votes in votes_by_symbol.items() if symbol not in names and votes > 0)
     votes_by_name = {names[symbol]: votes_by_symbol.get(symbol, 0) for symbol in major["symbols"]}
-    seats_by_name = bader_ofer(votes_by_name, agreements=SURPLUS_AGREEMENTS)
+    valid_total = max(valid, sum(votes_by_symbol.values()))
+    seats_by_name = bader_ofer(votes_by_name, agreements=SURPLUS_AGREEMENTS, valid_total=valid_total)
     seats = [seats_by_name[name] for name in major["names"]]
     turnout = round(100 * voters / eligible, 1) if eligible else 0
     return {
@@ -129,6 +133,7 @@ def summarize(path):
         "symbols": major["symbols"],
         "names": major["names"],
         "votes_by_name": votes_by_name,
+        "other_votes": valid_total - sum(votes_by_name.values()),
         "seats": seats,
         "unknown": unknown,
     }
@@ -188,8 +193,8 @@ def update_parties26(text, summary):
             missing.append(name)
     text = text[: match.start(1)] + block + text[match.end(1) :]
     text, count = re.subn(
-        r"('26': \{ parties: parties26, agreements: agreements26, eligible: )\d+(, voters: )\d+",
-        rf"\g<1>{summary['eligible']}\g<2>{summary['voters']}",
+        r"('26': \{ parties: parties26, agreements: agreements26, eligible: )\d+(, voters: )\d+(, others: )\d+",
+        rf"\g<1>{summary['eligible']}\g<2>{summary['voters']}\g<3>{summary['other_votes']}",
         text,
         count=1,
     )

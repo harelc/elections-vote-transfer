@@ -68,7 +68,11 @@ def drop_stale_ci():
 def normalize(source, dest):
     """Copy a CEC CSV, or a {columns, rows} JSON file, to ballot26.csv."""
     raw = Path(source).read_bytes()
-    text = raw.decode("utf-8-sig")
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        # The CEC published K21–K24 in ISO-8859-8; cp1255 decodes that Hebrew too.
+        text = raw.decode("cp1255")
     if text.lstrip().startswith("{"):
         import csv
         import io

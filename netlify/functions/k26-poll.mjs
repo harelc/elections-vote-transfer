@@ -101,8 +101,17 @@ async function githubState(env) {
   return { accepted, runs };
 }
 
+// The CEC published K21–K24 in ISO-8859-8; windows-1255 decodes that Hebrew too.
+function decodeText(bytes) {
+  try {
+    return new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+  } catch {
+    return new TextDecoder("windows-1255").decode(bytes);
+  }
+}
+
 export function inspect(bytes, headers = new Headers()) {
-  const text = new TextDecoder("utf-8").decode(bytes).replace(/^\uFEFF/, "");
+  const text = decodeText(bytes).replace(/^\uFEFF/, "");
   const trimmed = text.trim();
   if (!trimmed) return null;
   if (trimmed.startsWith("{")) {

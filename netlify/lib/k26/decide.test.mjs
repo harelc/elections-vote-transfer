@@ -99,6 +99,13 @@ test("a CEC csv counts ballot rows", () => {
   assert.equal(found.final, false);
 });
 
+test("a windows-1255 CEC csv counts ballot rows", () => {
+  const ascii = (s) => [...s].map((c) => c.charCodeAt(0));
+  const kalpi = [0xf7, 0xec, 0xf4, 0xe9];
+  const body = Uint8Array.from([...kalpi, ...ascii(",x\n1,2\n3,4\n5,6\n")]);
+  assert.equal(inspect(body).ballotCount, 3);
+});
+
 test("columns and rows json is accepted", () => {
   const body = new TextEncoder().encode(JSON.stringify({
     as_of: "2026-10-27T22:00:00+03:00",
