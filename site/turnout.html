@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
     <meta property="og:title" content="קולות נודדים — מה אם יותר אנשים יצביעו?">
-    <meta property="og:description" content="סימולציית הכנסת ה-26: מעלים את אחוז ההצבעה ורואים איך זזים המנדטים — What if more people vote? Knesset 26 simulation">
+    <meta property="og:description" content="הכנסת ה-26: מעלים את אחוז ההצבעה ורואים איך זזים המנדטים — What if more people vote? Knesset 26">
     <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -361,16 +361,20 @@
             title:            { he: 'מה אם יותר אנשים יצביעו?', en: 'What if more people vote?' },
             subtitle:         { he: 'סימולציית הכנסת ה-26: מעלים או מורידים את אחוז ההצבעה בכל גוש, ורואים איך זזים המנדטים', en: 'Knesset 26 simulation: raise or lower each bloc\'s turnout, and watch the seats move' },
             back:             { he: '→ חזרה למחשבון באדר-עופר', en: '← Back to the D\'Hondt calculator' },
+            subtitle_real:    { he: 'תוצאות הכנסת ה-26: מעלים או מורידים את אחוז ההצבעה בכל גוש, ורואים איך היו זזים המנדטים', en: 'Knesset 26 results: raise or lower each bloc\'s turnout, and see how the seats would have moved' },
             brand:            { he: '<b>קולות נודדים</b> · כנסת 26 · תרחיש מדומה', en: '<b>Kolot Nodedim</b> · Knesset 26 · simulated scenario' },
+            brand_real:       { he: '<b>קולות נודדים</b> · כנסת 26 · תוצאות רשמיות', en: '<b>Kolot Nodedim</b> · Knesset 26 · official results' },
             presets_label:    { he: 'תרחישים:', en: 'Scenarios:' },
             shifts_label:     { he: 'שינוי באחוז ההצבעה של כל גוש (נקודות אחוז):', en: 'Change in each bloc\'s turnout (percentage points):' },
             preset_forecast:  { he: 'התחזית', en: 'Forecast' },
+            preset_forecast_real: { he: 'התוצאות', en: 'Results' },
             preset_everyone:  { he: 'כולם +{n}', en: 'Everyone +{n}' },
             preset_right_home:{ he: 'ימין נשאר בבית', en: 'Right stays home' },
             preset_leftcenter:{ he: 'מרכז-שמאל מתגייס', en: 'Center-left turns out' },
             preset_arab:      { he: 'ערביות מתגייסות', en: 'Arab parties turn out' },
             preset_swap:      { he: 'ימין בבית, מרכז-שמאל מתגייס', en: 'Right home, center-left out' },
             scen_forecast:    { he: 'התחזית', en: 'The forecast' },
+            scen_forecast_real: { he: 'התוצאות בפועל', en: 'The actual results' },
             scen_everyone_up: { he: 'כולם מצביעים יותר ({n})', en: 'Everyone votes more ({n})' },
             scen_everyone_down: { he: 'כולם מצביעים פחות ({n})', en: 'Everyone votes less ({n})' },
             scen_list:        { he: '{list} נק׳ הצבעה', en: '{list} turnout pts' },
@@ -381,8 +385,11 @@
             note:             { he: 'כל מחוון קובע בכמה נקודות עולה או יורד אחוז ההצבעה של הגוש. כלפי מעלה, אותו חלק ממי שלא הצביע מהגוש מגיע לקלפי בכל קלפי, ולכן קלפיות עם הצבעה נמוכה מתקדמות מהר יותר, עד תקרה של {cap}. כלפי מטה, אותו חלק ממצביעי הגוש נשאר בבית בכל קלפי. גוש אחד יכול לעלות בזמן שאחר יורד; אחוז ההצבעה הארצי הוא התוצאה.', en: 'Each slider sets how many points a bloc\'s turnout rises or falls. Going up, the same share of the bloc\'s non-voters shows up in every box, so low-turnout boxes rise fastest, up to a {cap} ceiling. Going down, the same share of the bloc\'s voters stays home in every box. One bloc can rise while another falls; national turnout is the result.' },
             national_turnout: { he: 'אחוז הצבעה ארצי', en: 'National turnout' },
             forecast:         { he: 'תחזית', en: 'Forecast' },
+            forecast_real:    { he: 'בפועל', en: 'Actual' },
             at_forecast:      { he: 'כמו בתחזית', en: 'Same as the forecast' },
+            at_forecast_real: { he: 'כמו בתוצאות', en: 'Same as the results' },
             delta_pts:        { he: '{sign}{n} נק׳ אחוז מהתחזית', en: '{sign}{n} pts vs. forecast' },
+            delta_pts_real:   { he: '{sign}{n} נק׳ אחוז מהתוצאות', en: '{sign}{n} pts vs. the results' },
             voters_more:      { he: '{n} מצביעים נוספים', en: '{n} more voters' },
             voters_fewer:     { he: '{n} מצביעים פחות', en: '{n} fewer voters' },
             stuck:            { he: '{n} קלפיות בתקרת {cap}', en: '{n} boxes at the {cap} ceiling' },
@@ -395,6 +402,7 @@
             bloc_combined:    { he: 'מרכז-שמאל + ערביות', en: 'Center-left + Arab' },
             majority_note:    { he: 'הקו המקווקו: 61, רוב בכנסת', en: 'Dashed line: 61, a Knesset majority' },
             foot:             { he: 'הכנסת ה-26 היא תרחיש מדומה, לא תוצאה אמיתית', en: 'Knesset 26 is a simulated scenario, not a real result' },
+            foot_real:        { he: 'נקודת המוצא היא התוצאות הרשמיות של הכנסת ה-26. כל שינוי מהן הוא תרחיש ״מה אם״.', en: 'The starting point is the official Knesset 26 results. Any change from them is a what-if.' },
             chart_title:      { he: 'מנדטים לכל גוש אם, מעבר להגדרות הנוכחיות, כל הגושים מוסיפים או מורידים אותו מספר נקודות', en: 'Seats per bloc if, on top of the current settings, every bloc adds or loses the same number of points' },
             chart_hint:       { he: 'לחיצה על הגרף מזיזה את כל המחוונים יחד.', en: 'Click the chart to move all sliders together.' },
             ex_title:         { he: 'דוגמה: מה קורה בתוך הקלפי', en: 'Example: what happens inside a ballot box' },
@@ -418,23 +426,33 @@
             cap_sub:          { he: 'באחוז הצבעה ארצי של {t}', en: 'at {t} national turnout' },
             outro:            { he: 'מי שמגיע לקלפי מחליט', en: 'Whoever shows up decides' },
             outro_sub:        { he: 'נסו בעצמכם: kolot-nodedim.netlify.app/turnout', en: 'Try it: kolot-nodedim.netlify.app/turnout' },
+            notes_start: {
+                he: '<p><strong>מאיפה מתחילים.</strong> התחזית היא הכנסת ה-26 המדומה של האתר: אחוז ההצבעה של כל קלפי הוא אחוז ההצבעה של הקלפי המקבילה בכנסת 25, כפול מקדם ארצי אחד (בערך 1.05) כדי להגיע ל-74.3%. לקלפי חדשה בלי מקבילה מוצמדים אחוז ההצבעה וחלוקת הקולות של קלפיות כנסת 25 הסמוכות.</p>',
+                en: '<p><strong>Starting point.</strong> The forecast is the site\'s simulated Knesset 26. Each ballot box\'s turnout is its matching K25 box\'s turnout times one national factor (about 1.05) to reach 74.3%. A new box with no match borrows the turnout and vote mix of nearby K25 boxes.</p>',
+            },
+            notes_start_real: {
+                he: '<p><strong>מאיפה מתחילים.</strong> נקודת המוצא היא התוצאות הרשמיות של הכנסת ה-26, קלפי אחר קלפי, כפי שפרסמה ועדת הבחירות המרכזית. הקולות של רשימות מחוץ לגושים נספרים רק בחישוב אחוז החסימה, וגדלים ויורדים יחד עם סך הקולות.</p>',
+                en: '<p><strong>Starting point.</strong> The starting point is the official Knesset 26 results, box by box, as published by the Central Elections Committee. Votes for lists outside the blocs count only toward the threshold, and grow or shrink with the total vote.</p>',
+            },
             notes: {
-                he: '<p><strong>מאיפה מתחילים.</strong> התחזית היא הכנסת ה-26 המדומה של האתר: אחוז ההצבעה של כל קלפי הוא אחוז ההצבעה של הקלפי המקבילה בכנסת 25, כפול מקדם ארצי אחד (בערך 1.05) כדי להגיע ל-74.3%. לקלפי חדשה בלי מקבילה מוצמדים אחוז ההצבעה וחלוקת הקולות של קלפיות כנסת 25 הסמוכות.</p>' +
-                    '<p><strong>מי הגוש בכל קלפי.</strong> מניחים שמי שלא הצביע בקלפי מתפלג כמו מי שהצביע בה. כך לכל גוש יש בכל קלפי מצביעים ולא-מצביעים, ואחוז הצבעה ארצי משלו (ראו את הדוגמה למעלה).</p>' +
+                he: '<p><strong>מי הגוש בכל קלפי.</strong> מניחים שמי שלא הצביע בקלפי מתפלג כמו מי שהצביע בה. כך לכל גוש יש בכל קלפי מצביעים ולא-מצביעים, ואחוז הצבעה ארצי משלו (ראו את הדוגמה למעלה).</p>' +
                     '<p><strong>עלייה.</strong> מחוון חיובי של +4 פירושו שאחוז ההצבעה של הגוש עולה ב-4 נקודות. אותו חלק ממי שלא הצביע מהגוש מגיע לקלפי בכל קלפי, ולכן קלפי ב-60% מתקדמת מהר יותר מקלפי ב-85%. אף קלפי לא עוברת את התקרה ({cap}); כשהתקרה עוצרת, העלייה בפועל קטנה מהמבוקש, והיא מוצגת ליד המחוון.</p>' +
                     '<p><strong>ירידה.</strong> מחוון שלילי של −4 פירושו שאחוז ההצבעה של הגוש יורד ב-4 נקודות: אותו חלק ממצביעי הגוש נשאר בבית בכל קלפי. גוש אחד יכול לעלות בזמן שגוש אחר יורד. אחוז ההצבעה הארצי הוא התוצאה, לא הקלט. כשכל הגושים זזים באותה מידה, כל קלפי שומרת בערך על חלוקת הקולות שלה והמפה כמעט לא זזה: המנדטים זזים כשהפער בין הגושים משתנה.</p>' +
                     '<p><strong>הגרף.</strong> מראה מה קורה אם, מעבר להגדרות הנוכחיות, כל הגושים מוסיפים או מורידים עוד אותו מספר נקודות. הציר האופקי הוא אחוז ההצבעה הארצי שמתקבל.</p>' +
-                    '<p><strong>מגבלות.</strong> חלוקת הגושים כמו בשאר האתר (עמך ישראל והנדל–זליכה בגוש הימין). המנדטים מחושבים בבאדר-עופר עם אחוז חסימה של 3.25% והסכמי העודפים של התרחיש. הקוד: <code>generate_turnout_sim.py</code>.</p>',
-                en: '<p><strong>Starting point.</strong> The forecast is the site\'s simulated Knesset 26. Each ballot box\'s turnout is its matching K25 box\'s turnout times one national factor (about 1.05) to reach 74.3%. A new box with no match borrows the turnout and vote mix of nearby K25 boxes.</p>' +
-                    '<p><strong>Each bloc in each box.</strong> A box\'s non-voters are assumed to split like its voters. So every bloc has voters and non-voters in every box, and its own national turnout (see the example above).</p>' +
+                    '<p><strong>מגבלות.</strong> חלוקת הגושים כמו בשאר האתר (עמך ישראל והנדל–זליכה בגוש הימין). המנדטים מחושבים בבאדר-עופר עם אחוז חסימה של 3.25% והסכמי העודפים. הקוד: <code>generate_turnout_sim.py</code>.</p>',
+                en: '<p><strong>Each bloc in each box.</strong> A box\'s non-voters are assumed to split like its voters. So every bloc has voters and non-voters in every box, and its own national turnout (see the example above).</p>' +
                     '<p><strong>Going up.</strong> A slider at +4 raises the bloc\'s turnout by 4 points. The same share of the bloc\'s non-voters shows up in every box, so a box at 60% rises faster than one at 85%. No box passes the {cap} ceiling; where the ceiling binds, the actual rise is smaller than requested and is shown next to the slider.</p>' +
                     '<p><strong>Going down.</strong> A slider at −4 lowers the bloc\'s turnout by 4 points: the same share of its voters stays home in every box. One bloc can rise while another falls. National turnout is the result, not the input. When every bloc moves by the same amount, each box roughly keeps its vote mix and the map barely moves: seats move when the gap between blocs changes.</p>' +
                     '<p><strong>The chart.</strong> Shows what happens if, on top of the current settings, every bloc adds or loses the same number of points. The horizontal axis is the resulting national turnout.</p>' +
-                    '<p><strong>Limits.</strong> Blocs are grouped as elsewhere on the site (Amcha Yisrael and Hendel–Zelicha in the right bloc). Seats are allocated by Bader-Ofer with a 3.25% threshold and the scenario\'s surplus agreements. Code: <code>generate_turnout_sim.py</code>.</p>',
+                    '<p><strong>Limits.</strong> Blocs are grouped as elsewhere on the site (Amcha Yisrael and Hendel–Zelicha in the right bloc). Seats are allocated by Bader-Ofer with a 3.25% threshold and the surplus agreements. Code: <code>generate_turnout_sim.py</code>.</p>',
             },
         };
+        // True once turnout_ballots_26.json is rebuilt from the official count.
+        let REAL = false;
         function T(key, params) {
-            const e = STR[key];
+            if (key === 'notes') return T('notes_start', params) + T('notes_body', params);
+            if (key === 'notes_body') key = 'notes';
+            const e = (REAL && STR[key + '_real']) || STR[key];
             let s = e ? (e[i18n.getLang()] || e.he) : key;
             if (params) for (const k in params) s = s.split('{' + k + '}').join(params[k]);
             return s.split('{cap}').join(fmtPct(cap, 0));
@@ -470,6 +488,8 @@
         if (RECORD) document.body.classList.add('record');
 
         let D, symbols, agreements, blocOfParty, baselineVotes, baselineSeats;
+        // Votes for lists outside the blocs, as a share of bloc votes; they scale with the total.
+        let otherShare = 0;
         let shifts = [0, 0, 0];
         let cap = 0.9;
         let turnout;
@@ -614,7 +634,7 @@
         }
 
         function baderOfer(votes) {
-            const total = votes.reduce((a, b) => a + b, 0);
+            const total = votes.reduce((a, b) => a + b, 0) * (1 + otherShare);
             const thresh = total * THRESHOLD_PCT / 100;
             const passed = votes.map(v => v >= thresh);
             const partner = {};
@@ -1013,15 +1033,19 @@
             window.addEventListener('langchange', paint);
         }
 
-        // The data is a what-if on the simulated forecast; it has no meaning next to a real count.
+        // During the count the page is paused; after the official count it runs only on data rebuilt from it.
         i18n.whenK26Status()
-            .then(() => {
-                if (i18n.k26Live()) { showPaused(); return null; }
-                return fetch('data/turnout_ballots_26.json').then(r => r.json());
+            .then(status => {
+                if (status.kind === 'partial') { showPaused(); return null; }
+                return fetch('data/turnout_ballots_26.json', { cache: 'no-store' }).then(r => r.json()).then(data => {
+                    if (status.kind === 'official' && data.simulated !== false) { showPaused(); return null; }
+                    return data;
+                });
             })
             .then(data => {
                 if (!data) return;
                 D = data;
+                REAL = D.simulated === false;
                 symbols = D.parties.map(p => p.symbol);
                 agreements = D.agreements.map(([a, b]) => [symbols.indexOf(a), symbols.indexOf(b)]);
                 const blocOf = {};
@@ -1031,6 +1055,7 @@
                 if (isFinite(cp)) cap = Math.max(CAP_RANGE[0], Math.min(CAP_RANGE[1], cp > 1 ? cp / 100 : cp));
                 buildEngine();
                 baselineVotes = D.P.map(col => col.reduce((a, b) => a + b, 0));
+                otherShare = (D.others || 0) / baselineVotes.reduce((a, b) => a + b, 0);
                 baselineSeats = baderOfer(baselineVotes).seats;
 
                 const sp = (params.get('s') || '').split(',').map(parseFloat);

@@ -1331,10 +1331,17 @@
             SCENARIOS = DATA.meta.scenarios;
             const toYear = DATA.meta.to_year;
             setupIntro();
-            i18n.whenK26Status().then(() => {
-                if (!i18n.k26Live()) return;
-                document.getElementById('k26-lede').textContent = i18n.t('fraud_k26_lede');
-                document.getElementById('k26-pill').innerHTML = i18n.t('fraud_k26_pill');
+            i18n.whenK26Status().then(status => {
+                if (status.kind === 'partial') {
+                    const count = status.ballots_total
+                        ? `${Number(status.ballots).toLocaleString('he-IL')} מתוך ${Number(status.ballots_total).toLocaleString('he-IL')} קלפיות`
+                        : `${Number(status.ballots || 0).toLocaleString('he-IL')} קלפיות`;
+                    document.getElementById('k26-lede').textContent = '(כולל הספירה החלקית של כנסת ה-26)';
+                    document.getElementById('k26-pill').innerHTML = `📡 <b>25 ← 26</b> — ספירה חלקית של ועדת הבחירות (${count}). זיוף סינתטי מוזרק על התוצאות שפורסמו עד כה.`;
+                } else if (status.kind === 'official') {
+                    document.getElementById('k26-lede').textContent = '(כולל כנסת ה-26)';
+                    document.getElementById('k26-pill').innerHTML = '📡 <b>25 ← 26</b> — נתוני אמת. זיוף סינתטי מוזרק על תוצאות אמיתיות.';
+                }
             });
             document.getElementById('top-title').textContent = `סימולציית זיופים — כנסת ${toYear}`;
             const simBadge = document.getElementById('sim-badge');

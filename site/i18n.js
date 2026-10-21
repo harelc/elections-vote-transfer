@@ -177,6 +177,7 @@
         dhondt_title:          { he: 'מחשבון באדר-עופר', en: 'D\'Hondt Calculator' },
         dhondt_subtitle:       { he: 'מחשבון חלוקת מנדטים בשיטת באדר-עופר', en: 'Seat allocation calculator using the D\'Hondt method' },
         turnout_banner:        { he: 'מה אם יותר אנשים יצביעו? ראו איך אחוז ההצבעה מזיז את המנדטים בכנסת 26 ←', en: 'What if more people vote? See how turnout moves the Knesset 26 seats →' },
+        turnout_banner_official: { he: 'מה אם יותר אנשים היו מצביעים? ראו איך אחוז ההצבעה היה מזיז את המנדטים בכנסת 26 ←', en: 'What if more people had voted? See how turnout would have moved the Knesset 26 seats →' },
         threshold:             { he: 'אחוז חסימה', en: 'Electoral threshold' },
         threshold_pct:         { he: 'אחוז חסימה:', en: 'Threshold:' },
         mandate_quotient:      { he: 'מודד למנדט', en: 'Votes per seat' },
@@ -450,7 +451,6 @@
         nav_methodology:       { he: 'מתודולוגיה', en: 'Methodology' },
         nav_mcp:               { he: 'שאל את הנתונים', en: 'Ask the data' },
         card_mcp_desc:         { he: 'חברו צ׳אט משלכם אל נתוני האתר, בלי מפתח', en: 'Connect your own chat to the site data, no key' },
-        e26_widget_label:      { he: 'מצב כנסת 26 (סימולציה)', en: 'Knesset 26 mode (simulation)' },
         e26_why_link:          { he: 'מה זה?', en: 'Why?' },
         e26_modal_title:       { he: 'כנסת 26 — מהי הסימולציה הזו?', en: 'Knesset 26 — what is this simulation?' },
         e26_modal_p1:          {
@@ -479,7 +479,6 @@
         },
         e26_modal_dismiss:     { he: 'הבנתי', en: 'Got it' },
         e26_off_state:         { he: 'מצב כנסת 26: כבוי', en: 'K26 mode: off' },
-        e26_on_state:          { he: 'מצב כנסת 26: דלוק (סימולציה)', en: 'K26 mode: on (simulated)' },
         e26_kicker:            { he: 'כנסת 26', en: 'Knesset 26' },
         e26_sim_headline:      { he: 'סימולציה', en: 'Simulation' },
         e26_sim_detail:        {
@@ -534,13 +533,9 @@
         mcp_k26_note_short:    { he: 'כנסת 26 היא תרחיש מדומה.', en: 'Knesset 26 is simulated.' },
         mcp_k26_note_short_partial: { he: 'כנסת 26 היא ספירה חלקית ({k26_count}).', en: 'Knesset 26 is a partial count ({k26_count}).' },
         mcp_k26_note_short_official: { he: 'כנסת 26 היא הספירה הרשמית.', en: 'Knesset 26 is the official count.' },
-        fraud_k26_lede_partial: { he: '(כולל הספירה החלקית של כנסת ה-26)', en: '(including the partial Knesset 26 count)' },
-        fraud_k26_lede_official: { he: '(כולל כנסת ה-26)', en: '(including Knesset 26)' },
-        fraud_k26_pill_partial: { he: '📡 <b>25 ← 26</b> — ספירה חלקית של ועדת הבחירות ({k26_count}). זיוף סינתטי מוזרק על התוצאות שפורסמו עד כה.', en: '📡 <b>25 → 26</b> — partial CEC count ({k26_count}). Synthetic fraud is injected into the results published so far.' },
-        fraud_k26_pill_official: { he: '📡 <b>25 ← 26</b> — נתוני אמת. זיוף סינתטי מוזרק על תוצאות אמיתיות.', en: '📡 <b>25 → 26</b> — real data. Synthetic fraud is injected into real results.' },
         irregular_k26_stale:    { he: 'רשימת הקלפיות החריגות של כנסת 26 עוד לא חושבה מחדש על הספירה האמיתית. נסו שוב בעוד כמה דקות.', en: 'The Knesset 26 unusual-ballot list has not been recomputed on the real count yet. Check back in a few minutes.' },
         turnout_k26_paused_title: { he: 'מחשבון אחוז ההצבעה מושהה', en: 'The turnout calculator is paused' },
-        turnout_k26_paused:     { he: 'המחשבון נבנה על הכנסת ה-26 המדומה. עכשיו כשתוצאות אמת מגיעות מוועדת הבחירות, הוא לא מוצג כדי שתרחיש מדומה לא יופיע לצד נתוני אמת.', en: 'This calculator was built on the simulated Knesset 26. Now that real results are coming in from the committee, it is hidden so a simulated scenario does not sit next to real data.' },
+        turnout_k26_paused:     { he: 'המחשבון מושהה בזמן ספירת הקולות. הוא יחזור כשוועדת הבחירות תפרסם את התוצאות הרשמיות, ונקודת המוצא שלו תהיה התוצאות האלה.', en: 'The calculator is paused while the votes are counted. It returns once the committee publishes the official results, and those results become its starting point.' },
         nav_discussions:       { he: 'דיונים', en: 'Discussions' },
         discussions_title:     { he: 'דיונים', en: 'Discussions' },
         discussions_subtitle:  { he: 'שאלות, רעיונות ודיונים על האתר ועל בחירות', en: 'Questions, ideas and discussions about the site and elections' },
@@ -1364,6 +1359,7 @@
             if (k26Live()) {
                 applyTranslations();
                 document.querySelectorAll('.k26-sim-only').forEach((el) => { el.style.display = 'none'; });
+                if (k26Status.kind === 'partial') document.querySelectorAll('.k26-hide-partial').forEach((el) => { el.style.display = 'none'; });
             }
             window.dispatchEvent(new CustomEvent('k26statuschange', { detail: status }));
             if (!SHOW_E26) return;

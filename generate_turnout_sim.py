@@ -18,13 +18,16 @@ proportions. With all w equal, each ballot closes the same share of its gap to
 the forecast, voters stay home at rate |q| / w_j.
 
 The forecast is the K25 ballot turnout times one national factor
-(see simulate_election_26.simulate).
+(see simulate_election_26.simulate). With K26_REAL=1 the starting point is
+the official count in ballot26.csv instead.
 
 Usage:
     python generate_turnout_sim.py
+    K26_REAL=1 python generate_turnout_sim.py
 """
 
 import json
+import os
 
 import numpy as np
 import pandas as pd
@@ -44,13 +47,21 @@ BLOCS = {
 
 
 def load():
-    df = pd.read_csv(CSV)
+    df = pd.read_csv(CSV, encoding='utf-8-sig')
     df = df[df['בזב'] > 0]
-    symbols = list(E26_PARTIES)
+    in_bloc = {s for syms in BLOCS.values() for s in syms}
+    symbols = [s for s in E26_PARTIES if s in df.columns and s in in_bloc]
+    lists = list(df.columns[df.columns.get_loc('כשרים') + 1:])
     E = df['בזב'].to_numpy(float)
     V = df['מצביעים'].to_numpy(float)
     P = df[symbols].to_numpy(float)
-    return symbols, E, V, P
+    rest = [c for c in lists if c not in symbols]
+    others = float(df[rest].to_numpy(float).sum()) if rest else 0.0
+    valid = P.sum() + others
+    for c in rest:
+        if df[c].sum() >= 0.0325 * valid:
+            print(f'warning: {c} passes the threshold but is not in E26_PARTIES and BLOCS; it counts as "others"')
+    return symbols, E, V, P, others
 
 
 def mobilize(P, E, V, w, q):
@@ -81,18 +92,19 @@ def solve(P, E, V, w, target):
 
 
 def main():
-    symbols, E, V, P = load()
+    symbols, E, V, P, others = load()
     names = {sym: E26_PARTIES[sym][0] for sym in symbols}
     sym_of = {n: s for s, n in names.items()}
     out = {
         'election': 26,
-        'simulated': True,
+        'simulated': os.environ.get('K26_REAL') != '1',
+        'others': int(others),
         'cap': CAP,
         'k25_turnout': K25_TURNOUT,
         'baseline_turnout': round(float(V.sum() / E.sum()), 5),
         'parties': [{'symbol': s, 'name': names[s], 'color': E26_PARTIES[s][1]} for s in symbols],
-        'agreements': [[sym_of[a], sym_of[b]] for a, b in SURPLUS_AGREEMENTS],
-        'blocs': BLOCS,
+        'agreements': [[sym_of[a], sym_of[b]] for a, b in SURPLUS_AGREEMENTS if a in sym_of and b in sym_of],
+        'blocs': {b: [s for s in syms if s in symbols] for b, syms in BLOCS.items()},
         'E': [int(x) for x in E],
         'V': [int(x) for x in V],
         'P': [[int(x) for x in P[:, k]] for k in range(len(symbols))],

@@ -79,6 +79,14 @@ def refresh_irregularities(ballots):
         print(f"irregularities_26.json covers {covered} ballots, not {ballots}")
 
 
+def refresh_turnout():
+    """Rebase the turnout what-if on the official count. turnout.html stays paused if this fails."""
+    try:
+        run([sys.executable, "generate_turnout_sim.py"], env={**os.environ, "K26_REAL": "1"})
+    except SystemExit as error:
+        print(f"turnout data was not updated ({error})")
+
+
 def normalize(source, dest):
     """Copy a CEC CSV, or a {columns, rows} JSON file, to ballot26.csv."""
     raw = Path(source).read_bytes()
@@ -148,6 +156,8 @@ def main():
 
     summary = summarize(ballot_path)
     kind = publish_kind(summary["ballots"], args.final)
+    if kind == "official":
+        refresh_turnout()
     previous_ci = 0
     if status_path.exists():
         previous_ci = json.loads(status_path.read_text(encoding="utf-8")).get("ci_coverage") or 0
