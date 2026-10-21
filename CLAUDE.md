@@ -243,6 +243,7 @@ The CEC changed settlement name formatting between elections 22→23 (stripped h
 - Remove: `-`, `–`, `'`, `׳`, `"`, `״`, `(`, `)`
 - Collapse multiple spaces, normalize `יי` → `י`
 - `NAME_OVERRIDES` dict for special cases (e.g. `גולס` → `ג'וליס`)
+- `MERGED_NAMES` (part of `NAME_OVERRIDES`): 41 settlements the CEC spells without a separator in K23–K25 (`אום אלפחם`, `בית יצחקשער חפר`, …) → spaced form used in K16–K22 and K26. `normalize_tsne_names.py`, `normalize_coordinates.py` and `generate_metrics_data.py` import it; check new elections for spacing-only splits across `map_*.json`
 - After regenerating tsne data, run `normalize_tsne_names.py` to apply same normalization
 - After changing coordinates, run `normalize_coordinates.py`
 - `settlement_wiki.json` keys must also be normalized

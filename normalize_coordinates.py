@@ -7,6 +7,7 @@ When keys collapse, keep the entry with coordinates (prefer google_venue > venue
 
 import json
 
+from generate_map_data import normalize_name
 
 # cec_k26 is an official cluster point from the CEC polling-station file.
 # Manual pins outrank geocoders. Unknown sources rank below a real pin.
@@ -21,19 +22,6 @@ SOURCE_PRIORITY = {
     'settlement': 1,
     'not_found': 0,
 }
-
-
-def normalize_name(name):
-    """Normalize settlement name — must match generate_map_data.py."""
-    if not name:
-        return name
-    normalized = name.replace('-', ' ').replace('–', ' ')
-    normalized = normalized.replace("'", '').replace('\u05f3', '')
-    normalized = normalized.replace('"', '').replace('\u05f4', '')
-    normalized = normalized.replace('(', ' ').replace(')', ' ')
-    normalized = ' '.join(normalized.split())
-    normalized = normalized.replace('יי', 'י')
-    return normalized
 
 
 def main():

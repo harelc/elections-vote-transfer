@@ -9,25 +9,7 @@ import json
 import glob
 import os
 
-
-NAME_OVERRIDES = {
-    'גולס': "ג'וליס",
-    'גוליס': "ג'וליס",
-}
-
-
-def normalize_name(name):
-    """Normalize settlement name — must match generate_map_data.py."""
-    if not name:
-        return name
-    normalized = name.replace('-', ' ').replace('–', ' ')
-    normalized = normalized.replace("'", '').replace('\u05f3', '')
-    normalized = normalized.replace('"', '').replace('\u05f4', '')
-    normalized = normalized.replace('(', ' ').replace(')', ' ')
-    normalized = ' '.join(normalized.split())
-    normalized = normalized.replace('יי', 'י')
-    normalized = NAME_OVERRIDES.get(normalized, normalized)
-    return normalized
+from generate_map_data import normalize_name
 
 
 def main():
