@@ -153,11 +153,14 @@ ROW_TURNOUT = {
 DEFAULT_ROW_TURNOUT = 1.00
 
 # Surplus agreements used by --preview Bader-Ofer (and later dhondt.html)
+# Official K26 agreements: YB–Beyachad, Ra'am–Joint List, RZ–Likud,
+# UTJ–Shas, Democrats–Yashar. Otzma Yehudit has no agreement.
 SURPLUS_AGREEMENTS = [
-    ('ש״ס', 'יהדות התורה'),
-    ('עוצמה יהודית', 'הציונות הדתית'),
-    ('ישר', 'ישראל ביתנו'),
-    ('הרשימה המשותפת', 'רע״ם'),
+    ('ישראל ביתנו', 'ביחד'),
+    ('רע״ם', 'הרשימה המשותפת'),
+    ('הציונות הדתית', 'הליכוד'),
+    ('יהדות התורה', 'ש״ס'),
+    ('הדמוקרטים', 'ישר'),
 ]
 
 # National K26 turnout (voters / eligible), applied on top of the K25

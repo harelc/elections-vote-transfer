@@ -212,7 +212,7 @@ Hardcoded K26 totals appear in 3 places that must stay in sync when re-tuning:
 2. `site/data/wiki_official_results.json` `"26"` entry (used by sankey side bar legend; has `_26_note` sibling key flagging simulation)
 3. `party_config.py` ELECTIONS['26'] major_parties seats list
 
-Current synced map: Yashar 23 / Likud 20 / Beyachad 11 / UTJ 9 / Democrats 8 / Joint List 8 / Shas 7 / YB 7 / Otzma 7 / Ra'am 6 / RZ 5 / Amcha 5 / Hendel–Zelicha 4. Surplus agreements in the simulator: Shas+UTJ, Otzma+RZ, Yashar+YB, Joint+Ra'am.
+Current synced map: Yashar 23 / Likud 20 / Beyachad 12 / UTJ 9 / Democrats 8 / Joint List 8 / Shas 7 / YB 7 / Otzma 7 / Ra'am 5 / RZ 5 / Amcha 5 / Hendel–Zelicha 4. Official K26 surplus agreements: Yisrael Beytenu+Beyachad, Ra'am+Joint List, RZ+Likud, UTJ+Shas, Democrats+Yashar (Otzma has none). Defined in `simulate_election_26.py` / `k26_live.py` `SURPLUS_AGREEMENTS`, `agreements26` in both dhondt pages, and `site/data/turnout_ballots_26.json` (regenerate via `generate_turnout_sim.py`).
 
 Set `min_flow_threshold=15000` in `generate_transfer_data.py` to hide solver multicollinearity noise (~1% spurious cells) from sankey. `sankey.js` also drops nodes with zero remaining flows.
 
