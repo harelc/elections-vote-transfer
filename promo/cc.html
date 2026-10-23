@@ -95,6 +95,11 @@ body.preview #stage { transform-origin: top center; }
 /* interactive camera scenes (sankey / geomap) */
 .camframe img.cam { position: absolute; inset: 0; }
 .camframe img.cam.alt { opacity: 0; }
+.camframe video.cam { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; background: #0b0e13; }
+.scrollframe img {
+    position: absolute; left: 0; top: 0; width: 100%; height: auto;
+    object-fit: initial; will-change: transform;
+}
 .cursor {
     position: absolute; z-index: 4; width: 46px; height: 46px; opacity: 0;
     pointer-events: none; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.65));
@@ -120,13 +125,13 @@ body.preview #stage { transform-origin: top center; }
         </div>
     </section>
 
-    <!-- 2 · The command center reveal -->
-    <section class="scene media" id="s-cc">
+    <!-- 2 · The command center reveal: scroll down the CC page -->
+    <section class="scene media" id="s-cc" data-cam="ccscroll">
         <div class="head-zone">
             <div class="headline" data-d="0">מרכז המידע של ליל הבחירות</div>
             <div class="sub" data-d="0.35">מנדטים, מועמדים, נדידת קולות, מפה וקלפיות חשודות — במסך אחד, חי.</div>
         </div>
-        <div class="frame"><img src="screens_cc/cc_top.png" alt=""></div>
+        <div class="frame scrollframe"><img id="cc-scroll-img" src="screens_cc/cc_page_full.png" alt=""></div>
     </section>
 
     <!-- 3 · Live count -->
@@ -159,8 +164,7 @@ body.preview #stage { transform-origin: top center; }
             <div class="sub" data-d="0.35">מודל נדידת הקולות הארצי בין כנסת 25 לכנסת 26, קלפי־קלפי.</div>
         </div>
         <div class="frame camframe">
-            <img class="cam base" src="screens_cc/cc_sankey.png" alt="">
-            <img class="cam alt" id="sankey-hover" src="screens_cc/cc_sankey_hover.png" alt="">
+            <video class="cam" id="sankey-video" src="segments/sankey_live.mp4" muted playsinline preload="auto"></video>
             <div class="ring" id="ring-sankey"></div>
             <div class="cursor" id="cur-sankey"><svg viewBox="0 0 24 24" width="46" height="46"><path d="M4 2 L20 12 L12.5 13.5 L9 21 Z" fill="#fff" stroke="#101216" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
         </div>
@@ -173,9 +177,7 @@ body.preview #stage { transform-origin: top center; }
             <div class="sub" data-d="0.35">מי ניצח בשכונה שלכם? מפה חיה של כל תחנות ההצבעה בארץ.</div>
         </div>
         <div class="frame camframe">
-            <img class="cam base" src="screens_cc/cc_map.png" alt="">
-            <img class="cam alt" id="map-zoom" src="screens_cc/cc_map_zoom.png" alt="">
-            <img class="cam alt" id="map-popup" src="screens_cc/cc_map_popup.png" alt="">
+            <video class="cam" id="map-video" src="segments/map_live.mp4" muted playsinline preload="auto"></video>
             <div class="ring" id="ring-map"></div>
             <div class="cursor" id="cur-map"><svg viewBox="0 0 24 24" width="46" height="46"><path d="M4 2 L20 12 L12.5 13.5 L9 21 Z" fill="#fff" stroke="#101216" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
         </div>
@@ -211,13 +213,13 @@ body.preview #stage { transform-origin: top center; }
     'use strict';
     var SCENES = [
         { id: 's-hook',   start: 0,    end: 4.5 },
-        { id: 's-cc',     start: 4.5,  end: 10.5 },
-        { id: 's-live',   start: 10.5, end: 15.5 },
-        { id: 's-hemi',   start: 15.5, end: 20.5 },
-        { id: 's-sankey', start: 20.5, end: 27.5 },
-        { id: 's-map',    start: 27.5, end: 34.5 },
-        { id: 's-split',  start: 34.5, end: 39.5 },
-        { id: 's-cta',    start: 39.5, end: 44.5 },
+        { id: 's-cc',     start: 4.5,  end: 12.5 },
+        { id: 's-live',   start: 12.5, end: 17.5 },
+        { id: 's-hemi',   start: 17.5, end: 22.5 },
+        { id: 's-sankey', start: 22.5, end: 29.5 },
+        { id: 's-map',    start: 29.5, end: 36.5 },
+        { id: 's-split',  start: 36.5, end: 41.5 },
+        { id: 's-cta',    start: 41.5, end: 46.5 },
     ];
     var DURATION = SCENES[SCENES.length - 1].end;
     var FADE = 0.55;
@@ -257,8 +259,8 @@ body.preview #stage { transform-origin: top center; }
         });
         // live-count scene: counter 0 -> 6,130 of 12,018 (51%)
         var live = els['s-live'];
-        if (live && t >= 10.5 && t <= 16.5) {
-            var p = clamp01((t - 11.6) / 3.2);
+        if (live && t >= 12.5 && t <= 18.5) {
+            var p = clamp01((t - 13.6) / 3.2);
             var n = Math.round(6130 * easeOut(p));
             document.getElementById('countbar').style.width = (51 * easeOut(p)).toFixed(1) + '%';
             document.getElementById('countlabel').textContent =
@@ -288,7 +290,7 @@ body.preview #stage { transform-origin: top center; }
     }
     function applyCam(sceneEl, cam, cursorId, ringId, pt, curWin, clickT, lt) {
         var s = cam[0], ox = cam[1], oy = cam[2], posY = cam[3];
-        sceneEl.querySelectorAll('img.cam').forEach(function (im) {
+        sceneEl.querySelectorAll('.cam').forEach(function (im) {
             im.style.objectPosition = '50% ' + (posY * 100).toFixed(2) + '%';
             im.style.transformOrigin = ox.toFixed(2) + '% ' + oy.toFixed(2) + '%';
             im.style.transform = 'scale(' + s.toFixed(4) + ')';
@@ -313,20 +315,49 @@ body.preview #stage { transform-origin: top center; }
         [0.0, 1.04, 50, 50, 0.38], [1.5, 1.12, 50, 50, 0.40],
         [3.3, 1.05, 42, 48, 0.46], [5.6, 1.09, 42, 48, 0.46],
         [7.0, 1.05, 50, 50, 0.38] ];
+    function pathPoint(path, lt) {
+        if (lt <= path[0][0]) return [path[0][1], path[0][2]];
+        for (var i = 1; i < path.length; i++) {
+            if (lt <= path[i][0]) {
+                var q = ss(path[i - 1][0], path[i][0], lt);
+                return [path[i - 1][1] + (path[i][1] - path[i - 1][1]) * q,
+                        path[i - 1][2] + (path[i][2] - path[i - 1][2]) * q];
+            }
+        }
+        return [path[path.length - 1][1], path[path.length - 1][2]];
+    }
+    function setVideo(id, lt) {
+        var v = document.getElementById(id);
+        var target = Math.max(0, Math.min(6.99, lt));
+        v.dataset.t = target.toFixed(3);
+        if (Math.abs(v.currentTime - target) > 0.04) { try { v.currentTime = target; } catch (e) {} }
+    }
+    // [lt, fx, fy] in cc_sankey*.png / cc_map*.png image fractions
+    var SANKEY_PATH = [[0, .55, .057], [1.1, .55, .057], [2.5, .802, .2196], [5.7, .802, .2196], [6.6, .55, .42], [7, .55, .42]];
+    var MAP_PATH = [[0, .840, .257], [1.0, .840, .257], [1.6, .501, .550], [3.2, .501, .550], [4.0, .258, .401], [5.9, .258, .401], [6.7, .670, .757], [7, .670, .757]];
+
     function renderCam(kind, lt, dur) {
+        if (kind === 'ccscroll') {
+            // Scroll the tall CC page surface down inside the frame (no zoom):
+            // hold at the top, smooth scroll, settle on the geomap pane.
+            var im = document.getElementById('cc-scroll-img');
+            var maxShift = Math.max(0, im.offsetHeight - im.parentElement.clientHeight);
+            var shift = maxShift * 0.87 * ss(0.7, 7.1, lt);
+            im.style.transform = 'translateY(' + (-shift).toFixed(1) + 'px)';
+            return;
+        }
         if (kind === 'sankey') {
+            if (lt > -0.5 && lt < 7.5) setVideo('sankey-video', lt);
             var cam = camAt(SANKEY_KEYS, lt);
-            var pt = framePoint(0.802, 0.2196, 1838, cam[3]); // K26 Likud node in cc_sankey*.png
-            applyCam(els['s-sankey'], cam, 'cur-sankey', 'ring-sankey', pt, [1.1, 6.0], 3.35, lt);
-            document.getElementById('sankey-hover').style.opacity = (ss(3.2, 4.0, lt) * (1 - ss(5.6, 6.4, lt))).toFixed(3);
+            var sp = pathPoint(SANKEY_PATH, lt);
+            var pt = framePoint(sp[0], sp[1], 1838, cam[3]);
+            applyCam(els['s-sankey'], cam, 'cur-sankey', 'ring-sankey', pt, [0.2, 6.9], 2.55, lt);
         } else if (kind === 'map') {
+            if (lt > -0.5 && lt < 7.5) setVideo('map-video', lt);
             var cam2 = camAt(MAP_KEYS, lt);
-            var pt2 = framePoint(0.258, 0.401, 1391, cam2[3]); // the 112-station cluster pie in cc_map_popup.png
-            applyCam(els['s-map'], cam2, 'cur-map', 'ring-map', pt2, [2.0, 6.0], 3.35, lt);
-            document.getElementById('map-zoom').style.opacity = ss(2.2, 3.0, lt).toFixed(3);
-            var pop = ss(3.3, 4.1, lt) * (1 - ss(5.6, 6.4, lt));
-            document.getElementById('map-popup').style.opacity = pop.toFixed(3);
-            document.getElementById('map-zoom').style.opacity = (ss(2.2, 3.0, lt) * (1 - pop) * (1 - ss(5.6, 6.4, lt))).toFixed(3);
+            var mp2 = pathPoint(MAP_PATH, lt);
+            var pt2 = framePoint(mp2[0], mp2[1], 1391, cam2[3]);
+            applyCam(els['s-map'], cam2, 'cur-map', 'ring-map', pt2, [0.2, 6.9], 4.05, lt);
         }
     }
 
@@ -334,9 +365,16 @@ body.preview #stage { transform-origin: top center; }
 
     function waitImages() {
         var imgs = Array.prototype.slice.call(document.images);
-        return Promise.all(imgs.map(function (img) {
+        var imgPs = imgs.map(function (img) {
             return img.complete ? Promise.resolve() : new Promise(function (r) { img.onload = img.onerror = r; });
-        }));
+        });
+        var vidPs = Array.prototype.slice.call(document.querySelectorAll('video')).map(function (v) {
+            return v.readyState >= 2 ? Promise.resolve() : new Promise(function (r) {
+                v.addEventListener('loadeddata', r, { once: true });
+                v.addEventListener('error', r, { once: true });
+            });
+        });
+        return Promise.all(imgPs.concat(vidPs));
     }
     waitImages().then(function () {
         render(0);
