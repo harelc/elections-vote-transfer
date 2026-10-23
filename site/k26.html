@@ -76,6 +76,10 @@
         .pane.stage { grid-column:1/-1; padding:1.3rem 1.5rem; }
         .pane.stage .pane-head h3 { font-size:1.3rem; }
         .hemi-wrap { max-width:860px; margin:0.4rem auto 0; position:relative; }
+        /* The rich hover card must never take events itself: when it slid under
+           the cursor it fired the seat's mouseleave, hid, then re-showed — a
+           flicker loop. Display-only, like the shared .tooltip. */
+        #hemi-tooltip { pointer-events:none; }
         .hemi-seat { cursor:pointer; }
         .hemi-seat:hover { stroke:#fff; stroke-width:1.8; }
         .hemi-wrap svg { width:100%; height:auto; display:block; }
@@ -402,21 +406,35 @@
     function bindHemiTooltip() {
         const wrap = document.querySelector('.hemi-wrap'), tip = document.getElementById('hemi-tooltip');
         if (!wrap || !tip) return;
-        const show = (seat, ev) => {
-            tip.innerHTML = hemiCardHTML(seat);
-            tip.style.display = 'block';
+        // One delegated handler instead of mouseenter+mousemove+click per seat
+        // (they fought each other: every mousemove rewrote the card and dragged
+        // it under the cursor, whose mouseleave then hid it — 29 toggles/sec).
+        // Content is re-rendered only when the seat actually changes; leaving a
+        // seat starts a short grace timer so crossing gaps doesn't strobe.
+        const seats = [...wrap.querySelectorAll('.hemi-seat')];
+        let current = -1, hideTimer = 0;
+        const position = ev => {
             const wr = wrap.getBoundingClientRect();
             const x = ev.clientX - wr.left, y = ev.clientY - wr.top;
             tip.style.left = Math.max(0, Math.min(wrap.clientWidth - 272, x + 16)) + 'px';
             tip.style.top = Math.max(0, y - 24) + 'px';
         };
-        document.querySelectorAll('.hemi-seat').forEach((c, i) => {
-            const seat = HEMI_SEATS[i]; if (!seat) return;
-            c.addEventListener('mouseenter', ev => show(seat, ev));
-            c.addEventListener('mousemove', ev => show(seat, ev));
-            c.addEventListener('click', ev => show(seat, ev));
-            c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
-        });
+        const scheduleHide = () => {
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => { tip.style.display = 'none'; current = -1; }, 140);
+        };
+        const onMove = ev => {
+            const c = ev.target.closest ? ev.target.closest('.hemi-seat') : null;
+            const idx = c ? seats.indexOf(c) : -1;
+            if (idx < 0 || !HEMI_SEATS[idx]) { scheduleHide(); return; }
+            clearTimeout(hideTimer);
+            if (idx !== current) { current = idx; tip.innerHTML = hemiCardHTML(HEMI_SEATS[idx]); }
+            tip.style.display = 'block';
+            position(ev);
+        };
+        wrap.addEventListener('mousemove', onMove);
+        wrap.addEventListener('click', onMove);
+        wrap.addEventListener('mouseleave', scheduleHide);
     }
     function hemicycleSVG(seatCounts) {
         const passing = DATA.results.filter(p => (seatCounts ? (seatCounts[p.name] || 0) : p.seats) > 0).map(p => ({ ...p, seats: seatCounts ? (seatCounts[p.name] || 0) : p.seats }));
