@@ -53,6 +53,67 @@
         nav_irregular:         { he: 'קלפיות חריגות', en: 'Irregular Ballots' },
         export_png:            { he: '📷 ייצוא PNG', en: '📷 Export PNG' },
         nav_animation:         { he: '▶ אנימציה', en: '▶ Animation' },
+        nav_k26:               { he: '🎛️ מרכז מידע כנסת 26', en: '🎛️ K26 Information Center' },
+        card_k26_desc:         { he: 'כל כנסת 26 במסך אחד: קולות מוחלטים, מנדטים, נדידת קולות 25←26, מפה וקלפיות', en: 'All of Knesset 26 on one screen: absolute votes, seats, 25→26 vote flow, map and ballots' },
+        k26_title:             { he: 'מרכז המידע — כנסת 26', en: 'Information Center — Knesset 26' },
+        k26_subtitle:          { he: 'קולות מוחלטים, חלוקת מנדטים וכל התצוגות של כנסת 26 במסך אחד', en: 'Absolute votes, seat distribution and every Knesset 26 view on one screen' },
+        k26_simulated:         { he: 'תרחיש מדומה — לא תוצאות אמת', en: 'Simulated scenario — not real results' },
+        k26_live_partial:      { he: 'ספירה חלקית', en: 'Partial count' },
+        k26_live_official:     { he: 'תוצאות רשמיות', en: 'Official results' },
+        k26_count_partial_title: { he: 'ספירה חלקית — כל התוצאות בעמוד זמניות', en: 'Partial count — every result on this page is provisional' },
+        k26_count_official_title: { he: 'הספירה הושלמה', en: 'Count complete' },
+        k26_count_counted:     { he: 'קלפיות שנספרו', en: 'Ballots counted' },
+        k26_count_remaining:   { he: 'קלפיות שטרם נספרו', en: 'Ballots not yet counted' },
+        k26_count_updated:     { he: 'עודכן', en: 'Updated' },
+        k26_count_partial_note: { he: 'הקולות, המנדטים, המפות ושאר התצוגות מבוססים רק על הקלפיות שנספרו עד כה — והם ישתנו ככל שיגיעו קלפיות נוספות.', en: 'Votes, seats, maps and every other view are based only on the ballots counted so far — and will change as more ballots arrive.' },
+        k26_count_official_note: { he: 'כל הקלפיות ברשימה נספרו. הנתונים בעמוד הם התוצאות הרשמיות.', en: 'Every ballot on the roster has been counted. The figures on this page are the official results.' },
+        nav_mcp_cta:           { he: '✨ חקור את הנתונים בעזרת MCP', en: '✨ Explore the data with MCP' },
+        k26_votes_seats:       { he: 'קולות ומנדטים', en: 'Votes & seats' },
+        k26_threshold:         { he: 'אחוז חסימה 3.25%', en: 'Threshold 3.25%' },
+        k26_below:             { he: 'מתחת לאחוז החסימה', en: 'Below the threshold' },
+        k26_bloc_right:        { he: 'ימין', en: 'Right' },
+        k26_bloc_center:       { he: 'מרכז–שמאל', en: 'Center–left' },
+        k26_bloc_arab:         { he: 'מפלגות ערביות', en: 'Arab parties' },
+        k26_expand:            { he: 'הרחבה', en: 'Expand' },
+        k26_open_full:         { he: 'לתצוגה המלאה', en: 'Full view' },
+        k26_sankey_pane:       { he: 'נדידת קולות 25 ← 26', en: 'Vote flow 25 → 26' },
+        k26_sankey_note:       { he: 'אומדן לאומי מהקלפיות המוצלבות, לא ספירת אנשים', en: 'National estimate from matched ballots, not a count of people' },
+        k26_sankey_explainer:  { he: '📘 איך מחשבים את מעברי הקולות? להסבר המונפש', en: '📘 How are vote transfers calculated? Animated explainer' },
+        k26_suspects_pane:     { he: 'הקלפיות החשודות ביותר', en: 'Most suspicious ballots' },
+        k26_suspects_note:     { he: 'הקלפיות שהתוצאה שלהן הכי רחוקה מצפי הרגרסיה הארצית של מעבר הקולות 25←26, כשהחיזוי מחושב מאותה קלפי (אותו יישוב ואותו מספר) בבחירות 25. אי־התאמה גדולה אינה ראיה לזיוף — בסימולטור הזיוף אפשר לבחון קלפיות בגלאים נוספים.', en: 'Ballots whose result is farthest from the national 25→26 transfer-regression prediction, computed from the same ballot (same settlement and number) in election 25. A large mismatch is not evidence of fraud — the fraud simulator examines ballots with more detectors.' },
+        k26_suspects_src:      { he: 'מקור לחיזוי: קלפי {b} ב{s}', en: 'Prediction source: ballot {b} in {s}' },
+        k26_suspects_pred:     { he: 'צפי המודל', en: 'Model prediction' },
+        k26_suspects_actual:   { he: 'בפועל', en: 'Actual' },
+        k26_suspects_mismatch: { he: 'אי־התאמה', en: 'Mismatch' },
+        k26_suspects_full:     { he: 'לסימולטור הזיוף המלא', en: 'Full fraud simulator' },
+        k26_dhondt_reset:      { he: '↺ איפוס לתוצאות כנסת 26', en: '↺ Reset to Knesset 26 results' },
+        k26_tsne_pane:         { he: 'התפלגות קלפיות', en: 'Ballot distribution' },
+        k26_tsne_note:         { he: 'כל נקודה היא קלפי, צבועה במפלגה המנצחת בה. מרחק משמעותי רק בין שכנים קרובים', en: 'Each dot is a ballot box, coloured by its winning party. Distance matters only among near neighbours' },
+        k26_geomap_pane:       { he: 'מפה גיאוגרפית', en: 'Geographic map' },
+        k26_geomap_note:       { he: 'המפה הגיאוגרפית במצב ברירת המחדל שלה (מפלגה מנצחת): כל נקודה היא קלפי, צבועה במפלגה המנצחת בה וממודרת לפי מצביעים. מעבר עכבר מציג את כרטיס הקלפי, לחיצה על אשכול מגדילה אליו ולחיצה על קלפי פותחת את הכרטיס — כמו במפה המלאה', en: 'The geographic map in its default (winning party) mode: each dot is a ballot box, coloured by its winning party and sized by voters. Hover shows the ballot card, clicking a cluster zooms in and clicking a ballot opens its card — as in the full map' },
+        k26_mks_pending:       { he: 'שמות חברי הכנסת (לפי סדר הרשימות) יופיעו כאן ובתוויות המושבים ברגע שיתקבל קישור הרשימות', en: 'MK names (in list order) will appear here and in the seat tooltips as soon as the lists link arrives' },
+        k26_mks_seat:          { he: 'מושב', en: 'Seat' },
+        k26_dhondt_pane:       { he: 'מחשבון מנדטים', en: 'Seat Calculator' },
+        k26_dhondt_note:       { he: 'מחשבון מנדטים בשיטת באדר–עופר: המנדטים מחושבים מקולות הרשימות מעל החסימה, עם הסכמי עודפים. במחשבון המלא אפשר לשנות קולות ולראות מנדטים זזים', en: 'Seats are computed from above-threshold votes with surplus agreements. In the full calculator you can change votes and watch seats move' },
+        k26_agreements:        { he: 'הסכמי עודפים', en: 'Surplus agreements' },
+        k26_top_flows:         { he: 'המעברים הגדולים', en: 'Largest flows' },
+        k26_valid:             { he: 'קולות כשרים', en: 'Valid votes' },
+        k26_ballots_label:     { he: 'קלפיות', en: 'Ballot boxes' },
+        k26_settlements_label: { he: 'יישובים', en: 'Settlements' },
+        k26_lists_label:       { he: 'רשימות', en: 'Lists' },
+        k26_logos_source:      { he: 'סמלי הרשימות: VoteSmart (votesmart.co.il/Lists), נכון ל-23.10.2026. הרשימה המשותפת: הסמל הקיים באתר (הקישור ב-VoteSmart שבור); לנעם לא פורסם סמל', en: 'Party logos: VoteSmart (votesmart.co.il/Lists), as of 23 Oct 2026. Joint List: existing site logo (VoteSmart link is dead); Noam has no published logo' },
+        k26_turnout_pane:      { he: 'מי יצא להצביע? אחוז הצבעה בקלפיות החזקות ביותר לכל רשימה', en: 'Who turned out? Turnout in each list’s strongest ballots' },
+        k26_turnout_note:      { he: 'לכל מפלגה: 100 הקלפיות שבהן שיעור התמיכה בה הוא הגבוה ביותר, והתפלגות אחוז ההצבעה בהן. הקו המקווקו הוא ממוצע ההצבעה (משוקלל מצביעים)', en: 'For each party: the 100 ballots where its support share is highest, and the turnout distribution in them. The dashed line is the voter-weighted mean turnout' },
+        k26_th_strongest:      { he: '100 החזקות ביותר', en: '100 strongest' },
+        k26_th_neighbourhood:  { he: '100 הקרובות למרכז (אין שיוך בלעדי)', en: '100 nearest the centroid (no exclusive assignment)' },
+        k26_th_avg_support:    { he: 'תמיכה ממוצעת במפלגה', en: 'mean support for the party' },
+        k26_th_ballots:        { he: 'מספר קלפיות', en: 'Ballot count' },
+        k26_th_voters:         { he: 'משוקלל מצביעים', en: 'Voter-weighted' },
+        k26_th_assigned:       { he: 'שויכו', en: 'assigned' },
+        k26_th_mean:           { he: 'אחוז הצבעה ממוצע במעוזי המפלגה', en: 'Mean turnout in the party’s strongholds' },
+        k26_th_purity:         { he: 'טוהר (המנצחת = המשויכת)', en: 'purity (winner = assigned)' },
+        k26_th_agreement:      { he: 'התאמה כוללת בין המפלגה המנצחת לשיוך המרכז', en: 'Overall agreement between winning party and centroid assignment' },
+        k26_th_fallback:       { he: 'אין קלפיות מנצחות — מרכז מזרע הקלפיות החזקות ביותר', en: 'no winning ballots — centroid seeded from its strongest ballots' },
 
         /* ── Mobile tabs ── */
         tab_map:               { he: 'מפה', en: 'Map' },
@@ -67,7 +128,7 @@
         eligible_voters:       { he: 'בעלי זכות בחירה', en: 'Eligible voters' },
         voted:                 { he: 'הצביעו', en: 'Voted' },
         turnout_pct:           { he: 'אחוז הצבעה', en: 'Turnout' },
-        common_precincts:      { he: 'קלפיות משותפות', en: 'Common precincts' },
+        common_precincts:      { he: 'קלפיות מוצלבות', en: 'Matched (cross-linked) ballot boxes' },
         correlation_label:     { he: 'מקדם פירסון:', en: 'Pearson coefficient:' },
         regression_label:      { he: 'משוואת רגרסיה:', en: 'Regression equation:' },
         r_squared:             { he: 'R²:', en: 'R²:' },
@@ -98,8 +159,8 @@
         founded_label:         { he: 'שנת הקמה:', en: 'Founded:' },
         from_votes_of:         { he: 'מקולות {party} בבחירות הקודמות', en: 'Of {party} votes in previous election' },
         from_votes_of_new:     { he: 'מקולות {party} בבחירות החדשות', en: 'Of {party} votes in new election' },
-        votes_from_common:     { he: '{n} קולות (מתוך הקלפיות המשותפות)', en: '{n} votes (from common precincts)' },
-        votes_from_common_only:{ he: '{n} קולות (מתוך הקלפיות המשותפות בלבד)', en: '{n} votes (from common precincts only)' },
+        votes_from_common:     { he: '{n} קולות (מתוך הקלפיות המוצלבות)', en: '{n} votes (from matched ballot boxes)' },
+        votes_from_common_only:{ he: '{n} קולות (מתוך הקלפיות המוצלבות בלבד)', en: '{n} votes (from matched ballot boxes only)' },
         in_prev_election:      { he: 'בבחירות הקודמות', en: 'In previous election' },
         in_new_election:       { he: 'בבחירות החדשות', en: 'In new election' },
         official_results:      { he: 'תוצאות רשמיות - כנסת ה-{n}', en: 'Official results – Knesset {n}' },
@@ -610,7 +671,7 @@
         'עוצמה יהודית': 'Jewish Power',
         'ישר': 'Yashar',
         'עמך ישראל': 'Amcha Yisrael',
-        'הנדל–זליכה': 'Hendel–Zelicha–Wilf',
+        'המילואימניקים והכלכלית': 'HaMiluimnikim & HaKalkalit',
         'המילואימניקים': 'The Reservists',
         'הציבור החרדי': 'Haredi Public',
         'נעם': 'Noam',
@@ -874,6 +935,9 @@
     function renderNav(activeId) {
         const nav = document.querySelector('.view-switcher');
         if (!nav) return;
+        if (SHOW_E26 && !navViews.some(v => v.id === 'k26')) {
+            navViews.splice(1, 0, { id: 'k26', href: 'k26.html', i18n: 'nav_k26', text: 'מרכז כנסת 26' });
+        }
 
         // Preserve export button if present
         const exportBtn = nav.querySelector('.header-export');
@@ -897,12 +961,12 @@
             { id: 'party',      href: 'party.html',      i18n: 'party_profile',      text: 'פרופיל מפלגה' },
             { id: 'rankings',   href: 'rankings.html',   i18n: 'nav_rankings',       text: 'דירוגים' },
             { id: 'methodology', href: 'methodology.html', i18n: 'nav_methodology',  text: 'מתודולוגיה' },
-            { id: 'mcp', href: 'mcp.html', i18n: 'nav_mcp', text: 'שאל את הנתונים' },
             { id: 'discussions', href: 'discussions.html', i18n: 'nav_discussions',    text: 'דיונים' },
         ];
 
-        // Main views row
-        nav.innerHTML = navViews.map(viewLink).join('\n');
+        // Main views row — MCP is promoted to a gold call-to-action at the end.
+        const mcpLink = { id: 'mcp', href: 'mcp.html', i18n: 'nav_mcp_cta', text: 'חקור את הנתונים בעזרת MCP', cls: 'mcp-cta' };
+        nav.innerHTML = navViews.map(viewLink).join('\n') + '\n' + viewLink(mcpLink);
 
         // Extras row (below main views)
         let extrasRow = nav.parentElement.querySelector('.nav-extras');

@@ -79,6 +79,18 @@ def refresh_irregularities(ballots):
         print(f"irregularities_26.json covers {covered} ballots, not {ballots}")
 
 
+def refresh_suspects():
+    """Rebuild the command-center (k26.html) most-suspicious-ballots pane.
+
+    Needs the refreshed tsne_26 + transfer_25_to_26 in site/data, so it runs
+    after prepare_election_26. A failure does not block the rest of the update.
+    """
+    try:
+        run([sys.executable, "generate_suspects_data.py"])
+    except SystemExit as error:
+        print(f"suspects pane data was not updated ({error})")
+
+
 def refresh_turnout():
     """Rebase the turnout what-if on the official count. turnout.html stays paused if this fails."""
     try:
@@ -150,6 +162,7 @@ def main():
 
     run([sys.executable, "prepare_election_26.py", "--real-csv", str(ballot_path)])
     run([sys.executable, "prepare_fraud_sim.py", "--transitions", "25_26"], env={**os.environ, "K26_REAL": "1"})
+    refresh_suspects()
     refresh_irregularities(counted)
 
     from k26_live import ROSTER, STATUS as status_path, publish_kind, summarize

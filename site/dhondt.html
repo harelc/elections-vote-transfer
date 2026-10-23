@@ -2,6 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <script>if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');</script>
     <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/dhondt.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -980,6 +981,35 @@
             text-decoration: underline;
         }
 
+        /* Embedded in k26.html: keep the original calculator design, drop page chrome */
+        html.embed body { min-height: auto; }
+        html.embed .dunes-container,
+        html.embed .main-header,
+        html.embed .main-footer,
+        html.embed .turnout-banner { display: none !important; }
+        html.embed .app-container { min-height: auto; }
+        html.embed .main-content { max-width: none; width: 100%; padding: 0.75rem; grid-template-columns: 355px minmax(0, 1fr); gap: 1rem; }
+        html.embed .control-panel { max-height: calc(100vh - 24px); }
+        html.embed #e26-widget,
+        html.embed #e26-modal-overlay,
+        html.embed .bmc-button { display: none !important; }
+        html.embed .party-input-row { grid-template-columns: 16px minmax(46px, 1fr) auto 68px auto; gap: 0.24rem; }
+        html.embed .party-color { width: 16px; height: 16px; }
+        html.embed .party-name { font-size: 0.76rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        html.embed .vote-adjust-btn { padding: 0.15rem 0.17rem; font-size: 0.55rem; }
+        html.embed .vote-input { padding: 0.3rem 0.3rem; font-size: 0.74rem; }
+        html.embed .parliament-container,
+        html.embed .results-container { padding: 1rem; }
+        html.embed #election-selector { display: none !important; }
+        html.embed .parliament-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; width: 100%; align-items: center; justify-items: center; }
+        html.embed #parliament-chart { grid-row: 1; grid-column: 1 / -1; }
+        html.embed .coalition-side { min-width: 50px; }
+        html.embed .coalition-side .coalition-label { font-size: 0.7rem; }
+        html.embed .coalition-side .coalition-seats { font-size: 1.45rem; }
+        html.embed #parliament-chart { flex: 0 1 540px; width: min(540px, 100%); max-width: 540px; min-width: 0; height: 360px; }
+        html.embed .result-card,
+        html.embed .vote-bars-header { grid-template-columns: minmax(78px, 118px) 1fr minmax(48px, 64px) minmax(64px, 92px); gap: 0.4rem; }
+
         /* Responsive */
         @media (max-width: 900px) {
             .main-content {
@@ -1014,7 +1044,7 @@
                 <div class="control-panel-scrollable">
                     <div class="control-section">
                         <h3 class="control-title" data-i18n="settings">הגדרות</h3>
-                        <div class="threshold-row" style="margin-bottom:0.75rem">
+                        <div class="threshold-row" id="election-selector" style="margin-bottom:0.75rem">
                             <div class="threshold-control">
                                 <label data-i18n="dhondt_election_label">בחירות:</label>
                                 <div id="election-toggle" style="display:inline-flex;gap:2px;background:var(--bg-tertiary);border-radius:6px;padding:2px;border:1px solid var(--border-color)">
@@ -1127,14 +1157,14 @@
     <script>
         // Party data from Knesset 25 - Official Wikipedia results
         const parties25 = [
-            { name: 'הליכוד', votes: 1115336, color: '#2563eb', block: 'right', name_en: 'Likud' },
+            { name: 'הליכוד', votes: 775568, color: '#2563eb', block: 'right', name_en: 'Likud' },
             { name: 'יש עתיד', votes: 847435, color: '#06b6d4', block: 'left', name_en: 'Yesh Atid' },
-            { name: 'הציונות הדתית', votes: 516470, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
+            { name: 'הציונות הדתית', votes: 281709, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
             { name: 'המחנה הממלכתי', votes: 432482, color: '#7c3aed', block: 'left', name_en: 'National Unity' },
-            { name: 'ש״ס', votes: 392964, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
-            { name: 'יהדות התורה', votes: 280194, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
-            { name: 'ישראל ביתנו', votes: 213687, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
-            { name: 'רע״ם', votes: 194047, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
+            { name: 'ש״ס', votes: 381317, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
+            { name: 'יהדות התורה', votes: 343336, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
+            { name: 'ישראל ביתנו', votes: 362609, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
+            { name: 'רע״ם', votes: 264987, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
             { name: 'חד״ש-תע״ל', votes: 178735, color: '#f43f5e', block: 'arab', name_en: 'Hadash-Taal' },
             { name: 'העבודה', votes: 175992, color: '#dc2626', block: 'left', name_en: 'Labor' },
             { name: 'מרצ', votes: 150793, color: '#16a34a', block: 'left', name_en: 'Meretz' },
@@ -1154,21 +1184,21 @@
 
         // Party data from Knesset 26 - Simulated
         const parties26 = [
-            { name: 'ישר', votes: 977299, color: '#14b8a6', block: 'left', name_en: 'Yashar' },
+            { name: 'ישר', votes: 965194, color: '#eab308', block: 'left', name_en: 'Yashar' },
             { name: 'הליכוד', votes: 890852, color: '#2563eb', block: 'right', name_en: 'Likud' },
-            { name: 'ביחד', votes: 503436, color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
-            { name: 'הדמוקרטים', votes: 380093, color: '#16a34a', block: 'left', name_en: 'The Democrats' },
+            { name: 'ביחד', votes: 640826, color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
+            { name: 'הדמוקרטים', votes: 356900, color: '#16a34a', block: 'left', name_en: 'The Democrats' },
             { name: 'יהדות התורה', votes: 395227, color: '#4b5563', block: 'right', name_en: 'United Torah Judaism' },
             { name: 'ישראל ביתנו', votes: 329204, color: '#db2777', block: 'left', name_en: 'Yisrael Beiteinu' },
-            { name: 'הרשימה המשותפת', votes: 356844, color: '#0d9488', block: 'arab', name_en: 'Joint List' },
+            { name: 'הרשימה המשותפת', votes: 370092, color: '#0d9488', block: 'arab', name_en: 'Joint List' },
             { name: 'ש״ס', votes: 314895, color: '#1e3a8a', block: 'right', name_en: 'Shas' },
-            { name: 'עוצמה יהודית', votes: 317866, color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
+            { name: 'עוצמה יהודית', votes: 326268, color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
             { name: 'הציונות הדתית', votes: 234797, color: '#92400e', block: 'right', name_en: 'Religious Zionism' },
             { name: 'רע״ם', votes: 250323, color: '#84cc16', block: 'arab', name_en: "Ra'am" },
-            { name: 'עמך ישראל', votes: 223611, color: '#4d7c0f', block: 'right', name_en: 'Amcha Yisrael' },
-            { name: 'הנדל–זליכה', votes: 207922, color: '#d97706', block: 'right', name_en: 'Hendel–Zelicha' },
-            { name: 'הציבור החרדי', votes: 17192, color: '#a16207', block: 'right', name_en: 'Haredi Public' },
-            { name: 'נעם', votes: 16311, color: '#be123c', block: 'right', name_en: 'Noam' },
+            { name: 'עמך ישראל', votes: 117663, color: '#4d7c0f', block: 'right', name_en: 'Amcha Yisrael' },
+            { name: 'המילואימניקים והכלכלית', votes: 201672, color: '#9333ea', block: 'right', name_en: 'HaMiluimnikim & HaKalkalit' },
+            { name: 'הציבור החרדי', votes: 30931, color: '#a16207', block: 'right', name_en: 'Haredi Public' },
+            { name: 'נעם', votes: 17064, color: '#be123c', block: 'right', name_en: 'Noam' },
         ];
 
         const agreements26 = [
@@ -1918,7 +1948,7 @@
             renderParliament(results) {
                 const container = document.getElementById('parliament-chart');
                 const width = container.clientWidth || 600;
-                const height = 350;
+                const height = container.clientHeight || 350;
 
                 d3.select('#parliament-chart').selectAll('*').remove();
 
@@ -1942,7 +1972,7 @@
                     'ביחד': 8.5,
                     'ש״ס': 9,
                     'יהדות התורה': 10,
-                    'הנדל–זליכה': 10.7,
+                    'המילואימניקים והכלכלית': 10.7,
                     'הליכוד': 11,
                     'עמך ישראל': 11.5,
                     'הציונות הדתית': 12,
@@ -1970,26 +2000,39 @@
                     }
                 });
 
-                // Arrange in semicircle rows - adaptive for larger Knesset sizes
-                const seatSpacing = this.totalSeats <= 150 ? 14 : this.totalSeats <= 300 ? 10 : this.totalSeats <= 450 ? 7 : 5;
-                const seatRadius = this.totalSeats <= 150 ? 6 : this.totalSeats <= 300 ? 4 : this.totalSeats <= 450 ? 3 : 2;
-                const rows = this.totalSeats <= 150 ? 5 : this.totalSeats <= 300 ? 7 : this.totalSeats <= 450 ? 9 : 11;
-                const centerX = width / 2;
-                const centerY = height - 30;
-                const minRadius = this.totalSeats <= 150 ? 80 : this.totalSeats <= 300 ? 50 : 35;
-                const maxRadius = Math.min(width / 2 - 20, height - 60);
-                const radiusStep = (maxRadius - minRadius) / (rows - 1);
+                // Arrange in semicircle rows. Up to 150 seats the layout mirrors
+                // the k26.html command-center hemisphere (720x348 space, 6 rows,
+                // r=13 seats with candidate initials); larger parliaments keep
+                // the adaptive compact layout.
+                const ccMode = this.totalSeats <= 150;
+                const seatSpacing = ccMode ? 14 : this.totalSeats <= 300 ? 10 : this.totalSeats <= 450 ? 7 : 5;
+                const seatRadius = ccMode ? 13 : this.totalSeats <= 300 ? 4 : this.totalSeats <= 450 ? 3 : 2;
+                const rows = ccMode ? 6 : this.totalSeats <= 300 ? 7 : this.totalSeats <= 450 ? 9 : 11;
+                const centerX = ccMode ? 360 : width / 2;
+                const centerY = ccMode ? 312 : height - 30;
+                const minRadius = ccMode ? 96 : this.totalSeats <= 300 ? 50 : 35;
+                const maxRadius = ccMode ? 96 + 5 * 38 : Math.min(width / 2 - 20, height - 60);
+                const radiusStep = ccMode ? 38 : (maxRadius - minRadius) / (rows - 1);
 
                 // Calculate seats per row
                 const seatsPerRow = [];
-                let remaining = this.totalSeats;
-                for (let r = 0; r < rows; r++) {
-                    const radius = minRadius + r * radiusStep;
-                    const circumference = Math.PI * radius;
-                    const maxSeats = Math.floor(circumference / seatSpacing);
-                    const rowSeats = Math.min(maxSeats, remaining);
-                    seatsPerRow.push(rowSeats);
-                    remaining -= rowSeats;
+                if (ccMode) {
+                    // Seats per row proportional to arc length (radius); largest-remainder.
+                    const radii = Array.from({ length: rows }, (_, i) => minRadius + i * radiusStep);
+                    const raw = radii.map(r => r / radii.reduce((a, b) => a + b, 0) * seats.length);
+                    seatsPerRow.push(...raw.map(Math.floor));
+                    let rem = seats.length - seatsPerRow.reduce((a, b) => a + b, 0);
+                    raw.map((v, i) => [v - seatsPerRow[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (rem-- > 0) seatsPerRow[i]++; });
+                } else {
+                    let remaining = this.totalSeats;
+                    for (let r = 0; r < rows; r++) {
+                        const radius = minRadius + r * radiusStep;
+                        const circumference = Math.PI * radius;
+                        const maxSeats = Math.floor(circumference / seatSpacing);
+                        const rowSeats = Math.min(maxSeats, remaining);
+                        seatsPerRow.push(rowSeats);
+                        remaining -= rowSeats;
+                    }
                 }
 
                 // First, create all seat positions (without party assignment)
@@ -1997,27 +2040,44 @@
                 for (let r = 0; r < rows; r++) {
                     const radius = minRadius + r * radiusStep;
                     const numSeats = seatsPerRow[r];
-                    const angleStep = Math.PI / (numSeats + 1);
-
-                    for (let s = 0; s < numSeats; s++) {
-                        const angle = Math.PI - angleStep * (s + 1);
-                        const x = centerX + radius * Math.cos(angle);
-                        const y = centerY - radius * Math.sin(angle);
-                        allPositions.push({ x, y, angle, row: r });
+                    if (ccMode) {
+                        for (let s = 0; s < numSeats; s++) {
+                            const angle = Math.PI - (numSeats === 1 ? 0.5 : s / (numSeats - 1)) * Math.PI;
+                            allPositions.push({ x: centerX + radius * Math.cos(angle), y: centerY - radius * Math.sin(angle), angle, row: r });
+                        }
+                    } else {
+                        const angleStep = Math.PI / (numSeats + 1);
+                        for (let s = 0; s < numSeats; s++) {
+                            const angle = Math.PI - angleStep * (s + 1);
+                            const x = centerX + radius * Math.cos(angle);
+                            const y = centerY - radius * Math.sin(angle);
+                            allPositions.push({ x, y, angle, row: r });
+                        }
                     }
                 }
+
+                // In CC mode draw in the fixed 720x348 coordinate space, scaled to fit.
+                const root = ccMode
+                    ? svg.append('g').attr('transform', `translate(${(width - 720 * Math.min(width / 720, height / 348)) / 2},${(height - 348 * Math.min(width / 720, height / 348)) / 2}) scale(${Math.min(width / 720, height / 348)})`)
+                    : svg;
 
                 // Sort positions by angle (column-based: left to right visually)
                 allPositions.sort((a, b) => b.angle - a.angle);
 
-                // Assign seats to positions in column order
-                const seatPositions = allPositions.slice(0, seats.length).map((pos, i) => ({
-                    ...pos,
-                    ...seats[i]
-                }));
+                // Assign seats to positions: contiguous party wedges, and within
+                // each wedge the front (inner-row) seats go to the top of its list.
+                const basePositions = allPositions.slice(0, seats.length);
+                const seatPositions = [];
+                for (let i = 0, cursor = 0; i < seats.length;) {
+                    let j = i;
+                    while (j < seats.length && seats[j].party === seats[i].party) j++;
+                    const chunk = basePositions.slice(cursor, cursor + (j - i)).sort((a, b) => a.row - b.row || b.angle - a.angle);
+                    for (let k = i; k < j; k++) seatPositions.push({ ...chunk[k - i], ...seats[k], rank: k - i + 1 });
+                    cursor += j - i; i = j;
+                }
 
                 // Draw seats
-                svg.selectAll('.seat')
+                root.selectAll('.seat')
                     .data(seatPositions)
                     .join('circle')
                     .attr('class', 'seat')
@@ -2025,11 +2085,12 @@
                     .attr('cy', d => d.y)
                     .attr('r', seatRadius)
                     .attr('fill', d => d.color)
-                    .attr('stroke', '#000')
-                    .attr('stroke-width', seatRadius > 3 ? 0.5 : 0.3)
+                    .attr('stroke', ccMode ? 'rgba(0,0,0,.35)' : '#000')
+                    .attr('stroke-width', ccMode ? 0.7 : seatRadius > 3 ? 0.5 : 0.3)
                     .style('cursor', 'pointer')
                     .on('mouseenter', (event, d) => {
-                        this.tooltip.html(i18n.partyName(d.party))
+                        const mk = currentElection === '26' ? (K26_MKS[d.party] || [])[(d.rank || 1) - 1] : null;
+                        this.tooltip.html(i18n.partyName(d.party) + (mk ? ` · ${i18n.t('k26_mks_seat')} ${d.rank} · ${mkDisplayName(mk)}` : ''))
                             .classed('visible', true)
                             .style('left', (event.clientX + 10) + 'px')
                             .style('top', (event.clientY - 20) + 'px');
@@ -2038,15 +2099,65 @@
                         this.tooltip.classed('visible', false);
                     });
 
-                // Add center text
-                const seatLabel = i18n.getLang() === 'en' ? `${this.totalSeats} seats` : `${this.totalSeats} מושבים`;
-                svg.append('text')
-                    .attr('x', centerX)
-                    .attr('y', centerY + 15)
-                    .attr('text-anchor', 'middle')
-                    .attr('fill', 'var(--text-muted)')
-                    .attr('font-size', '0.9rem')
-                    .text(seatLabel);
+                // Candidate initials inside the seats (K26 lists), like the CC hemisphere.
+                // Names are surname-first: initials = given-name + surname initials.
+                if (ccMode && currentElection === '26') {
+                    root.selectAll('.seat-initials')
+                        .data(seatPositions.filter(d => (K26_MKS[d.party] || [])[(d.rank || 1) - 1]))
+                        .join('text')
+                        .attr('class', 'seat-initials')
+                        .attr('x', d => d.x)
+                        .attr('y', d => d.y)
+                        .attr('text-anchor', 'middle')
+                        .attr('dy', '0.36em')
+                        .attr('font-size', 10.5)
+                        .attr('font-weight', 800)
+                        .attr('fill', d => {
+                            const hex = (d.color || '#666').replace('#', '');
+                            const lum = hex.length >= 6 ? (0.2126 * parseInt(hex.slice(0, 2), 16) + 0.7152 * parseInt(hex.slice(2, 4), 16) + 0.0722 * parseInt(hex.slice(4, 6), 16)) / 255 : 0.3;
+                            return lum > 0.55 ? '#191203' : '#ffffff';
+                        })
+                        .attr('stroke', d => {
+                            const hex = (d.color || '#666').replace('#', '');
+                            const lum = hex.length >= 6 ? (0.2126 * parseInt(hex.slice(0, 2), 16) + 0.7152 * parseInt(hex.slice(2, 4), 16) + 0.0722 * parseInt(hex.slice(4, 6), 16)) / 255 : 0.3;
+                            return lum > 0.55 ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.5)';
+                        })
+                        .attr('stroke-width', 0.7)
+                        .attr('paint-order', 'stroke')
+                        .style('pointer-events', 'none')
+                        .text(d => {
+                            const parts = (K26_MKS[d.party] || [])[(d.rank || 1) - 1].split(/\s+/);
+                            return parts.length > 1 ? parts[parts.length - 1][0] + parts[0][0] : parts[0].slice(0, 2);
+                        });
+                }
+
+                // Add center text: big seat total + majority line (CC style)
+                if (ccMode) {
+                    root.append('text')
+                        .attr('x', centerX)
+                        .attr('y', centerY - 30)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', 'var(--text-primary)')
+                        .attr('font-size', 52)
+                        .attr('font-weight', 800)
+                        .text(this.totalSeats);
+                    root.append('text')
+                        .attr('x', centerX)
+                        .attr('y', centerY - 4)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', 'var(--text-muted)')
+                        .attr('font-size', 15)
+                        .text(`${Math.floor(this.totalSeats / 2) + 1} = ${i18n.getLang() === 'en' ? 'majority' : 'רוב'}`);
+                } else {
+                    const seatLabel = i18n.getLang() === 'en' ? `${this.totalSeats} seats` : `${this.totalSeats} מושבים`;
+                    svg.append('text')
+                        .attr('x', centerX)
+                        .attr('y', centerY + 15)
+                        .attr('text-anchor', 'middle')
+                        .attr('fill', 'var(--text-muted)')
+                        .attr('font-size', '0.9rem')
+                        .text(seatLabel);
+                }
             }
         }
 
@@ -2328,8 +2439,17 @@
         // Make calculator accessible for export
         let calculator;
 
+        // K26 candidate names for hemicycle seat tooltips (list order = seat rank).
+        // Declared before the calculator renders (initials draw during render).
+        let K26_MKS = {};
+        const mkDisplayName = n => { if (!n) return n; const p = n.trim().split(/\s+/); return p.length > 1 ? p[p.length - 1] + ' ' + p.slice(0, -1).join(' ') : n; };
+
         // Initialize
         calculator = new DHondtCalculator();
+        fetch('data/k26_mks.json').then(r => r.ok ? r.json() : null).then(j => {
+            if (j && j.parties) { K26_MKS = j.parties; calculator.calculate(); }
+        }).catch(() => {});
+        document.getElementById('reset-btn').textContent = i18n.getLang() === 'en' ? `Reset to Knesset ${currentElection}` : `אפס לתוצאות כנסת ${currentElection}`;
 
         // Re-render all dynamic content when language changes
         window.addEventListener('langchange', () => {

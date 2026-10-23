@@ -362,6 +362,7 @@
 
         // View cards
         const cards = [
+            ...(i18n.SHOW_E26 ? [{ icon: '🎛️', i18n_title: 'nav_k26', i18n_desc: 'card_k26_desc', href: 'k26.html' }] : []),
             { icon: '📚', i18n_title: 'nav_primer',    i18n_desc: 'card_primer_desc',    href: 'primer.html' },
             { icon: '🗺️', i18n_title: 'nav_geomap',    i18n_desc: 'card_geomap_desc',    href: 'geomap.html' },
             { icon: '🔵', i18n_title: 'nav_tsne',      i18n_desc: 'card_tsne_desc',      href: 'tsne.html' },

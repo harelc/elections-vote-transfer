@@ -745,12 +745,12 @@
             { name: 'בל״ד', color: '#065f46', block: 'arab', name_en: 'Balad' },
             // K26 additions
             { name: 'ביחד', color: '#f97316', block: 'left', name_en: 'Together (Beyachad)' },
-            { name: 'ישר', color: '#14b8a6', block: 'left', name_en: 'Yashar' },
+            { name: 'ישר', color: '#eab308', block: 'left', name_en: 'Yashar' },
             { name: 'הדמוקרטים', color: '#16a34a', block: 'left', name_en: 'The Democrats' },
             { name: 'עוצמה יהודית', color: '#7f1d1d', block: 'right', name_en: 'Jewish Power' },
             { name: 'הרשימה המשותפת', color: '#0d9488', block: 'arab', name_en: 'Joint List' },
             { name: 'עמך ישראל', color: '#4d7c0f', block: 'right', name_en: 'Amcha Yisrael' },
-            { name: 'הנדל–זליכה', color: '#d97706', block: 'right', name_en: 'Hendel–Zelicha' },
+            { name: 'המילואימניקים והכלכלית', color: '#9333ea', block: 'right', name_en: 'HaMiluimnikim & HaKalkalit' },
             { name: 'הציבור החרדי', color: '#a16207', block: 'right', name_en: 'Haredi Public' },
             { name: 'נעם', color: '#be123c', block: 'right', name_en: 'Noam' },
         ];
@@ -767,18 +767,21 @@
             'הרשימה המשותפת': 0.5, 'בל״ד': 1, 'חד״ש-תע״ל': 2, 'רע״ם': 3, 'מרצ': 4,
             'העבודה': 5, 'הדמוקרטים': 5, 'המחנה הממלכתי': 6, 'ישר': 6.5, 'יש עתיד': 7,
             'ישראל ביתנו': 8, 'ביחד': 8.5,
-            'ש״ס': 9, 'יהדות התורה': 10, 'הנדל–זליכה': 10.7,
+            'ש״ס': 9, 'יהדות התורה': 10, 'המילואימניקים והכלכלית': 10.7,
             'הליכוד': 11, 'עמך ישראל': 11.5, 'הציונות הדתית': 12, 'נעם': 12.2, 'עוצמה יהודית': 12.5,
             'הציבור החרדי': 10.3, 'הבית היהודי': 13,
         };
 
-        // Actual Knesset 25 seats
-        const actualSeats = {
+        // Actual seats per election: K25 hardcoded; K26 loaded in loadData
+        // from wiki_official_results.json (simulated now, real on election night).
+        const ACTUAL_SEATS_25 = {
             'הליכוד': 32, 'יש עתיד': 24, 'הציונות הדתית': 14,
             'המחנה הממלכתי': 12, 'ש״ס': 11, 'יהדות התורה': 7,
             'ישראל ביתנו': 6, 'רע״ם': 5, 'חד״ש-תע״ל': 5,
             'העבודה': 4, 'מרצ': 0, 'בל״ד': 0,
         };
+        let actualSeats = ACTUAL_SEATS_25;
+        let activeParties = partyConfig;
 
         // ── Geographic zone database for creative region naming ──
         // Each zone: center point + radius of influence + Hebrew/English names
@@ -1020,11 +1023,35 @@
 
         // ── Data loading ──
         let currentElection = i18n.SHOW_E26 ? '26' : '25';
+        let K26_MKS = {};
+        const mkDisplayName = n => { if (!n) return n; const p = n.trim().split(/\s+/); return p.length > 1 ? p[p.length - 1] + ' ' + p.slice(0, -1).join(' ') : n; };
         async function loadData() {
-            const [tsneRes, coordsRes] = await Promise.all([
+            const [tsneRes, coordsRes, mksRes, wikiRes] = await Promise.all([
                 fetch(`data/tsne_${currentElection}.json`).then(r => r.json()),
                 fetch('data/station_coordinates.json').then(r => r.json()),
+                fetch('data/k26_mks.json').then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('data/wiki_official_results.json').then(r => r.ok ? r.json() : null).catch(() => null),
             ]);
+            if (mksRes && mksRes.parties) K26_MKS = mksRes.parties;
+
+            // The party list follows the selected election (K26 lists for K26),
+            // with colours from the election's own tsne data.
+            const metaByName = {};
+            partyConfig.forEach(p => { metaByName[p.name] = p; });
+            activeParties = (tsneRes.parties || []).map(p => ({
+                name: p.name, color: p.color,
+                name_en: (metaByName[p.name] || {}).name_en || p.name,
+                block: (metaByName[p.name] || {}).block || 'right',
+            }));
+            Object.keys(partyColorMap).forEach(k => delete partyColorMap[k]);
+            activeParties.forEach(p => { partyColorMap[p.name] = p.color; });
+            const _election = (typeof currentElection !== 'undefined') ? currentElection : mobileElection;
+            if (_election === '26' && wikiRes && wikiRes['26']) {
+                actualSeats = {};
+                wikiRes['26'].forEach(r => { actualSeats[r.name] = r.seats; });
+            } else {
+                actualSeats = ACTUAL_SEATS_25;
+            }
 
             const coordMap = coordsRes.stations || coordsRes;
 
@@ -1280,7 +1307,7 @@
             console.assert(totalAllocated === knessetSize, `Total seats should be ${knessetSize}, got ${totalAllocated}`);
 
             // Build results
-            const results = partyConfig.map(p => ({
+            const results = activeParties.map(p => ({
                 name: p.name,
                 name_en: p.name_en,
                 color: p.color,
@@ -1393,7 +1420,15 @@
             const maxR = Math.min(width / 2 - 10, height - 35);
             const minArcR = knessetSize <= 150 ? 55 : knessetSize <= 300 ? 35 : 20;
             const positions = layoutArc(allSeats.length, minArcR, maxR);
-            const allPositions = positions.map((p, i) => ({ ...p, ...allSeats[i] }));
+            // Contiguous party wedges; front (inner-row) seats go to the list top.
+            const allPositions = [];
+            for (let i = 0, cursor = 0; i < allSeats.length;) {
+                let j = i;
+                while (j < allSeats.length && allSeats[j].party === allSeats[i].party) j++;
+                const chunk = positions.slice(cursor, cursor + (j - i)).sort((a, b) => (Math.hypot(a.x - centerX, a.y - centerY) - Math.hypot(b.x - centerX, b.y - centerY)) || b.angle - a.angle);
+                for (let k = i; k < j; k++) allPositions.push({ ...chunk[k - i], ...allSeats[k], rank: k - i + 1 });
+                cursor += j - i; i = j;
+            }
 
             // Draw seats — use two circles for national (donut effect)
             const seatGroups = svg.selectAll('.seat-g')
@@ -1405,7 +1440,8 @@
                     const typeLabel = nNational > 0
                         ? (d.type === 'national' ? ` (${i18n.t('national')})` : ` (${i18n.t('regional')})`)
                         : '';
-                    tooltip.innerHTML = i18n.partyName(d.party) + typeLabel;
+                    const mk = currentElection === '26' ? (K26_MKS[d.party] || [])[(d.rank || 1) - 1] : null;
+                    tooltip.innerHTML = i18n.partyName(d.party) + (mk ? ` · ${i18n.t('k26_mks_seat')} ${d.rank} · ${mkDisplayName(mk)}` : '') + typeLabel;
                     tooltip.classList.add('visible');
                     tooltip.style.left = (event.clientX + 10) + 'px';
                     tooltip.style.top = (event.clientY - 20) + 'px';
@@ -1598,7 +1634,21 @@
             );
 
             // Build Voronoi tessellation using d3.Delaunay
-            const points = geoStations.map(s => [s.lng, s.lat]);
+            // Stations sharing a venue often arrive from different geocoding
+            // sources a metre or two apart. Near-coincident points make
+            // degenerate Delaunay triangles whose circumcentres land
+            // kilometres away, painting long diagonal spike polygons (e.g.
+            // ראש העין ballots 1/11 in ירקון 2). Fan each duplicate group
+            // out in a ~35 m golden-angle spiral before tessellating.
+            const seenPts = new Map();
+            const points = geoStations.map(s => {
+                const key = Math.round(s.lat / 0.0003) + ',' + Math.round(s.lng / 0.0003);
+                const k = seenPts.get(key) || 0;
+                seenPts.set(key, k + 1);
+                if (!k) return [s.lng, s.lat];
+                const ang = k * 2.39996, r = 0.00035 * Math.sqrt(k);
+                return [s.lng + r * Math.cos(ang), s.lat + r * Math.sin(ang)];
+            });
             const delaunay = d3.Delaunay.from(points);
             const voronoi = delaunay.voronoi([33.8, 29.0, 36.2, 33.6]);
 
@@ -2167,7 +2217,7 @@
                             nationalSeatsByParty[p] = s;
                         }
                     }
-                    const results = partyConfig.map(p => ({
+                    const results = activeParties.map(p => ({
                         name: p.name, name_en: p.name_en, color: p.color, block: p.block,
                         seats: totalSeats[p.name] || 0, actual: actualSeats[p.name] || 0,
                         regionalSeats: (totalSeats[p.name] || 0) - (nationalSeatsByParty[p.name] || 0),
@@ -2181,7 +2231,7 @@
         // ── Language change ──
         window.addEventListener('langchange', () => {
             if (window._regionResults) {
-                const results = partyConfig.map(p => ({
+                const results = activeParties.map(p => ({
                     name: p.name,
                     name_en: p.name_en,
                     color: p.color,

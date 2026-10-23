@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/index.html'+(lp?'?lang='+lp:''))}</script>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — מרכז המידע כנסת 26">
+    <meta property="og:description" content="קולות מוחלטים, חלוקת מנדטים, נדידת קולות 25←26, מפה וקלפיות — כל כנסת 26 במסך אחד">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <meta name="twitter:card" content="summary_large_image">
+    <title>קולות נודדים - מרכז המידע כנסת 26</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="basemap.js"></script>
+    <script src="station-clusters.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+    <style>
+        .k26-hero { max-width:none; margin:0; padding:1.4rem 1.5rem 0.4rem; }
+        .k26-hero h2 { font-size:2rem; font-weight:800; color:var(--text-primary); }
+        .k26-hero p { color:var(--text-secondary); margin-top:0.25rem; }
+        .k26-badge { display:inline-block; margin-top:0.6rem; padding:0.28rem 0.7rem; border:1px solid var(--accent-primary); border-radius:999px; color:var(--accent-primary); font-size:0.82rem; font-weight:700; background:rgba(240,180,41,.08); }
+        .k26-stats { display:grid; grid-template-columns:repeat(7,1fr); gap:0.6rem; max-width:none; margin:0; padding:0.8rem 1.5rem 0.2rem; }
+        .full-view-cta { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; font-family:inherit; font-size:1rem; font-weight:800; line-height:1.25; cursor:pointer; text-decoration:none; white-space:nowrap; border-radius:999px; padding:.78rem 1.45rem; color:#1a1408 !important; background:linear-gradient(135deg,#ffd75e,#f0b429); border:1px solid #ffe08a; box-shadow:0 8px 26px rgba(240,180,41,.38); transition:transform .15s ease, box-shadow .15s ease; }
+        .full-view-cta:hover { transform:translateY(-1px); box-shadow:0 12px 32px rgba(240,180,41,.5); color:#1a1408 !important; }
+        .full-view-cta.block { display:flex; width:100%; margin-top:1rem; font-size:1.08rem; padding:1rem 1.4rem; }
+        .votes-full-cta { display:flex; width:100%; margin-top:.2rem; }
+        .count-banner { max-width:none; margin:1rem 1.5rem 0; padding:1.05rem 1.25rem; border-radius:14px; display:flex; gap:1.1rem; align-items:center; border:1.5px solid #f59e0b; background:linear-gradient(135deg,rgba(245,158,11,.2),rgba(239,68,68,.1)); box-shadow:0 10px 34px rgba(245,158,11,.16); }
+        .count-banner[hidden] { display:none; }
+        .count-banner.official { border-color:#22c55e; background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(240,180,41,.08)); box-shadow:0 10px 34px rgba(34,197,94,.12); }
+        .count-pulse { width:16px; height:16px; border-radius:50%; background:#f59e0b; flex:none; box-shadow:0 0 0 0 rgba(245,158,11,.55); animation:count-pulse 1.6s infinite; }
+        .count-banner.official .count-pulse { background:#22c55e; box-shadow:none; animation:none; }
+        @keyframes count-pulse { 70% { box-shadow:0 0 0 12px rgba(245,158,11,0); } 100% { box-shadow:0 0 0 0 rgba(245,158,11,0); } }
+        .count-main { flex:1; min-width:260px; }
+        .count-title { font-size:1.28rem; font-weight:900; color:var(--text-primary); line-height:1.3; }
+        .count-note { color:var(--text-secondary); font-size:.9rem; margin-top:.2rem; }
+        .count-numbers { text-align:center; min-width:245px; }
+        .count-big { font-size:2.15rem; font-weight:900; color:var(--text-primary); line-height:1.05; font-variant-numeric:tabular-nums; }
+        .count-big small { font-size:1rem; color:var(--text-secondary); font-weight:700; }
+        .count-pct { font-size:1.05rem; font-weight:900; color:#fbbf24; }
+        .count-banner.official .count-pct { color:#4ade80; }
+        .count-bar { height:11px; border-radius:999px; background:rgba(255,255,255,.1); overflow:hidden; margin-top:.45rem; }
+        .count-bar i { display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,#f59e0b,#fbbf24); }
+        .count-banner.official .count-bar i { background:linear-gradient(90deg,#16a34a,#4ade80); }
+        .count-meta { display:flex; flex-wrap:wrap; gap:.35rem 1.1rem; color:var(--text-muted); font-size:.8rem; margin-top:.35rem; justify-content:center; }
+        .dhondt-frame { width:100%; height:1280px; border:0; border-radius:10px; display:block; background:var(--bg-secondary); }
+        @media (max-width:900px){ .count-banner{flex-wrap:wrap;} .count-numbers{width:100%;} }
+        .k26-stat { text-align:center; padding:0.35rem 0.2rem; }
+        .k26-stat b { font-size:1.05rem; color:var(--text-secondary); font-weight:700; margin-inline-end:0.35rem; }
+        .k26-stat span { font-size:0.78rem; color:var(--text-muted); }
+        @media (max-width:700px){ .k26-stats{grid-template-columns:repeat(3,1fr);} }
+        .gemara { display:grid; grid-template-columns:clamp(450px,29.5vw,650px) minmax(0,1fr) clamp(450px,29.5vw,650px); gap:1rem; max-width:none; width:100%; margin:0; padding:1rem 1.2rem 2rem; align-items:start; }
+        .g-side { display:flex; flex-direction:column; gap:1rem; min-width:0; }
+        .side-pane .vrow { grid-template-columns:52px 1fr auto; gap:.5rem; }
+        .side-pane .logo-chip { width:52px; height:30px; }
+        .side-pane .logo-chip img { max-width:48px; max-height:26px; }
+        .side-pane .vbar { width:90px; }
+        #votes-table { max-height:600px; overflow-y:auto; padding-inline-end:2px; }
+        #suspects-list { max-height:620px; overflow-y:auto; padding-inline-end:2px; }
+        .g-side .th-grid { grid-template-columns:1fr 1fr; gap:.55rem; max-height:980px; overflow-y:auto; padding-inline-end:2px; }
+        .stage-main { min-height:820px; }
+        .g-center { display:flex; flex-direction:column; gap:1rem; min-width:0; }
+        .geomap-pane .mini-map { height:800px; }
+        .stage-tabs { display:flex; flex-wrap:wrap; gap:.45rem; align-items:center; margin-bottom:.8rem; }
+        .stage-panel[hidden] { display:none; }
+        @media (max-width:1250px){ .gemara{grid-template-columns:340px minmax(0,1fr) 340px;} }
+        @media (max-width:980px){ .gemara{grid-template-columns:1fr;} .g-center{order:-1;} .stage-main{min-height:0;} #votes-table,.g-side .th-grid,#suspects-list{max-height:none;} .geomap-pane .mini-map{height:70vh;} }
+        .pane.stage { grid-column:1/-1; padding:1.3rem 1.5rem; }
+        .pane.stage .pane-head h3 { font-size:1.3rem; }
+        .hemi-wrap { max-width:860px; margin:0.4rem auto 0; position:relative; }
+        .hemi-seat { cursor:pointer; }
+        .hemi-seat:hover { stroke:#fff; stroke-width:1.8; }
+        .hemi-wrap svg { width:100%; height:auto; display:block; }
+        .hemi-legend { display:flex; flex-wrap:wrap; gap:0.35rem 0.9rem; justify-content:center; margin-top:0.4rem; font-size:0.8rem; color:var(--text-secondary); }
+        .hemi-legend .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-inline-end:4px; }
+        @media (max-width:900px){ .k26-grid{grid-template-columns:1fr;} }
+        .pane { background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:1rem 1.1rem; min-width:0; }
+        .pane.wide { grid-column:1/-1; }
+        .pane.expanded { grid-column:1/-1; }
+        .pane-head { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:0.7rem; }
+        .pane-head h3 { font-size:1.08rem; color:var(--text-primary); }
+        .pane-note { font-size:0.78rem; color:var(--text-muted); line-height:1.45; }
+        .pane-actions { margin-inline-start:auto; display:flex; gap:0.4rem; flex-shrink:0; }
+        .pane-btn { font-family:inherit; font-size:0.78rem; font-weight:600; cursor:pointer; border:1px solid var(--border-color); background:var(--bg-tertiary); color:var(--text-secondary); border-radius:999px; padding:0.32rem 0.7rem; text-decoration:none; white-space:nowrap; }
+        .pane-btn:hover { border-color:var(--accent-primary); color:var(--accent-primary); }
+        .pane-btn.gold { background:var(--accent-primary); color:#1a1408; border-color:var(--accent-primary); }
+        /* votes table */
+        .vrow { display:grid; grid-template-columns:64px 1fr auto; gap:0.7rem; align-items:center; padding:0.42rem 0; border-bottom:1px solid rgba(255,255,255,.05); }
+        .vrow:last-child { border-bottom:none; }
+        .logo-chip { width:64px; height:34px; background:#fff; border-radius:6px; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+        .logo-chip img { max-width:60px; max-height:30px; object-fit:contain; }
+        .logo-chip .letter-fallback { color:#222; font-weight:800; font-size:0.8rem; }
+        .vname { font-weight:700; color:var(--text-primary); font-size:0.92rem; }
+        .vmeta { font-size:0.75rem; color:var(--text-muted); }
+        .vnums { text-align:end; }
+        .vnums b { color:var(--text-primary); font-size:0.95rem; }
+        .vbar { height:5px; border-radius:3px; background:rgba(255,255,255,.07); margin-top:4px; width:170px; max-width:32vw; }
+        .vbar i { display:block; height:100%; border-radius:3px; }
+        .seats-num { display:inline-block; min-width:2ch; text-align:center; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:6px; padding:0.05rem 0.4rem; font-weight:800; }
+        /* seat bar + dots */
+        .seatbar { display:flex; height:26px; border-radius:6px; overflow:hidden; position:relative; margin:0.5rem 0 0.3rem; }
+        .seatbar div { height:100%; }
+        .majority { position:relative; height:14px; font-size:0.7rem; color:var(--text-muted); }
+        .bloc-row { display:flex; flex-wrap:wrap; gap:0.5rem; margin-top:0.7rem; }
+        .bloc-chip { font-size:0.8rem; border:1px solid var(--border-color); border-radius:999px; padding:0.25rem 0.7rem; color:var(--text-secondary); }
+        .bloc-chip b { color:var(--text-primary); }
+        canvas.pane-canvas, .mini-map { width:100%; display:block; border-radius:8px; background:#101216; }
+        .mini-map { height:620px; }
+        .custom-cluster { background:transparent !important; }
+        .cluster-inner { width:100%; height:100%; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; font-family:'Heebo',sans-serif; box-shadow:0 2px 8px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.3); cursor:pointer; }
+        .cluster-count { font-weight:800; line-height:1; text-shadow:0 1px 3px rgba(0,0,0,.6); }
+        .cluster-info { font-size:9px; line-height:1; text-shadow:0 1px 3px rgba(0,0,0,.6); }
+        #tsne-mini svg { width:100%; height:620px; display:block; background:#101216; border-radius:8px; }
+        .tsne-scale { height:8px; border-radius:4px; background:linear-gradient(to left,#10b981,#fbbf24,#ef4444); margin-top:.5rem; }
+        .mini-list { font-size:0.85rem; color:var(--text-secondary); line-height:1.9; }
+        .mini-list b { color:var(--text-primary); }
+        .flow-row { display:flex; justify-content:space-between; gap:0.5rem; font-size:0.85rem; padding:0.3rem 0; border-bottom:1px solid rgba(255,255,255,.05); }
+        .k26-src { max-width:none; margin:0; padding:0 1.5rem 2rem; font-size:0.75rem; color:var(--text-muted); }
+        #sankey-mini svg { width:100%; height:auto; display:block; }
+        .explainer-cta { display:inline-flex; align-items:center; margin:0.45rem 0 0.35rem; padding:0.5rem 0.9rem; border:1px solid var(--accent-primary); border-radius:999px; background:rgba(240,180,41,.1); color:var(--accent-primary); font-size:0.88rem; font-weight:700; text-decoration:none; }
+        .explainer-cta:hover { background:rgba(240,180,41,.2); color:var(--accent-secondary); }
+        .err { color:var(--error); font-size:0.85rem; }
+        .threshold-input { width:64px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); font-family:inherit; padding:.3rem .4rem; }
+        .th-controls { display:flex; gap:0.4rem; align-items:center; margin-bottom:0.7rem; flex-wrap:wrap; }
+        .th-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(172px,1fr)); gap:0.8rem; }
+        .th-card { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px; padding:0.6rem 0.65rem 0.5rem; }
+        .th-card h4 { font-size:0.88rem; color:var(--text-primary); display:flex; align-items:center; gap:0.4rem; }
+        .th-card h4 .dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+        .th-stats { font-size:0.72rem; color:var(--text-muted); line-height:1.55; margin-top:0.3rem; }
+        .th-stats b { color:var(--text-secondary); }
+        .th-svg { width:100%; height:86px; display:block; margin-top:0.35rem; }
+        .th-axis { display:flex; justify-content:space-between; font-size:0.62rem; color:var(--text-muted); direction:ltr; }
+        /* Suspicious ballots — adapted from fraud-sim.html's ranked ballot rows */
+        .suspect-row { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:0.6rem 0.7rem; margin-bottom:0.5rem; }
+        .suspect-meta { display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap; font-size:0.82rem; }
+        .suspect-meta .rank { color:var(--text-muted); font-size:0.75rem; min-width:26px; text-align:end; }
+        .suspect-meta .name { color:var(--text-primary); font-weight:700; text-decoration:none; }
+        .suspect-meta .name:hover { color:var(--accent-primary); }
+        .suspect-meta .ballot-num { color:var(--text-muted); }
+        .suspect-meta .score { margin-inline-start:auto; font-size:0.75rem; color:#fca5a5; font-weight:700; }
+        .suspect-bars { display:grid; grid-template-columns:58px 1fr; gap:0.28rem 0.55rem; align-items:center; margin-top:0.45rem; }
+        .suspect-bars .bar-label { color:var(--text-muted); font-size:0.68rem; text-align:end; }
+        .suspect-bars .stacked { display:flex; height:12px; border-radius:3px; overflow:hidden; background:rgba(255,255,255,.06); }
+        .suspect-bars .stacked i { display:block; height:100%; }
+        /* Geomap hover card + popup — copied from geomap.html */
+        .cluster-tooltip { position:absolute; background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:8px; padding:10px 12px; font-size:0.8rem; line-height:1.4; max-width:260px; z-index:10000; box-shadow:var(--shadow-lg); }
+        .cluster-tooltip-title { font-weight:600; font-size:0.9rem; margin-bottom:6px; color:var(--text-primary); }
+        .cluster-tooltip-stats { display:grid; grid-template-columns:auto auto; gap:2px 12px; margin-bottom:8px; }
+        .cluster-tooltip-label { color:var(--text-muted); }
+        .cluster-tooltip-value { color:var(--text-primary); font-weight:500; text-align:left; }
+        .cluster-tooltip-parties { border-top:1px solid var(--border-color); padding-top:6px; }
+        .cluster-tooltip-party { display:flex; justify-content:space-between; align-items:center; margin-bottom:2px; }
+        .cluster-tooltip-party-name { display:flex; align-items:center; gap:4px; color:var(--text-secondary); }
+        .cluster-tooltip-party-dot { width:8px; height:8px; border-radius:2px; }
+        .cluster-tooltip-party-pct { color:var(--text-primary); font-weight:500; }
+        .station-popup { min-width:200px; }
+        .station-popup-title { font-weight:600; font-size:1rem; margin-bottom:0.25rem; color:var(--text-primary); }
+        .station-popup-ballot { color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.25rem; }
+        .station-popup-location { color:var(--text-muted); font-size:0.8rem; font-style:italic; margin-bottom:0.5rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border-color); }
+        .station-popup-stats { display:grid; grid-template-columns:1fr 1fr; gap:0.25rem 0.5rem; font-size:0.8rem; margin-bottom:0.5rem; }
+        .station-popup-stat-label { color:var(--text-muted); }
+        .station-popup-stat-value { color:var(--text-primary); font-weight:500; text-align:left; }
+        .station-popup-parties { border-top:1px solid var(--border-color); padding-top:0.5rem; }
+        .station-popup-party { display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; margin-bottom:0.15rem; }
+        .station-popup-party-name { display:flex; align-items:center; gap:0.25rem; color:var(--text-secondary); }
+        .station-popup-party-color { width:10px; height:10px; border-radius:2px; }
+        .station-popup-party-pct { color:var(--text-primary); font-weight:500; }
+        .suspect-dev { font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; }
+        .suspect-dev b { color:var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="dunes-container"><div class="dune dune-3"></div><div class="dune dune-2"></div><div class="dune dune-1"></div></div>
+    <div class="app-container">
+        <header class="main-header">
+            <div class="header-content">
+                <h1 class="site-title"><span data-i18n="site_title">קולות נודדים</span></h1>
+                <p class="site-subtitle" data-i18n="k26_title">מרכז המידע — כנסת 26</p>
+            </div>
+            <nav class="view-switcher"></nav>
+        </header>
+
+        <section class="k26-hero">
+            <p data-i18n="k26_subtitle">קולות מוחלטים, חלוקת מנדטים וכל התצוגות של כנסת 26 במסך אחד</p>
+            <span class="k26-badge" id="k26-status-badge">…</span>
+        </section>
+
+        <section class="k26-stats" id="k26-stats"></section>
+
+        <section class="count-banner" id="count-banner" hidden aria-live="polite">
+            <div class="count-pulse" aria-hidden="true"></div>
+            <div class="count-main">
+                <div class="count-title" id="count-title"></div>
+                <div class="count-note" id="count-note"></div>
+            </div>
+            <div class="count-numbers">
+                <div class="count-big"><span id="count-ballots">–</span> <small id="count-of"></small></div>
+                <div class="count-pct" id="count-pct"></div>
+                <div class="count-bar"><i id="count-bar-fill" style="width:0%"></i></div>
+                <div class="count-meta"><span id="count-remaining"></span><span id="count-updated"></span><span id="count-source"></span></div>
+            </div>
+        </section>
+
+        <main class="gemara">
+            <aside class="g-side">
+                <!-- Rashi margin: the result itself -->
+                <section class="pane side-pane" id="pane-votes">
+                    <div class="pane-head">
+                        <div><h3 data-i18n="k26_votes_seats">קולות ומנדטים</h3><div class="pane-note" data-i18n="k26_threshold">אחוז חסימה 3.25%</div></div>
+                        <div class="pane-actions"><a class="full-view-cta votes-full-cta" href="dhondt.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
+                    </div>
+                    <div id="seatbar-wrap"></div>
+                    <div id="votes-table"></div>
+                </section>
+                <section class="pane side-pane" id="pane-dhondt-mini">
+                    <div class="pane-head"><div><h3 data-i18n="k26_agreements">הסכמי עודפים</h3></div></div>
+                    <div id="dhondt-mini"></div>
+                </section>
+            </aside>
+
+            <!-- The central text: one big stage, views switched in place -->
+            <div class="g-center">
+            <section class="pane stage-main" id="pane-stage">
+                <div class="stage-tabs" role="tablist">
+                    <button class="pane-btn gold stage-tab" data-stage="sankey" data-i18n="k26_sankey_pane">נדידת קולות 25 ← 26</button>
+                    <button class="pane-btn stage-tab" data-stage="tsne" data-i18n="k26_tsne_pane">התפלגות קלפיות</button>
+                    <button class="pane-btn stage-tab" data-stage="dhondt" data-i18n="k26_dhondt_pane">מחשבון מנדטים</button>
+                    <a class="full-view-cta" id="stage-full-link" href="sankey.html" data-i18n="k26_open_full" style="margin-inline-start:auto">לתצוגה המלאה ↗</a>
+                </div>
+                <div class="stage-panel" id="panel-sankey">
+                    <div class="pane-note"><span data-i18n="k26_sankey_note"></span> · <span id="sankey-r2"></span></div>
+                    <a class="explainer-cta" href="sankey-explainer.html?e26=1" data-i18n="k26_sankey_explainer">📘 איך מחשבים את מעברי הקולות? להסבר המונפש</a>
+                    <div id="sankey-mini"></div>
+                </div>
+                <div class="stage-panel" id="panel-tsne" hidden>
+                    <div class="pane-note" data-i18n="k26_tsne_note"></div>
+                    <div id="tsne-mini"></div><div class="tsne-scale"></div><div class="th-axis"><span>90%</span><span>65%</span><span>40%</span></div>
+                    <div class="mini-list" id="tsne-legend"></div>
+                </div>
+                <div class="stage-panel" id="panel-dhondt" hidden>
+                    <div style="display:flex;align-items:flex-start;gap:.6rem;flex-wrap:wrap">
+                        <div class="pane-note" data-i18n="k26_dhondt_note" style="flex:1;min-width:240px"></div>
+                        <button class="pane-btn gold" id="dhondt-reset" data-i18n="k26_dhondt_reset">↺ איפוס לתוצאות כנסת 26</button>
+                    </div>
+                    <iframe class="dhondt-frame" id="dhondt-frame" title="מחשבון מנדטים" data-src="dhondt.html?e26=1&embed=1" loading="lazy"></iframe>
+                </div>
+            </section>
+
+            <!-- Geographic map: own pane under the stage, same center column -->
+            <section class="pane geomap-pane" id="pane-geomap">
+                <div class="pane-head">
+                    <div><h3 data-i18n="k26_geomap_pane">מפה גיאוגרפית</h3><div class="pane-note" data-i18n="k26_geomap_note"></div></div>
+                    <div class="pane-actions"><a class="full-view-cta" href="geomap.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
+                </div>
+                <div style="position:relative">
+                    <div class="mini-map" id="geomap-mini"></div>
+                    <div class="cluster-tooltip" id="geomap-tooltip" style="display:none"></div>
+                </div>
+            </section>
+            </div>
+
+            <aside class="g-side">
+                <!-- Tosafot margin: ballot-type turnout commentaries -->
+                <section class="pane side-pane" id="pane-turnout">
+                    <div class="pane-head">
+                        <div><h3 data-i18n="k26_turnout_pane">התפלגות אחוזי הצבעה לפי סוג קלפי</h3><div class="pane-note" data-i18n="k26_turnout_note"></div></div>
+                    </div>
+                    <div class="th-controls">
+                        <button class="pane-btn gold" id="th-mode-ballots" data-i18n="k26_th_ballots">מספר קלפיות</button>
+                        <button class="pane-btn" id="th-mode-voters" data-i18n="k26_th_voters">משוקלל מצביעים</button>
+                        <span class="pane-note" id="th-agreement"></span>
+                    </div>
+                    <div id="th-shared"></div>
+                    <div class="th-grid" id="th-grid"></div>
+                </section>
+                <section class="pane side-pane" id="pane-suspects">
+                    <div class="pane-head">
+                        <div><h3 data-i18n="k26_suspects_pane">הקלפיות החשודות ביותר</h3><div class="pane-note" data-i18n="k26_suspects_note"></div></div>
+                        <div class="pane-actions"><a class="pane-btn gold" href="fraud-sim.html?t=25_26" data-i18n="k26_suspects_full">לסימולטור הזיוף המלא</a></div>
+                    </div>
+                    <div id="suspects-list"></div>
+                </section>
+            </aside>
+        </main>
+        <div class="tooltip" id="k26-tooltip" role="tooltip"></div>
+    </div>
+
+<script>
+(function () {
+    i18n.renderNav('k26'); i18n.renderBMC();
+    const en = () => i18n.getLang() === 'en';
+    const fmt = n => i18n.fmtNum(Math.round(n));
+    const BLOCS = [
+        { id:'right', parties:['הליכוד','יהדות התורה','ש״ס','עוצמה יהודית','הציונות הדתית','עמך ישראל','המילואימניקים והכלכלית'] },
+        { id:'center', parties:['ישר','ביחד','הדמוקרטים','ישראל ביתנו'] },
+        { id:'arab', parties:['הרשימה המשותפת','רע״ם'] },
+    ];
+    const AGREEMENTS = [['ישראל ביתנו','ביחד'],['רע״ם','הרשימה המשותפת'],['הציונות הדתית','הליכוד'],['יהדות התורה','ש״ס'],['הדמוקרטים','ישר']];
+    let DATA = null;
+
+    let K26STATUS = { kind: 'simulated', ballots: null, ballots_total: null, as_of: null };
+    function renderCountStatus() {
+        const s = K26STATUS || {};
+        const badge = document.getElementById('k26-status-badge');
+        const banner = document.getElementById('count-banner');
+        const counted = Number(s.ballots), total = Number(s.ballots_total);
+        const hasCount = Number.isFinite(counted) && Number.isFinite(total) && total > 0;
+        const pct = hasCount ? Math.min(100, counted / total * 100) : 0;
+        const countText = hasCount ? `${fmt(counted)} / ${fmt(total)} (${pct.toFixed(1)}%)` : '';
+        badge.textContent = s.kind === 'official' ? i18n.t('k26_live_official') + (countText ? ' · ' + countText : '')
+            : s.kind === 'partial' ? i18n.t('k26_live_partial') + (countText ? ' · ' + countText : '')
+            : i18n.t('k26_simulated');
+        if ((s.kind !== 'partial' && s.kind !== 'official') || !hasCount) { banner.hidden = true; return; }
+        banner.hidden = false;
+        banner.classList.toggle('official', s.kind === 'official');
+        document.getElementById('count-title').textContent = i18n.t(s.kind === 'official' ? 'k26_count_official_title' : 'k26_count_partial_title');
+        document.getElementById('count-note').textContent = i18n.t(s.kind === 'official' ? 'k26_count_official_note' : 'k26_count_partial_note');
+        document.getElementById('count-ballots').textContent = fmt(counted);
+        document.getElementById('count-of').textContent = en() ? `of ${fmt(total)} ballot boxes` : `מתוך ${fmt(total)} קלפיות`;
+        document.getElementById('count-pct').textContent = pct.toFixed(1) + '%';
+        document.getElementById('count-bar-fill').style.width = pct.toFixed(1) + '%';
+        document.getElementById('count-remaining').textContent = `${i18n.t('k26_count_counted')}: ${fmt(counted)} · ${i18n.t('k26_count_remaining')}: ${fmt(Math.max(0, total - counted))}`;
+        let updated = '';
+        if (s.as_of) { const d = new Date(s.as_of); if (!isNaN(d)) updated = `${i18n.t('k26_count_updated')}: ${d.toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}`; }
+        document.getElementById('count-updated').textContent = updated;
+        document.getElementById('count-source').textContent = en() ? (s.source_en || '') : (s.source_he || '');
+    }
+    i18n.whenK26Status().then(s => { K26STATUS = s || K26STATUS; renderCountStatus(); });
+    window.addEventListener('k26statuschange', e => { if (e.detail) { K26STATUS = e.detail; renderCountStatus(); } });
+
+    function partyEn(name) { return (DATA && DATA.enNames[name]) || name; }
+    function displayName(name) { return en() ? partyEn(name) : name; }
+
+    async function load() {
+        // no-store: on election night these JSONs are recommitted every few
+        // minutes; a cached copy would freeze the command center mid-count.
+        const F = { cache: 'no-store' };
+        const [wiki, map, transfer, tsne, suspects, mks, coords] = await Promise.all([
+            fetch('data/wiki_official_results.json', F).then(r => r.json()),
+            fetch('data/map_26.json', F).then(r => r.json()),
+            fetch('data/transfer_25_to_26.json', F).then(r => r.json()),
+            fetch('data/tsne_26.json', F).then(r => r.json()),
+            fetch('data/suspects_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('data/k26_mks.json', F).then(r => r.ok ? r.json() : { parties: {} }).catch(() => ({ parties: {} })),
+            fetch('data/station_coordinates.json', F).then(r => r.ok ? r.json() : { stations: {} }).catch(() => ({ stations: {} })),
+        ]);
+        const enNames = {}, enLeaders = {};
+        (transfer.nodes_to || []).forEach(n => { if (n.info) { enNames[n.name] = n.info.name_en || n.name; enLeaders[n.name] = n.info.leader_en || ''; } });
+        DATA = { wiki, map, transfer, tsne, suspects, mks: (mks && mks.parties) || {}, coords: coords || { stations: {} }, enNames, enLeaders,
+                 parties: map.parties, results: wiki['26'] || [],
+                 colorOf: {}, infoOf: {} };
+        map.parties.forEach(p => { DATA.colorOf[p.name] = p.color; DATA.infoOf[p.name] = p.info || {}; });
+        renderAll();
+    }
+
+    function renderStats() {
+        const m = DATA.map, valid = DATA.results.reduce((a,p)=>a+p.votes,0);
+        // Eligible/cast come from the raw CSV totals (map stats lose the few
+        // sub-50-vote stations dropped by the tsne filter); valid = party sum.
+        const eligible = m.stats.totalEligibleCsv || m.stats.totalEligible;
+        const cast = m.stats.totalCast || m.stats.totalVoters;
+        const items = [
+            [fmt(eligible), i18n.t('eligible_voters')],
+            [fmt(cast), i18n.t('voted')], [fmt(valid), i18n.t('k26_valid')],
+            [(100*cast/eligible).toFixed(1)+'%', i18n.t('turnout_pct')],
+            [fmt(m.stats.totalBallots), i18n.t('k26_ballots_label')], [fmt(m.stats.totalSettlements), i18n.t('k26_settlements_label')],
+            [fmt(m.stats.totalLists), i18n.t('k26_lists_label')],
+        ];
+        document.getElementById('k26-stats').innerHTML = items.map(([v,l]) => `<div class="k26-stat"><b>${v}</b><span>${l}</span></div>`).join('');
+    }
+
+    const ARC_ORDER = ['הרשימה המשותפת','רע״ם','הדמוקרטים','ישר','ביחד','ישראל ביתנו','המילואימניקים והכלכלית','הליכוד','הציונות הדתית','עוצמה יהודית','עמך ישראל','יהדות התורה','ש״ס'];
+    let HEMI_SEATS = [];
+    // k26_mks.json stores names surname-first (official CEC format); display given-first.
+    const mkDisplayName = n => { if (!n) return n; const p = n.trim().split(/\s+/); return p.length > 1 ? p[p.length - 1] + ' ' + p.slice(0, -1).join(' ') : n; };
+    // Rich HTML hover card for hemisphere seats (same pattern as the geomap tooltip,
+    // instead of the native OS <title> tooltip).
+    function hemiCardHTML(s) {
+        const info = DATA.infoOf[s.party] || {};
+        const leader = en() ? (DATA.enLeaders[s.party] || info.leader || '') : (info.leader || '');
+        const valid = DATA.results.reduce((a, p) => a + p.votes, 0) || 1;
+        return `<div class="station-popup" style="direction:${i18n.isRTL() ? 'rtl' : 'ltr'}">
+            <div class="station-popup-title"><span class="station-popup-party-color" style="background:${DATA.colorOf[s.party] || '#666'};display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:6px"></span>${displayName(s.party)}</div>
+            ${s.mk ? `<div style="font-size:1.05rem;font-weight:700;color:var(--text-primary);margin:.3rem 0 .1rem">${mkDisplayName(s.mk)}</div>` : ''}
+            <div class="station-popup-ballot">${i18n.t('k26_mks_seat')} ${s.rank} ${en() ? 'of' : 'מתוך'} ${s.seats}</div>
+            ${leader ? `<div class="station-popup-location">${en() ? 'Leader' : 'יו״ר'}: ${leader}</div>` : ''}
+            <div class="station-popup-stats">
+                <span class="station-popup-stat-label">${en() ? 'Seats' : 'מנדטים'}:</span><span class="station-popup-stat-value">${s.seats}</span>
+                <span class="station-popup-stat-label">${i18n.t('voted')}:</span><span class="station-popup-stat-value">${fmt(s.votes)}</span>
+                <span class="station-popup-stat-label">${en() ? 'Share' : 'אחוז'}:</span><span class="station-popup-stat-value">${(100 * s.votes / valid).toFixed(1)}%</span>
+            </div>
+        </div>`;
+    }
+    function bindHemiTooltip() {
+        const wrap = document.querySelector('.hemi-wrap'), tip = document.getElementById('hemi-tooltip');
+        if (!wrap || !tip) return;
+        const show = (seat, ev) => {
+            tip.innerHTML = hemiCardHTML(seat);
+            tip.style.display = 'block';
+            const wr = wrap.getBoundingClientRect();
+            const x = ev.clientX - wr.left, y = ev.clientY - wr.top;
+            tip.style.left = Math.max(0, Math.min(wrap.clientWidth - 272, x + 16)) + 'px';
+            tip.style.top = Math.max(0, y - 24) + 'px';
+        };
+        document.querySelectorAll('.hemi-seat').forEach((c, i) => {
+            const seat = HEMI_SEATS[i]; if (!seat) return;
+            c.addEventListener('mouseenter', ev => show(seat, ev));
+            c.addEventListener('mousemove', ev => show(seat, ev));
+            c.addEventListener('click', ev => show(seat, ev));
+            c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+        });
+    }
+    function hemicycleSVG(seatCounts) {
+        const passing = DATA.results.filter(p => (seatCounts ? (seatCounts[p.name] || 0) : p.seats) > 0).map(p => ({ ...p, seats: seatCounts ? (seatCounts[p.name] || 0) : p.seats }));
+        const ordered = [...passing].sort((a, b) => ARC_ORDER.indexOf(a.name) - ARC_ORDER.indexOf(b.name));
+        const ROWS = 6, cx = 360, cy = 312, r0 = 96, gap = 38, total = passing.reduce((a,p)=>a+p.seats,0) || 120;
+        // Seats per row proportional to arc length (radius); largest-remainder to 120.
+        const radii = Array.from({length: ROWS}, (_, i) => r0 + i * gap);
+        const raw = radii.map(r => r / radii.reduce((a, b) => a + b, 0) * total);
+        const counts = raw.map(Math.floor);
+        let rem = total - counts.reduce((a, b) => a + b, 0);
+        raw.map((v, i) => [v - counts[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (rem-- > 0) counts[i]++; });
+        const pos = [];
+        radii.forEach((r, i) => { for (let k = 0; k < counts[i]; k++) { const a = Math.PI - (counts[i] === 1 ? 0.5 : k / (counts[i] - 1)) * Math.PI; pos.push({ a, r }); } });
+        pos.sort((x, y) => y.a - x.a); // contiguous party wedges, left wing -> right wing
+        // Within each party's wedge, front (inner-row) seats go to the top of its list.
+        HEMI_SEATS = [];
+        let seatIdx = 0;
+        const circles = ordered.flatMap(p => {
+            const chunk = pos.slice(seatIdx, seatIdx + p.seats).sort((x, y) => x.r - y.r || y.a - x.a);
+            seatIdx += p.seats;
+            return chunk.map(({ a, r }, i) => {
+                const rank = i + 1;
+                const mk = (DATA.mks[p.name] || [])[rank - 1];
+                HEMI_SEATS.push({ party: p.name, rank, mk: mk || '', seats: p.seats, votes: p.votes });
+                const x = (cx + r * Math.cos(a)).toFixed(1), y = (cy - r * Math.sin(a)).toFixed(1);
+                // Names are surname-first: initials = given-name + surname initials
+                let initials = '';
+                if (mk) { const parts = mk.split(/\s+/); initials = parts.length > 1 ? parts[parts.length - 1][0] + parts[0][0] : parts[0].slice(0, 2); }
+                // Initials contrast: dark letters on light party colours, light on dark
+                const hex = (DATA.colorOf[p.name] || '#666').replace('#', '');
+                const lum = hex.length >= 6 ? (0.2126 * parseInt(hex.slice(0, 2), 16) + 0.7152 * parseInt(hex.slice(2, 4), 16) + 0.0722 * parseInt(hex.slice(4, 6), 16)) / 255 : 0.3;
+                const initFill = lum > 0.55 ? '#191203' : '#ffffff';
+                const initStroke = lum > 0.55 ? 'rgba(255,255,255,.55)' : 'rgba(0,0,0,.5)';
+                return `<circle class="hemi-seat" cx="${x}" cy="${y}" r="13" fill="${DATA.colorOf[p.name]||'#666'}" stroke="rgba(0,0,0,.35)" stroke-width="0.7"></circle>` +
+                    (initials ? `<text x="${x}" y="${y}" text-anchor="middle" dy="0.36em" font-size="10.5" font-weight="800" fill="${initFill}" stroke="${initStroke}" stroke-width="0.7" paint-order="stroke" style="pointer-events:none">${initials}</text>` : '');
+            }).join('');
+        }).join('');
+        const legend = ordered.map(p => `<span><span class="dot" style="background:${DATA.colorOf[p.name]||'#666'}"></span>${displayName(p.name)} <b>${p.seats}</b></span>`).join('');
+        const hasMks = Object.keys(DATA.mks).length > 0;
+        return `<div class="hemi-wrap"><svg viewBox="0 0 720 348" role="img">${circles}<text x="${cx}" y="${cy - 30}" text-anchor="middle" fill="var(--text-primary)" font-size="52" font-weight="800">${total}</text><text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="var(--text-muted)" font-size="15">61 = ${en() ? 'majority' : 'רוב'}</text></svg><div class="cluster-tooltip" id="hemi-tooltip" style="display:none"></div><div class="hemi-legend">${legend}</div>${hasMks ? '' : `<div class="pane-note" style="text-align:center;margin-top:.45rem">${i18n.t('k26_mks_pending')}</div>`}</div>`;
+    }
+    function seatBarHTML(withHemi, seatCounts) {
+        const passing = DATA.results.filter(p=>(seatCounts ? (seatCounts[p.name]||0) : p.seats)>0).map(p=>({ ...p, seats: seatCounts ? (seatCounts[p.name]||0) : p.seats }));
+        const segs = passing.map(p=>`<div title="${displayName(p.name)}: ${p.seats}" style="width:${p.seats/(passing.reduce((a,x)=>a+x.seats,0)||120)*100}%;background:${DATA.colorOf[p.name]||'#666'}"></div>`).join('');
+        const blocs = BLOCS.map(b=>{
+            const s = DATA.results.filter(p=>b.parties.includes(p.name)).reduce((a,p)=>a+(seatCounts ? (seatCounts[p.name]||0) : p.seats),0);
+            return `<span class="bloc-chip">${i18n.t('k26_bloc_'+b.id)}: <b>${s}</b></span>`;
+        }).join('');
+        return `<div class="seatbar">${segs}</div>` + (withHemi ? hemicycleSVG() : '') + `<div class="bloc-row">${blocs}</div>`;
+    }
+
+    function renderVotes() {
+        document.getElementById('seatbar-wrap').innerHTML = seatBarHTML(true);
+        bindHemiTooltip();
+        const valid = DATA.results.reduce((a,p)=>a+p.votes,0);
+        const max = Math.max(...DATA.results.map(p=>p.votes));
+        const row = p => {
+            const info = DATA.infoOf[p.name] || {};
+            const logo = info.logo ? `<img src="${info.logo}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<span class=letter-fallback>${(DATA.map.parties.find(x=>x.name===p.name)||{}).symbol||''}</span>'">` : `<span class="letter-fallback">${(DATA.map.parties.find(x=>x.name===p.name)||{}).symbol||''}</span>`;
+            const leader = en() ? (DATA.enLeaders[p.name] || info.leader || '') : (info.leader || '');
+            return `<div class="vrow"><div class="logo-chip">${logo}</div>
+              <div><div class="vname">${displayName(p.name)} ${p.seats?`<span class="seats-num">${p.seats}</span>`:''}</div>
+              <div class="vmeta">${(DATA.map.parties.find(x=>x.name===p.name)||{}).symbol||''}${leader?' · '+leader:''}${p.seats?'':' · '+i18n.t('k26_below')}</div>
+              <div class="vbar"><i style="width:${p.votes/max*100}%;background:${DATA.colorOf[p.name]||'#666'}"></i></div></div>
+              <div class="vnums"><b>${fmt(p.votes)}</b><div class="vmeta">${(p.votes/valid*100).toFixed(2)}%</div></div></div>`;
+        };
+        const passing = DATA.results.filter(p=>p.seats>0), below = DATA.results.filter(p=>!p.seats);
+        document.getElementById('votes-table').innerHTML = passing.map(row).join('') +
+            (below.length ? `<div class="pane-note" style="margin-top:.6rem">${i18n.t('k26_below')}</div>` + below.map(row).join('') : '');
+    }
+
+    function renderSankey() {
+        document.getElementById('sankey-r2').textContent = 'R² = ' + (DATA.transfer.stats.r_squared ?? '');
+        // Mirrors sankey.js (full page): all transfers in the file, gradient links,
+        // columns normalised to fill the height, X flipped in RTL (from=right, to=left).
+        const nodes = [
+            ...DATA.transfer.nodes_from.map((n, i) => ({ ...n, id: 'from_' + i, side: 'from' })),
+            ...DATA.transfer.nodes_to.map((n, i) => ({ ...n, id: 'to_' + i, side: 'to' })),
+        ];
+        const byNameSide = {}; nodes.forEach((n, i) => { byNameSide[n.name + '_' + n.side] = i; });
+        const links = DATA.transfer.transfers.map(tr => {
+            const s = byNameSide[tr.source + '_from'], tg = byNameSide[tr.target + '_to'];
+            return (s === undefined || tg === undefined) ? null : { source: nodes[s].id, target: nodes[tg].id, value: tr.votes };
+        }).filter(l => l && l.value > 0);
+        const linked = new Set(); links.forEach(l => { linked.add(l.source); linked.add(l.target); });
+        const el = document.getElementById('sankey-mini'); el.innerHTML = '';
+        const W = el.clientWidth || 900, H = 1060;
+        const margin = { top: 12, right: 100, bottom: 12, left: 100 };
+        const innerW = W - margin.left - margin.right, innerH = H - margin.top - margin.bottom;
+        const svg = d3.select(el).append('svg').attr('width', W).attr('height', H);
+        const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+        const gen = d3.sankey().nodeId(d => d.id).nodeWidth(20).nodePadding(12).nodeAlign(d3.sankeyJustify).extent([[0, 0], [innerW, innerH]]);
+        const graph = gen({ nodes: nodes.filter(n => linked.has(n.id)).map(d => ({ ...d })), links: links.map(d => ({ ...d })) });
+        const rtl = i18n.isRTL();
+        if (rtl) graph.nodes.forEach(n => { const x0 = innerW - n.x1; n.x1 = innerW - n.x0; n.x0 = x0; });
+        // normalizeColumns (from sankey.js): both columns fill the same vertical extent
+        ['from', 'to'].forEach(side => {
+            const col = graph.nodes.filter(n => n.side === side).sort((a, b) => (b.votes || 0) - (a.votes || 0));
+            const totalVotes = d3.sum(col, n => n.votes || 1), pad = 10, avail = innerH - (col.length - 1) * pad;
+            let y = 0;
+            col.forEach(n => { const h = Math.max(2, ((n.votes || 1) / totalVotes) * avail); n.y0 = y; n.y1 = y + h; y += h + pad; });
+        });
+        graph.nodes.forEach(node => {
+            const nodeH = node.y1 - node.y0;
+            if (node.sourceLinks && node.sourceLinks.length) {
+                const tot = d3.sum(node.sourceLinks, l => l.value);
+                node.sourceLinks.sort((a, b) => ((a.target.y0 + a.target.y1) / 2) - ((b.target.y0 + b.target.y1) / 2));
+                let sy = node.y0;
+                node.sourceLinks.forEach(l => { l.width = Math.max(0.5, tot > 0 ? (l.value / tot) * nodeH : 0); l.y0 = sy + l.width / 2; sy += l.width; });
+            }
+            if (node.targetLinks && node.targetLinks.length) {
+                const tot = d3.sum(node.targetLinks, l => l.value);
+                node.targetLinks.sort((a, b) => ((a.source.y0 + a.source.y1) / 2) - ((b.source.y0 + b.source.y1) / 2));
+                let ty = node.y0;
+                node.targetLinks.forEach(l => { l.width = Math.max(0.5, tot > 0 ? (l.value / tot) * nodeH : 0); l.y1 = ty + l.width / 2; ty += l.width; });
+            }
+        });
+        const tooltip = document.getElementById('k26-tooltip');
+        const moveTooltip = ev => {
+            const r = tooltip.getBoundingClientRect();
+            let x = ev.clientX - r.width - 15, y = ev.clientY - 10;
+            if (x < 20) x = ev.clientX + 15;
+            if (x + r.width > innerWidth - 20) x = innerWidth - r.width - 20;
+            if (y + r.height > innerHeight - 20) y = innerHeight - r.height - 20;
+            if (y < 20) y = 20;
+            tooltip.style.left = x + 'px'; tooltip.style.top = y + 'px';
+        };
+        const hideTooltip = () => tooltip.classList.remove('visible');
+        const defs = svg.append('defs');
+        graph.links.forEach((l, i) => {
+            const grad = defs.append('linearGradient').attr('id', 'k26-lg-' + i).attr('gradientUnits', 'userSpaceOnUse')
+                .attr('x1', l.source.x1).attr('y1', 0).attr('x2', l.target.x0).attr('y2', 0);
+            grad.append('stop').attr('offset', '0%').attr('stop-color', l.source.color || '#6b7280');
+            grad.append('stop').attr('offset', '100%').attr('stop-color', l.target.color || '#6b7280');
+        });
+        const linkSel = g.append('g').selectAll('path').data(graph.links).join('path')
+            .attr('d', d3.sankeyLinkHorizontal()).attr('fill', 'none')
+            .attr('stroke', (d, i) => `url(#k26-lg-${i})`).style('stroke-opacity', .4)
+            .attr('stroke-width', d => Math.max(1, d.width)).style('cursor', 'pointer')
+            .on('mouseenter', function (ev, d) {
+                d3.select(this).style('stroke-opacity', .7);
+                const outPct = d.source.value ? d.value / d.source.value * 100 : 0;
+                const inPct = d.target.value ? d.value / d.target.value * 100 : 0;
+                tooltip.innerHTML = `<div class="tooltip-flow"><div class="tooltip-flow-parties"><span class="tooltip-flow-party">${displayName(d.source.name)}</span><span class="tooltip-flow-arrow">←</span><span class="tooltip-flow-party">${displayName(d.target.name)}</span></div><div class="tooltip-flow-value">${outPct.toFixed(1)}% ${i18n.t('from_votes_of', { party: displayName(d.source.name) })}</div><div class="tooltip-flow-note">${inPct.toFixed(1)}% ${i18n.t('from_votes_of_new', { party: displayName(d.target.name) })}</div></div>`;
+                tooltip.classList.add('visible'); moveTooltip(ev);
+            })
+            .on('mousemove', moveTooltip)
+            .on('mouseleave', function () { d3.select(this).style('stroke-opacity', .4); hideTooltip(); });
+        const highlightNode = node => {
+            const connectedLinks = new Set(), connectedNodes = new Set([node.id]);
+            linkSel.each(function (d) { if (d.source.id === node.id || d.target.id === node.id) { connectedLinks.add(this); connectedNodes.add(d.source.id); connectedNodes.add(d.target.id); } });
+            linkSel.style('stroke-opacity', function () { return connectedLinks.has(this) ? .7 : .1; });
+            nodeSel.style('opacity', d => connectedNodes.has(d.id) ? 1 : .3);
+        };
+        const unhighlightAll = () => { linkSel.style('stroke-opacity', .4); nodeSel.style('opacity', 1); };
+        const ng = g.append('g').selectAll('g').data(graph.nodes).join('g');
+        const nodeSel = ng.style('cursor', 'pointer')
+            .on('mouseenter', (ev, d) => {
+                highlightNode(d);
+                const info = d.info || {};
+                const leader = en() ? (info.leader_en || DATA.enLeaders[d.name] || info.leader || '') : (info.leader || '');
+                const colTotal = graph.nodes.filter(n => n.side === d.side).reduce((a, n) => a + (n.value || 0), 0);
+                const share = colTotal ? (d.value || 0) / colTotal * 100 : 0;
+                const connected = (d.side === 'from' ? d.sourceLinks : d.targetLinks) || [];
+                const top = [...connected].sort((a, b) => b.value - a.value)[0];
+                const topName = top ? displayName(d.side === 'from' ? top.target.name : top.source.name) : '';
+                const topPct = top && d.value ? top.value / d.value * 100 : 0;
+                tooltip.innerHTML = `<div class="tooltip-header"><div class="tooltip-color" style="background-color:${d.color || '#6b7280'}"></div><span class="tooltip-title">${displayName(d.name)}</span><span class="tooltip-symbol">(${d.symbol || ''})</span></div><div class="tooltip-body">${leader ? `<div class="tooltip-stat"><span class="tooltip-stat-label">${i18n.t('leader_label')}</span><span class="tooltip-stat-value">${leader}</span></div>` : ''}<div class="tooltip-stat"><span class="tooltip-stat-label">${d.side === 'from' ? (en() ? 'Knesset 25 share' : 'חלקה בכנסת 25') : (en() ? 'Knesset 26 share' : 'חלקה בכנסת 26')}</span><span class="tooltip-stat-value">${share.toFixed(1)}%</span></div>${top ? `<div class="tooltip-stat"><span class="tooltip-stat-label">${d.side === 'from' ? (en() ? 'Largest destination' : 'היעד הגדול ביותר') : (en() ? 'Largest source' : 'המקור הגדול ביותר')}</span><span class="tooltip-stat-value">${topName} · ${topPct.toFixed(1)}%</span></div>` : ''}</div>`;
+                tooltip.classList.add('visible'); moveTooltip(ev);
+            })
+            .on('mousemove', moveTooltip)
+            .on('mouseleave', () => { unhighlightAll(); hideTooltip(); });
+        ng.append('rect').attr('x', d => d.x0).attr('y', d => d.y0).attr('width', d => d.x1 - d.x0).attr('height', d => Math.max(1, d.y1 - d.y0))
+            .attr('fill', d => d.color || '#6b7280').attr('rx', 4).attr('ry', 4);
+        ng.append('text')
+            .attr('x', d => rtl ? (d.side === 'from' ? d.x1 + 6 : d.x0 - 6) : (d.side === 'from' ? d.x0 - 6 : d.x1 + 6))
+            .attr('y', d => (d.y0 + d.y1) / 2).attr('dy', '0.35em')
+            .attr('text-anchor', d => rtl ? (d.side === 'from' ? 'start' : 'end') : (d.side === 'from' ? 'end' : 'start'))
+            .attr('font-size', '13px').attr('font-weight', '500').attr('fill', '#f0f0f5').style('pointer-events', 'none')
+            .text(d => displayName(d.name));
+    }
+
+    let geoMap = null, geoLayer = null;
+    // Full geomap.html behaviour in miniature: hover shows the station card,
+    // click opens it as a popup; cluster hover shows the aggregate card.
+    let geoTipTimer = null;
+    function stationCardHTML(station) {
+        const sorted = Object.entries(station.p || {}).sort((a, b) => b[1] - a[1]);
+        let displayed = sorted.filter(([, pct]) => pct >= 7);
+        if (!displayed.length) displayed = sorted.slice(0, 3);
+        const partyRows = displayed.map(([name, pct]) => {
+            const party = DATA.tsne.parties.find(p => p.name === name);
+            return `<div class="station-popup-party"><span class="station-popup-party-name"><span class="station-popup-party-color" style="background:${party ? party.color : '#939aab'}"></span>${displayName(name)}</span><span class="station-popup-party-pct">${Math.round(pct)}%</span></div>`;
+        }).join('');
+        return `<div class="station-popup" style="direction:${i18n.isRTL() ? 'rtl' : 'ltr'}">
+            <div class="station-popup-title">${en() ? i18n.settlementName(station.n) : station.n}</div>
+            <div class="station-popup-ballot">${i18n.t('ballot')} ${station.b}</div>
+            ${station.l ? `<div class="station-popup-location">${station.l}</div>` : ''}
+            <div class="station-popup-stats">
+                <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span><span class="station-popup-stat-value">${fmt(station.e || 0)}</span>
+                <span class="station-popup-stat-label">${i18n.t('voted')}:</span><span class="station-popup-stat-value">${fmt(station.v || 0)}</span>
+                <span class="station-popup-stat-label">${i18n.t('turnout')}:</span><span class="station-popup-stat-value">${(station.t || 0).toFixed(1)}%</span>
+            </div>
+            <div class="station-popup-parties">${partyRows}</div>
+            <div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border-color)"><a href="settlement.html?name=${encodeURIComponent(station.n)}" style="color:#f0b429;text-decoration:none;font-size:0.85em">${i18n.t('go_to_profile')} →</a></div>
+        </div>`;
+    }
+    function showGeoTooltip(html, lng, lat) {
+        const tip = document.getElementById('geomap-tooltip');
+        const mapEl = document.getElementById('geomap-mini');
+        const panel = mapEl.parentElement;
+        const pt = geoMap.project([lng, lat]);
+        const pr = panel.getBoundingClientRect(), mr = mapEl.getBoundingClientRect();
+        tip.style.direction = i18n.isRTL() ? 'rtl' : 'ltr';
+        tip.innerHTML = html;
+        tip.style.left = Math.min(panel.clientWidth - 270, mr.left - pr.left + pt.x + 16) + 'px';
+        tip.style.top = Math.max(0, mr.top - pr.top + pt.y - 20) + 'px';
+        tip.style.display = 'block';
+    }
+    function hideGeoTooltip() { const tip = document.getElementById('geomap-tooltip'); if (tip) tip.style.display = 'none'; }
+    function scheduleHideGeoTooltip() { clearTimeout(geoTipTimer); geoTipTimer = setTimeout(hideGeoTooltip, 200); }
+    function renderGeomap() {
+        if (!document.getElementById('pane-geomap')) return;
+        if (geoMap) { geoMap.resize(); return; }
+        // Reuses geomap.html's logic verbatim: per-ballot stations from tsne data,
+        // station_coordinates with settlement fallback, winner colouring,
+        // colocated-pile spreading, and its StationClusterLayer.
+        const normalizeName = n => n ? n.replace(/[-–\s]+/g, '').replace(/יי/g, 'י') : n;
+        const settlementCoords = {};
+        const stationsCoord = (DATA.coords && DATA.coords.stations) || {};
+        for (const [key, cd] of Object.entries(stationsCoord)) {
+            if (!cd.lat || !cd.lng) continue;
+            const settlement = cd.settlement || key.split('|')[0];
+            if (!settlementCoords[settlement]) {
+                settlementCoords[settlement] = { lat: cd.lat, lng: cd.lng };
+                const norm = normalizeName(settlement);
+                if (norm !== settlement) settlementCoords[norm] = { lat: cd.lat, lng: cd.lng };
+            }
+        }
+        const groups = new Map(), items = [];
+        DATA.tsne.stations.forEach(station => {
+            const settlement = station.n, ballot = station.b, key = `${settlement}|${ballot}`;
+            let cd = stationsCoord[key];
+            if (!cd || !cd.lat || !cd.lng) cd = settlementCoords[settlement] || settlementCoords[normalizeName(settlement)];
+            if (!cd || !cd.lat || !cd.lng) return;
+            const voters = station.v || 0;
+            const winner = Object.entries(station.p || {}).sort((a, b) => b[1] - a[1])[0];
+            const party = winner ? DATA.tsne.parties.find(p => p.name === winner[0]) : null;
+            const record = { lng: cd.lng, lat: cd.lat, origLng: cd.lng, origLat: cd.lat,
+                color: party ? party.color : '#374151',
+                radius: Math.max(5, Math.min(15, Math.sqrt(voters / 50) * 3)),
+                station: { ...station, l: station.l || cd.location || '' } };
+            const pile = `${cd.lat.toFixed(5)},${cd.lng.toFixed(5)}`;
+            if (!groups.has(pile)) groups.set(pile, []);
+            groups.get(pile).push(record); items.push(record);
+        });
+        groups.forEach(group => { if (group.length < 2) return; group.forEach((r, i) => { const a = (i / group.length) * Math.PI * 2; r.lat += Math.sin(a) * 0.00012; r.lng += Math.cos(a) * 0.00012; }); });
+        geoMap = createMap('geomap-mini', { center: [34.9, 31.5], zoom: 8, minZoom: 7, maxZoom: 18, basemap: 'positron' });
+        geoLayer = new StationClusterLayer(geoMap, {
+            clusterHTML: (clusterStations, lng, lat) => {
+                const counts = {};
+                clusterStations.forEach(it => { const w = Object.entries(it.station.p || {}).sort((a,b)=>b[1]-a[1])[0]; if (w) counts[w[0]] = (counts[w[0]]||0)+1; });
+                let slices = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+                let bg = '#4b5563';
+                if (slices.length > 1) {
+                    let other = 0;
+                    if (slices.length > 5) { other = slices.slice(5).reduce((s,e)=>s+e[1],0); slices = slices.slice(0,5); }
+                    let ang = 0; const stops = [];
+                    slices.forEach(([name, n]) => { const p = DATA.tsne.parties.find(pp=>pp.name===name); const pct = n/clusterStations.length*100; stops.push(`${p?p.color:'#6b7280'} ${ang.toFixed(1)}% ${(ang+pct).toFixed(1)}%`); ang += pct; });
+                    if (other) stops.push(`#4b5563 ${ang.toFixed(1)}% 100%`);
+                    bg = `conic-gradient(${stops.join(', ')})`;
+                } else if (slices.length === 1) { const p = DATA.tsne.parties.find(pp=>pp.name===slices[0][0]); bg = p ? p.color : bg; }
+                const count = clusterStations.length;
+                const size = count > 500 ? 88 : count > 200 ? 76 : count > 100 ? 64 : count > 30 ? 54 : 44;
+                return { html: `<div class="cluster-inner" style="background:${bg}"><div class="cluster-count">${count}</div></div>`, className: 'custom-cluster', size };
+            },
+            onClusterEnter: (clusterStations, lng, lat) => {
+                clearTimeout(geoTipTimer);
+                let voters = 0, eligible = 0; const votes = {};
+                clusterStations.forEach(it => { const st = it.station; voters += st.v || 0; eligible += st.e || 0; Object.entries(st.p || {}).forEach(([name, pct]) => { votes[name] = (votes[name] || 0) + (st.v || 0) * pct / 100; }); });
+                const top = Object.entries(votes).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                const total = top.reduce((a, [, v]) => a + v, 0) || 1;
+                const rows = top.map(([name, v]) => { const p = DATA.tsne.parties.find(pp => pp.name === name); return `<div class="cluster-tooltip-party"><span class="cluster-tooltip-party-name"><span class="cluster-tooltip-party-dot" style="background:${p ? p.color : '#6b7280'}"></span>${displayName(name)}</span><span class="cluster-tooltip-party-pct">${(v / total * 100).toFixed(1)}%</span></div>`; }).join('');
+                showGeoTooltip(`<div class="cluster-tooltip-title">${fmt(clusterStations.length)} ${i18n.t('stations')}</div><div class="cluster-tooltip-stats"><span class="cluster-tooltip-label">${i18n.t('voters')}:</span><span class="cluster-tooltip-value">${fmt(voters)}</span><span class="cluster-tooltip-label">${i18n.t('turnout')}:</span><span class="cluster-tooltip-value">${eligible ? (voters / eligible * 100).toFixed(1) : '0'}%</span></div><div class="cluster-tooltip-parties">${rows}</div>`, lng, lat);
+            },
+            onClusterLeave: () => scheduleHideGeoTooltip(),
+            onStationEnter: (item) => { clearTimeout(geoTipTimer); showGeoTooltip(stationCardHTML(item.station), item.lng, item.lat); },
+            onStationLeave: () => scheduleHideGeoTooltip(),
+            onStationClick: (item) => { hideGeoTooltip(); geoLayer.showPopup(item.lng, item.lat, stationCardHTML(item.station)); }
+        });
+        document.getElementById('geomap-tooltip').addEventListener('mouseenter', () => clearTimeout(geoTipTimer));
+        document.getElementById('geomap-tooltip').addEventListener('mouseleave', scheduleHideGeoTooltip);
+        geoLayer.setStations(items);
+    }
+
+    function renderTsne() {
+        if (document.getElementById('panel-tsne').hidden) return;
+        const el = document.getElementById('tsne-mini'); el.innerHTML = '';
+        const W = el.clientWidth || 800, H = 620;
+        const svg = d3.select(el).append('svg').attr('viewBox', `0 0 ${W} ${H}`);
+        const g = svg.append('g');
+        const xs = d3.scaleLinear().domain(d3.extent(DATA.tsne.stations, d=>d.x)).range([12, W-12]);
+        const ys = d3.scaleLinear().domain(d3.extent(DATA.tsne.stations, d=>d.y)).range([12, H-12]);
+        const turnout = d3.scaleLinear().domain([40,65,90]).range(['#ef4444','#fbbf24','#10b981']).clamp(true);
+        const rad = d3.scaleSqrt().domain(d3.extent(DATA.tsne.stations, d=>d.v||0)).range([1.1, 6]);
+        g.selectAll('circle').data(DATA.tsne.stations).join('circle')
+            .attr('cx', d=>xs(d.x)).attr('cy', d=>ys(d.y)).attr('r', d=>rad(d.v||0))
+            .attr('fill', d=>turnout(d.t||0)).attr('fill-opacity', .72)
+            .append('title').text(d=>`${en()?i18n.settlementName(d.n):d.n} ${d.b} · ${(d.t||0).toFixed(1)}%`);
+        svg.call(d3.zoom().scaleExtent([0.6, 12]).on('zoom', ev => g.attr('transform', ev.transform)));
+        document.getElementById('tsne-legend').innerHTML = `${fmt(DATA.tsne.stations.length)} ${i18n.t('k26_ballots_label')} · ${en() ? 'colour = turnout (full t-SNE page default), dot size = voters, scroll to zoom' : 'צבע = אחוז הצבעה (ברירת המחדל בעמוד ה־t-SNE המלא), גודל נקודה = מצביעים, גלילה לזום'}`;
+    }
+
+    let TH = null;
+    function computeTurnout() {
+        const BINS = 20;
+        const groups = DATA.results.map(p => {
+            const strongest = [...DATA.tsne.stations]
+                .sort((a, b) => ((b.p[p.name]||0) - (a.p[p.name]||0)) || ((b.v||0) - (a.v||0))).slice(0, 100);
+            const g = { name: p.name, binsB: new Array(BINS).fill(0), binsV: new Array(BINS).fill(0), n: strongest.length, voters: 0, tWeighted: 0, avgShare: 0 };
+            strongest.forEach(st => { const bin = Math.min(BINS-1, Math.floor((st.t||0)/5)); g.binsB[bin]++; g.binsV[bin]+=st.v||0; g.voters+=st.v||0; g.tWeighted+=(st.v||0)*(st.t||0); g.avgShare+=st.p[p.name]||0; });
+            g.avgShare = g.n ? g.avgShare/g.n : 0;
+            return g;
+        });
+        TH = { groups, mode: TH ? TH.mode : 'ballots' };
+    }
+    function renderTurnout() {
+        if (!TH) computeTurnout();
+        document.getElementById('th-agreement').textContent = '';
+        ['ballots','voters'].forEach(m => document.getElementById('th-mode-'+m).classList.toggle('gold', TH.mode === m));
+        (function renderShared() {
+            const W = 340, H = 178, base = H - 34, maxV = 100;
+            const bw = W / TH.groups.length;
+            const overall = DATA.map.stats.totalVoters / DATA.map.stats.totalEligible * 100;
+            const bars = TH.groups.map((g, i) => { const mean = g.voters ? g.tWeighted / g.voters : 0; const h = mean / maxV * (base - 18); const sym = (DATA.map.parties.find(x=>x.name===g.name)||{}).symbol||'';
+                return `<rect x="${(i*bw+2).toFixed(1)}" y="${(base-h).toFixed(1)}" width="${(bw-4).toFixed(1)}" height="${h.toFixed(1)}" fill="${DATA.colorOf[g.name]||'#888'}"><title>${displayName(g.name)}: ${mean.toFixed(1)}%</title></rect><text x="${(i*bw+bw/2).toFixed(1)}" y="${(base-h-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#c8ceda">${mean.toFixed(0)}</text><text x="${(i*bw+bw/2).toFixed(1)}" y="${base+11}" text-anchor="middle" font-size="7.5" fill="#939aab">${sym}</text>`; }).join('');
+            const oy = base - overall / maxV * (base - 18);
+            document.getElementById('th-shared').innerHTML = `<div class="pane-note" style="margin:.2rem 0 .3rem">${en() ? 'Mean turnout in each party’s strongholds' : 'אחוז הצבעה ממוצע במעוזי כל מפלגה'} · ${en() ? 'dashed = overall' : 'מקווקו = כללי'} ${overall.toFixed(1)}%</div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${bars}<line x1="0" y1="${oy.toFixed(1)}" x2="${W}" y2="${oy.toFixed(1)}" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="4 3"/></svg>`;
+        })();
+        document.getElementById('th-grid').innerHTML = TH.groups.map(g => {
+            const bins = TH.mode === 'ballots' ? g.binsB : g.binsV;
+            const max = Math.max(...bins, 1), mean = g.voters ? g.tWeighted / g.voters : 0;
+            const W = 160, H = 86, bw = W / bins.length;
+            const bars = bins.map((v, i) => `<rect x="${(i*bw).toFixed(1)}" y="${(H - v/max*(H-8)).toFixed(1)}" width="${Math.max(1, bw-1).toFixed(1)}" height="${(v/max*(H-8)).toFixed(1)}" fill="${DATA.colorOf[g.name]||'#888'}" opacity="0.85"><title>${i*5}-${i*5+5}%: ${fmt(v)}</title></rect>`).join('');
+            const mx = (mean/100*W).toFixed(1);
+            return `<div class="th-card"><h4><span class="dot" style="background:${DATA.colorOf[g.name]||'#888'}"></span>${displayName(g.name)}</h4>
+              <svg class="th-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${bars}<line x1="${mx}" y1="2" x2="${mx}" y2="${H-2}" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="3 2"><title>${i18n.t('k26_th_mean')}: ${mean.toFixed(1)}%</title></line></svg>
+              <div class="th-axis"><span>0%</span><span>50%</span><span>100%</span></div>
+              <div class="th-stats">${i18n.t('k26_th_mean')}: <b>${mean.toFixed(1)}%</b></div></div>`;
+        }).join('');
+    }
+    function renderDhondt() {
+        document.getElementById('dhondt-mini').innerHTML = AGREEMENTS.map(([a,b])=>`<div class="flow-row"><span>${displayName(a)} + ${displayName(b)}</span></div>`).join('');
+        const frame = document.getElementById('dhondt-frame');
+        if (frame && !frame.getAttribute('src')) frame.setAttribute('src', frame.dataset.src);
+        if (frame && !frame.dataset.sized) {
+            frame.dataset.sized = '1';
+            frame.addEventListener('load', () => {
+                const fit = () => { try { const h = frame.contentDocument.documentElement.scrollHeight; if (h) frame.style.height = h + 'px'; } catch (e) {} };
+                fit(); setTimeout(fit, 600); setInterval(fit, 1500);
+            });
+        }
+    }
+    // Most suspicious ballots: farthest from the national transfer regression's
+    // prediction (data/suspects_26.json, generated by generate_suspects_data.py —
+    // each K26 box is paired with its simulation-crosswalk source ballot, the
+    // same residual concept as the fraud simulator's L2 detector).
+    function renderSuspects() {
+        const el = document.getElementById('suspects-list');
+        if (!DATA.suspects || !DATA.suspects.ballots) { el.innerHTML = ''; return; }
+        const parties = DATA.suspects.parties || [];
+        const decLabel = d => en() ? ({ id: 'same ballot', id_dot1: 'same ballot (.1)', venue: 'same venue', coord: 'nearby ballot' }[d] || d) : ({ id: 'אותה קלפי', id_dot1: 'אותה קלפי (.1)', venue: 'אותו מקום הצבעה', coord: 'קלפי סמוכה' }[d] || d);
+        const stacked = vec => { const s = vec.reduce((x, y) => x + y, 0) || 1; return vec.map((v, j) => v > 0 ? `<i style="width:${(v / s * 100).toFixed(2)}%;background:${(parties[j] || {}).color || '#666'}" title="${displayName((parties[j] || {}).name)}: ${(+v).toFixed(1)}%"></i>` : '').join(''); };
+        el.innerHTML = DATA.suspects.ballots.slice(0, 12).map((b, i) => {
+            const sName = en() ? i18n.settlementName(b.n) : b.n;
+            const srcName = en() ? i18n.settlementName(b.src_n) : b.src_n;
+            return `<div class="suspect-row"><div class="suspect-meta"><span class="rank">#${i + 1}</span><a class="name" href="settlement.html?name=${encodeURIComponent(b.n)}">${sName}</a><span class="ballot-num">${en() ? 'Ballot' : 'קלפי'} ${b.b}</span><span class="score">${i18n.t('k26_suspects_mismatch')} ${(b.tvd * 100).toFixed(1)}%</span></div>
+            <div class="suspect-bars"><span class="bar-label">${i18n.t('k26_suspects_pred')}</span><div class="stacked">${stacked(b.pred || [])}</div><span class="bar-label">${i18n.t('k26_suspects_actual')}</span><div class="stacked">${stacked(b.actual || [])}</div></div>
+            <div class="suspect-dev">${fmt(b.v || 0)} ${i18n.t('votes')} · <b>${displayName(b.dev_party)}</b> +${b.dev_pts}${en() ? ' pts vs prediction' : ' נק׳ מעל הצפי'}<br>${i18n.t('k26_suspects_src', { b: b.src_b, s: srcName })} (${decLabel(b.decision)})${b.venue ? ` · ${b.venue}` : ''}</div></div>`;
+        }).join('');
+    }
+    function renderAll() { renderCountStatus(); renderStats(); renderVotes(); renderTurnout(); renderSuspects(); renderSankey(); renderGeomap(); renderTsne(); renderDhondt(); }
+
+    const STAGE_FULL = { sankey:'sankey.html', tsne:'tsne.html', dhondt:'dhondt.html' };
+    document.querySelectorAll('.stage-tab').forEach(btn => btn.addEventListener('click', () => {
+        document.querySelectorAll('.stage-tab').forEach(b => b.classList.toggle('gold', b === btn));
+        ['sankey','tsne','dhondt'].forEach(s => { document.getElementById('panel-'+s).hidden = s !== btn.dataset.stage; });
+        document.getElementById('stage-full-link').href = STAGE_FULL[btn.dataset.stage];
+        if (!DATA) return;
+        if (btn.dataset.stage === 'sankey') renderSankey();
+        if (btn.dataset.stage === 'tsne') renderTsne();
+        if (btn.dataset.stage === 'dhondt') renderDhondt();
+    }));
+    document.getElementById('dhondt-reset').addEventListener('click', () => {
+        const frame = document.getElementById('dhondt-frame');
+        const btn = frame && frame.contentDocument && frame.contentDocument.getElementById('reset-btn');
+        if (btn) btn.click();
+    });
+    ['ballots','voters'].forEach(m => document.getElementById('th-mode-'+m).addEventListener('click', () => { if (TH) { TH.mode = m; renderTurnout(); } }));
+    document.querySelectorAll('[data-expand]').forEach(btn => btn.addEventListener('click', () => {
+        document.getElementById(btn.dataset.expand).classList.toggle('expanded');
+        setTimeout(()=>{ if (DATA) { renderSankey(); renderGeomap(); renderTsne(); } }, 60);
+    }));
+    let rz; window.addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(!DATA) return; if(!document.getElementById('panel-sankey').hidden) renderSankey(); renderGeomap(); if(!document.getElementById('panel-tsne').hidden) renderTsne(); }, 200); });
+    window.addEventListener('langchange', ()=>{ if (DATA) renderAll(); });
+    if (!i18n.SHOW_E26) { document.querySelector('.gemara').innerHTML = '<section class="pane wide"><p class="err">K26 is hidden (e26=0). <a href="k26.html?e26=1">Enable K26</a></p></section>'; return; }
+    load().catch(e => { document.getElementById('votes-table').innerHTML = '<p class="err">'+i18n.t('error_loading')+': '+e.message+'</p>'; });
+})();
+</script>
+</body>
+</html>

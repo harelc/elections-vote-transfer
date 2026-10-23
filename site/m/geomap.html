@@ -924,7 +924,7 @@
             const sorted = Object.entries(partyVotes).sort((a, b) => b[1] - a[1]);
             const winner = sorted[0];
 
-            let size = count > 100 ? 52 : count > 30 ? 46 : 40;
+            let size = count > 500 ? 80 : count > 200 ? 70 : count > 100 ? 60 : count > 30 ? 50 : 40;
             let bgColor = 'rgba(59,130,246,0.8)';
             let info = '';
 

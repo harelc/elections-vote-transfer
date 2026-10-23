@@ -31,10 +31,10 @@ from party_config import ELECTIONS
 # E26 party definitions: symbol → (hebrew_name, color)
 # List map follows Madad 120 (7 Sep 2026): Yashar, Likud, Beyachad, Democrats,
 # YB, Joint List (Hadash–Ta'al–Balad), UTJ, Shas, Otzma, RZ+Zehut, Ra'am,
-# Amcha Yisrael (Winter), Hendel–Zelicha. Blue and White (Gantz) is not running.
+# Amcha Yisrael (Winter), HaMiluimnikim & HaKalkalit. Blue and White (Gantz) is not running.
 # Official CEC letter-symbols (candidates-lists-26, finalized).
 E26_PARTIES = {
-    'דרך': ('ישר', '#14b8a6'),
+    'דרך': ('ישר', '#eab308'),
     'מחל': ('הליכוד', '#2563eb'),
     'רק':  ('ביחד', '#f97316'),
     'אמת': ('הדמוקרטים', '#16a34a'),
@@ -46,7 +46,7 @@ E26_PARTIES = {
     'ט':   ('הציונות הדתית', '#92400e'),
     'עם':  ('רע״ם', '#84cc16'),
     'ך':   ('עמך ישראל', '#4d7c0f'),
-    'די':  ('הנדל–זליכה', '#d97706'),
+    'די':  ('המילואימניקים והכלכלית', '#9333ea'),
     # Below the threshold, but large enough to show beside the other lists.
     # הציבור החרדי draws from Shas and UTJ; Noam draws from the K25
     # Religious Zionism list (Otzma + RZ + Noam ran together in 2022).
@@ -70,10 +70,10 @@ E26_TINY = [
 # Madad 120 center, 7 Sep 2026. Both threshold lists included as passing (4 each);
 # 1 seat shaved from Yashar / Likud / Beyachad so the 120 still add up.
 TARGET_SEATS = {
-    'ישר': 22, 'הליכוד': 20, 'ביחד': 13, 'הדמוקרטים': 9,
-    'ישראל ביתנו': 8, 'הרשימה המשותפת': 8, 'יהדות התורה': 8,
-    'ש״ס': 7, 'עוצמה יהודית': 7, 'הציונות הדתית': 5, 'רע״ם': 5,
-    'עמך ישראל': 4, 'הנדל–זליכה': 4,
+    'ישר': 23, 'הליכוד': 18, 'ביחד': 15, 'הדמוקרטים': 9,
+    'ישראל ביתנו': 8, 'הרשימה המשותפת': 9, 'יהדות התורה': 7,
+    'ש״ס': 8, 'עוצמה יהודית': 7, 'הציונות הדתית': 6, 'רע״ם': 6,
+    'עמך ישראל': 0, 'המילואימניקים והכלכלית': 4,
     'הציבור החרדי': 0, 'נעם': 0,
 }
 
@@ -93,62 +93,62 @@ K25_NATIONAL_VOTES = {
 # leans to Yashar, and 2pp of Likud moves to Amcha.
 TRANSFER_MATRIX = {
     'הליכוד': {
-        'הליכוד': 0.71, 'עוצמה יהודית': 0.08, 'עמך ישראל': 0.11,
-        'הציונות הדתית': 0.05, 'ש״ס': 0.03, 'יהדות התורה': 0.02,
+        'הליכוד': 0.73, 'עוצמה יהודית': 0.08, 'עמך ישראל': 0.05,
+        'הציונות הדתית': 0.07, 'ש״ס': 0.05, 'יהדות התורה': 0.02,
     },
     'יש עתיד': {
-        'ביחד': 0.36, 'ישר': 0.47, 'הדמוקרטים': 0.07, 'ישראל ביתנו': 0.03,
-        'הנדל–זליכה': 0.07,
+        'ביחד': 0.45, 'ישר': 0.42, 'הדמוקרטים': 0.06, 'ישראל ביתנו': 0.03,
+        'המילואימניקים והכלכלית': 0.04,
     },
     'הציונות הדתית': {
-        'עוצמה יהודית': 0.365, 'הציונות הדתית': 0.325, 'עמך ישראל': 0.18,
+        'עוצמה יהודית': 0.38, 'הציונות הדתית': 0.37, 'עמך ישראל': 0.12,
         'הליכוד': 0.10, 'נעם': 0.030,
     },
     'המחנה הממלכתי': {
-        'ישר': 0.67, 'ביחד': 0.10, 'הנדל–זליכה': 0.18, 'הדמוקרטים': 0.03,
+        'ישר': 0.66, 'ביחד': 0.10, 'המילואימניקים והכלכלית': 0.20, 'הדמוקרטים': 0.02,
         'ישראל ביתנו': 0.02,
     },
     'ש״ס': {
-        'ש״ס': 0.806, 'הליכוד': 0.04, 'יהדות התורה': 0.05, 'עוצמה יהודית': 0.08,
-        'הציבור החרדי': 0.024,
+        'ש״ס': 0.82, 'הליכוד': 0.03, 'יהדות התורה': 0.04, 'עוצמה יהודית': 0.085,
+        'הציבור החרדי': 0.025,
     },
     'יהדות התורה': {
-        'יהדות התורה': 0.916, 'ש״ס': 0.04, 'הליכוד': 0.02,
-        'הציבור החרדי': 0.024,
+        'יהדות התורה': 0.86, 'ש״ס': 0.06, 'הליכוד': 0.02,
+        'הציבור החרדי': 0.06,
     },
     'ישראל ביתנו': {
-        'ישראל ביתנו': 0.85, 'ישר': 0.07, 'ביחד': 0.03, 'הנדל–זליכה': 0.05,
+        'ישראל ביתנו': 0.84, 'ישר': 0.05, 'ביחד': 0.06, 'המילואימניקים והכלכלית': 0.05,
     },
     'רע״ם': {
-        'רע״ם': 0.92, 'הרשימה המשותפת': 0.08,
+        'רע״ם': 0.94, 'הרשימה המשותפת': 0.06,
     },
     'חד״ש-תע״ל': {
-        'הרשימה המשותפת': 0.82, 'רע״ם': 0.08, 'הדמוקרטים': 0.10,
+        'הרשימה המשותפת': 0.86, 'רע״ם': 0.09, 'הדמוקרטים': 0.05,
     },
     'העבודה': {
-        'הדמוקרטים': 0.68, 'ישר': 0.17, 'ביחד': 0.10, 'הנדל–זליכה': 0.05,
+        'הדמוקרטים': 0.70, 'ישר': 0.14, 'ביחד': 0.08, 'המילואימניקים והכלכלית': 0.08,
     },
     'מרצ': {
-        'הדמוקרטים': 0.70, 'ישר': 0.14, 'הרשימה המשותפת': 0.04, 'ביחד': 0.12,
+        'הדמוקרטים': 0.63, 'ישר': 0.17, 'הרשימה המשותפת': 0.04, 'ביחד': 0.16,
     },
     'בל״ד': {
-        'הרשימה המשותפת': 0.88, 'רע״ם': 0.12,
+        'הרשימה המשותפת': 0.92, 'רע״ם': 0.08,
     },
 }
 
 ROW_TURNOUT = {
-    'הליכוד':        0.80,
+    'הליכוד':        0.62,
     'יש עתיד':      1.08,
     'הציונות הדתית': 0.84,
     'המחנה הממלכתי': 1.18,
-    'ש״ס':          0.62,
-    'יהדות התורה':  1.02,
-    'ישראל ביתנו':  1.40,
-    'רע״ם':         0.90,
-    'חד״ש-תע״ל':   1.00,
+    'ש״ס':          0.66,
+    'יהדות התורה':  0.85,
+    'ישראל ביתנו':  1.48,
+    'רע״ם':         1.06,
+    'חד״ש-תע״ל':   1.07,
     'העבודה':       1.08,
     'מרצ':          1.08,
-    'בל״ד':         0.98,
+    'בל״ד':         1.05,
 }
 DEFAULT_ROW_TURNOUT = 1.00
 
@@ -166,6 +166,10 @@ SURPLUS_AGREEMENTS = [
 # National K26 turnout (voters / eligible), applied on top of the K25
 # geographic pattern so high-turnout and low-turnout boxes stay apart.
 TARGET_TURNOUT = 0.743
+
+# Invalid (spoiled) ballots: flat 0.2% of voters in every box, so the
+# eligible -> voters -> valid chain in the headline numbers stays coherent.
+INVALID_SHARE = 0.002
 
 # Global population growth between K25 (Nov 2022) and K26 (~Oct 2026).
 # Israeli registered-voter rolls grew ~1.93%/year (2021→2022 CEC figures);
@@ -260,7 +264,7 @@ def simulate_ballot(votes_by_e25_name, e26_party_list, rng, alpha):
         if row is None:
             row = {'הליכוד': 0.25, 'ביחד': 0.20, 'ישר': 0.22, 'הדמוקרטים': 0.10,
                    'ישראל ביתנו': 0.05, 'הרשימה המשותפת': 0.05,
-                   'הנדל–זליכה': 0.08, 'עמך ישראל': 0.05}
+                   'המילואימניקים והכלכלית': 0.08, 'עמך ישראל': 0.05}
 
         for dst_name, fraction in row.items():
             if dst_name in party_idx:
@@ -571,8 +575,8 @@ def simulate(alpha=55, seed=42):
             record = {'eligible': 0, 'valid': 0, 'invalid': 0, 'votes': {'הליכוד': 1}}
             mode = 'national'
         neighbor_modes[mode] = neighbor_modes.get(mode, 0) + 1
-        rate, invalid_share = _source_rates(record)
-        sources.append((station, record, rate if rate is not None else 0.67, invalid_share))
+        rate, _ = _source_rates(record)
+        sources.append((station, record, rate if rate is not None else 0.67, INVALID_SHARE))
 
     weighted = sum(station['eligible'] * rate for station, _, rate, _ in sources)
     eligible_total = sum(station['eligible'] for station, _, _, _ in sources) or 1
@@ -611,7 +615,7 @@ def simulate(alpha=55, seed=42):
                 break
             add = min(space, gap)
             station, voters, invalid, valid_target, drawn = out_rows[i]
-            invalid_share = invalid / voters if voters else 0.008
+            invalid_share = INVALID_SHARE
             voters += add
             invalid = min(voters, int(round(voters * invalid_share)))
             valid_target = voters - invalid

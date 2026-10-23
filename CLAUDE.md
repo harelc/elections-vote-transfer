@@ -18,6 +18,7 @@ Live site: https://kolot-nodedim.netlify.app/
 ├── generate_map_data.py           # Generates geographic map data per election (with name normalization)
 ├── generate_metrics_data.py       # Pedersen volatility + HHI → site/data/metrics.json
 ├── generate_irregularities_data.py # Unusual-ballot scores → site/data/irregularities_*.json
+├── generate_suspects_data.py      # Crosswalk-paired regression residuals → site/data/suspects_26.json (k26 pane)
 ├── download_statistical_zones.py  # Loads CBS 2011 GDB, matches stations to zones via point-in-polygon
 ├── process_statistical_zones.py   # Joins CBS socioeconomic data to zones, creates station mapping
 ├── download_historical_ballots.py # Downloads K16-K20 ballot CSVs from CEC CKAN API
@@ -47,6 +48,7 @@ Live site: https://kolot-nodedim.netlify.app/
 │   ├── dhondt.html                # D'Hondt/Bader-Ofer seat allocation calculator
 │   ├── irregular.html             # Irregular ballot analysis
 │   ├── fraud-sim.html             # Election fraud detection simulator (K24→K25, K25→K26)
+│   ├── k26.html                   # K26 information center (desktop-only, full-width; embeds dhondt.html?embed=1)
 │   ├── regional.html              # Regional elections simulator (Voronoi + D'Hondt)
 │   ├── voronoi-explainer.html     # Click-through explainer of Voronoi districting
 │   ├── settlement.html            # Settlement profile page (?name=...)
@@ -122,7 +124,7 @@ Most visualizations have two HTML files: `site/<page>.html` (desktop) and `site/
 - **BMC banner**: Floating dismissible Buy Me a Coffee banner above tab bar (3s delay, sessionStorage persistence)
 - Touch-optimized bottom sheets instead of hover tooltips
 
-**Desktop-only** (no `m/` twin; some are linked from the mobile dashboard to the desktop URL): `primer.html`, `animation.html`, `fraud-sim.html`, `sankey-explainer.html`, `voronoi-explainer.html`.
+**Desktop-only** (no `m/` twin; some are linked from the mobile dashboard to the desktop URL): `primer.html`, `animation.html`, `fraud-sim.html`, `sankey-explainer.html`, `voronoi-explainer.html`. Exception: `k26.html` redirects phone user agents to `m/index.html` and is not linked from the mobile dashboard.
 
 ### Internationalization (i18n.js)
 Central bilingual system (Hebrew/English). Key concepts:
@@ -190,13 +192,13 @@ Madad 120 center forecast as of **7 Sep 2026** (50 days out; lists close 8 Sep 2
 | הציונות הדתית + זהות | 5 | 4–6 | 5 |
 | רע״ם | 5 | 4–6 | 5 |
 | עמך ישראל (Winter) | 0 / 4–5 | ~48% pass | 4 |
-| הנדל–זליכה | 0 / 4–5 | ~52% pass | 4 |
+| המילואימניקים והכלכלית | 0 / 4–5 | ~52% pass | 4 |
 Both threshold lists are included as passing (4 each); 1 seat shaved from Yashar / Likud / Beyachad so the 120 still add up. Turnout intent on Madad: opposition 82% / coalition 77% / Arab 75%.
 
 Provisional majors in `simulate_election_26.py` (`E26_PARTIES`):
-ישר, הליכוד, ביחד, הדמוקרטים, ישראל ביתנו, הרשימה המשותפת, יהדות התורה, ש״ס, עוצמה יהודית, הציונות הדתית, רע״ם, עמך ישראל, הנדל–זליכה (plus sub-threshold הציבור החרדי, נעם)
+ישר, הליכוד, ביחד, הדמוקרטים, ישראל ביתנו, הרשימה המשותפת, יהדות התורה, ש״ס, עוצמה יהודית, הציונות הדתית, רע״ם, עמך ישראל, המילואימניקים והכלכלית (plus sub-threshold הציבור החרדי, נעם)
 
-כחול לבן (Gantz) is **not running** in K26: no column in `ballot26.csv`, no `(26, 'כן')` override, not in any K26 bloc or seat list. Its former matrix cells were split between ישר and הנדל–זליכה.
+כחול לבן (Gantz) is **not running** in K26: no column in `ballot26.csv`, no `(26, 'כן')` override, not in any K26 bloc or seat list. Its former matrix cells were split between ישר and המילואימניקים והכלכלית.
 
 Simulation knobs:
 - `TRANSFER_MATRIX`: per K25 source party → K26 destination distribution (rows must sum to 1.0)
@@ -212,7 +214,7 @@ Hardcoded K26 totals appear in 3 places that must stay in sync when re-tuning:
 2. `site/data/wiki_official_results.json` `"26"` entry (used by sankey side bar legend; has `_26_note` sibling key flagging simulation)
 3. `party_config.py` ELECTIONS['26'] major_parties seats list
 
-Current synced map: Yashar 23 / Likud 20 / Beyachad 12 / UTJ 9 / Democrats 8 / Joint List 8 / Shas 7 / YB 7 / Otzma 7 / Ra'am 5 / RZ 5 / Amcha 5 / Hendel–Zelicha 4. Official K26 surplus agreements: Yisrael Beytenu+Beyachad, Ra'am+Joint List, RZ+Likud, UTJ+Shas, Democrats+Yashar (Otzma has none). Defined in `simulate_election_26.py` / `k26_live.py` `SURPLUS_AGREEMENTS`, `agreements26` in both dhondt pages, and `site/data/turnout_ballots_26.json` (regenerate via `generate_turnout_sim.py`).
+Current synced map (Oct 2026 recalibration): Yashar 23 / Likud 18 / Beyachad 15 / Democrats 8 / YB 8 / Joint List 8 / UTJ 8 / Shas 9 / Otzma 7 / RZ 6 / Ra'am 6 / Amcha 0 (below threshold, ~2.2%) / HaMiluimnikim & HaKalkalit 4. Yashar's colour is `#eab308` (golden yellow; the old teal clashed with the Joint List). Invalid ballots are a flat 0.2% of voters per box (`INVALID_SHARE` in `simulate_election_26.py`). Official K26 surplus agreements: Yisrael Beytenu+Beyachad, Ra'am+Joint List, RZ+Likud, UTJ+Shas, Democrats+Yashar (Otzma has none). Defined in `simulate_election_26.py` / `k26_live.py` `SURPLUS_AGREEMENTS`, `agreements26` in both dhondt pages, and `site/data/turnout_ballots_26.json` (regenerate via `generate_turnout_sim.py`).
 
 Set `min_flow_threshold=15000` in `generate_transfer_data.py` to hide solver multicollinearity noise (~1% spurious cells) from sankey. `sankey.js` also drops nodes with zero remaining flows.
 
@@ -500,6 +502,13 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 - **Visualization modes**: ROC plot (dual curves for current vs population level), side-by-side tampered ballot comparison
 - **First-time intro modal**: Explains concepts (detector types, fraud scenarios, ROC interpretation)
 - **Default state**: K24→K25 transition, top-100 ballots, 400-ballot injection, 17% intervention strength
+
+### k26.html (K26 Information Center)
+- Full-width desktop "Gemara" layout: votes+hemicycle and surplus agreements in the start margin, turnout-in-strongholds + most-suspicious-ballots in the end margin, and a central stage switching between Sankey 25→26, geomap, ballot distribution (t-SNE) and the seat calculator
+- The calculator stage embeds the original `dhondt.html?embed=1` (embed mode hides its header/footer/election selector; the pane has its own reset button; the frame auto-fits its content height)
+- Election-night count banner: driven by `site/data/k26_status.json` — when `kind` is `partial`/`official` it shows ballots counted out of the roster, percentage, remaining and update time; seats from `wiki_official_results.json`, MK names from `data/k26_mks.json` (CEC lists, gov.il)
+- Desktop-only: phone user agents are redirected to `m/index.html`, and the mobile dashboard does not link here
+- Election-night flow: the Netlify poller dispatches `.github/workflows/k26-refresh.yml`, which runs `refresh_k26.py` (prepare → fraud-sim → `generate_suspects_data.py` → irregularities → turnout when official → `k26_live.py --publish` → MCP build) and commits the outputs. Every file `k26.html` fetches (status, wiki results, map/tsne/transfer 26, `suspects_26.json`, dhondt parties26) is in that commit list; `k26_mks.json` and `station_coordinates.json` are static. `k26_control.json` `auto:false` gates the whole flow.
 
 ### regional.html (Regional Elections Simulator)
 - Voronoi-based regional election simulation with D'Hondt allocation

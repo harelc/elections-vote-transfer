@@ -2593,8 +2593,10 @@
 
                 // Size based on count — colocated clusters slightly smaller
                 let size = 44;
-                if (count > 100) size = 56;
-                else if (count > 30) size = 50;
+                if (count > 500) size = 88;
+                else if (count > 200) size = 76;
+                else if (count > 100) size = 64;
+                else if (count > 30) size = 54;
                 if (colocated) size = Math.round(size * 0.85);
 
                 const cls = colocated ? 'custom-cluster cluster-colocated' : 'custom-cluster';

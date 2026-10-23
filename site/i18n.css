@@ -5,6 +5,22 @@
 /* ── Inter font for English mode ── */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* ── MCP call-to-action in the top bar ── */
+.view-btn.mcp-cta {
+    background: linear-gradient(135deg, #ffd75e, #f0b429);
+    color: #1a1408 !important;
+    border: 1px solid #ffe08a !important;
+    font-weight: 800;
+    opacity: 1 !important;
+    box-shadow: 0 4px 16px rgba(240, 180, 41, 0.38);
+}
+.view-btn.mcp-cta:hover {
+    background: linear-gradient(135deg, #ffe084, #ffc93c);
+    color: #1a1408 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 7px 22px rgba(240, 180, 41, 0.48);
+}
+
 /* ── Language toggle button ── */
 .lang-toggle {
     display: inline-flex;

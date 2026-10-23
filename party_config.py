@@ -728,15 +728,15 @@ ELECTIONS = {
         # 7,331,981 eligible. Letter symbols are the final CEC signs.
         'eligible_voters': 7331981,
         'votes_cast': 5447662,
-        'valid_votes': 5415872,
+        'valid_votes': 5436136,
         'turnout_percent': 74.3,
         'major_parties': {
             'symbols': ['דרך', 'מחל', 'רק', 'אמת', 'ל', 'ודם', 'ג', 'שס', 'ב', 'ט', 'עם', 'ך', 'די', 'זך', 'ני'],
             'names': ['ישר', 'הליכוד', 'ביחד', 'הדמוקרטים', 'ישראל ביתנו',
                      'הרשימה המשותפת', 'יהדות התורה', 'ש״ס', 'עוצמה יהודית',
-                     'הציונות הדתית', 'רע״ם', 'עמך ישראל', 'הנדל–זליכה',
+                     'הציונות הדתית', 'רע״ם', 'עמך ישראל', 'המילואימניקים והכלכלית',
                      'הציבור החרדי', 'נעם'],
-            'seats': [23, 20, 12, 8, 7, 8, 9, 7, 7, 5, 5, 5, 4, 0, 0]
+            'seats': [23, 18, 15, 8, 8, 8, 8, 9, 7, 6, 6, 0, 4, 0, 0]
         }
     }
 }
@@ -1352,6 +1352,19 @@ PARTY_OVERRIDES = {
     },
 
     # ===== ELECTION 26 (Simulated — Madad 120 list map, 7 Sep 2026) =====
+    ('26', 'מחל'): {
+        'logo': 'images/logos/k26_likud.png',
+    },
+    ('26', 'ל'): {
+        'name': 'ישראל ביתנו',
+        'logo': 'images/logos/k26_yisrael_beiteinu.png',
+    },
+    ('26', 'ג'): {
+        'logo': 'images/logos/k26_utj.png',
+    },
+    ('26', 'שס'): {
+        'logo': 'images/logos/k26_shas.png',
+    },
     ('26', 'ט'): {
         'name': 'הציונות הדתית',
         'name_en': 'Religious Zionism',
@@ -1360,6 +1373,7 @@ PARTY_OVERRIDES = {
         'leader_en': 'Bezalel Smotrich',
         'leader_image': 'images/leaders/smotrich.jpg',
         'description': 'רשימה משותפת של הציונות הדתית וזהות (פייגלין)',
+        'logo': 'images/logos/k26_religious_zionism.png',
     },
     ('26', 'עם'): {
         'name': 'רע״ם',
@@ -1368,6 +1382,7 @@ PARTY_OVERRIDES = {
         'leader': 'מנסור עבאס',
         'leader_en': 'Mansour Abbas',
         'leader_image': 'images/leaders/abbas.jpg',
+        'logo': 'images/logos/k26_raam.png',
     },
     ('26', 'ודם'): {
         'name': 'הרשימה המשותפת',
@@ -1377,16 +1392,18 @@ PARTY_OVERRIDES = {
         'leader_en': 'Yousef Jabareen',
         'leader_image': 'images/leaders/jabarin.jpg',
         'description': 'חד״ש–תע״ל–בל״ד רצים יחד כרשימה המשותפת. אותיות ודם.',
+        'logo': 'images/logos/joint_list.png',
     },
     ('26', 'דרך'): {
         'name': 'ישר',
         'name_en': 'Yashar',
-        'color': '#14b8a6',
+        'color': '#eab308',
         'leader': 'גדי אייזנקוט',
         'leader_en': 'Gadi Eisenkot',
         'leader_image': 'images/leaders/eisenkot.jpg',
         'ideology': 'מרכז, ממלכתיות, ביטחון',
         'description': 'ישר! עם איזנקוט לראשות הממשלה. אותיות דרך.',
+        'logo': 'images/logos/k26_yashar.png',
     },
     ('26', 'רק'): {
         'name': 'ביחד',
@@ -1397,6 +1414,7 @@ PARTY_OVERRIDES = {
         'leader_image': 'images/leaders/bennett.jpg',
         'ideology': 'מרכז-ימין, ממלכתיות, ליברליזם',
         'description': 'ביחד בראשות נפתלי בנט, רשימה משותפת עם יש עתיד. אותיות רק.',
+        'logo': 'images/logos/k26_beyachad.svg',
     },
     ('26', 'אמת'): {
         'name': 'הדמוקרטים',
@@ -1407,6 +1425,7 @@ PARTY_OVERRIDES = {
         'leader_image': 'images/leaders/golan.jpg',
         'ideology': 'שמאל-מרכז, סוציאל-דמוקרטיה',
         'description': 'הדמוקרטים בראשות יאיר גולן, איחוד העבודה ומרצ. אותיות אמת.',
+        'logo': 'images/logos/k26_democrats.png',
     },
     ('26', 'ב'): {
         'name': 'עוצמה יהודית',
@@ -1417,6 +1436,7 @@ PARTY_OVERRIDES = {
         'leader_image': 'images/leaders/ben_gvir.jpg',
         'ideology': 'ימין קיצוני, לאומנות',
         'description': 'עוצמה יהודית בראשות איתמר בן גביר. אות ב.',
+        'logo': 'images/logos/k26_otzma_yehudit.png',
     },
     ('26', 'ך'): {
         'name': 'עמך ישראל',
@@ -1427,16 +1447,18 @@ PARTY_OVERRIDES = {
         'leader_image': 'images/leaders/winter.jpg',
         'ideology': 'ימין, ביטחון, שמרנות',
         'description': 'עמך ישראל בראשות עופר וינטר. אות ך.',
+        'logo': 'images/logos/k26_amcha_yisrael.png',
     },
     ('26', 'די'): {
-        'name': 'הנדל–זליכה',
-        'name_en': 'Hendel–Zelicha',
-        'color': '#d97706',
+        'name': 'המילואימניקים והכלכלית',
+        'name_en': 'HaMiluimnikim & HaKalkalit',
+        'color': '#9333ea',
         'leader': 'יועז הנדל, ירון זליכה',
         'leader_en': 'Yoaz Hendel and Yaron Zelicha',
         'leader_image': 'images/leaders/hendel.jpg',
         'ideology': 'מרכז, כלכלה, ממלכתיות',
         'description': 'המילואימניקים והכלכלית בראשות יועז הנדל וירון זליכה. אותיות די.',
+        'logo': 'images/logos/k26_hendel_zelicha.png',
     },
     ('26', 'פה'): {
         'name': 'אני ואתה',
@@ -1469,6 +1491,7 @@ PARTY_OVERRIDES = {
         'leader_en': 'Moti Litner',
         'ideology': 'חרדי',
         'description': 'הציבור החרדי בראשות מוטי ליטנר. אותיות זך. קולותיה מגיעים מש״ס ומיהדות התורה.',
+        'logo': 'images/logos/k26_haredi_public.png',
     },
     ('26', 'ק'): {'name': 'תקומה', 'description': 'תקומה. אות ק.'},
 

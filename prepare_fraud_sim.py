@@ -156,15 +156,39 @@ def prepare_transition(from_year, to_year):
 
     i_from = load_ballot_lookup(t_from)
     i_to = load_ballot_lookup(t_to)
-    common = sorted(set(i_from) & set(i_to))
-    print(f"[{from_year}→{to_year}] common ballots: {len(common)}")
+
+    # Pairing: for K26 the destination roster was renumbered/rebuilt, so a
+    # settlement|ballot string match pairs different physical boxes (the
+    # residual then measures the mismatch, not behaviour). Use the official
+    # crosswalk — the same source simulate_election_26.py generated K26 from.
+    pairs = None
+    if to_year == '26':
+        import csv as _csv
+        xw_path = 'data/k25_k26_ballot_union.csv'
+        try:
+            pairs = []
+            with open(xw_path, encoding='utf-8-sig') as fh:
+                for row in _csv.DictReader(fh):
+                    if row['decision'] not in ('id', 'id_dot1'):  # index-matched only: same settlement + ballot index
+                        continue
+                    kf = row['k25_name'] + '|' + row['k25_ballot']
+                    kt = row['k26_name'] + '|' + row['k26_ballot']
+                    if kf in i_from and kt in i_to:
+                        pairs.append((kf, kt))
+            print(f"[{from_year}→{to_year}] crosswalk pairs: {len(pairs)}")
+        except FileNotFoundError:
+            pairs = None
+    if pairs is None:
+        common = sorted(set(i_from) & set(i_to))
+        pairs = [(k, k) for k in common]
+        print(f"[{from_year}→{to_year}] common ballots: {len(common)}")
 
     ballots = []
     tsne_coords = []   # in t_to space — that's where the "current election" lives
     geo_coords = []
     skipped = 0
-    for key in common:
-        sf, st = i_from[key], i_to[key]
+    for key_from, key in pairs:
+        sf, st = i_from[key_from], i_to[key]
         pf_raw = sf.get('p', {})
         pt_raw = st.get('p', {})
         bf = np.array([pf_raw.get(p['name'], 0.0) for p in parties_from]) / 100.0

@@ -130,6 +130,47 @@ def count_lists(election_id):
         return 0
 
 
+def count_cast(election_id):
+    """Total ballots cast (מצביעים, including invalid) from the CSV.
+
+    tsne 'v' is valid votes only, so stats.totalVoters understates turnout;
+    totalCast keeps the eligible -> cast -> valid chain coherent."""
+    csv_info = ELECTION_CSV.get(election_id)
+    if not csv_info:
+        return 0
+    filepath, encoding = csv_info
+    if not os.path.exists(filepath):
+        return 0
+    import csv as _csv
+    total = 0
+    with open(filepath, encoding=encoding) as f:
+        for row in _csv.DictReader(f):
+            try:
+                total += int(float(row.get('מצביעים') or 0))
+            except (TypeError, ValueError):
+                pass
+    return total
+
+
+def count_eligible(election_id):
+    """Total eligible voters (בזב) from the CSV, before tsne station filtering."""
+    csv_info = ELECTION_CSV.get(election_id)
+    if not csv_info:
+        return 0
+    filepath, encoding = csv_info
+    if not os.path.exists(filepath):
+        return 0
+    import csv as _csv
+    total = 0
+    with open(filepath, encoding=encoding) as f:
+        for row in _csv.DictReader(f):
+            try:
+                total += int(float(row.get('בזב') or 0))
+            except (TypeError, ValueError):
+                pass
+    return total
+
+
 def load_coordinates():
     """Load settlement coordinates from station_coordinates.json.
 
@@ -324,6 +365,8 @@ def generate_map_data(elections=ELECTIONS):
                 'totalSettlements': len(settlements),
                 'totalBallots': sum(s['ballotCount'] for s in settlements),
                 'totalVoters': sum(s['voters'] for s in settlements),
+                'totalCast': count_cast(election_id),
+                'totalEligibleCsv': count_eligible(election_id),
                 'totalEligible': sum(s['eligible'] for s in settlements),
                 'totalLists': count_lists(election_id),
                 'missingCoordinates': len(missing)
