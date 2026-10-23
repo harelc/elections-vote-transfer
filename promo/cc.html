@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>קולות נודדים · מרכז המידע כנסת 26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+    --bg: #101216;
+    --card: #1e212a;
+    --line: #3a4050;
+    --text: #f3f5f8;
+    --text2: #c8ceda;
+    --muted: #939aab;
+    --gold: #f0b429;
+    --gold2: #f6d78a;
+    --red: #ef4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #000; }
+body { font-family: 'Heebo', sans-serif; color: var(--text); }
+#stage {
+    position: relative;
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background:
+        radial-gradient(1300px 750px at 50% -10%, rgba(240,180,41,0.18), transparent 70%),
+        radial-gradient(1000px 800px at 85% 115%, rgba(37,99,235,0.13), transparent 70%),
+        var(--bg);
+}
+body.preview { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+body.preview #stage { transform-origin: top center; }
+
+.scene { position: absolute; inset: 0; opacity: 0; will-change: opacity; }
+.kicker { color: var(--gold); font-weight: 800; font-size: 34px; letter-spacing: 0.04em; }
+.headline { font-size: 92px; font-weight: 900; line-height: 1.08; color: var(--text); }
+.headline .gold { color: var(--gold); }
+.sub { font-size: 40px; font-weight: 500; color: var(--text2); line-height: 1.35; }
+
+/* media scenes: headline band on top, framed screenshot below */
+.media .head-zone { position: absolute; top: 54px; inset-inline: 90px; }
+.media .head-zone .headline { font-size: 76px; }
+.media .head-zone .sub { margin-top: 10px; font-size: 36px; }
+.frame {
+    position: absolute; left: 90px; right: 90px; top: 300px; bottom: 54px;
+    border-radius: 22px; overflow: hidden;
+    border: 1px solid var(--line);
+    box-shadow: 0 40px 120px rgba(0,0,0,0.55), 0 0 0 1px rgba(240,180,41,0.08);
+    background: #0b0e13;
+}
+.frame img { width: 100%; height: 100%; object-fit: cover; object-position: top center; will-change: transform; }
+.frame.tight img { object-position: center 22%; }
+
+.brandchip {
+    position: absolute; top: 34px; inset-inline-start: 90px; z-index: 5;
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 26px; font-weight: 800; color: var(--text2);
+}
+.brandchip .dot { width: 14px; height: 14px; border-radius: 50%; background: var(--gold); }
+.livechip {
+    display: inline-flex; align-items: center; gap: 12px;
+    border: 1.5px solid rgba(239,68,68,0.65); color: #fca5a5;
+    background: rgba(239,68,68,0.12); border-radius: 999px;
+    padding: 10px 26px; font-size: 30px; font-weight: 800;
+}
+.livechip .pulse { width: 15px; height: 15px; border-radius: 50%; background: var(--red); }
+.chips { display: flex; gap: 16px; flex-wrap: wrap; }
+.chip {
+    border: 1px solid var(--line); background: rgba(30,33,42,0.9); color: var(--text);
+    border-radius: 999px; padding: 12px 28px; font-size: 30px; font-weight: 700;
+}
+.chip b { color: var(--gold); }
+
+.split { position: absolute; top: 300px; bottom: 54px; left: 90px; right: 90px; display: grid; grid-template-columns: 1fr 1fr; gap: 36px; }
+.split .frame { position: relative; left: auto; right: auto; top: auto; bottom: auto; }
+
+/* hook / cta centered scenes */
+.center-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 140px; }
+.clock { font-size: 300px; font-weight: 900; line-height: 1; color: var(--text); font-variant-numeric: tabular-nums; }
+.clock small { font-size: 120px; color: var(--gold); }
+.progress { width: 1050px; max-width: 80%; height: 20px; border-radius: 999px; background: rgba(255,255,255,0.10); overflow: hidden; }
+.progress i { display: block; height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.urlpill {
+    display: inline-block; margin-top: 44px; padding: 22px 54px; border-radius: 999px;
+    background: linear-gradient(135deg, #ffd75e, #f0b429); color: #1a1408;
+    font-size: 46px; font-weight: 900; direction: ltr;
+    box-shadow: 0 18px 60px rgba(240,180,41,0.4);
+}
+.simtag { position: absolute; bottom: 36px; inset-inline-start: 90px; font-size: 24px; color: var(--muted); }
+[data-d] { opacity: 0; will-change: opacity, transform; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+    <!-- 1 · Hook -->
+    <section class="scene" id="s-hook">
+        <div class="center-wrap">
+            <div class="kicker" data-d="0">ליל הבחירות · כנסת 26 · <bdi>27.10.2026</bdi></div>
+            <div class="clock" data-d="0.25">22:00</div>
+            <div class="headline" data-d="0.7">הקלפיות נסגרו.<br><span class="gold">התוצאות מתחילות לזרום.</span></div>
+            <div class="sub" data-d="1.3" style="margin-top:26px">12,018 קלפיות. כל אחת מהן תגיע למסך אחד.</div>
+        </div>
+    </section>
+
+    <!-- 2 · The command center reveal -->
+    <section class="scene media" id="s-cc">
+        <div class="brandchip"><span class="dot"></span>קולות נודדים</div>
+        <div class="head-zone">
+            <div class="headline" data-d="0">מרכז המידע של ליל הבחירות</div>
+            <div class="sub" data-d="0.35">מנדטים, מועמדים, נדידת קולות, מפה וקלפיות חשודות — במסך אחד, חי.</div>
+        </div>
+        <div class="frame"><img src="screens_cc/cc_top.png" alt=""></div>
+    </section>
+
+    <!-- 3 · Live count -->
+    <section class="scene" id="s-live">
+        <div class="center-wrap">
+            <div data-d="0"><span class="livechip"><span class="pulse" id="livepulse"></span>ספירה חיה</span></div>
+            <div class="headline" data-d="0.3" style="margin-top:38px">כל קלפי שנספרה — <span class="gold">כאן, תוך דקות</span></div>
+            <div class="sub" data-d="0.7" style="margin-top:22px">המערכת בודקת תוצאות חדשות כל 10 דקות, ובונה מחדש את כל התצוגות</div>
+            <div data-d="1.0" style="margin-top:54px; display:flex; flex-direction:column; align-items:center; gap:18px">
+                <div class="progress"><i id="countbar"></i></div>
+                <div class="sub" id="countlabel" style="font-variant-numeric:tabular-nums">0 מתוך 12,018 קלפיות</div>
+            </div>
+        </div>
+        <div class="simtag">המספרים בצילומים: הדמיית ספירה על נתוני הסימולציה</div>
+    </section>
+
+    <!-- 4 · Hemisphere: people, not just numbers -->
+    <section class="scene media" id="s-hemi">
+        <div class="brandchip"><span class="dot"></span>קולות נודדים</div>
+        <div class="head-zone">
+            <div class="headline" data-d="0">לא רק מנדטים. <span class="gold">אנשים.</span></div>
+            <div class="sub" data-d="0.35">שם המועמד או המועמדת בכל מושב — במעבר עכבר אחד.</div>
+        </div>
+        <div class="frame tight"><img src="screens_cc/cc_hover.png" alt=""></div>
+    </section>
+
+    <!-- 5 · Sankey -->
+    <section class="scene media" id="s-sankey">
+        <div class="brandchip"><span class="dot"></span>קולות נודדים</div>
+        <div class="head-zone">
+            <div class="headline" data-d="0">לאן עברו הקולות?</div>
+            <div class="sub" data-d="0.35">מודל נדידת הקולות הארצי בין כנסת 25 לכנסת 26, קלפי־קלפי.</div>
+        </div>
+        <div class="frame"><img src="screens_cc/cc_sankey.png" alt=""></div>
+    </section>
+
+    <!-- 6 · Geomap -->
+    <section class="scene media" id="s-map">
+        <div class="brandchip"><span class="dot"></span>קולות נודדים</div>
+        <div class="head-zone">
+            <div class="headline" data-d="0">כל קלפי. <span class="gold">כל רחוב.</span></div>
+            <div class="sub" data-d="0.35">מי ניצח בשכונה שלכם? מפה חיה של כל תחנות ההצבעה בארץ.</div>
+        </div>
+        <div class="frame"><img src="screens_cc/cc_map.png" alt=""></div>
+    </section>
+
+    <!-- 7 · Turnout + suspects split -->
+    <section class="scene media" id="s-split">
+        <div class="brandchip"><span class="dot"></span>קולות נודדים</div>
+        <div class="head-zone">
+            <div class="headline" data-d="0">מי יצא להצביע — ומה לא מסתדר?</div>
+            <div class="sub" data-d="0.35">אחוזי הצבעה במעוזי כל רשימה, והקלפיות שהכי חורגות מצפי המודל.</div>
+        </div>
+        <div class="split">
+            <div class="frame"><img src="screens_cc/cc_turnout.png" alt=""></div>
+            <div class="frame"><img src="screens_cc/cc_suspects.png" alt=""></div>
+        </div>
+    </section>
+
+    <!-- 8 · CTA -->
+    <section class="scene" id="s-cta">
+        <div class="center-wrap">
+            <div class="kicker" data-d="0">קולות נודדים</div>
+            <div class="headline" data-d="0.3" style="font-size:110px">אתר נתוני הבחירות<br><span class="gold">הגדול בישראל</span></div>
+            <div class="sub" data-d="0.8" style="margin-top:30px">מרכז המידע לכנסת 26 פתוח כבר עכשיו.<br>בליל הבחירות — הוא מתעדכן לבד.</div>
+            <div data-d="1.2"><span class="urlpill">kolot-nodedim.netlify.app/k26.html</span></div>
+            <div class="sub" data-d="1.6" style="margin-top:36px; font-size:34px">27.10 · מ־22:00 · חינם, בלי הרשמה</div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+(function () {
+    'use strict';
+    var SCENES = [
+        { id: 's-hook',   start: 0,    end: 4.5 },
+        { id: 's-cc',     start: 4.5,  end: 10.5 },
+        { id: 's-live',   start: 10.5, end: 15.5 },
+        { id: 's-hemi',   start: 15.5, end: 20.5 },
+        { id: 's-sankey', start: 20.5, end: 25.5 },
+        { id: 's-map',    start: 25.5, end: 30.5 },
+        { id: 's-split',  start: 30.5, end: 35.5 },
+        { id: 's-cta',    start: 35.5, end: 40.5 },
+    ];
+    var DURATION = SCENES[SCENES.length - 1].end;
+    var FADE = 0.55;
+    var els = {};
+    SCENES.forEach(function (s) { els[s.id] = document.getElementById(s.id); });
+
+    function clamp01(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
+    function easeOut(x) { x = clamp01(x); return 1 - Math.pow(1 - x, 3); }
+
+    function render(t) {
+        SCENES.forEach(function (s, idx) {
+            var el = els[s.id];
+            var lt = t - s.start, dur = s.end - s.start;
+            var fadeIn = easeOut(lt / FADE);
+            var fadeOut = idx === SCENES.length - 1 ? 1 : easeOut((dur - lt) / FADE);
+            el.style.opacity = Math.min(fadeIn, fadeOut).toFixed(3);
+            el.style.pointerEvents = 'none';
+            // staggered entrances
+            el.querySelectorAll('[data-d]').forEach(function (node) {
+                var q = easeOut((lt - parseFloat(node.dataset.d)) / 0.8);
+                node.style.opacity = q.toFixed(3);
+                node.style.transform = 'translateY(' + ((1 - q) * 34).toFixed(1) + 'px)';
+            });
+            // Ken Burns on media frames
+            var img = el.querySelector('.frame img');
+            if (img) {
+                var p = clamp01(lt / dur);
+                var scale = 1.05 + 0.09 * p;
+                img.style.transform = 'scale(' + scale.toFixed(4) + ')';
+            }
+            var splitImgs = el.querySelectorAll('.split .frame img');
+            splitImgs.forEach(function (im, i) {
+                var p = clamp01(lt / dur);
+                im.style.transform = 'scale(' + (1.04 + 0.07 * p).toFixed(4) + ')';
+            });
+        });
+        // live-count scene: counter 0 -> 6,130 of 12,018 (51%)
+        var live = els['s-live'];
+        if (live && t >= 10.5 && t <= 16.5) {
+            var p = clamp01((t - 11.6) / 3.2);
+            var n = Math.round(6130 * easeOut(p));
+            document.getElementById('countbar').style.width = (51 * easeOut(p)).toFixed(1) + '%';
+            document.getElementById('countlabel').textContent =
+                n.toLocaleString('en-US') + ' מתוך 12,018 קלפיות · ' + (51 * easeOut(p)).toFixed(1) + '%';
+            document.getElementById('livepulse').style.opacity = (Math.sin(t * 6) > 0 ? 1 : 0.25).toFixed(2);
+        }
+    }
+
+    window.Promo = { render: render, duration: DURATION, ready: false };
+
+    function waitImages() {
+        var imgs = Array.prototype.slice.call(document.images);
+        return Promise.all(imgs.map(function (img) {
+            return img.complete ? Promise.resolve() : new Promise(function (r) { img.onload = img.onerror = r; });
+        }));
+    }
+    waitImages().then(function () {
+        render(0);
+        window.Promo.ready = true;
+        var params = new URLSearchParams(location.search);
+        if (params.has('record')) return;
+        document.body.classList.add('preview');
+        var stage = document.getElementById('stage');
+        function fit() {
+            var s = Math.min(1, (window.innerWidth - 16) / 1920);
+            stage.style.transform = 'scale(' + s + ')';
+            document.body.style.height = (1080 * s + 16) + 'px';
+        }
+        fit(); window.addEventListener('resize', fit);
+        var t0 = performance.now();
+        (function loop(now) {
+            var t = ((now - t0) / 1000) % DURATION;
+            render(t);
+            requestAnimationFrame(loop);
+        })(t0);
+        if (params.has('t')) render(parseFloat(params.get('t')));
+    });
+})();
+</script>
+</body>
+</html>
