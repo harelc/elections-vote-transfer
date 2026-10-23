@@ -91,6 +91,20 @@ body.preview #stage { transform-origin: top center; }
 }
 .simtag { position: absolute; bottom: 36px; inset-inline-start: 90px; font-size: 24px; color: var(--muted); }
 [data-d] { opacity: 0; will-change: opacity, transform; }
+
+/* interactive camera scenes (sankey / geomap) */
+.camframe img.cam { position: absolute; inset: 0; }
+.camframe img.cam.alt { opacity: 0; }
+.cursor {
+    position: absolute; z-index: 4; width: 46px; height: 46px; opacity: 0;
+    pointer-events: none; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.65));
+    will-change: left, top, opacity;
+}
+.ring {
+    position: absolute; z-index: 3; width: 58px; height: 58px; border-radius: 50%;
+    border: 4px solid var(--gold); opacity: 0; pointer-events: none;
+    transform: translate(-50%, -50%); will-change: transform, opacity;
+}
 </style>
 </head>
 <body>
@@ -139,21 +153,32 @@ body.preview #stage { transform-origin: top center; }
     </section>
 
     <!-- 5 · Sankey -->
-    <section class="scene media" id="s-sankey">
+    <section class="scene media" id="s-sankey" data-cam="sankey">
         <div class="head-zone">
             <div class="headline" data-d="0">לאן עברו הקולות?</div>
             <div class="sub" data-d="0.35">מודל נדידת הקולות הארצי בין כנסת 25 לכנסת 26, קלפי־קלפי.</div>
         </div>
-        <div class="frame"><img src="screens_cc/cc_sankey.png" alt=""></div>
+        <div class="frame camframe">
+            <img class="cam base" src="screens_cc/cc_sankey.png" alt="">
+            <img class="cam alt" id="sankey-hover" src="screens_cc/cc_sankey_hover.png" alt="">
+            <div class="ring" id="ring-sankey"></div>
+            <div class="cursor" id="cur-sankey"><svg viewBox="0 0 24 24" width="46" height="46"><path d="M4 2 L20 12 L12.5 13.5 L9 21 Z" fill="#fff" stroke="#101216" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        </div>
     </section>
 
     <!-- 6 · Geomap -->
-    <section class="scene media" id="s-map">
+    <section class="scene media" id="s-map" data-cam="map">
         <div class="head-zone">
             <div class="headline" data-d="0">כל קלפי. <span class="gold">כל רחוב.</span></div>
             <div class="sub" data-d="0.35">מי ניצח בשכונה שלכם? מפה חיה של כל תחנות ההצבעה בארץ.</div>
         </div>
-        <div class="frame"><img src="screens_cc/cc_map.png" alt="" style="object-position:center 38%"></div>
+        <div class="frame camframe">
+            <img class="cam base" src="screens_cc/cc_map.png" alt="">
+            <img class="cam alt" id="map-zoom" src="screens_cc/cc_map_zoom.png" alt="">
+            <img class="cam alt" id="map-popup" src="screens_cc/cc_map_popup.png" alt="">
+            <div class="ring" id="ring-map"></div>
+            <div class="cursor" id="cur-map"><svg viewBox="0 0 24 24" width="46" height="46"><path d="M4 2 L20 12 L12.5 13.5 L9 21 Z" fill="#fff" stroke="#101216" stroke-width="1.6" stroke-linejoin="round"/></svg></div>
+        </div>
     </section>
 
     <!-- 7 · Turnout + suspects split -->
@@ -189,10 +214,10 @@ body.preview #stage { transform-origin: top center; }
         { id: 's-cc',     start: 4.5,  end: 10.5 },
         { id: 's-live',   start: 10.5, end: 15.5 },
         { id: 's-hemi',   start: 15.5, end: 20.5 },
-        { id: 's-sankey', start: 20.5, end: 25.5 },
-        { id: 's-map',    start: 25.5, end: 30.5 },
-        { id: 's-split',  start: 30.5, end: 35.5 },
-        { id: 's-cta',    start: 35.5, end: 40.5 },
+        { id: 's-sankey', start: 20.5, end: 27.5 },
+        { id: 's-map',    start: 27.5, end: 34.5 },
+        { id: 's-split',  start: 34.5, end: 39.5 },
+        { id: 's-cta',    start: 39.5, end: 44.5 },
     ];
     var DURATION = SCENES[SCENES.length - 1].end;
     var FADE = 0.55;
@@ -216,8 +241,9 @@ body.preview #stage { transform-origin: top center; }
                 node.style.opacity = q.toFixed(3);
                 node.style.transform = 'translateY(' + ((1 - q) * 34).toFixed(1) + 'px)';
             });
+            if (el.dataset.cam) { renderCam(el.dataset.cam, lt, dur); }
             // Ken Burns on media frames
-            var img = el.querySelector('.frame img');
+            var img = el.dataset.cam ? null : el.querySelector('.frame img');
             if (img) {
                 var p = clamp01(lt / dur);
                 var scale = 1.05 + 0.09 * p;
@@ -238,6 +264,69 @@ body.preview #stage { transform-origin: top center; }
             document.getElementById('countlabel').textContent =
                 n.toLocaleString('en-US') + ' מתוך 12,018 קלפיות · ' + (51 * easeOut(p)).toFixed(1) + '%';
             document.getElementById('livepulse').style.opacity = (Math.sin(t * 6) > 0 ? 1 : 0.25).toFixed(2);
+        }
+    }
+
+    // ---- deterministic camera + interaction overlays for sankey / geomap ----
+    // Keyframes: [localTime, scale, originX%, originY%, objectPositionY (0..1)]
+    function ss(a, b, x) { var q = clamp01((x - a) / (b - a)); return q * q * (3 - 2 * q); }
+    function camAt(keys, lt) {
+        if (lt <= keys[0][0]) return keys[0].slice(1);
+        for (var i = 1; i < keys.length; i++) {
+            if (lt <= keys[i][0]) {
+                var q = ss(keys[i - 1][0], keys[i][0], lt), out = [];
+                for (var k = 1; k < keys[i].length; k++) out.push(keys[i - 1][k] + (keys[i][k] - keys[i - 1][k]) * q);
+                return out;
+            }
+        }
+        return keys[keys.length - 1].slice(1);
+    }
+    // frame box is 1740x726; screenshots are 978 wide, cover-fit (width-bound)
+    function framePoint(fx, fy, imgH, posY) {
+        var dispH = imgH * (1740 / 978);
+        return { x: fx * 100, y: (fy * dispH - (dispH - 726) * posY) / 726 * 100 };
+    }
+    function applyCam(sceneEl, cam, cursorId, ringId, pt, curWin, clickT, lt) {
+        var s = cam[0], ox = cam[1], oy = cam[2], posY = cam[3];
+        sceneEl.querySelectorAll('img.cam').forEach(function (im) {
+            im.style.objectPosition = '50% ' + (posY * 100).toFixed(2) + '%';
+            im.style.transformOrigin = ox.toFixed(2) + '% ' + oy.toFixed(2) + '%';
+            im.style.transform = 'scale(' + s.toFixed(4) + ')';
+        });
+        var disp = { x: ox + (pt.x - ox) * s, y: oy + (pt.y - oy) * s };
+        var cur = document.getElementById(cursorId);
+        cur.style.left = disp.x.toFixed(2) + '%';
+        cur.style.top = disp.y.toFixed(2) + '%';
+        cur.style.opacity = (ss(curWin[0], curWin[0] + 0.4, lt) * (1 - ss(curWin[1] - 0.4, curWin[1], lt))).toFixed(3);
+        var ring = document.getElementById(ringId), rq = (lt - clickT) / 0.7;
+        ring.style.left = disp.x.toFixed(2) + '%';
+        ring.style.top = disp.y.toFixed(2) + '%';
+        ring.style.transform = 'translate(-50%, -50%) scale(' + (0.35 + 1.15 * clamp01(rq)).toFixed(3) + ')';
+        ring.style.opacity = (rq >= 0 && rq <= 1 ? (1 - rq) * 0.9 : 0).toFixed(3);
+        return disp;
+    }
+    var SANKEY_KEYS = [ // [lt, scale, ox, oy, objPosY]
+        [0.0, 1.04, 50, 40, 0.00], [1.6, 1.10, 50, 40, 0.05],
+        [3.4, 1.22, 72, 38, 0.20], [5.6, 1.26, 72, 38, 0.20],
+        [7.0, 1.06, 50, 40, 0.03] ];
+    var MAP_KEYS = [
+        [0.0, 1.04, 50, 50, 0.38], [1.5, 1.12, 50, 50, 0.40],
+        [3.3, 1.05, 42, 48, 0.46], [5.6, 1.09, 42, 48, 0.46],
+        [7.0, 1.05, 50, 50, 0.38] ];
+    function renderCam(kind, lt, dur) {
+        if (kind === 'sankey') {
+            var cam = camAt(SANKEY_KEYS, lt);
+            var pt = framePoint(0.802, 0.2196, 1838, cam[3]); // K26 Likud node in cc_sankey*.png
+            applyCam(els['s-sankey'], cam, 'cur-sankey', 'ring-sankey', pt, [1.1, 6.0], 3.35, lt);
+            document.getElementById('sankey-hover').style.opacity = (ss(3.2, 4.0, lt) * (1 - ss(5.6, 6.4, lt))).toFixed(3);
+        } else if (kind === 'map') {
+            var cam2 = camAt(MAP_KEYS, lt);
+            var pt2 = framePoint(0.258, 0.401, 1391, cam2[3]); // the 112-station cluster pie in cc_map_popup.png
+            applyCam(els['s-map'], cam2, 'cur-map', 'ring-map', pt2, [2.0, 6.0], 3.35, lt);
+            document.getElementById('map-zoom').style.opacity = ss(2.2, 3.0, lt).toFixed(3);
+            var pop = ss(3.3, 4.1, lt) * (1 - ss(5.6, 6.4, lt));
+            document.getElementById('map-popup').style.opacity = pop.toFixed(3);
+            document.getElementById('map-zoom').style.opacity = (ss(2.2, 3.0, lt) * (1 - pop) * (1 - ss(5.6, 6.4, lt))).toFixed(3);
         }
     }
 
