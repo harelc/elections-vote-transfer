@@ -795,8 +795,15 @@
         }
         document.getElementById('seatbar-wrap').innerHTML = seatBarHTML(true, seatCounts);
         bindHemiTooltip();
-        const valid = DATA.results.reduce((a,p)=>a+p.votes,0);
-        const max = Math.max(...DATA.results.map(p=>p.votes));
+        // Partial count: the tallies under the bubble columns show the
+        // counted votes themselves (the same numbers the bubble allocates),
+        // not the final/full map — bars and percentages follow suit.
+        const partialCount = K26STATUS.kind === 'partial' && !!proj;
+        const countedOf = {};
+        if (partialCount) proj.parties.forEach(p => countedOf[p.name] = p.counted_votes);
+        const votesOf = p => partialCount ? (countedOf[p.name] || 0) : p.votes;
+        const valid = DATA.results.reduce((a,p)=>a+votesOf(p),0);
+        const max = Math.max(...DATA.results.map(votesOf));
         const row = p => {
             const info = DATA.infoOf[p.name] || {};
             const logo = info.logo ? `<img src="${info.logo}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<span class=letter-fallback>${(DATA.map.parties.find(x=>x.name===p.name)||{}).symbol||''}</span>'">` : `<span class="letter-fallback">${(DATA.map.parties.find(x=>x.name===p.name)||{}).symbol||''}</span>`;
@@ -805,10 +812,11 @@
             return `<div class="vrow"><div class="logo-chip">${logo}</div>
               <div><div class="vname">${displayName(p.name)} ${dispSeats?`<span class="seats-num">${dispSeats}</span>`:''}</div>
               <div class="vmeta">${(DATA.map.parties.find(x=>x.name===p.name)||{}).symbol||''}${leader?' · '+leader:''}${dispSeats?'':' · '+i18n.t('k26_below')}</div>
-              <div class="vbar"><i style="width:${p.votes/max*100}%;background:${DATA.colorOf[p.name]||'#666'}"></i></div></div>
-              <div class="vnums"><b>${fmt(p.votes)}</b><div class="vmeta">${(p.votes/valid*100).toFixed(2)}%</div></div></div>`;
+              <div class="vbar"><i style="width:${votesOf(p)/max*100}%;background:${DATA.colorOf[p.name]||'#666'}"></i></div></div>
+              <div class="vnums"><b>${fmt(votesOf(p))}</b><div class="vmeta">${(votesOf(p)/valid*100).toFixed(2)}%</div></div></div>`;
         };
         const passing = DATA.results.filter(p=>(seatCounts ? (seatCounts[p.name]||0) : p.seats)>0), below = DATA.results.filter(p=>!(seatCounts ? (seatCounts[p.name]||0) : p.seats));
+        if (partialCount) { passing.sort((a,b)=>votesOf(b)-votesOf(a)); below.sort((a,b)=>votesOf(b)-votesOf(a)); }
         document.getElementById('votes-table').innerHTML = passing.map(row).join('') +
             (below.length ? `<div class="pane-note" style="margin-top:.6rem">${i18n.t('k26_below')}</div>` + below.map(row).join('') : '');
     }
