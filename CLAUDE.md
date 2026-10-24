@@ -19,6 +19,9 @@ Live site: https://kolot-nodedim.netlify.app/
 ├── generate_metrics_data.py       # Pedersen volatility + HHI → site/data/metrics.json
 ├── generate_irregularities_data.py # Unusual-ballot scores → site/data/irregularities_*.json
 ├── generate_suspects_data.py      # Crosswalk-paired regression residuals → site/data/suspects_26.json (k26 pane)
+├── generate_settlement_sectors.py # Settlement sector taxonomy (form/population/WB/Haredi) → site/data/settlement_sectors.json
+├── generate_settlement_districts.py # Adds district (מחוז) + subdistrict (נפה) per settlement to settlement_sectors.json (Population Authority locality list on data.gov.il: settlement code → נפה → fixed CBS district mapping; 100% code-matched)
+├── generate_command_center_data.py # Twelve Knessets + factoids + bellwether + gated nowcast → site/data/command_center_26.json (k26 panes)
 ├── download_statistical_zones.py  # Loads CBS 2011 GDB, matches stations to zones via point-in-polygon
 ├── process_statistical_zones.py   # Joins CBS socioeconomic data to zones, creates station mapping
 ├── download_historical_ballots.py # Downloads K16-K20 ballot CSVs from CEC CKAN API
@@ -101,6 +104,8 @@ Live site: https://kolot-nodedim.netlify.app/
 │       ├── statistical_zones.json     # CBS 2011 statistical area boundaries (centroids + metadata)
 │       ├── statistical_zones_socioeconomic.json # Per-zone socioeconomic cluster/index
 │       ├── station_zone_mapping.json  # Ballot station → statistical zone (YISHUV_STAT)
+│       ├── settlement_sectors.json   # Per-settlement sector taxonomy (form/population/WB/Haredi)
+│       ├── command_center_26.json    # Twelve Knessets + factoids + bellwether + nowcast (k26 panes)
 │       └── station_socioeconomic.json # Per-station socioeconomic cluster + zone ID
 ```
 
@@ -137,10 +142,9 @@ Central bilingual system (Hebrew/English). Key concepts:
 - **Language toggle**: Persisted in localStorage, fires `langchange` event
 
 ### Election 26 Feature Flag
-Election 26 support is behind a URL feature flag: `?e26=1`. When active:
-- `i18n.SHOW_E26` is `true` (exposed in public API)
+Election 26 is **on by default** (`i18n.SHOW_E26`); `?e26=0` is the explicit opt-out (persisted in localStorage). URLs are clean — no `e26=1` argument is needed or propagated:
 - Each page conditionally adds election 26 buttons/options to its UI **and makes K26 the default selected election/transition** (sankey/dhondt/geomap/tsne/regional)
-- `renderNav()` propagates `?e26=1` to all nav links via `addE26()` helper
+- `renderNav()` propagates only the opt-out (`?e26=0`) to nav links via `addE26()` helper
 - Data files (`tsne_26.json`, `map_26.json`, `transfer_25_to_26.json`) must be generated first via `prepare_election_26.py`
 
 #### Simulated K26 scenario
@@ -454,7 +458,7 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 - Desktop-only (mobile dashboard links to it)
 
 ### sankey.html (Vote Transfer Flow)
-- Shows vote flow between consecutive elections as Sankey diagram (K16→K17 through K24→K25; K25→K26 when `?e26=1`)
+- Shows vote flow between consecutive elections as Sankey diagram (K16→K17 through K24→K25; K25→K26 by default)
 - Uses `sankey.js` for rendering; nodes with zero remaining flows are dropped
 - Data: `transfer_*.json` and `all_transfers.json`
 - **Abstention toggle**: Shows "did not vote" pseudo-party (לא הצביעו) using `*_abstention.json` files
@@ -504,11 +508,14 @@ Station coordinates are in `site/data/station_coordinates.json`. Sources by prio
 - **Default state**: K24→K25 transition, top-100 ballots, 400-ballot injection, 17% intervention strength
 
 ### k26.html (K26 Information Center)
-- Full-width desktop "Gemara" layout: votes+hemicycle and surplus agreements in the start margin, turnout-in-strongholds + most-suspicious-ballots in the end margin, and a central stage switching between Sankey 25→26, geomap, ballot distribution (t-SNE) and the seat calculator
+- Full-width desktop "Gemara" layout: votes+hemicycle and surplus agreements in the start margin, turnout-in-strongholds + most-suspicious-ballots in the end margin, and a central stage switching between Sankey 25→26, geomap and the seat calculator (the ballot-distribution/t-SNE stage pill is hidden — panel and `renderTsne()` kept in the code, remove `hidden` from its tab button to restore)
 - The calculator stage embeds the original `dhondt.html?embed=1` (embed mode hides its header/footer/election selector; the pane has its own reset button; the frame auto-fits its content height)
 - Election-night count banner: driven by `site/data/k26_status.json` — when `kind` is `partial`/`official` it shows ballots counted out of the roster, percentage, remaining and update time; seats from `wiki_official_results.json`, MK names from `data/k26_mks.json` (CEC lists, gov.il)
 - Desktop-only: phone user agents are redirected to `m/index.html`, and the mobile dashboard does not link here
-- Election-night flow: the Netlify poller dispatches `.github/workflows/k26-refresh.yml`, which runs `refresh_k26.py` (prepare → fraud-sim → `generate_suspects_data.py` → irregularities → turnout when official → `k26_live.py --publish` → MCP build) and commits the outputs. Every file `k26.html` fetches (status, wiki results, map/tsne/transfer 26, `suspects_26.json`, dhondt parties26) is in that commit list; `k26_mks.json` and `station_coordinates.json` are static. `k26_control.json` `auto:false` gates the whole flow.
+- Extras (from `site/data/command_center_26.json`, built by `generate_command_center_data.py`): rotating factoid ticker under the count banner; "על הקצה" bubble list in the votes pane (per-list last-in/first-out candidates + votes-to-flip, same marginal math as the dhondt seat-block histogram, allocator ported into the page); gated nowcast of the uncounted ballots in the start margin — moving to the central stage as the auto-activated tab while the count is partial, and the Sankey stage carries the same gate (closed: gate status instead of a diagram; open: a pointer to the nowcast, inside which מעברי הקולות החזויים — predicted vote transfers, never called a Sankey — are drawn together with the seat nowcast from the nowcast matrix applied to the full roster as diag(origin totals) @ T, flows <15,000 hidden as in the published diagram; per-box outer(source shares, box-average destination) was tried and smeared every source across every destination) (gate checks matched ballots / counted K25 share / R² / composition TVD / per-source origin votes — no Level-1 bloc stage; uncounted boxes predicted from their K25 crosswalk source through the **analyzed** transfer matrix, never the simulation's hidden matrix; Monte-Carlo seat distributions (full per-party seat histogram in the JSON) use the empirical 24→25 Dirichlet α plus an aggregate estimator jitter that shrinks as the counted share grows, and are drawn in the nowcast as colour-fade density strips (party-colour intensity = share of completions at that seat count); in simulated mode it runs as a labelled rehearsal on a deliberately skewed mask — Haredi ballots (Haredi localities + ballots whose K25 twin voted majority UTJ/Shas) almost entirely uncounted, ~58% counted elsewhere — with the convex design refit on the counted subset); "A Knesset for every tribe and district" pane (formerly Twelve Knessets) in the centre column under the geomap, with clickable slice cards + per-slice hemicycle (19 slices: 12 sector slices — kibbutzim, moshavim, community settlements, cities, WB settlements, Arab/Bedouin/Druze localities, Haredi localities, socioeconomic clusters 1–3, 4–7 and 8–10 — plus the 7 CBS districts/area from `settlement_sectors.json` district field — each re-allocated with seats inside the slice; slices from `settlement_sectors.json`, never inferred from votes); bellwether-ballot pane in the end margin (vote-space TVD to the national result, K16–K25 consistency; clicking a row shows that ballot's K26 successor result via the crosswalk/venue, or "not counted yet"); twins mode (geomap/t-SNE ballot click → cosine-similarity twins/anti-twins, no separate page)
+- Settlement sectors: `generate_settlement_sectors.py` → `site/data/settlement_sectors.json` (form from Wikidata descriptions, population from curated Druze list + wiki keywords + CBS 2011 GDB `Religion_yishuv_Txt` re-extracted by settlement code, WB from the wiki התנחלות tag, Haredi from a curated whitelist only — never from Shas/UTJ vote share). Static; regenerated only when missing during refresh.
+- Election-night previews (presentational only, simulated data): `?preview=partial` shows the page mid-count (~45% of ballots, the default skewed rehearsal mask); `?preview=partial17` / `?preview=partial12` show the same night at ~17% / ~12% counted, loading `site/data/command_center_26_p17.json` / `command_center_26_p12.json` instead (build: `python generate_command_center_data.py --target-share 0.17 --out command_center_26_p17.json` — rescales both mask cutoffs, Haredi boxes still counting at ~14% of the rate of others). The nowcast gate opens at ≥1,000 matched ballots and ≥12% of roster K25 votes counted (plus R²≥0.75, composition TVD≤0.18, ≥8,000 origin votes per major source; thresholds chosen from a forced-projection sweep against the known simulated truth — mean seat error <1 and full p10–p90 coverage from ~12%, worst-party error 5–6 seats and threshold coin-flips below ~8%). The 12% preview is tuned to just clear it (1,498 counted, share 12.5%, matched 1,237; `--target-share 0.125`). During any partial count the geomap colours counted ballots only; uncounted boxes are faint gray dots (`nowcast.geo_uncounted`), and the "על הקצה" bubble list uses counted votes only, never the projection.
+- Election-night flow: the Netlify poller dispatches `.github/workflows/k26-refresh.yml`, which runs `refresh_k26.py` (prepare → fraud-sim → `generate_suspects_data.py` → irregularities → turnout when official → `k26_live.py --publish` → command-center extras → MCP build) and commits the outputs. Every file `k26.html` fetches (status, wiki results, map/tsne/transfer 26, `suspects_26.json`, `command_center_26.json`, dhondt parties26) is in that commit list; `k26_mks.json`, `settlement_sectors.json` and `station_coordinates.json` are static. `k26_control.json` `auto:false` gates the whole flow.
 
 ### regional.html (Regional Elections Simulator)
 - Voronoi-based regional election simulation with D'Hondt allocation
@@ -567,4 +574,4 @@ cd elections-paper && git add -A && git commit -m "..." && git push
 - 23: March 2020
 - 24: March 2021
 - 25: November 2022
-- 26: 27 October 2026 (estimated) — simulated scenario, feature-flagged behind `?e26=1`
+- 26: 27 October 2026 (estimated) — simulated scenario (on by default; `?e26=0` opts out)

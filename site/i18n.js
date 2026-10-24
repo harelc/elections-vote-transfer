@@ -93,6 +93,16 @@
         k26_geomap_note:       { he: 'המפה הגיאוגרפית במצב ברירת המחדל שלה (מפלגה מנצחת): כל נקודה היא קלפי, צבועה במפלגה המנצחת בה וממודרת לפי מצביעים. מעבר עכבר מציג את כרטיס הקלפי, לחיצה על אשכול מגדילה אליו ולחיצה על קלפי פותחת את הכרטיס — כמו במפה המלאה', en: 'The geographic map in its default (winning party) mode: each dot is a ballot box, coloured by its winning party and sized by voters. Hover shows the ballot card, clicking a cluster zooms in and clicking a ballot opens its card — as in the full map' },
         k26_mks_pending:       { he: 'שמות חברי הכנסת (לפי סדר הרשימות) יופיעו כאן ובתוויות המושבים ברגע שיתקבל קישור הרשימות', en: 'MK names (in list order) will appear here and in the seat tooltips as soon as the lists link arrives' },
         k26_mks_seat:          { he: 'מושב', en: 'Seat' },
+        k26_bubble_pane:       { he: 'על הקצה — המועמדים על סף הכניסה והיציאה', en: 'On the edge — candidates at the edge of in and out' },
+        k26_nowcast_pane:      { he: 'תחזית הקלפיות שטרם נספרו', en: 'Nowcast: the uncounted ballots' },
+        k26_bubble_note:       { he: 'לכל רשימה: המועמד האחרון שנכנס והראשון שנשאר בחוץ, וכמה קולות מפרידים בינם לבין היפוך — אותו חישוב שצובע את בלוק המנדט החלקי במחשבון המנדטים.', en: 'For every list: the last candidate in and the first left out, and how many votes separate them from flipping — the same calculation that fills the partial seat block in the seat calculator.' },
+        k26_bubble_last_in:    { he: 'עומד להיגרע', en: 'Next to be removed' },
+        k26_bubble_first_out:  { he: 'עומד להיווסף', en: 'Next to be added' },
+        k26_bubble_to_gain:    { he: 'עוד {n} קולות למנדט נוסף', en: '{n} more votes for another seat' },
+        k26_bubble_to_lose:    { he: '{n} קולות מלהפסיד מנדט', en: '{n} votes from losing a seat' },
+        k26_bubble_to_enter:   { he: 'עוד {n} קולות לכניסה לכנסת', en: '{n} more votes to enter the Knesset' },
+        k26_bubble_at_expense: { he: 'המנדט יתקבל מ', en: 'The seat would come from' },
+        k26_bubble_seat_to:    { he: 'המנדט יעבור אל', en: 'The seat would go to' },
         k26_dhondt_pane:       { he: 'מחשבון מנדטים', en: 'Seat Calculator' },
         k26_dhondt_note:       { he: 'מחשבון מנדטים בשיטת באדר–עופר: המנדטים מחושבים מקולות הרשימות מעל החסימה, עם הסכמי עודפים. במחשבון המלא אפשר לשנות קולות ולראות מנדטים זזים', en: 'Seats are computed from above-threshold votes with surplus agreements. In the full calculator you can change votes and watch seats move' },
         k26_agreements:        { he: 'הסכמי עודפים', en: 'Surplus agreements' },
@@ -942,10 +952,12 @@
         // Preserve export button if present
         const exportBtn = nav.querySelector('.header-export');
 
-        // On keeps ?e26=1. Off keeps ?e26=0.
+        // K26 is on by default, so clean URLs need no flag. Only the
+        // explicit opt-out is propagated (?e26=0).
         function addE26(href) {
             if (href.indexOf('e26=') !== -1) return href;
-            return href + (href.includes('?') ? '&' : '?') + (SHOW_E26 ? 'e26=1' : 'e26=0');
+            if (SHOW_E26) return href;
+            return href + (href.includes('?') ? '&' : '?') + 'e26=0';
         }
 
         function viewLink(v) {

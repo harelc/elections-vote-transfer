@@ -91,6 +91,31 @@ def refresh_suspects():
         print(f"suspects pane data was not updated ({error})")
 
 
+def refresh_command_center():
+    """Rebuild the k26.html extras (Twelve Knessets, factoids, bellwether, gated nowcast).
+
+    Runs after k26_live publishes, so k26_status.json and the wiki/map/tsne/
+    transfer files are the fresh snapshot. The sectors taxonomy is static;
+    it is regenerated only if missing. A failure does not block the update.
+    """
+    try:
+        sectors_path = ROOT / "site" / "data" / "settlement_sectors.json"
+        if not sectors_path.exists():
+            run([sys.executable, "generate_settlement_sectors.py"])
+        # District (מחוז) fields on the sectors are static, but a sectors
+        # regeneration would drop them and with them the district slices;
+        # restore them if any settlement lacks one.
+        try:
+            settlements = json.loads(sectors_path.read_text(encoding="utf-8")).get("settlements", {})
+            if settlements and not all("district" in e for e in settlements.values()):
+                run([sys.executable, "generate_settlement_districts.py"])
+        except Exception as error:
+            print(f"district check skipped ({error})")
+        run([sys.executable, "generate_command_center_data.py"])
+    except SystemExit as error:
+        print(f"command-center extras were not updated ({error})")
+
+
 def refresh_turnout():
     """Rebase the turnout what-if on the official count. turnout.html stays paused if this fails."""
     try:
@@ -196,6 +221,7 @@ def main():
         "--sha256", digest,
         "--ci-coverage", str(ci_coverage),
     ])
+    refresh_command_center()
     run([sys.executable, "netlify/lib/mcp/build_mcp_data.py"])
     print(f"rebuilt {kind} from {summary['ballots']} ballots")
 
