@@ -6,7 +6,7 @@
     "date": "2020-03-02",
     "total_ballots": 11179,
     "analyzed_ballots": 11167,
-    "irregular_found": 12
+    "irregular_found": 17
   },
   "parties": [
     {
@@ -32,7 +32,7 @@
     {
       "symbol": "ודעם",
       "name": "הרשימה המשותפת",
-      "color": "#059669",
+      "color": "#0d9488",
       "votes": 581507,
       "proportion": "12.67%",
       "description": "ברית מפלגות ערביות - חד״ש, תע״ל, בל״ד ורע״ם (עד 2021)",
@@ -112,7 +112,7 @@
     {
       "symbol": "נ",
       "name": "קול הנשים",
-      "color": "#1e40af",
+      "color": "#b45309",
       "votes": 2773,
       "proportion": "0.06%",
       "description": "קול הנשים",
@@ -212,7 +212,7 @@
     {
       "symbol": "כ",
       "name": "הלב היהודי",
-      "color": "#eab308",
+      "color": "#f472b6",
       "votes": 516,
       "proportion": "0.01%",
       "description": "הלב היהודי בראשות אלי יוסף",
@@ -302,6 +302,54 @@
   ],
   "irregularities": [
     {
+      "id": "בית זיד_1.0",
+      "settlement": "בית זיד",
+      "settlement_code": 353,
+      "ballot": "1.0",
+      "eligible": 113,
+      "voted": 74,
+      "valid": 73,
+      "invalid": 1,
+      "votes": {
+        "אמת": 19,
+        "ודעם": 1,
+        "כ": 1,
+        "ל": 1,
+        "מחל": 3,
+        "פה": 41,
+        "ק": 5,
+        "קי": 1,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "67.69"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ק",
+              "party_name": "ישראליסט",
+              "votes": 5,
+              "proportion": "6.85%",
+              "national_avg": "0.021%",
+              "ratio": "68x"
+            }
+          ]
+        }
+      ],
+      "score": 41.84394135292586,
+      "status": "unverified"
+    },
+    {
       "id": "יצהר_1.0",
       "settlement": "יצהר",
       "settlement_code": 3749,
@@ -327,7 +375,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "691.10"
+            "distance_score": "28.76"
           }
         },
         {
@@ -346,142 +394,8 @@
           ]
         }
       ],
-      "score": 353.54911508132125,
-      "status": "verified"
-    },
-    {
-      "id": "נגוהות_1.0",
-      "settlement": "נגוהות",
-      "settlement_code": 3724,
-      "ballot": "1.0",
-      "eligible": 142,
-      "voted": 123,
-      "valid": 122,
-      "invalid": 1,
-      "votes": {
-        "ג": 2,
-        "ז": 1,
-        "טב": 78,
-        "מחל": 22,
-        "נץ": 15,
-        "פה": 1,
-        "שס": 3
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "691.07"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 15,
-              "proportion": "12.30%",
-              "national_avg": "0.423%",
-              "ratio": "29x"
-            }
-          ]
-        }
-      ],
-      "score": 353.53611297858555,
-      "status": "verified"
-    },
-    {
-      "id": "אלון מורה_1.0",
-      "settlement": "אלון מורה",
-      "settlement_code": 3579,
-      "ballot": "1.0",
-      "eligible": 508,
-      "voted": 386,
-      "valid": 386,
-      "invalid": 0,
-      "votes": {
-        "ג": 15,
-        "טב": 265,
-        "מחל": 62,
-        "נץ": 36,
-        "שס": 8
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "691.00"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 36,
-              "proportion": "9.33%",
-              "national_avg": "0.423%",
-              "ratio": "22x"
-            }
-          ]
-        }
-      ],
-      "score": 353.500127308339,
-      "status": "verified"
-    },
-    {
-      "id": "שילה_3.0",
-      "settlement": "שילה",
-      "settlement_code": 3641,
-      "ballot": "3.0",
-      "eligible": 694,
-      "voted": 563,
-      "valid": 563,
-      "invalid": 0,
-      "votes": {
-        "ג": 51,
-        "טב": 310,
-        "מחל": 130,
-        "נץ": 52,
-        "שס": 20
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "690.98"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 52,
-              "proportion": "9.24%",
-              "national_avg": "0.423%",
-              "ratio": "22x"
-            }
-          ]
-        }
-      ],
-      "score": 353.49160111950573,
-      "status": "verified"
+      "score": 22.378915381840546,
+      "status": "unverified"
     },
     {
       "id": "חברון_1.0",
@@ -508,7 +422,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "690.94"
+            "distance_score": "22.97"
           }
         },
         {
@@ -527,245 +441,8 @@
           ]
         }
       ],
-      "score": 353.4701079980192,
-      "status": "verified"
-    },
-    {
-      "id": "קרית ארבע_7.0",
-      "settlement": "קרית ארבע",
-      "settlement_code": 3611,
-      "ballot": "7.0",
-      "eligible": 552,
-      "voted": 369,
-      "valid": 369,
-      "invalid": 0,
-      "votes": {
-        "אמת": 3,
-        "ג": 11,
-        "טב": 114,
-        "ל": 1,
-        "מחל": 191,
-        "נץ": 32,
-        "פה": 10,
-        "קץ": 1,
-        "שס": 6
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "690.94"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 32,
-              "proportion": "8.67%",
-              "national_avg": "0.423%",
-              "ratio": "21x"
-            }
-          ]
-        }
-      ],
-      "score": 353.4697619522018,
-      "status": "verified"
-    },
-    {
-      "id": "שבי שומרון_1.0",
-      "settlement": "שבי שומרון",
-      "settlement_code": 3571,
-      "ballot": "1.0",
-      "eligible": 559,
-      "voted": 446,
-      "valid": 444,
-      "invalid": 2,
-      "votes": {
-        "ג": 51,
-        "טב": 178,
-        "ל": 5,
-        "מחל": 148,
-        "נץ": 45,
-        "פה": 8,
-        "קץ": 1,
-        "שס": 8
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "690.94"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 45,
-              "proportion": "10.14%",
-              "national_avg": "0.423%",
-              "ratio": "24x"
-            }
-          ]
-        }
-      ],
-      "score": 353.4688325027447,
-      "status": "verified"
-    },
-    {
-      "id": "בת עין_1.0",
-      "settlement": "בת עין",
-      "settlement_code": 3794,
-      "ballot": "1.0",
-      "eligible": 428,
-      "voted": 305,
-      "valid": 304,
-      "invalid": 1,
-      "votes": {
-        "אמת": 1,
-        "ג": 32,
-        "טב": 95,
-        "מחל": 125,
-        "נץ": 30,
-        "פה": 4,
-        "קץ": 1,
-        "שס": 16
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "690.92"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 30,
-              "proportion": "9.87%",
-              "national_avg": "0.423%",
-              "ratio": "23x"
-            }
-          ]
-        }
-      ],
-      "score": 353.46219875289677,
-      "status": "verified"
-    },
-    {
-      "id": "כפר תפוח_1.0",
-      "settlement": "כפר תפוח",
-      "settlement_code": 3572,
-      "ballot": "1.0",
-      "eligible": 622,
-      "voted": 486,
-      "valid": 485,
-      "invalid": 1,
-      "votes": {
-        "ג": 25,
-        "טב": 197,
-        "ל": 1,
-        "מחל": 183,
-        "נץ": 53,
-        "פה": 1,
-        "קץ": 2,
-        "שס": 23
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "690.92"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 53,
-              "proportion": "10.93%",
-              "national_avg": "0.423%",
-              "ratio": "26x"
-            }
-          ]
-        }
-      ],
-      "score": 353.4587054933124,
-      "status": "verified"
-    },
-    {
-      "id": "מבוא דותן_1.0",
-      "settlement": "מבוא דותן",
-      "settlement_code": 3569,
-      "ballot": "1.0",
-      "eligible": 290,
-      "voted": 210,
-      "valid": 208,
-      "invalid": 2,
-      "votes": {
-        "אמת": 4,
-        "ג": 10,
-        "טב": 43,
-        "ל": 4,
-        "מחל": 103,
-        "נ": 2,
-        "נץ": 19,
-        "פה": 15,
-        "שס": 8
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "690.88"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נץ",
-              "party_name": "עוצמה יהודית",
-              "votes": 19,
-              "proportion": "9.13%",
-              "national_avg": "0.423%",
-              "ratio": "22x"
-            }
-          ]
-        }
-      ],
-      "score": 353.440076214496,
-      "status": "verified"
+      "score": 19.482994648717938,
+      "status": "unverified"
     },
     {
       "id": "קרית ארבע_3.0",
@@ -794,7 +471,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "690.63"
+            "distance_score": "19.12"
           }
         },
         {
@@ -813,56 +490,529 @@
           ]
         }
       ],
-      "score": 353.31421789814164,
-      "status": "verified"
+      "score": 17.559850145430968,
+      "status": "unverified"
     },
     {
-      "id": "בית זיד_1.0",
-      "settlement": "בית זיד",
-      "settlement_code": 353,
+      "id": "אלון מורה_1.0",
+      "settlement": "אלון מורה",
+      "settlement_code": 3579,
       "ballot": "1.0",
-      "eligible": 113,
-      "voted": 74,
-      "valid": 73,
-      "invalid": 1,
+      "eligible": 508,
+      "voted": 386,
+      "valid": 386,
+      "invalid": 0,
       "votes": {
-        "אמת": 19,
-        "ודעם": 1,
-        "כ": 1,
-        "ל": 1,
-        "מחל": 3,
-        "פה": 41,
-        "ק": 5,
-        "קי": 1,
-        "שס": 1
+        "ג": 15,
+        "טב": 265,
+        "מחל": 62,
+        "נץ": 36,
+        "שס": 8
       },
       "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "689.90"
-          }
-        },
         {
           "type": "small_party_spike",
           "severity": "high",
           "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
           "details": [
             {
-              "party": "ק",
-              "party_name": "ישראליסט",
-              "votes": 5,
-              "proportion": "6.85%",
-              "national_avg": "0.021%",
-              "ratio": "68x"
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 36,
+              "proportion": "9.33%",
+              "national_avg": "0.423%",
+              "ratio": "22x"
             }
           ]
         }
       ],
-      "score": 352.9505097482392,
-      "status": "verified"
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "בת עין_1.0",
+      "settlement": "בת עין",
+      "settlement_code": 3794,
+      "ballot": "1.0",
+      "eligible": 428,
+      "voted": 305,
+      "valid": 304,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "ג": 32,
+        "טב": 95,
+        "מחל": 125,
+        "נץ": 30,
+        "פה": 4,
+        "קץ": 1,
+        "שס": 16
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 30,
+              "proportion": "9.87%",
+              "national_avg": "0.423%",
+              "ratio": "23x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "יד בנימין_3.0",
+      "settlement": "יד בנימין",
+      "settlement_code": 577,
+      "ballot": "3.0",
+      "eligible": 682,
+      "voted": 572,
+      "valid": 569,
+      "invalid": 3,
+      "votes": {
+        "ג": 140,
+        "טב": 199,
+        "מחל": 103,
+        "נץ": 37,
+        "פה": 3,
+        "שס": 87
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 37,
+              "expected_votes": "5.3",
+              "proportion": "6.50%",
+              "expected_share": "0.936%",
+              "ratio": "7x",
+              "z_score": "13.8",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "ירושלים_234.0",
+      "settlement": "ירושלים",
+      "settlement_code": 3000,
+      "ballot": "234.0",
+      "eligible": 646,
+      "voted": 495,
+      "valid": 492,
+      "invalid": 3,
+      "votes": {
+        "ג": 148,
+        "ודעם": 1,
+        "טב": 131,
+        "כ": 1,
+        "מחל": 112,
+        "נץ": 19,
+        "פה": 7,
+        "שס": 73
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 19,
+              "expected_votes": "3.3",
+              "proportion": "3.86%",
+              "expected_share": "0.676%",
+              "ratio": "6x",
+              "z_score": "8.6",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "ירושלים_272.0",
+      "settlement": "ירושלים",
+      "settlement_code": 3000,
+      "ballot": "272.0",
+      "eligible": 745,
+      "voted": 531,
+      "valid": 530,
+      "invalid": 1,
+      "votes": {
+        "אמת": 9,
+        "ג": 83,
+        "ודעם": 1,
+        "ז": 1,
+        "טב": 186,
+        "ל": 7,
+        "מחל": 117,
+        "נץ": 19,
+        "פה": 18,
+        "שס": 89
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 19,
+              "expected_votes": "3.6",
+              "proportion": "3.58%",
+              "expected_share": "0.676%",
+              "ratio": "5x",
+              "z_score": "8.2",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "כפר תפוח_1.0",
+      "settlement": "כפר תפוח",
+      "settlement_code": 3572,
+      "ballot": "1.0",
+      "eligible": 622,
+      "voted": 486,
+      "valid": 485,
+      "invalid": 1,
+      "votes": {
+        "ג": 25,
+        "טב": 197,
+        "ל": 1,
+        "מחל": 183,
+        "נץ": 53,
+        "פה": 1,
+        "קץ": 2,
+        "שס": 23
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 53,
+              "proportion": "10.93%",
+              "national_avg": "0.423%",
+              "ratio": "26x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "מבוא דותן_1.0",
+      "settlement": "מבוא דותן",
+      "settlement_code": 3569,
+      "ballot": "1.0",
+      "eligible": 290,
+      "voted": 210,
+      "valid": 208,
+      "invalid": 2,
+      "votes": {
+        "אמת": 4,
+        "ג": 10,
+        "טב": 43,
+        "ל": 4,
+        "מחל": 103,
+        "נ": 2,
+        "נץ": 19,
+        "פה": 15,
+        "שס": 8
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 19,
+              "proportion": "9.13%",
+              "national_avg": "0.423%",
+              "ratio": "22x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "מבשרת ציון_13.0",
+      "settlement": "מבשרת ציון",
+      "settlement_code": 1015,
+      "ballot": "13.0",
+      "eligible": 494,
+      "voted": 383,
+      "valid": 382,
+      "invalid": 1,
+      "votes": {
+        "אמת": 23,
+        "ג": 7,
+        "ודעם": 2,
+        "טב": 124,
+        "ל": 2,
+        "מחל": 126,
+        "נץ": 14,
+        "פה": 40,
+        "שס": 44
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 14,
+              "expected_votes": "1.9",
+              "proportion": "3.66%",
+              "expected_share": "0.486%",
+              "ratio": "8x",
+              "z_score": "8.9",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "נגוהות_1.0",
+      "settlement": "נגוהות",
+      "settlement_code": 3724,
+      "ballot": "1.0",
+      "eligible": 142,
+      "voted": 123,
+      "valid": 122,
+      "invalid": 1,
+      "votes": {
+        "ג": 2,
+        "ז": 1,
+        "טב": 78,
+        "מחל": 22,
+        "נץ": 15,
+        "פה": 1,
+        "שס": 3
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 15,
+              "proportion": "12.30%",
+              "national_avg": "0.423%",
+              "ratio": "29x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "נוף הגליל_45.0",
+      "settlement": "נוף הגליל",
+      "settlement_code": 1061,
+      "ballot": "45.0",
+      "eligible": 504,
+      "voted": 264,
+      "valid": 260,
+      "invalid": 4,
+      "votes": {
+        "אמת": 4,
+        "ג": 11,
+        "ודעם": 16,
+        "טב": 8,
+        "כ": 1,
+        "ל": 37,
+        "מחל": 109,
+        "נץ": 11,
+        "פה": 45,
+        "קץ": 1,
+        "שס": 17
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 11,
+              "expected_votes": "0.9",
+              "proportion": "4.23%",
+              "expected_share": "0.347%",
+              "ratio": ">10x",
+              "z_score": "10.6",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "קרית ארבע_7.0",
+      "settlement": "קרית ארבע",
+      "settlement_code": 3611,
+      "ballot": "7.0",
+      "eligible": 552,
+      "voted": 369,
+      "valid": 369,
+      "invalid": 0,
+      "votes": {
+        "אמת": 3,
+        "ג": 11,
+        "טב": 114,
+        "ל": 1,
+        "מחל": 191,
+        "נץ": 32,
+        "פה": 10,
+        "קץ": 1,
+        "שס": 6
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 32,
+              "proportion": "8.67%",
+              "national_avg": "0.423%",
+              "ratio": "21x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "שבי שומרון_1.0",
+      "settlement": "שבי שומרון",
+      "settlement_code": 3571,
+      "ballot": "1.0",
+      "eligible": 559,
+      "voted": 446,
+      "valid": 444,
+      "invalid": 2,
+      "votes": {
+        "ג": 51,
+        "טב": 178,
+        "ל": 5,
+        "מחל": 148,
+        "נץ": 45,
+        "פה": 8,
+        "קץ": 1,
+        "שס": 8
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 45,
+              "proportion": "10.14%",
+              "national_avg": "0.423%",
+              "ratio": "24x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "שילה_3.0",
+      "settlement": "שילה",
+      "settlement_code": 3641,
+      "ballot": "3.0",
+      "eligible": 694,
+      "voted": 563,
+      "valid": 563,
+      "invalid": 0,
+      "votes": {
+        "ג": 51,
+        "טב": 310,
+        "מחל": 130,
+        "נץ": 52,
+        "שס": 20
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נץ",
+              "party_name": "עוצמה יהודית",
+              "votes": 52,
+              "proportion": "9.24%",
+              "national_avg": "0.423%",
+              "ratio": "22x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
     }
   ]
 }

@@ -6,7 +6,7 @@
     "date": "2021-03-23",
     "total_ballots": 12926,
     "analyzed_ballots": 12903,
-    "irregular_found": 8
+    "irregular_found": 17
   },
   "parties": [
     {
@@ -102,7 +102,7 @@
     {
       "symbol": "ודעם",
       "name": "הרשימה המשותפת",
-      "color": "#059669",
+      "color": "#0d9488",
       "votes": 212583,
       "proportion": "4.82%",
       "description": "ברית מפלגות ערביות - חד״ש, תע״ל, בל״ד ורע״ם (עד 2021)",
@@ -111,13 +111,13 @@
     },
     {
       "symbol": "ת",
-      "name": "עלה ירוק",
-      "color": "#658932",
+      "name": "תקווה חדשה",
+      "color": "#6ee7b7",
       "votes": 209161,
       "proportion": "4.74%",
-      "description": "מפלגה ליברלית התומכת בלגליזציה של הקנאביס",
-      "ideology": "ליברלית",
-      "leader": "דקל עוזר"
+      "description": "מפלגת ימין ליברלית שהוקמה על ידי סער לאחר פרישתו מהליכוד",
+      "ideology": "ימין ליברלי, שלטון חוק",
+      "leader": "גדעון סער"
     },
     {
       "symbol": "מרצ",
@@ -242,7 +242,7 @@
     {
       "symbol": "נ",
       "name": "הימין החדש",
-      "color": "#1e40af",
+      "color": "#b45309",
       "votes": 486,
       "proportion": "0.01%",
       "description": "מפלגת ימין בראשות נפתלי בנט ואיילת שקד, לא עברה את אחוז החסימה בבחירות לכנסת ה-21",
@@ -262,7 +262,7 @@
     {
       "symbol": "כ",
       "name": "הלב היהודי",
-      "color": "#eab308",
+      "color": "#f472b6",
       "votes": 443,
       "proportion": "0.01%",
       "description": "הלב היהודי בראשות אלי יוסף",
@@ -419,7 +419,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "607.09"
+            "distance_score": "62.57"
           }
         },
         {
@@ -438,8 +438,8 @@
           ]
         }
       ],
-      "score": 311.5442918383245,
-      "status": "verified"
+      "score": 39.28259514263665,
+      "status": "unverified"
     },
     {
       "id": "נווה ימין_1.0",
@@ -473,7 +473,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "604.95"
+            "distance_score": "46.47"
           }
         },
         {
@@ -492,8 +492,8 @@
           ]
         }
       ],
-      "score": 310.4762989029984,
-      "status": "verified"
+      "score": 31.235586261427628,
+      "status": "unverified"
     },
     {
       "id": "נווה ימין_2.0",
@@ -527,7 +527,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "604.15"
+            "distance_score": "45.80"
           }
         },
         {
@@ -546,158 +546,8 @@
           ]
         }
       ],
-      "score": 310.0765068994966,
-      "status": "verified"
-    },
-    {
-      "id": "מבוא מודיעים_1.0",
-      "settlement": "מבוא מודיעים",
-      "settlement_code": 1141,
-      "ballot": "1.0",
-      "eligible": 177,
-      "voted": 95,
-      "valid": 95,
-      "invalid": 0,
-      "votes": {
-        "אמת": 6,
-        "ב": 18,
-        "ג": 10,
-        "ט": 20,
-        "יז": 2,
-        "כן": 1,
-        "ל": 1,
-        "מחל": 10,
-        "מרצ": 1,
-        "פה": 4,
-        "ר": 8,
-        "שס": 7,
-        "ת": 7
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "601.04"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "ר",
-              "party_name": "רפא",
-              "votes": 8,
-              "proportion": "8.42%",
-              "national_avg": "0.393%",
-              "ratio": "21x"
-            }
-          ]
-        }
-      ],
-      "score": 308.5221354856941,
-      "status": "verified"
-    },
-    {
-      "id": "ייטב_1.0",
-      "settlement": "ייטב",
-      "settlement_code": 3607,
-      "ballot": "1.0",
-      "eligible": 236,
-      "voted": 162,
-      "valid": 161,
-      "invalid": 1,
-      "votes": {
-        "אמת": 2,
-        "ב": 17,
-        "ג": 1,
-        "ט": 79,
-        "ל": 7,
-        "מחל": 31,
-        "פה": 2,
-        "ר": 18,
-        "ת": 4
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "600.84"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "ר",
-              "party_name": "רפא",
-              "votes": 18,
-              "proportion": "11.18%",
-              "national_avg": "0.393%",
-              "ratio": "28x"
-            }
-          ]
-        }
-      ],
-      "score": 308.4177924010586,
-      "status": "verified"
-    },
-    {
-      "id": "בת עין_1.0",
-      "settlement": "בת עין",
-      "settlement_code": 3794,
-      "ballot": "1.0",
-      "eligible": 461,
-      "voted": 266,
-      "valid": 265,
-      "invalid": 1,
-      "votes": {
-        "אמת": 1,
-        "ב": 38,
-        "ג": 9,
-        "ט": 162,
-        "מחל": 17,
-        "מרצ": 1,
-        "פה": 2,
-        "קץ": 1,
-        "ר": 25,
-        "שס": 6,
-        "ת": 3
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "600.61"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "ר",
-              "party_name": "רפא",
-              "votes": 25,
-              "proportion": "9.43%",
-              "national_avg": "0.393%",
-              "ratio": "24x"
-            }
-          ]
-        }
-      ],
-      "score": 308.30445260845687,
-      "status": "verified"
+      "score": 30.90183693845727,
+      "status": "unverified"
     },
     {
       "id": "רהט_21.3",
@@ -733,7 +583,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "605.59"
+            "distance_score": "34.31"
           }
         },
         {
@@ -747,10 +597,28 @@
             "votes": 88,
             "type": "small_party_dominance"
           }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 88,
+              "expected_votes": "7.1",
+              "proportion": "31.32%",
+              "expected_share": "2.523%",
+              "ratio": "12x",
+              "z_score": "30.8",
+              "baseline": "settlement"
+            }
+          ]
         }
       ],
-      "score": 304.3608692881865,
-      "status": "verified"
+      "score": 26.72243824949493,
+      "status": "unverified"
     },
     {
       "id": "רהט_21.2",
@@ -780,7 +648,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "602.20"
+            "distance_score": "33.56"
           }
         },
         {
@@ -794,10 +662,604 @@
             "votes": 93,
             "type": "small_party_dominance"
           }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 93,
+              "expected_votes": "7.1",
+              "proportion": "32.52%",
+              "expected_share": "2.494%",
+              "ratio": "13x",
+              "z_score": "32.6",
+              "baseline": "settlement"
+            }
+          ]
         }
       ],
-      "score": 302.72407331558264,
-      "status": "verified"
+      "score": 26.40589229058044,
+      "status": "unverified"
+    },
+    {
+      "id": "רהט_21.4",
+      "settlement": "רהט",
+      "settlement_code": 1161,
+      "ballot": "21.4",
+      "eligible": 623,
+      "voted": 249,
+      "valid": 247,
+      "invalid": 2,
+      "votes": {
+        "אמת": 3,
+        "ודעם": 51,
+        "ז": 2,
+        "יז": 64,
+        "כך": 1,
+        "מחל": 39,
+        "מרצ": 4,
+        "עם": 74,
+        "פה": 3,
+        "ק": 1,
+        "רנ": 1,
+        "שס": 1,
+        "ת": 3
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "29.66"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 64,
+              "expected_votes": "6.6",
+              "proportion": "25.91%",
+              "expected_share": "2.662%",
+              "ratio": "10x",
+              "z_score": "22.7",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 22.83084645051322,
+      "status": "unverified"
+    },
+    {
+      "id": "כפר כנא_11.1",
+      "settlement": "כפר כנא",
+      "settlement_code": 509,
+      "ballot": "11.1",
+      "eligible": 548,
+      "voted": 300,
+      "valid": 293,
+      "invalid": 7,
+      "votes": {
+        "ב": 2,
+        "ודעם": 79,
+        "יז": 67,
+        "כן": 1,
+        "מחל": 3,
+        "מרצ": 5,
+        "עם": 135,
+        "קי": 1
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "24.06"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 67,
+              "expected_votes": "4.4",
+              "proportion": "22.87%",
+              "expected_share": "1.518%",
+              "ratio": "15x",
+              "z_score": "29.9",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 20.029312501198305,
+      "status": "unverified"
+    },
+    {
+      "id": "רהט_21.1",
+      "settlement": "רהט",
+      "settlement_code": 1161,
+      "ballot": "21.1",
+      "eligible": 623,
+      "voted": 238,
+      "valid": 235,
+      "invalid": 3,
+      "votes": {
+        "ב": 1,
+        "ודעם": 61,
+        "יז": 50,
+        "כן": 2,
+        "ל": 1,
+        "מחל": 19,
+        "מרצ": 11,
+        "עם": 85,
+        "פה": 2,
+        "צף": 1,
+        "ת": 2
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "23.32"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 50,
+              "expected_votes": "6.4",
+              "proportion": "21.28%",
+              "expected_share": "2.744%",
+              "ratio": "8x",
+              "z_score": "17.4",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 19.65891894947298,
+      "status": "unverified"
+    },
+    {
+      "id": "ייטב_1.0",
+      "settlement": "ייטב",
+      "settlement_code": 3607,
+      "ballot": "1.0",
+      "eligible": 236,
+      "voted": 162,
+      "valid": 161,
+      "invalid": 1,
+      "votes": {
+        "אמת": 2,
+        "ב": 17,
+        "ג": 1,
+        "ט": 79,
+        "ל": 7,
+        "מחל": 31,
+        "פה": 2,
+        "ר": 18,
+        "ת": 4
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "19.27"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "רפא",
+              "votes": 18,
+              "proportion": "11.18%",
+              "national_avg": "0.393%",
+              "ratio": "28x"
+            }
+          ]
+        }
+      ],
+      "score": 17.63575125693188,
+      "status": "unverified"
+    },
+    {
+      "id": "רהט_22.3",
+      "settlement": "רהט",
+      "settlement_code": 1161,
+      "ballot": "22.3",
+      "eligible": 589,
+      "voted": 292,
+      "valid": 290,
+      "invalid": 2,
+      "votes": {
+        "אמת": 4,
+        "ב": 1,
+        "ודעם": 74,
+        "יז": 47,
+        "יר": 1,
+        "כן": 4,
+        "מחל": 30,
+        "מרצ": 28,
+        "עם": 77,
+        "פה": 6,
+        "ת": 18
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "17.70"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 47,
+              "expected_votes": "8.0",
+              "proportion": "16.21%",
+              "expected_share": "2.772%",
+              "ratio": "6x",
+              "z_score": "13.9",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 16.85209539693723,
+      "status": "unverified"
+    },
+    {
+      "id": "בת עין_1.0",
+      "settlement": "בת עין",
+      "settlement_code": 3794,
+      "ballot": "1.0",
+      "eligible": 461,
+      "voted": 266,
+      "valid": 265,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "ב": 38,
+        "ג": 9,
+        "ט": 162,
+        "מחל": 17,
+        "מרצ": 1,
+        "פה": 2,
+        "קץ": 1,
+        "ר": 25,
+        "שס": 6,
+        "ת": 3
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "16.70"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "רפא",
+              "votes": 25,
+              "proportion": "9.43%",
+              "national_avg": "0.393%",
+              "ratio": "24x"
+            }
+          ]
+        }
+      ],
+      "score": 16.350402097814168,
+      "status": "unverified"
+    },
+    {
+      "id": "מבוא מודיעים_1.0",
+      "settlement": "מבוא מודיעים",
+      "settlement_code": 1141,
+      "ballot": "1.0",
+      "eligible": 177,
+      "voted": 95,
+      "valid": 95,
+      "invalid": 0,
+      "votes": {
+        "אמת": 6,
+        "ב": 18,
+        "ג": 10,
+        "ט": 20,
+        "יז": 2,
+        "כן": 1,
+        "ל": 1,
+        "מחל": 10,
+        "מרצ": 1,
+        "פה": 4,
+        "ר": 8,
+        "שס": 7,
+        "ת": 7
+      },
+      "anomalies": [
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "רפא",
+              "votes": 8,
+              "proportion": "8.42%",
+              "national_avg": "0.393%",
+              "ratio": "21x"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "ירושלים_613.1",
+      "settlement": "ירושלים",
+      "settlement_code": 3000,
+      "ballot": "613.1",
+      "eligible": 639,
+      "voted": 432,
+      "valid": 432,
+      "invalid": 0,
+      "votes": {
+        "אמת": 29,
+        "ב": 26,
+        "ודעם": 1,
+        "ט": 25,
+        "יז": 13,
+        "כן": 35,
+        "ל": 8,
+        "מחל": 162,
+        "מרצ": 16,
+        "פה": 51,
+        "ר": 3,
+        "שס": 29,
+        "ת": 34
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 13,
+              "expected_votes": "1.8",
+              "proportion": "3.01%",
+              "expected_share": "0.421%",
+              "ratio": "7x",
+              "z_score": "8.3",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "כוכב יעקב_6.2",
+      "settlement": "כוכב יעקב",
+      "settlement_code": 3779,
+      "ballot": "6.2",
+      "eligible": 514,
+      "voted": 380,
+      "valid": 380,
+      "invalid": 0,
+      "votes": {
+        "אמת": 1,
+        "ב": 42,
+        "ג": 20,
+        "ט": 195,
+        "מחל": 54,
+        "קך": 1,
+        "ר": 13,
+        "שס": 51,
+        "ת": 3
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "ר",
+              "party_name": "רפא",
+              "votes": 13,
+              "expected_votes": "1.6",
+              "proportion": "3.42%",
+              "expected_share": "0.412%",
+              "ratio": "8x",
+              "z_score": "9.2",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "נצרת_72.4",
+      "settlement": "נצרת",
+      "settlement_code": 7300,
+      "ballot": "72.4",
+      "eligible": 543,
+      "voted": 223,
+      "valid": 221,
+      "invalid": 2,
+      "votes": {
+        "אמת": 1,
+        "ודעם": 112,
+        "זץ": 1,
+        "יז": 11,
+        "ינ": 1,
+        "מחל": 23,
+        "מרצ": 1,
+        "עם": 64,
+        "פה": 7
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 11,
+              "expected_votes": "0.7",
+              "proportion": "4.98%",
+              "expected_share": "0.335%",
+              "ratio": ">10x",
+              "z_score": "11.9",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "שפרעם_37.1",
+      "settlement": "שפרעם",
+      "settlement_code": 8800,
+      "ballot": "37.1",
+      "eligible": 574,
+      "voted": 260,
+      "valid": 257,
+      "invalid": 3,
+      "votes": {
+        "אמת": 2,
+        "ב": 2,
+        "ודעם": 84,
+        "יז": 20,
+        "ל": 71,
+        "מחל": 9,
+        "מרצ": 10,
+        "עם": 49,
+        "פה": 8,
+        "ת": 2
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 20,
+              "expected_votes": "1.4",
+              "proportion": "7.78%",
+              "expected_share": "0.548%",
+              "ratio": "14x",
+              "z_score": "15.7",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
+    },
+    {
+      "id": "מצליח_2.0",
+      "settlement": "מצליח",
+      "settlement_code": 757,
+      "ballot": "2.0",
+      "eligible": 442,
+      "voted": 311,
+      "valid": 311,
+      "invalid": 0,
+      "votes": {
+        "אמת": 9,
+        "ב": 14,
+        "זץ": 2,
+        "ט": 10,
+        "יז": 11,
+        "כן": 26,
+        "ל": 5,
+        "מחל": 152,
+        "מרצ": 4,
+        "פה": 41,
+        "שס": 12,
+        "ת": 25
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "יז",
+              "party_name": "הכלכלית החדשה",
+              "votes": 11,
+              "expected_votes": "0.0",
+              "proportion": "3.54%",
+              "expected_share": "0.000%",
+              "ratio": ">10x",
+              "z_score": "22.0",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "unverified"
     }
   ]
 }

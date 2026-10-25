@@ -8,6 +8,8 @@ Detects various types of suspicious voting patterns including:
 4. Impossible turnout
 5. Single-party extreme dominance
 6. Unusual patterns in small parties
+7. Esoteric-party votes far above the settlement-predicted count
+   (possible misfeed into the wrong column)
 """
 
 import pandas as pd
@@ -383,8 +385,126 @@ def detect_small_party_anomaly(row, party_cols, national_profile, election_id):
     return 0, None
 
 
-def generate_irregularities(election_id):
-    """Generate irregularities data for a single election."""
+# Thresholds for the settlement-predicted esoteric-vote test below. A box is
+# only flagged when ALL of them hold, so a genuine local stronghold (whose
+# other boxes in the same settlement lift the expected count) is not flagged,
+# while votes fed into a column where the settlement otherwise gives that
+# list ~nothing stand out even when they are a small share of the box.
+ESOTERIC_MIN_ACTUAL = 10      # votes for the esoteric list in this box
+ESOTERIC_MIN_EXCESS = 10      # votes above the predicted count
+ESOTERIC_MIN_RATIO = 5.0      # actual / predicted
+ESOTERIC_MIN_Z = 8.0          # binomial z of the excess
+ESOTERIC_MIN_OTHER_VOTES = 300  # settlement votes outside this box for the local baseline
+
+
+def detect_unexpected_party_votes(row, party_cols, national_profile, election_id,
+                                  settlement_party_votes, settlement_valid):
+    """
+    Detect esoteric (non-major) lists whose vote count in this box is far
+    above what the box's own settlement predicts — the signature of votes
+    mistakenly fed into the wrong column. The prediction is the leave-one-out
+    settlement share (this box excluded) applied to this box's valid votes.
+    Boxes whose settlement has too few other votes are skipped: against a
+    national baseline a one-box settlement's genuine stronghold is
+    indistinguishable from a misfeed (the national small_party_spike test
+    already covers that case, with its 5%-share / 20x thresholds).
+    Returns (score, explanation) tuple.
+    """
+    votes = row[party_cols].values
+    total = sum(votes)
+    valid = safe_int(row.get('כשרים', 0)) or total
+    if total < MIN_VOTES:
+        return 0, None
+
+    major_parties = ELECTIONS[election_id]['major_parties']['symbols']
+    settlement = row.get('שם ישוב', '')
+    other_valid = settlement_valid.get(settlement, 0) - valid
+    if other_valid < ESOTERIC_MIN_OTHER_VOTES:
+        return 0, None
+    local_votes = settlement_party_votes.get(settlement, {})
+
+    anomalies = []
+    for i, col in enumerate(party_cols):
+        if col in major_parties:
+            continue
+        actual = safe_int(votes[i])
+        if actual < ESOTERIC_MIN_ACTUAL:
+            continue
+        expected_share = max(0.0, (local_votes.get(col, 0) - actual) / other_valid)
+        expected_votes = expected_share * valid
+        excess = actual - expected_votes
+        if excess < ESOTERIC_MIN_EXCESS:
+            continue
+        if expected_votes >= 1 and actual / expected_votes < ESOTERIC_MIN_RATIO:
+            continue
+        variance = max(expected_votes * (1 - expected_share), 0.25)
+        z = excess / np.sqrt(variance)
+        if z < ESOTERIC_MIN_Z:
+            continue
+        anomalies.append({
+            'party': col,
+            'party_name': get_party_name(col, election_id),
+            'votes': actual,
+            'expected_votes': f"{expected_votes:.1f}",
+            'proportion': f"{actual / valid * 100:.2f}%",
+            'expected_share': f"{expected_share * 100:.3f}%",
+            'ratio': f"{actual / expected_votes:.0f}x" if expected_votes >= 1 else ">10x",
+            'z_score': f"{z:.1f}",
+            'baseline': 'settlement',
+        })
+
+    if anomalies:
+        return len(anomalies), anomalies
+    return 0, None
+
+
+def _build_output(election_id, df, valid_rows, party_cols, total_votes,
+                  national_profile, irregularities, top_irregularities):
+    election_info = ELECTIONS[election_id]
+    output = {
+        'election': {
+            'id': election_id,
+            'name': election_info['name'],
+            'name_en': election_info['name_en'],
+            'date': election_info['date'],
+            'total_ballots': len(df),
+            'analyzed_ballots': len(valid_rows),
+            'irregular_found': len(irregularities)
+        },
+        'parties': [],
+        'irregularities': top_irregularities
+    }
+
+    # Add party info
+    for symbol in party_cols:
+        info = get_party_info(symbol, election_id)
+        total = safe_int(total_votes[symbol])
+        if total > 0:
+            output['parties'].append({
+                'symbol': symbol,
+                'name': info['name'],
+                'color': info['color'],
+                'votes': total,
+                'proportion': f"{national_profile[symbol]*100:.2f}%",
+                'description': info.get('description', ''),
+                'ideology': info.get('ideology', ''),
+                'leader': info.get('leader', '')
+            })
+
+    # Sort parties by votes
+    output['parties'].sort(key=lambda x: x['votes'], reverse=True)
+
+    return output
+
+
+def generate_irregularities(election_id, verify_official=True):
+    """Generate irregularities data for a single election.
+
+    verify_official=False skips the per-ballot check against the official
+    results sites (one HTTP request per flagged ballot — minutes per
+    election); every potential irregularity is then reported with
+    status 'unverified'.
+    """
     print(f"Processing election {election_id}...", flush=True)
 
     df = load_ballot_data(election_id)
@@ -396,6 +516,10 @@ def generate_irregularities(election_id):
     total_votes = df[party_cols].sum()
     national_total = total_votes.sum()
     national_profile = {col: total_votes[col] / national_total for col in party_cols}
+
+    # Per-settlement aggregates for the leave-one-out predicted counts
+    settlement_valid = df.groupby('שם ישוב')['כשרים'].sum().to_dict()
+    settlement_party_votes = df.groupby('שם ישוב')[party_cols].sum().to_dict('index')
 
     # Build clusters for outlier detection
     valid_rows = df[df['כשרים'] >= MIN_VOTES].copy()
@@ -507,6 +631,19 @@ def generate_irregularities(election_id):
             })
             ballot_info['score'] += small_score * 8
 
+        # 7. Esoteric party far above its settlement-predicted count
+        eso_score, eso_info = detect_unexpected_party_votes(
+            row, party_cols, national_profile, election_id,
+            settlement_party_votes, settlement_valid)
+        if eso_score > 0:
+            ballot_info['anomalies'].append({
+                'type': 'unexpected_party_votes',
+                'severity': 'high',
+                'description': 'קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה',
+                'details': eso_info
+            })
+            ballot_info['score'] += eso_score * 8
+
         # Only include if score is significant AND has at least one high-severity anomaly
         has_high_severity = any(a['severity'] == 'high' for a in ballot_info['anomalies'])
         if ballot_info['anomalies'] and ballot_info['score'] >= MIN_IRREGULARITY_SCORE and has_high_severity:
@@ -516,6 +653,16 @@ def generate_irregularities(election_id):
     irregularities.sort(key=lambda x: x['score'], reverse=True)
 
     # Check against official data and filter out fixed irregularities
+    if not verify_official:
+        print(f"  Found {len(irregularities)} potential irregularities, official-data check skipped", flush=True)
+        for ballot in irregularities:
+            ballot['status'] = 'unverified'
+        verified_irregularities = irregularities
+        fixed_count = 0
+        print(f"  {fixed_count} irregularities were fixed, reporting {len(verified_irregularities)} remaining", flush=True)
+        return _build_output(election_id, df, valid_rows, party_cols, total_votes,
+                             national_profile, irregularities, verified_irregularities)
+
     print(f"  Found {len(irregularities)} potential irregularities, checking against official data...", flush=True)
     verified_irregularities = []
     checked = 0
@@ -544,42 +691,8 @@ def generate_irregularities(election_id):
 
     print(f"  {fixed_count} irregularities were fixed, reporting {len(top_irregularities)} remaining", flush=True)
 
-    # Build output
-    election_info = ELECTIONS[election_id]
-    output = {
-        'election': {
-            'id': election_id,
-            'name': election_info['name'],
-            'name_en': election_info['name_en'],
-            'date': election_info['date'],
-            'total_ballots': len(df),
-            'analyzed_ballots': len(valid_rows),
-            'irregular_found': len(irregularities)
-        },
-        'parties': [],
-        'irregularities': top_irregularities
-    }
-
-    # Add party info
-    for symbol in party_cols:
-        info = get_party_info(symbol, election_id)
-        total = safe_int(total_votes[symbol])
-        if total > 0:
-            output['parties'].append({
-                'symbol': symbol,
-                'name': info['name'],
-                'color': info['color'],
-                'votes': total,
-                'proportion': f"{national_profile[symbol]*100:.2f}%",
-                'description': info.get('description', ''),
-                'ideology': info.get('ideology', ''),
-                'leader': info.get('leader', '')
-            })
-
-    # Sort parties by votes
-    output['parties'].sort(key=lambda x: x['votes'], reverse=True)
-
-    return output
+    return _build_output(election_id, df, valid_rows, party_cols, total_votes,
+                         national_profile, irregularities, top_irregularities)
 
 
 def main():
@@ -587,6 +700,8 @@ def main():
     import argparse, shutil, os
     parser = argparse.ArgumentParser()
     parser.add_argument('--elections', nargs='+', help='Only run for these election IDs')
+    parser.add_argument('--no-official-check', action='store_true',
+                        help='Skip the per-ballot check against the official results sites')
     args = parser.parse_args()
     elections = args.elections if args.elections else ['21', '22', '23', '24', '25', '26']
     os.makedirs('site/data', exist_ok=True)
@@ -595,7 +710,7 @@ def main():
             print(f"  Skipping {election_id}: not in ELECTIONS config", flush=True)
             continue
         try:
-            data = generate_irregularities(election_id)
+            data = generate_irregularities(election_id, verify_official=not args.no_official_check)
 
             output_file = f"data/irregularities_{election_id}.json"
             with open(output_file, 'w', encoding='utf-8') as f:
