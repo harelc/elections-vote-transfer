@@ -186,7 +186,7 @@ class VoteTransferAnalyzer:
         objective = cvx.Minimize(cvx.norm(X @ M - Y, 'fro'))
 
         prob = cvx.Problem(objective, constraints)
-        prob.solve(solver='SCS', verbose=self.verbose, max_iters=20000)
+        prob.solve(solver='CLARABEL', verbose=self.verbose)
 
         if prob.status != 'optimal':
             logger.warning(f"Solver status: {prob.status}")

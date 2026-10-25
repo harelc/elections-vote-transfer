@@ -546,51 +546,45 @@ def nowcast(status, sectors, target_share=None, force=False):
     counted_dist = origin_votes / origin_votes.sum() if origin_votes.sum() else origin_votes
     comp_tvd = 0.5 * float(np.abs(counted_dist - nat25).sum()) if origin_votes.sum() else 1.0
 
-    # Transfer matrix for the projection
-    if mode == "live":
-        T = np.zeros((len(from_names), len(to_names)))
-        idx_f = {n: i for i, n in enumerate(from_names)}
-        idx_t = {n: i for i, n in enumerate(to_names)}
-        for e in transfer["transfers"]:
-            if e["source"] in idx_f and e["target"] in idx_t:
-                T[idx_f[e["source"]], idx_t[e["target"]]] = e["percentage"] / 100.0
-        r2 = (transfer.get("stats") or {}).get("r_squared") or 0.0
-        estimator = "published convex matrix (counted snapshot)"
-    else:
-        # Reuse the published fit's exact design (official crosswalk,
-        # FORBIDDEN_CELLS zero-constraints, matched-valid-votes row sum),
-        # subset to the masked counted boxes. Fitting shares with an
-        # unconstrained solver was tried and misallocates collinear rows
-        # (e.g. Likud +2pts on the uncounted aggregate).
-        from generate_transfer_data import VoteTransferAnalyzer, load_k26_crosswalk
-        analyzer = VoteTransferAnalyzer(method="convex")
-        design = analyzer.design_matrices("25", "26")
-        df_from, _ = analyzer.load_election_data("25")
-        df_to, _ = analyzer.load_election_data("26")
-        pairs = [(f, t) for f, t in load_k26_crosswalk()
-                 if f in set(df_from.index) and t in set(df_to.index)]
-        counted_ids = set()
-        for row in counted_rows:
-            b = str(row["k26_ballot"])
-            if b.endswith(".0"):
-                b = b[:-2]
-            counted_ids.add(f"{row['k26_code']}__{b}")
-        row_mask = np.array([t in counted_ids for _, t in pairs])
-        X, Y = design["X"][row_mask], design["Y"][row_mask]
-        row_sum = float(Y.sum() / X.sum()) if X.sum() else 1.0
-        Td = analyzer.solve_transfer_matrix_convex(X, Y, row_sum=row_sum, zero_cells=design["zero_cells"])
-        Td = np.clip(np.array(Td, dtype=float), 0, None)
-        # Reindex from the design's party order to the transfer file's order
-        T = np.zeros((len(from_names), len(to_names)))
-        for i, fn in enumerate(design["names_from"]):
-            for j, tn in enumerate(design["names_to"]):
-                if fn in from_names and tn in to_names:
-                    T[from_names.index(fn), to_names.index(tn)] = Td[i, j]
-        pred = X @ Td
-        ss_res = float(((Y - pred) ** 2).sum())
-        ss_tot = float(((Y - Y.mean(axis=0)) ** 2).sum()) or 1.0
-        r2 = 1 - ss_res / ss_tot
-        estimator = "published convex design refit on the masked counted subset (rehearsal)"
+    # Transfer matrix for the projection: in BOTH modes refit the solved
+    # convex design on the counted boxes. Never rebuild T from
+    # transfer_25_to_26.json's `transfers` list: that is a drawing subset
+    # (flows >= 15,000 votes only, rounded to 0.1%), and renormalising it
+    # redistributes the dropped flows onto the large ones.
+    # Reuse the published fit's exact design (official crosswalk,
+    # FORBIDDEN_CELLS zero-constraints, matched-valid-votes row sum),
+    # subset to the counted boxes. Fitting shares with an
+    # unconstrained solver was tried and misallocates collinear rows
+    # (e.g. Likud +2pts on the uncounted aggregate).
+    from generate_transfer_data import VoteTransferAnalyzer, load_k26_crosswalk
+    analyzer = VoteTransferAnalyzer(method="convex")
+    design = analyzer.design_matrices("25", "26")
+    df_from, _ = analyzer.load_election_data("25")
+    df_to, _ = analyzer.load_election_data("26")
+    pairs = [(f, t) for f, t in load_k26_crosswalk()
+             if f in set(df_from.index) and t in set(df_to.index)]
+    counted_ids = set()
+    for row in counted_rows:
+        b = str(row["k26_ballot"])
+        if b.endswith(".0"):
+            b = b[:-2]
+        counted_ids.add(f"{row['k26_code']}__{b}")
+    row_mask = np.array([t in counted_ids for _, t in pairs])
+    X, Y = design["X"][row_mask], design["Y"][row_mask]
+    row_sum = float(Y.sum() / X.sum()) if X.sum() else 1.0
+    Td = analyzer.solve_transfer_matrix_convex(X, Y, row_sum=row_sum, zero_cells=design["zero_cells"])
+    Td = np.clip(np.array(Td, dtype=float), 0, None)
+    # Reindex from the design's party order to the transfer file's order
+    T = np.zeros((len(from_names), len(to_names)))
+    for i, fn in enumerate(design["names_from"]):
+        for j, tn in enumerate(design["names_to"]):
+            if fn in from_names and tn in to_names:
+                T[from_names.index(fn), to_names.index(tn)] = Td[i, j]
+    pred = X @ Td
+    ss_res = float(((Y - pred) ** 2).sum())
+    ss_tot = float(((Y - Y.mean(axis=0)) ** 2).sum()) or 1.0
+    r2 = 1 - ss_res / ss_tot
+    estimator = f"published convex design refit on the counted subset ({mode})"
 
     row_sums = T.sum(axis=1, keepdims=True)
     T = np.divide(T, row_sums, out=np.zeros_like(T), where=row_sums > 0)

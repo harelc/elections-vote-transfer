@@ -409,7 +409,9 @@ def generate_irregularities(election_id):
     if n_clusters >= 2:
         kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
         kmeans.fit(props_scaled)
-        cluster_centers = scaler.transform(kmeans.cluster_centers_)
+        # kmeans was fit on props_scaled, so its centers are already in
+        # scaled space; transforming them again double-scales every center.
+        cluster_centers = kmeans.cluster_centers_
     else:
         cluster_centers = [props_scaled.mean(axis=0)]
 
