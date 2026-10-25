@@ -66,6 +66,22 @@ BLOCS = {
 }
 SIMS = 200
 ALPHA_FALLBACK = 51.2
+# Nowcast: origin votes at which a source row is trusted half-way (pooling),
+# the sectors that get their own matrix and turnout factor, and the counted
+# boxes a sector needs before it does (below that it uses the national one).
+SHRINK_K = 8000.0
+SECTORS = ("arab", "haredi", "other")
+SECTOR_MIN_BOXES = 40
+NON_JEWISH = {"arab", "bedouin", "druze", "circassian"}
+
+
+def double_envelopes_k25():
+    """Valid votes in the K25 double envelopes (settlement 9999), for scale."""
+    from party_config import ELECTIONS
+    cfg = ELECTIONS["25"]
+    with (ROOT / cfg["file"]).open(encoding=cfg["encoding"]) as fh:
+        return sum(int(float(r["כשרים"] or 0)) for r in csv.DictReader(fh)
+                   if str(r["סמל ישוב"]).split(".")[0] == "9999")
 
 
 def load(name, default=None):
@@ -450,6 +466,12 @@ def nowcast(status, sectors, target_share=None, force=False):
                 return (pp.get("יהדות התורה", 0) + pp.get("ש״ס", 0)) >= 50
         return False
 
+    def box_sector(row):
+        entry = sec.get(normalize_name(row["k26_name"] or ""), {})
+        if entry.get("population") in NON_JEWISH:
+            return "arab"
+        return "haredi" if is_haredi_box(row) else "other"
+
     # Rehearsal mask cutoffs (percent of the deterministic per-ballot hash):
     # Haredi boxes count at ~14% of the rate of other boxes (8% vs 58% in
     # the default late-night mask). With --target-share, both cutoffs are
@@ -546,61 +568,68 @@ def nowcast(status, sectors, target_share=None, force=False):
     counted_dist = origin_votes / origin_votes.sum() if origin_votes.sum() else origin_votes
     comp_tvd = 0.5 * float(np.abs(counted_dist - nat25).sum()) if origin_votes.sum() else 1.0
 
-    # Transfer matrix for the projection
-    if mode == "live":
-        T = np.zeros((len(from_names), len(to_names)))
-        idx_f = {n: i for i, n in enumerate(from_names)}
-        idx_t = {n: i for i, n in enumerate(to_names)}
-        for e in transfer["transfers"]:
-            if e["source"] in idx_f and e["target"] in idx_t:
-                T[idx_f[e["source"]], idx_t[e["target"]]] = e["percentage"] / 100.0
-        r2 = (transfer.get("stats") or {}).get("r_squared") or 0.0
-        estimator = "published convex matrix (counted snapshot)"
-    else:
-        # Reuse the published fit's exact design (official crosswalk,
-        # FORBIDDEN_CELLS zero-constraints, matched-valid-votes row sum),
-        # subset to the masked counted boxes. Fitting shares with an
-        # unconstrained solver was tried and misallocates collinear rows
-        # (e.g. Likud +2pts on the uncounted aggregate).
-        from generate_transfer_data import VoteTransferAnalyzer, load_k26_crosswalk
-        analyzer = VoteTransferAnalyzer(method="convex")
-        design = analyzer.design_matrices("25", "26")
-        df_from, _ = analyzer.load_election_data("25")
-        df_to, _ = analyzer.load_election_data("26")
-        pairs = [(f, t) for f, t in load_k26_crosswalk()
-                 if f in set(df_from.index) and t in set(df_to.index)]
-        counted_ids = set()
-        for row in counted_rows:
-            b = str(row["k26_ballot"])
-            if b.endswith(".0"):
-                b = b[:-2]
-            counted_ids.add(f"{row['k26_code']}__{b}")
-        row_mask = np.array([t in counted_ids for _, t in pairs])
-        X, Y = design["X"][row_mask], design["Y"][row_mask]
+    # Transfer matrices for the projection, in both modes refit from the
+    # published design (official crosswalk, FORBIDDEN_CELLS, matched-valid-
+    # votes row sum) on the counted boxes. Never read transfer_25_to_26.json:
+    # it drops flows under 15,000 votes and rounds to 0.1%, and a 2022
+    # backtest of that shortcut put Meretz over the threshold every time.
+    # One national matrix, plus one per sector (arab / haredi / other) so a
+    # sector counted late is predicted from its own boxes, not from the
+    # national mix it would otherwise be pooled into.
+    from generate_transfer_data import VoteTransferAnalyzer, load_k26_crosswalk
+    analyzer = VoteTransferAnalyzer(method="convex")
+    design = analyzer.design_matrices("25", "26")
+    df_from, _ = analyzer.load_election_data("25")
+    df_to, _ = analyzer.load_election_data("26")
+    pairs = [(f, t) for f, t in load_k26_crosswalk()
+             if f in set(df_from.index) and t in set(df_to.index)]
+    sector_by_id = {}
+    for row in counted_rows:
+        b = str(row["k26_ballot"])
+        if b.endswith(".0"):
+            b = b[:-2]
+        sector_by_id[f"{row['k26_code']}__{b}"] = box_sector(row)
+    row_mask = np.array([t in sector_by_id for _, t in pairs])
+    pair_sector = np.array([sector_by_id.get(t, "") for _, t in pairs])
+
+    def fit_matrix(mask):
+        X, Y = design["X"][mask], design["Y"][mask]
         row_sum = float(Y.sum() / X.sum()) if X.sum() else 1.0
         Td = analyzer.solve_transfer_matrix_convex(X, Y, row_sum=row_sum, zero_cells=design["zero_cells"])
         Td = np.clip(np.array(Td, dtype=float), 0, None)
         # Reindex from the design's party order to the transfer file's order
-        T = np.zeros((len(from_names), len(to_names)))
+        Tm = np.zeros((len(from_names), len(to_names)))
+        origin = np.zeros(len(from_names))
+        box_origin = X / np.maximum(X.sum(axis=1, keepdims=True), 1) * Y.sum(axis=1, keepdims=True)
         for i, fn in enumerate(design["names_from"]):
+            if fn not in from_names:
+                continue
+            origin[from_names.index(fn)] = box_origin[:, i].sum()
             for j, tn in enumerate(design["names_to"]):
-                if fn in from_names and tn in to_names:
-                    T[from_names.index(fn), to_names.index(tn)] = Td[i, j]
+                if tn in to_names:
+                    Tm[from_names.index(fn), to_names.index(tn)] = Td[i, j]
+        row_sums = Tm.sum(axis=1, keepdims=True)
+        Tm = np.divide(Tm, row_sums, out=np.zeros_like(Tm), where=row_sums > 0)
+        # Partial pooling: rows with little counted origin data shrink to the
+        # vote-weighted mean row of the same fit instead of being trusted at
+        # face value.
+        mean_row = (origin @ Tm) / origin.sum() if origin.sum() else Tm.mean(axis=0)
+        for i in range(len(from_names)):
+            wgt = origin[i] / (origin[i] + SHRINK_K) if origin[i] > 0 else 0.0
+            Tm[i] = wgt * Tm[i] + (1 - wgt) * mean_row
         pred = X @ Td
         ss_res = float(((Y - pred) ** 2).sum())
         ss_tot = float(((Y - Y.mean(axis=0)) ** 2).sum()) or 1.0
-        r2 = 1 - ss_res / ss_tot
-        estimator = "published convex design refit on the masked counted subset (rehearsal)"
+        return Tm, 1 - ss_res / ss_tot
 
-    row_sums = T.sum(axis=1, keepdims=True)
-    T = np.divide(T, row_sums, out=np.zeros_like(T), where=row_sums > 0)
-    # Partial pooling: rows with little counted origin data shrink to the
-    # vote-weighted global row instead of being trusted at face value.
-    global_row = (origin_votes @ T) / origin_votes.sum() if origin_votes.sum() else T.mean(axis=0)
-    shrink_k = 8000.0
-    for i in range(len(from_names)):
-        wgt = origin_votes[i] / (origin_votes[i] + shrink_k) if origin_votes[i] > 0 else 0.0
-        T[i] = wgt * T[i] + (1 - wgt) * global_row
+    T, r2 = fit_matrix(row_mask)
+    T_sector = {}
+    for name in SECTORS:
+        mask = row_mask & (pair_sector == name)
+        if mask.sum() >= SECTOR_MIN_BOXES:
+            T_sector[name] = fit_matrix(mask)[0]
+    estimator = ("convex refit on the counted boxes, national + per sector ("
+                 + ", ".join(sorted(T_sector)) + ")" + (" (rehearsal)" if mode == "rehearsal" else ""))
 
     # Sector coverage (by K25 valid votes on the roster)
     sector_cov = {}
@@ -651,13 +680,21 @@ def nowcast(status, sectors, target_share=None, force=False):
             counted_keys.add(key)
             counted_votes += shares_of(st.get("p") or {}, to_names) * (st.get("v") or 0)
         # Expected valid votes per uncounted box: its K25 turnout, adjusted by
-        # how counted boxes' turnout moved vs their own K25 turnout.
-        num = den = 0.0
-        for row, s25, s26 in matched:
-            if (s25.get("e") or 0) > 0 and (s26.get("e") or 0) > 0:
-                den += (s25.get("v") or 0) / s25["e"]
-                num += (s26.get("v") or 0) / s26["e"]
-        turnout_adj = min(1.15, max(0.7, num / den)) if den else 1.0
+        # how counted boxes' turnout moved vs their own K25 turnout -- per
+        # sector, since sectors move apart (2021->2022: Arab localities +9.4
+        # points, other Jewish localities +1.9).
+        def turnout_factor(rows):
+            num = den = 0.0
+            for row, s25, s26 in rows:
+                if (s25.get("e") or 0) > 0 and (s26.get("e") or 0) > 0:
+                    den += (s25.get("v") or 0) / s25["e"]
+                    num += (s26.get("v") or 0) / s26["e"]
+            return min(1.15, max(0.7, num / den)) if den else 1.0
+        turnout_adj = turnout_factor(matched)
+        turnout_by_sector = {}
+        for name in SECTORS:
+            rows_s = [m for m in matched if box_sector(m[0]) == name]
+            turnout_by_sector[name] = turnout_factor(rows_s) if len(rows_s) >= SECTOR_MIN_BOXES else turnout_adj
         counted_turnout = (sum((st26[k].get("v") or 0) for k in counted_keys) /
                            max(1, sum((st26[k].get("e") or 0) for k in counted_keys)))
         map25_by_name = {s["name"]: s for s in map25["settlements"]} if map25 else {}
@@ -680,8 +717,9 @@ def nowcast(status, sectors, target_share=None, force=False):
             else:
                 base_turnout = counted_turnout
             elig = float(row["k26_eligible"] or 0) or (src.get("e") if src else 0) or 600
-            expected = elig * min(0.97, base_turnout * turnout_adj)
-            pred_boxes.append(shares @ T)
+            box_sec = box_sector(row)
+            expected = elig * min(0.97, base_turnout * turnout_by_sector.get(box_sec, turnout_adj))
+            pred_boxes.append(shares @ T_sector.get(box_sec, T))
             pred_weights.append(expected)
             pred_src.append(shares)
         P = np.array(pred_boxes)          # boxes x parties, shares
@@ -776,6 +814,12 @@ def nowcast(status, sectors, target_share=None, force=False):
         }
         projection = {
             "sims": SIMS, "alpha": alpha, "turnout_adj": round(turnout_adj, 3),
+            "turnout_by_sector": {k: round(v, 3) for k, v in turnout_by_sector.items()},
+            "sector_matrices": sorted(T_sector),
+            # Double envelopes (settlement 9999) are not on the roster, so the
+            # projection does not include them; the page must say so. K25
+            # size is given for scale (the CEC expects ~650,000 in K26).
+            "double_envelopes": {"included": False, "k25_valid": double_envelopes_k25()},
             "uncounted_ballots": len(uncounted_rows),
             "expected_uncounted_votes": round(float(W.sum())),
             "parties": parties_out,
