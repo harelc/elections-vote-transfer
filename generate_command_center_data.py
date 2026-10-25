@@ -58,12 +58,11 @@ SITE_DATA = ROOT / "site" / "data"
 
 from k26_live import SURPLUS_AGREEMENTS, bader_ofer
 from generate_map_data import normalize_name
+from blocs import (ARAB_LISTS, K26_BLOCS, LEAN_BUCKETS, NETANYAHU, SECTOR_LABELS, definitions,
+                   lean_bucket, sector_of)
 
-BLOCS = {
-    "right": ["הליכוד", "יהדות התורה", "ש״ס", "עוצמה יהודית", "הציונות הדתית", "עמך ישראל", "המילואימניקים והכלכלית"],
-    "center": ["ישר", "ביחד", "הדמוקרטים", "ישראל ביתנו"],
-    "arab": ["הרשימה המשותפת", "רע״ם"],
-}
+# One definition, in blocs.py, shown on the page as it is used here.
+BLOCS = K26_BLOCS
 SIMS = 200
 ALPHA_FALLBACK = 51.2
 
@@ -804,6 +803,93 @@ def nowcast(status, sectors, target_share=None, force=False):
     }
 
 
+
+# --------------------------------------------------------- turnout groups
+def turnout_groups(sectors):
+    """Turnout of the K26 boxes by sector and by 2022 lean, with 2022 alongside.
+
+    Lean comes from the box's 2022 twin (crosswalk id / id_dot1 / venue /
+    coord), else from its settlement's 2022 result, else 'unknown'. The 2022
+    column compares the same matched boxes only, so a change is like for like.
+    Box turnout leaves out the double envelopes in both years.
+    """
+    sec = sectors.get("settlements", {})
+    tsne25, tsne26, map25 = load("tsne_25.json"), load("tsne_26.json"), load("map_25.json")
+    if not (tsne25 and tsne26):
+        return None
+    st25 = {f"{s['n']}|{s['b']}": s for s in tsne25["stations"]}
+    st26 = {f"{s['n']}|{s['b']}": s for s in tsne26["stations"]}
+    settle25 = {s["name"]: s.get("proportions") or {} for s in (map25 or {}).get("settlements", [])}
+
+    def lean_from(props):
+        if not props:
+            return "unknown"
+        bibi = sum(float(props.get(n, 0)) for n in NETANYAHU["25"]) / 100.0
+        arab = sum(float(props.get(n, 0)) for n in ARAB_LISTS["25"]) / 100.0
+        return lean_bucket(bibi, arab)
+
+    def blank():
+        return {"boxes": 0, "e": 0.0, "v": 0.0, "pe": 0.0, "pv": 0.0, "ne": 0.0, "nv": 0.0, "matched": 0,
+                "bloc_votes": {b: 0.0 for b in K26_BLOCS}}
+
+    acc = {"sector": {}, "lean": {}}
+    with (ROOT / "data/k25_k26_ballot_union.csv").open(encoding="utf-8-sig") as fh:
+        for row in csv.DictReader(fh):
+            if not row["k26_name"]:
+                continue
+            s26 = st26.get(f"{row['k26_name']}|{row['k26_ballot']}")
+            if s26 is None:
+                continue
+            twin = None
+            if row["decision"] in ("id", "id_dot1", "venue", "coord") and row["k25_name"]:
+                twin = st25.get(f"{row['k25_name']}|{row['k25_ballot']}")
+            if twin is not None:
+                lean = lean_from(twin.get("p"))
+            else:
+                lean = lean_from(settle25.get(normalize_name(row["k26_name"])))
+            sector = sector_of(sec.get(normalize_name(row["k26_name"]), {}))
+            e, v = float(s26.get("e") or 0), float(s26.get("v") or 0)
+            p26 = s26.get("p") or {}
+            for axis, key in (("sector", sector), ("lean", lean)):
+                g = acc[axis].setdefault(key, blank())
+                g["boxes"] += 1
+                g["e"] += e
+                g["v"] += v
+                for b, names in K26_BLOCS.items():
+                    g["bloc_votes"][b] += v * sum(float(p26.get(n, 0)) for n in names) / 100.0
+                if twin is not None and (twin.get("e") or 0) > 0 and e > 0:
+                    g["matched"] += 1
+                    g["pe"] += float(twin["e"])
+                    g["pv"] += float(twin.get("v") or 0)
+                    g["ne"] += e
+                    g["nv"] += v
+
+    def rows(axis, labels):
+        out = []
+        for key, he, en in labels:
+            g = acc[axis].get(key)
+            if not g or g["e"] <= 0:
+                continue
+            vt = sum(g["bloc_votes"].values()) or 1.0
+            out.append({
+                "key": key, "he": he, "en": en, "boxes": g["boxes"],
+                "eligible": round(g["e"]), "voters": round(g["v"]),
+                "turnout": round(100 * g["v"] / g["e"], 1),
+                "matched_boxes": g["matched"],
+                "turnout_2022_matched": round(100 * g["pv"] / g["pe"], 1) if g["pe"] else None,
+                "turnout_now_matched": round(100 * g["nv"] / g["ne"], 1) if g["ne"] else None,
+                "change_pts": round(100 * (g["nv"] / g["ne"] - g["pv"] / g["pe"]), 1) if g["pe"] and g["ne"] else None,
+                "bloc_share": {b: round(100 * x / vt, 1) for b, x in g["bloc_votes"].items()},
+            })
+        return out
+
+    return {
+        "by_sector": rows("sector", [(k, he, en) for k, he, en, _ in SECTOR_LABELS]),
+        "by_lean": rows("lean", LEAN_BUCKETS),
+        "definitions": definitions(),
+    }
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--target-share", type=float, default=None,
@@ -832,6 +918,7 @@ def main():
         "factoids": factoids(map25, map26, sectors, wiki.get("26", []), names_en, party_en),
         "bellwether": bellwether(names_en),
         "nowcast": nowcast(status, sectors, args.target_share),
+        "turnout_groups": turnout_groups(sectors),
     }
     path = SITE_DATA / args.out
     path.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

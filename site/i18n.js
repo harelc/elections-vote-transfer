@@ -112,7 +112,7 @@
         k26_settlements_label: { he: 'יישובים', en: 'Settlements' },
         k26_lists_label:       { he: 'רשימות', en: 'Lists' },
         k26_logos_source:      { he: 'סמלי הרשימות: VoteSmart (votesmart.co.il/Lists), נכון ל-23.10.2026. הרשימה המשותפת: הסמל הקיים באתר (הקישור ב-VoteSmart שבור); לנעם לא פורסם סמל', en: 'Party logos: VoteSmart (votesmart.co.il/Lists), as of 23 Oct 2026. Joint List: existing site logo (VoteSmart link is dead); Noam has no published logo' },
-        k26_turnout_pane:      { he: 'מי יצא להצביע? אחוז הצבעה בקלפיות החזקות ביותר לכל רשימה', en: 'Who turned out? Turnout in each list’s strongest ballots' },
+        k26_turnout_pane:      { he: 'מי יצא להצביע? אחוז הצבעה לפי רשימה, נטייה ומגזר', en: 'Who turned out? Turnout by list, lean and sector' },
         k26_turnout_note:      { he: 'לכל מפלגה: 100 הקלפיות שבהן שיעור התמיכה בה הוא הגבוה ביותר, והתפלגות אחוז ההצבעה בהן. הקו המקווקו הוא ממוצע ההצבעה (משוקלל מצביעים)', en: 'For each party: the 100 ballots where its support share is highest, and the turnout distribution in them. The dashed line is the voter-weighted mean turnout' },
         k26_th_strongest:      { he: '100 החזקות ביותר', en: '100 strongest' },
         k26_th_neighbourhood:  { he: '100 הקרובות למרכז (אין שיוך בלעדי)', en: '100 nearest the centroid (no exclusive assignment)' },
