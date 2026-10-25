@@ -122,14 +122,27 @@ def summarize(path):
     unknown = sorted(symbol for symbol, votes in votes_by_symbol.items() if symbol not in names and votes > 0)
     votes_by_name = {names[symbol]: votes_by_symbol.get(symbol, 0) for symbol in major["symbols"]}
     valid_total = max(valid, sum(votes_by_symbol.values()))
-    seats_by_name = bader_ofer(votes_by_name, agreements=SURPLUS_AGREEMENTS, valid_total=valid_total)
-    seats = [seats_by_name[name] for name in major["names"]]
+    # Allocate over every list in the file, not only the majors: a list that
+    # is missing from major_parties but passes the threshold must take its
+    # seats from the 120, so publishing stops until it is added there.
+    all_votes = dict(votes_by_name)
+    all_votes.update({symbol: votes_by_symbol[symbol] for symbol in unknown})
+    seats_all = bader_ofer(all_votes, agreements=SURPLUS_AGREEMENTS, valid_total=valid_total)
+    passed_unknown = [symbol for symbol in unknown if seats_all[symbol] > 0]
+    if passed_unknown:
+        raise SystemExit(
+            "lists not in ELECTIONS['26']['major_parties'] passed the threshold: "
+            + ", ".join(f"{symbol} ({votes_by_symbol[symbol]:,} votes, {seats_all[symbol]} seats)" for symbol in passed_unknown)
+            + ". Add them to party_config.py before publishing."
+        )
+    seats = [seats_all[name] for name in major["names"]]
     turnout = round(100 * voters / eligible, 1) if eligible else 0
     return {
         "ballots": len(rows),
         "eligible": eligible,
         "voters": voters,
         "valid": valid,
+        "valid_total": valid_total,
         "turnout": turnout,
         "symbols": major["symbols"],
         "names": major["names"],
@@ -229,40 +242,24 @@ def wiki_notes(kind):
 
 
 def update_wiki(text, summary, kind):
+    """Rewrite the K26 entries as JSON, whatever the file's whitespace.
+
+    `26_valid` and `26_other` carry all valid votes and the votes of lists
+    outside `26`, so pages can put the threshold against the legal base.
+    """
+    data = json.loads(text)
     entries = [
         {"name": name, "seats": seats, "votes": summary["votes_by_name"][name]}
         for name, seats in zip(summary["names"], summary["seats"])
     ]
     entries.sort(key=lambda entry: entry["votes"], reverse=True)
-    body = json.dumps(entries, ensure_ascii=False, indent=4)
-    first, *rest = body.splitlines()
-    body = "\n".join([first] + [("  " + line) if line else line for line in rest])
-    text, count = re.subn(
-        r'"26":\s*\[[\s\S]*?\](?=,?\s*"26_note")',
-        '"26": ' + body,
-        text,
-        count=1,
-    )
-    if count != 1:
-        raise SystemExit("could not update wiki_official_results 26")
     long_note, short_note = wiki_notes(kind)
-    text, count = re.subn(
-        r'"_26_note": "[^"]*"',
-        '"_26_note": ' + json.dumps(long_note, ensure_ascii=False),
-        text,
-        count=1,
-    )
-    if count != 1:
-        raise SystemExit("could not update _26_note")
-    text, count = re.subn(
-        r'"26_note": "[^"]*"',
-        '"26_note": ' + json.dumps(short_note, ensure_ascii=False),
-        text,
-        count=1,
-    )
-    if count != 1:
-        raise SystemExit("could not update 26_note")
-    return text
+    data["26"] = entries
+    data["_26_note"] = long_note
+    data["26_note"] = short_note
+    data["26_valid"] = summary["valid_total"]
+    data["26_other"] = summary["other_votes"]
+    return json.dumps(data, ensure_ascii=False, separators=(",", ":"))
 
 
 def write_text(path, text):
@@ -270,23 +267,26 @@ def write_text(path, text):
 
 
 def apply(summary, kind, as_of, sha256, ci_coverage):
-    write_text(PARTY_CONFIG, update_election_block(PARTY_CONFIG.read_text(encoding="utf-8"), summary))
-    write_text(WIKI, update_wiki(WIKI.read_text(encoding="utf-8"), summary, kind))
+    # Build every file first; write only when all of them succeeded, so a
+    # failure never leaves the site half on the new count and half on the old.
+    outputs = [
+        (PARTY_CONFIG, update_election_block(PARTY_CONFIG.read_text(encoding="utf-8"), summary)),
+        (WIKI, update_wiki(WIKI.read_text(encoding="utf-8"), summary, kind)),
+    ]
     for path in DHONDT_PAGES:
         text, missing = update_parties26(path.read_text(encoding="utf-8"), summary)
         if missing:
-            print(f"  {path.name}: no D'Hondt row for {', '.join(missing)}")
-        text = text.replace("Knesset 26 - Simulated", "Knesset 26", 1)
-        write_text(path, text)
+            raise SystemExit(f"{path.name}: no D'Hondt row for {', '.join(missing)}")
+        outputs.append((path, text.replace("Knesset 26 - Simulated", "Knesset 26", 1)))
     for path in PARTY_PAGES:
         text, missing = update_party_seats(path.read_text(encoding="utf-8"), summary)
         if missing:
             print(f"  {path.name}: no K26 family row for {', '.join(missing)}")
+        outputs.append((path, text))
+    outputs.append((STATUS, json.dumps(status_document(summary, kind, as_of, sha256, ci_coverage),
+                                       ensure_ascii=False, indent=2) + "\n"))
+    for path, text in outputs:
         write_text(path, text)
-    STATUS.write_text(
-        json.dumps(status_document(summary, kind, as_of, sha256, ci_coverage), ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
 
 
 def check(path):

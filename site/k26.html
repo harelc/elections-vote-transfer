@@ -698,7 +698,12 @@
     const TOTAL_SEATS = 120, THRESHOLD_PCT = 3.25;
     function allocateSeats(votes) {
         const names = Object.keys(votes);
-        const total = names.reduce((a, n) => a + votes[n], 0);
+        // The legal threshold base is all valid votes, including lists that
+        // are not in wiki['26']. k26_live writes their share as 26_other.
+        const listed = names.reduce((a, n) => a + votes[n], 0);
+        const wikiValid = (DATA.wiki && DATA.wiki['26_valid']) || 0;
+        const otherShare = wikiValid ? Math.min(0.5, Math.max(0, (DATA.wiki['26_other'] || 0) / wikiValid)) : 0;
+        const total = listed / (1 - otherShare);
         const thr = total * THRESHOLD_PCT / 100;
         const eligible = names.filter(n => votes[n] >= thr);
         const inGroup = {};
