@@ -145,11 +145,16 @@ def prepare_transition(from_year, to_year):
     name_to_to = {p['name']: i for i, p in enumerate(parties_to)}
     Pf, Pt = len(parties_from), len(parties_to)
 
-    T = np.zeros((Pf, Pt))
-    for edge in T_obj['transfers']:
-        if edge['source'] in name_to_from and edge['target'] in name_to_to:
-            i, j = name_to_from[edge['source']], name_to_to[edge['target']]
-            T[i, j] = edge['percentage'] / 100.0
+    # Full fitted matrix when the transfer file has one; 'transfers' is the
+    # drawing subset (flows >= 15,000 votes, 0.1% rounding).
+    if T_obj.get('matrix'):
+        T = np.array(T_obj['matrix'], dtype=float)
+    else:
+        T = np.zeros((Pf, Pt))
+        for edge in T_obj['transfers']:
+            if edge['source'] in name_to_from and edge['target'] in name_to_to:
+                i, j = name_to_from[edge['source']], name_to_to[edge['target']]
+                T[i, j] = edge['percentage'] / 100.0
     row_sums = T.sum(axis=1, keepdims=True)
     row_sums = np.where(row_sums > 0, row_sums, 1)
     T = T / row_sums

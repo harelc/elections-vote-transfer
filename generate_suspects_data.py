@@ -48,10 +48,15 @@ def main():
     # Re-estimated transfer matrix, row-normalised (as in prepare_fraud_sim.py)
     idx_from = {n: i for i, n in enumerate(from_names)}
     idx_to = {n: i for i, n in enumerate(to_names)}
-    matrix = [[0.0] * len(to_names) for _ in from_names]
-    for edge in transfer["transfers"]:
-        if edge["source"] in idx_from and edge["target"] in idx_to:
-            matrix[idx_from[edge["source"]]][idx_to[edge["target"]]] = edge["percentage"] / 100.0
+    # The full "matrix" field when present; "transfers" drops flows under
+    # 15,000 votes and rounds to 0.1%, which is for drawing only.
+    if transfer.get("matrix"):
+        matrix = [list(map(float, row)) for row in transfer["matrix"]]
+    else:
+        matrix = [[0.0] * len(to_names) for _ in from_names]
+        for edge in transfer["transfers"]:
+            if edge["source"] in idx_from and edge["target"] in idx_to:
+                matrix[idx_from[edge["source"]]][idx_to[edge["target"]]] = edge["percentage"] / 100.0
     for row in matrix:
         s = sum(row)
         if s > 0:

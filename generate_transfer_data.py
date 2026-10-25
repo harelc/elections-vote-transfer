@@ -186,7 +186,10 @@ class VoteTransferAnalyzer:
         objective = cvx.Minimize(cvx.norm(X @ M - Y, 'fro'))
 
         prob = cvx.Problem(objective, constraints)
-        prob.solve(solver='SCS', verbose=self.verbose, max_iters=20000)
+        # CLARABEL (an interior-point solver bundled with cvxpy) solves this
+        # exactly; SCS left cells at -0.5% and moved others by up to 1.2
+        # points on 24->25, and is what the bootstrap intervals do not use.
+        prob.solve(solver='CLARABEL', verbose=self.verbose)
 
         if prob.status != 'optimal':
             logger.warning(f"Solver status: {prob.status}")
@@ -538,6 +541,10 @@ class VoteTransferAnalyzer:
             'nodes_from': nodes_from,
             'nodes_to': nodes_to,
             'transfers': transfers,
+            # The whole fitted matrix (rows = nodes_from, columns = nodes_to),
+            # with no flow threshold and no rounding. `transfers` is for
+            # drawing; anything that computes with the matrix reads this.
+            'matrix': np.round(np.clip(M, 0, None), 6).tolist(),
             'stats': {
                 'common_precincts': design['n_matched'],
                 'r_squared': round(r_squared, 4),
