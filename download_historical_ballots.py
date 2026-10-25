@@ -162,8 +162,13 @@ def download_election(kid):
         row = normalize_record(rec, config, all_fields)
         rows.append(row)
 
-    # Filter out special rows (settlement code 0 = double envelopes etc.)
-    rows = [r for r in rows if r['סמל ישוב'] not in ('0', '', '0.0')]
+    # Settlement code 0 is the double envelopes (soldiers, hospitals, ...).
+    # Keep them under 9999, the code K21-K25 use, so national totals match the
+    # official result; the ballot-level analyses already drop 9999.
+    for r in rows:
+        if r['סמל ישוב'] in ('0', '0.0'):
+            r['סמל ישוב'] = '9999'
+    rows = [r for r in rows if r['סמל ישוב'] != '']
 
     # Output columns: standard fields + party symbols
     out_columns = STD_FIELDS + party_fields
