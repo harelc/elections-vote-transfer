@@ -54,6 +54,10 @@
         .count-meta { display:flex; flex-wrap:wrap; gap:.35rem 1.1rem; color:var(--text-muted); font-size:.8rem; margin-top:.35rem; justify-content:center; }
         .dhondt-frame { width:100%; height:1280px; border:0; border-radius:10px; display:block; background:var(--bg-secondary); }
         @media (max-width:900px){ .count-banner{flex-wrap:wrap;} .count-numbers{width:100%;} }
+        .preview-switch { max-width:none; margin:.7rem 1.5rem 0; display:flex; gap:.45rem; align-items:center; flex-wrap:wrap; }
+        .preview-switch[hidden] { display:none; }
+        .preview-switch-label { font-size:.82rem; color:#f59e0b; font-weight:700; }
+        .preview-switch a { text-decoration:none; }
         .k26-stat { text-align:center; padding:0.35rem 0.2rem; }
         .k26-stat b { font-size:1.05rem; color:var(--text-secondary); font-weight:700; margin-inline-end:0.35rem; }
         .k26-stat span { font-size:0.78rem; color:var(--text-muted); }
@@ -300,6 +304,14 @@
             </div>
         </section>
 
+        <nav class="preview-switch" id="preview-switch" hidden aria-label="Election-night preview switcher">
+            <span class="preview-switch-label" id="preview-switch-label"></span>
+            <a class="pane-btn" data-preview="partial12" href="?preview=partial12"></a>
+            <a class="pane-btn" data-preview="partial17" href="?preview=partial17"></a>
+            <a class="pane-btn" data-preview="partial" href="?preview=partial"></a>
+            <a class="pane-btn" data-preview="" href="k26.html"></a>
+        </nav>
+
         <section class="factoid-bar" id="factoid-bar" hidden title="">
             <span class="f-label" id="factoid-label"></span>
             <span class="f-text" id="factoid-text"></span>
@@ -460,6 +472,36 @@
     const CC_FILE = PREVIEW_MODE === 'partial17' ? 'data/command_center_26_p17.json'
         : PREVIEW_MODE === 'partial12' ? 'data/command_center_26_p12.json'
         : 'data/command_center_26.json';
+    // Preview switcher: visible only inside a ?preview= mode, so the three
+    // simulated moments of election night (and the way back to the regular
+    // page) are one click apart. Never shown on the live page itself.
+    function initPreviewSwitch() {
+        const el = document.getElementById('preview-switch');
+        if (!el) return;
+        // Shown while the site is in simulated mode (regular page included,
+        // so the previews are reachable from it) and inside any preview.
+        // Hidden once real results arrive (partial/official) — simulated
+        // previews have no place on the live election-night page.
+        const show = PREVIEW_PARTIAL || (K26STATUS && K26STATUS.kind === 'simulated');
+        el.hidden = !show;
+        if (!show) return;
+        document.getElementById('preview-switch-label').textContent = en() ? 'Election-night preview (simulated):' : 'תצוגה מקדימה של ליל הבחירות (סימולציה):';
+        const labels = {
+            '': en() ? 'Full count' : 'ספירה מלאה',
+            partial12: en() ? '12% counted' : '12% נספרו',
+            partial17: en() ? '17% counted' : '17% נספרו',
+            partial: en() ? '45% counted' : '45% נספרו',
+        };
+        const current = PREVIEW_PARTIAL ? PREVIEW_MODE : '';
+        el.querySelectorAll('a[data-preview]').forEach(a => {
+            const mode = a.dataset.preview;
+            a.textContent = labels[mode] || mode;
+            if (!mode) a.setAttribute('href', location.pathname);
+            a.classList.toggle('gold', mode === current);
+        });
+    }
+    initPreviewSwitch();
+    window.addEventListener('langchange', initPreviewSwitch);
     function renderCountStatus() {
         const s = K26STATUS || {};
         const badge = document.getElementById('k26-status-badge');
@@ -486,8 +528,8 @@
         document.getElementById('count-updated').textContent = updated;
         document.getElementById('count-source').textContent = en() ? (s.source_en || '') : (s.source_he || '');
     }
-    i18n.whenK26Status().then(s => { if (PREVIEW_PARTIAL) return; K26STATUS = s || K26STATUS; renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } });
-    window.addEventListener('k26statuschange', e => { if (PREVIEW_PARTIAL) return; if (e.detail) { K26STATUS = e.detail; renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } } });
+    i18n.whenK26Status().then(s => { if (PREVIEW_PARTIAL) return; K26STATUS = s || K26STATUS; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } });
+    window.addEventListener('k26statuschange', e => { if (PREVIEW_PARTIAL) return; if (e.detail) { K26STATUS = e.detail; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } } });
 
     function partyEn(name) { return (DATA && DATA.enNames[name]) || name; }
     function displayName(name) { return en() ? partyEn(name) : name; }
@@ -1490,7 +1532,11 @@
         const content = document.getElementById('nowcast-content');
         const mount = partial ? document.getElementById('nowcast-stage-mount') : document.getElementById('nowcast-body');
         if (content && mount && content.parentElement !== mount) mount.appendChild(content);
-        pane.hidden = partial;
+        // The nowcast exists only while a count is partial: with a full
+        // count there is nothing left to forecast, so the margin pane is
+        // hidden completely (during a partial count the content lives on
+        // the central stage instead, and this pane stays empty/hidden).
+        pane.hidden = true;
         const tab = document.getElementById('stage-tab-nowcast');
         if (tab) tab.hidden = !partial;
         // The final-flow (Sankey) stage is held out during a partial count:
@@ -1575,7 +1621,7 @@
                 <div id="nc-flows-diagram"></div></div>`;
             }
         }
-        if (!partial) body += `<div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap"><a class="pane-btn gold" href="?preview=partial" style="text-decoration:none">${en() ? '▶ Preview election night (partial count)' : '▶ תצוגה מקדימה: ליל בחירות (ספירה חלקית)'}</a><a class="pane-btn" href="?preview=partial17" style="text-decoration:none">${en() ? '▶ Preview: early night (~17% counted)' : '▶ תצוגה מקדימה: תחילת הלילה (כ־17% נספרו)'}</a><a class="pane-btn" href="?preview=partial12" style="text-decoration:none">${en() ? '▶ Preview: gate edge (~12% counted)' : '▶ תצוגה מקדימה: על סף השער (כ־12% נספרו)'}</a></div>`;
+        if (!partial) body += `<div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap"><a class="pane-btn gold" href="?preview=partial12" style="text-decoration:none">${en() ? '▶ Preview: 12% counted' : '▶ תצוגה מקדימה: 12% נספרו'}</a><a class="pane-btn" href="?preview=partial17" style="text-decoration:none">${en() ? '▶ Preview: 17% counted' : '▶ תצוגה מקדימה: 17% נספרו'}</a><a class="pane-btn" href="?preview=partial" style="text-decoration:none">${en() ? '▶ Preview: 45% counted' : '▶ תצוגה מקדימה: 45% נספרו'}</a></div>`;
         content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div></div>` + body;
         renderNcFlows();
         // The hemicycle selector in the votes pane depends on the partial
