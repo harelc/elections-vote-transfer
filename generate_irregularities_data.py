@@ -40,6 +40,12 @@ MAX_IRREGULARITIES = 100
 # Minimum score to be considered truly irregular (must have at least one significant anomaly)
 MIN_IRREGULARITY_SCORE = 8
 
+# Local comparison: other votes a box's settlement needs before the shift,
+# small-list and dominance checks run, and the neighbours' share of the
+# dominant list above which dominance is the community's vote.
+LOCAL_MIN_VOTES = 300
+LOCAL_DOMINANCE_SHARE = 0.6
+
 
 def load_ballot_data(election_id):
     """Load ballot data for an election."""
@@ -397,6 +403,16 @@ def generate_irregularities(election_id):
     national_total = total_votes.sum()
     national_profile = {col: total_votes[col] / national_total for col in party_cols}
 
+    # Local profile: the same settlement's other boxes. Shift, small-list and
+    # dominance checks compare a box with its neighbours, not with the
+    # national mix, which otherwise lists whole homogeneous communities
+    # (K23: 10 of 12 listed boxes were West Bank settlements; K21: Arab towns).
+    # Boxes whose settlement has under LOCAL_MIN_VOTES other votes are not
+    # scored by those three checks.
+    settle_sum = df.groupby('סמל ישוב')[party_cols].transform('sum')
+    others = settle_sum - df[party_cols]
+    others_total = others.sum(axis=1)
+
     # Build clusters for outlier detection
     valid_rows = df[df['כשרים'] >= MIN_VOTES].copy()
     props_matrix = valid_rows[party_cols].div(valid_rows['כשרים'], axis=0).fillna(0).values
@@ -409,7 +425,10 @@ def generate_irregularities(election_id):
     if n_clusters >= 2:
         kmeans = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
         kmeans.fit(props_scaled)
-        cluster_centers = scaler.transform(kmeans.cluster_centers_)
+        # KMeans was fit on scaled data, so its centers are already in the
+        # scaled space; transforming them again put every box past the
+        # outlier cut (all 12,426 K25 boxes scored > 15).
+        cluster_centers = kmeans.cluster_centers_
     else:
         cluster_centers = [props_scaled.mean(axis=0)]
 
@@ -439,8 +458,13 @@ def generate_irregularities(election_id):
 
         # Check for various anomalies
 
+        local_profile = None
+        if others_total[idx] >= LOCAL_MIN_VOTES:
+            local_profile = (others.loc[idx] / others_total[idx]).to_dict()
+
         # 1. Shift error
-        shift_score, shift_info = detect_shift_error(row, party_cols, national_profile, election_id)
+        shift_score, shift_info = (detect_shift_error(row, party_cols, local_profile, election_id)
+                                   if local_profile else (0, None))
         if shift_score > 0:
             ballot_info['anomalies'].append({
                 'type': 'shift_error',
@@ -485,6 +509,9 @@ def generate_irregularities(election_id):
 
         # 5. Extreme dominance
         dom_score, dom_info = detect_extreme_dominance(row, party_cols, election_id)
+        # Dominance its own neighbours share is the community's vote, not an anomaly.
+        if dom_score > 0 and (local_profile is None or local_profile.get(dom_info['party'], 0) >= LOCAL_DOMINANCE_SHARE):
+            dom_score = 0
         if dom_score > 0:
             ballot_info['anomalies'].append({
                 'type': 'extreme_dominance',
@@ -495,7 +522,8 @@ def generate_irregularities(election_id):
             ballot_info['score'] += dom_score * 5 if dom_info.get('type') == 'small_party_dominance' else dom_score
 
         # 6. Small party anomaly
-        small_score, small_info = detect_small_party_anomaly(row, party_cols, national_profile, election_id)
+        small_score, small_info = (detect_small_party_anomaly(row, party_cols, local_profile, election_id)
+                                   if local_profile else (0, None))
         if small_score > 0:
             ballot_info['anomalies'].append({
                 'type': 'small_party_spike',

@@ -24,9 +24,48 @@ import csv
 import json
 from pathlib import Path
 
+from generate_map_data import normalize_name
+
 ROOT = Path(__file__).resolve().parent
 TOP_N = 60
+MIN_VOTERS = 100
 DECISIONS = ("id", "id_dot1")
+
+
+def box_sector(name, sectors):
+    entry = sectors.get(normalize_name(name), {})
+    if entry.get("population") in ("arab", "bedouin", "druze", "circassian"):
+        return entry["population"]
+    return "haredi" if entry.get("haredi") else "other"
+
+
+def rank_within_sector(scored, sectors=None):
+    """Rank boxes by robust z of their TVD inside their own sector.
+
+    A raw national TVD ranks whole sectors the national matrix fits poorly
+    (on real 2021->2022 data 53% of the top 60 were Druze boxes, 1.8% of all
+    boxes). Comparing each box with its own sector's median keeps the list
+    about boxes, not communities. Small boxes are dropped: their shares move
+    by several points on noise alone.
+    """
+    if sectors is None:
+        sectors = json.loads((ROOT / "site/data/settlement_sectors.json").read_text(encoding="utf-8"))["settlements"]
+    scored = [r for r in scored if (r.get("v") or 0) >= MIN_VOTERS]
+    by_sector = {}
+    for r in scored:
+        r["sector"] = box_sector(r["n"], sectors)
+        by_sector.setdefault(r["sector"], []).append(r["tvd"])
+    stats = {}
+    for name, values in by_sector.items():
+        values = sorted(values)
+        med = values[len(values) // 2]
+        mad = sorted(abs(v - med) for v in values)[len(values) // 2]
+        stats[name] = (med, max(1.4826 * mad, 0.01))
+    for r in scored:
+        med, scale = stats[r["sector"]]
+        r["z"] = round((r["tvd"] - med) / scale, 2)
+    scored.sort(key=lambda r: -r["z"])
+    return scored
 
 
 def shares(props, names):
@@ -94,12 +133,14 @@ def main():
             "pred": [round(p * 100, 2) for p in pred],
         })
 
-    scored.sort(key=lambda r: -r["tvd"])
+    scored = rank_within_sector(scored)
     out = {
         "meta": {
             "method": "TVD between the K26 result and the national 25->26 transfer-regression "
                       "prediction, pairing each K26 box with its index-matched K25 ballot "
-                      "(data/k25_k26_ballot_union.csv, decisions id/id_dot1 only).",
+                      "(data/k25_k26_ballot_union.csv, decisions id/id_dot1 only), ranked by "
+                      f"how far it sits above the median TVD of its own sector (robust z), "
+                      f"boxes with at least {MIN_VOTERS} voters.",
             "paired_ballots": len(scored), "skipped": skipped,
             "r_squared": transfer.get("stats", {}).get("r_squared"),
         },
