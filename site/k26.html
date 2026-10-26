@@ -28,6 +28,17 @@
         .k26-hero h2 { font-size:2rem; font-weight:800; color:var(--text-primary); }
         .k26-hero p { color:var(--text-secondary); margin-top:0.25rem; }
         .k26-badge { display:inline-block; margin-top:0.6rem; padding:0.28rem 0.7rem; border:1px solid var(--accent-primary); border-radius:999px; color:var(--accent-primary); font-size:0.82rem; font-weight:700; background:rgba(240,180,41,.08); }
+        /* Data provenance: simulated vs real must be unmissable, in both
+           the election-day turnout phase and the count phase. */
+        .prov-banner { margin:1rem 1.5rem 0; padding:.85rem 1.2rem; border-radius:12px; display:flex; gap:.9rem; align-items:center; border:2px solid; }
+        .prov-banner[hidden] { display:none; }
+        .prov-banner.sim { border-color:#ef4444; color:#fecaca; background:repeating-linear-gradient(45deg, rgba(239,68,68,.16) 0 16px, rgba(239,68,68,.07) 16px 32px); }
+        .prov-banner.real { border-color:#22c55e; color:#bbf7d0; background:rgba(34,197,94,.1); }
+        .prov-icon { font-size:1.5rem; line-height:1; }
+        .prov-title { font-size:1.12rem; font-weight:800; letter-spacing:.02em; }
+        .prov-banner.sim .prov-title { color:#fca5a5; }
+        .prov-banner.real .prov-title { color:#4ade80; }
+        .prov-sub { font-size:.85rem; opacity:.85; margin-top:.15rem; }
         .k26-stats { display:grid; grid-template-columns:repeat(7,1fr); gap:0.6rem; max-width:none; margin:0; padding:0.8rem 1.5rem 0.2rem; }
         .full-view-cta { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; font-family:inherit; font-size:1rem; font-weight:800; line-height:1.25; cursor:pointer; text-decoration:none; white-space:nowrap; border-radius:999px; padding:.78rem 1.45rem; color:#1a1408 !important; background:linear-gradient(135deg,#ffd75e,#f0b429); border:1px solid #ffe08a; box-shadow:0 8px 26px rgba(240,180,41,.38); transition:transform .15s ease, box-shadow .15s ease; }
         .full-view-cta:hover { transform:translateY(-1px); box-shadow:0 12px 32px rgba(240,180,41,.5); color:#1a1408 !important; }
@@ -325,6 +336,11 @@
             <span class="k26-badge" id="k26-status-badge">…</span>
         </section>
 
+        <section class="prov-banner sim" id="prov-banner" role="status">
+            <span class="prov-icon" id="prov-icon">⚠</span>
+            <div><div class="prov-title" id="prov-title"></div><div class="prov-sub" id="prov-sub"></div></div>
+        </section>
+
         <section class="k26-stats" id="k26-stats"></section>
 
         <section class="count-banner" id="count-banner" hidden aria-live="polite">
@@ -584,7 +600,43 @@
     }
     initPreviewSwitch();
     window.addEventListener('langchange', initPreviewSwitch);
+    function renderProvenance() {
+        const banner = document.getElementById('prov-banner');
+        if (!banner) return;
+        const tdMeta = (DATA && DATA.turnoutDay && DATA.turnoutDay.meta) || {};
+        let sim, title, sub;
+        if (TURNOUT_ACTIVE) {
+            sim = tdMeta.kind !== 'live';
+            title = sim
+                ? (en() ? '⚠ SIMULATED DATA — rehearsal turnout, not CEC figures' : '⚠ נתונים מדומים — אחוזי הצבעה של חזרה, לא נתוני ועדת הבחירות')
+                : (en() ? '● REAL DATA — live CEC turnout' : '● נתוני אמת — אחוזי הצבעה חיים מוועדת הבחירות');
+            sub = sim
+                ? (en() ? 'A synthetic snapshot built for rehearsal. Real CEC turnout replaces it on election day; every map and table below is simulated until then.' : 'תמונת מצב סינתטית שנבנתה לחזרה. ביום הבחירות יחליפו אותה נתוני האמת של ועדת הבחירות; עד אז כל מפה וטבלה כאן מדומים.')
+                : (en() ? 'Per-ballot turnout as published by the Central Elections Committee during election day. No results yet.' : 'אחוזי הצבעה לפי קלפי כפי שמפרסמת ועדת הבחירות המרכזית במהלך יום הבחירות. עדיין אין תוצאות.');
+        } else if (!PREVIEW_PARTIAL && K26STATUS && (K26STATUS.kind === 'partial' || K26STATUS.kind === 'official')) {
+            const official = K26STATUS.kind === 'official';
+            sim = false;
+            title = official
+                ? (en() ? '● OFFICIAL RESULTS — Central Elections Committee' : '● תוצאות רשמיות — ועדת הבחירות המרכזית')
+                : (en() ? '● REAL RESULTS — partial CEC count in progress' : '● תוצאות אמת — ספירת ועדת הבחירות בעיצומה');
+            sub = official
+                ? (en() ? 'Final official K26 results as published by the CEC.' : 'תוצאות סופיות רשמיות של כנסת 26 כפי שפרסמה ועדת הבחירות.')
+                : (en() ? 'Real ballot boxes counted so far by the CEC. Figures change as the count proceeds.' : 'קלפיות אמיתיות שנספרו עד כה בידי ועדת הבחירות. הנתונים משתנים ככל שהספירה מתקדמת.');
+        } else {
+            sim = true;
+            title = en() ? '⚠ SIMULATED SCENARIO — not election results' : '⚠ תרחיש מדומה — אלה אינן תוצאות בחירות';
+            sub = en()
+                ? 'Knesset 26 has not happened on this page yet: every seat, vote and flow below is a polling-calibrated simulation, replaced automatically when the CEC publishes real data.'
+                : 'כנסת 26 טרם התרחשה בעמוד זה: כל מנדט, קול ומעבר כאן הוא סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.';
+        }
+        banner.classList.toggle('sim', sim);
+        banner.classList.toggle('real', !sim);
+        document.getElementById('prov-icon').textContent = sim ? '⚠' : '●';
+        document.getElementById('prov-title').textContent = title;
+        document.getElementById('prov-sub').textContent = sub;
+    }
     function renderCountStatus() {
+        renderProvenance();
         const s = K26STATUS || {};
         const badge = document.getElementById('k26-status-badge');
         const banner = document.getElementById('count-banner');
@@ -2184,7 +2236,7 @@
             settleBlock(en() ? 'Most eligible voters still to vote' : 'הכי הרבה בעלי זכות שטרם הצביעו', S.most_remaining, r => fmt(r.remaining || 0));
     }
 
-    function renderAll() { renderCountStatus(); renderStats(); renderVotes(); renderBubble(); renderTurnout(); renderSuspects(); renderSankey(); renderGeomap(); renderTsne(); renderDhondt(); renderExtras(); renderTurnoutDay(); }
+    function renderAll() { renderProvenance(); renderCountStatus(); renderStats(); renderVotes(); renderBubble(); renderTurnout(); renderSuspects(); renderSankey(); renderGeomap(); renderTsne(); renderDhondt(); renderExtras(); renderTurnoutDay(); }
 
     const STAGE_FULL = { sankey:'sankey.html', tsne:'tsne.html', dhondt:'dhondt.html' };
     function activateStage(stage) {
