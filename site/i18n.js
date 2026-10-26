@@ -1290,8 +1290,11 @@
         try { noticeClosed = sessionStorage.getItem('e26_notice_closed') === '1'; } catch (e) {}
 
         function paint() {
-            if (SHOW_E26 && noticeClosed) {
-                const live = k26Live();
+            // The simulated warning is not dismissible: while the data
+            // is simulated the full card always shows (a closed notice
+            // only collapses the live-results card).
+            if (SHOW_E26 && noticeClosed && k26Live()) {
+                const live = true;
                 widget.className = 'collapsed ' + (live ? 'official' : 'sim');
                 widget.innerHTML =
                     '<button type="button" class="e26-reopen">' +
@@ -1315,7 +1318,6 @@
                 widget.innerHTML =
                     '<div class="e26-head">' +
                         '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
-                        '<button type="button" class="e26-close">' + esc(t('e26_close')) + '</button>' +
                     '</div>' +
                     '<div class="e26-status">' + esc(t('e26_sim_headline')) + '</div>' +
                     '<p class="e26-detail">' + esc(t('e26_sim_detail')) + '</p>' +
