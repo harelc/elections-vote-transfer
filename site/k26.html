@@ -597,10 +597,15 @@
         const el = document.getElementById('preview-switch');
         if (!el) return;
         const kind = K26STATUS && K26STATUS.kind;
-        const live = !PREVIEW_PARTIAL && (kind === 'partial' || kind === 'official');
+        const live = !PREVIEW_PARTIAL && (kind === 'partial' || kind === 'official' || kind === 'turnout');
         // Simulated contexts offer the preview stages; live contexts
         // offer just day-vs-count. Hidden only before anything exists.
-        const show = TURNOUT_ACTIVE || PREVIEW_PARTIAL || kind === 'simulated' || kind === 'turnout' || live;
+        // While the live election-day view is the mode in effect
+        // (status=turnout, no results yet), there is no counting
+        // phase to switch to — hide the switcher entirely. A forced
+        // ?turnout=0 still gets the switcher so there is a way back.
+        const dayOnly = TURNOUT_ACTIVE && kind === 'turnout' && !PREVIEW_PARTIAL;
+        const show = !dayOnly && (TURNOUT_ACTIVE || PREVIEW_PARTIAL || kind === 'simulated' || kind === 'turnout' || live);
         el.hidden = !show;
         if (!show) return;
         document.getElementById('preview-switch-label').textContent = en() ? 'Mode:' : 'מצב:';
