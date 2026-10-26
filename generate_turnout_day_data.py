@@ -74,15 +74,21 @@ BLOC_LABELS = {
 POP_LABELS = {
     "jewish": ("יישובים יהודיים", "Jewish localities"), "arab": ("יישובים ערביים", "Arab localities"),
     "bedouin": ("יישובים בדואיים", "Bedouin localities"), "druze": ("יישובים דרוזיים", "Druze localities"),
+    "circassian": ("יישובים צ׳רקסיים", "Circassian localities"),
     "mixed": ("ערים מעורבות", "Mixed cities"), "unknown": ("לא ידוע", "Unknown"),
 }
 FORM_LABELS = {
     "city": ("ערים", "Cities"), "local_council": ("מועצות מקומיות", "Local councils"),
     "kibbutz": ("קיבוצים", "Kibbutzim"), "moshav": ("מושבים", "Moshavim"),
-    "moshav_shitufi": ("מושבים שיתופיים", "Cooperative moshavim"),
+    "moshav_shitufi": ("מושבים שיתופיים", "Cooperative moshavim"), "moshava": ("מושבות", "Moshavot"),
     "community": ("יישובים קהילתיים", "Community settlements"),
     "regional": ("יישובי מועצות אזוריות", "Regional-council localities"),
+    "locality": ("יישובים", "Localities"), "village": ("כפרים", "Villages"),
+    "institution": ("מוסדות ומחנות", "Institutions and camps"),
+    "unknown": ("לא ידוע", "Unknown"),
 }
+OTHER_LABEL = ("אחר / לא מסווג", "Other / unclassified")
+UNKNOWN_LABEL = ("לא ידוע", "Unknown")
 STRONGHOLD_MIN = 40.0  # K25 party share (%) in the twin for "stronghold"
 MIN_GROUP_ELIGIBLE = 3000
 
@@ -417,14 +423,14 @@ def main():
         "national": nat,
         "history": history,
         "groups": {
-            "k25_winner": group_rows(groups["k25_winner"], lambda g: (g, g), total_voters),
+            "k25_winner": group_rows(groups["k25_winner"], lambda g: OTHER_LABEL if g == "other" else (g, g), total_voters),
             "k25_bloc": group_rows(groups["k25_bloc"], lambda g: BLOC_LABELS.get(g, (g, g)), total_voters),
             "stronghold": group_rows(groups["stronghold"], lambda g: (g, g), total_voters),
             "population": group_rows(groups["population"], lambda g: POP_LABELS.get(g, (g, g)), total_voters),
             "form": group_rows(groups["form"], lambda g: FORM_LABELS.get(g, (g, g)), total_voters),
-            "district": group_rows(groups["district"], lambda g: (g, g), total_voters),
-            "socio": group_rows(groups["socio"], lambda g: ({"cluster_1": ("אשכול 1", "Cluster 1")}.get(g) or
-                                                             (f"אשכול {g.split('_')[-1]}", f"Cluster {g.split('_')[-1]}") if g.startswith("cluster_") else (g, g)), total_voters),
+            "district": group_rows(groups["district"], lambda g: UNKNOWN_LABEL if g == "unknown" else (g, g), total_voters),
+            "socio": group_rows(groups["socio"], lambda g: ({"cluster_1": ("אשכול 1", "Cluster 1"), "unknown": UNKNOWN_LABEL}.get(g) or
+                                                             ((f"אשכול {g.split('_')[-1]}", f"Cluster {g.split('_')[-1]}") if g.startswith("cluster_") else (g, g))), total_voters),
             "k25_turnout_band": group_rows(groups["k25_turnout_band"], lambda g: ("שיעור הצבעה ב־25: לא ידוע", "K25 turnout rate: unknown") if g == "unknown" else (f"שיעור הצבעה ב־25: {g}%", f"K25 turnout rate: {g}%"), total_voters),
         },
         "party_colors_25": color25,
