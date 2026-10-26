@@ -425,7 +425,7 @@ def main():
             "district": group_rows(groups["district"], lambda g: (g, g), total_voters),
             "socio": group_rows(groups["socio"], lambda g: ({"cluster_1": ("אשכול 1", "Cluster 1")}.get(g) or
                                                              (f"אשכול {g.split('_')[-1]}", f"Cluster {g.split('_')[-1]}") if g.startswith("cluster_") else (g, g)), total_voters),
-            "k25_turnout_band": group_rows(groups["k25_turnout_band"], lambda g: (f"הצבעת 25: {g}%", f"K25 turnout: {g}%"), total_voters),
+            "k25_turnout_band": group_rows(groups["k25_turnout_band"], lambda g: ("שיעור הצבעה ב־25: לא ידוע", "K25 turnout rate: unknown") if g == "unknown" else (f"שיעור הצבעה ב־25: {g}%", f"K25 turnout rate: {g}%"), total_voters),
         },
         "party_colors_25": color25,
         "settlements": {
