@@ -263,7 +263,7 @@
             // ---- 1. Intro ----
             {
                 title: 'בחירות לכנסת ה-25 — בקצרה',
-                sub: () => `ב-1 בנובמבר 2022 הצביעו ${num(DATA.totals.voted)} מתוך ${num(DATA.totals.eligible)} בעלי זכות בחירה — אחוז הצבעה ארצי של ${pct(DATA.totals.turnout_pct)}. בדפים הבאים נכיר את המבנה של הנתונים הציבוריים.`,
+                sub: () => `ב-1 בנובמבר 2022 הצביעו ${num(DATA.totals.voted)} מתוך ${num(DATA.totals.eligible)} בעלי זכות בחירה — אחוז הצבעה ארצי של ${pct(DATA.totals.turnout_pct, 2)}. בדפים הבאים נכיר את המבנה של הנתונים הציבוריים.`,
                 draw: drawIntro,
             },
             // ---- 2. Ballot stations ----
@@ -280,14 +280,14 @@
             },
             // ---- 4. Turnout distribution ----
             {
-                title: () => `אחוז הצבעה: ממוצע ${pctFmt(DATA.totals.turnout_pct)} — אבל בין הקלפיות?`,
-                sub: () => `הממוצע הארצי הוא ${pct(DATA.totals.turnout_pct)}, אך השונות עצומה: יש קלפיות עם פחות מ-30% הצבעה, ויש כאלה עם מעל 90%. המרכז (החציון) נמצא סביב ${pct(DATA.turnout_per_ballot_median)}.`,
+                title: () => `אחוז הצבעה: ממוצע ${pctFmt(DATA.totals.turnout_pct, 2)} — אבל בין הקלפיות?`,
+                sub: () => `הממוצע הארצי הוא ${pct(DATA.totals.turnout_pct, 2)}, אך השונות עצומה: יש קלפיות עם פחות מ-30% הצבעה, ויש כאלה עם מעל 90%. המרכז (החציון) נמצא סביב ${pct(DATA.turnout_per_ballot_median)}.`,
                 draw: drawTurnout,
             },
             // ---- 5. 9999 double envelopes ----
             {
                 title: 'יישוב מספר 9999: המעטפות הכפולות',
-                sub: () => `חיילים, אסירים, מאושפזים, נציגים דיפלומטיים ובעלי מוגבלויות הצביעו בקלפיות מיוחדות. הקולות שלהם — ${num(DATA.totals.double_voted)} בסך הכל (${pct(100 * DATA.totals.double_voted / DATA.totals.voted)} מהצבעות בארץ) — נספרים בנפרד ומסתכמים תחת ״יישוב 9999״ ביישובי הוועדה המרכזית.`,
+                sub: () => `חיילים, אסירים, מאושפזים, נציגים דיפלומטיים ובעלי מוגבלויות הצביעו בקלפיות מיוחדות. הקולות הכשרים שלהם — ${num(DATA.totals.double_kosher)} בסך הכל (${pct(100 * DATA.totals.double_kosher / DATA.totals.kosher, 2)} מהקולות הכשרים) — נספרים בנפרד ומסתכמים תחת ״יישוב 9999״ ביישובי הוועדה המרכזית.`,
                 draw: drawDoubleEnvelopes,
             },
             // ---- 6. Parties: many running ----
@@ -529,7 +529,7 @@
                 .attr('x', xs(avg)).attr('y', pad.t - 8)
                 .attr('text-anchor', 'middle')
                 .attr('fill', '#f0b429').attr('font-size', '0.85rem').attr('font-weight', 600)
-                .text('ממוצע ארצי ' + pctFmt(avg))
+                .text('ממוצע ארצי ' + pctFmt(avg, 2))
                 .style('opacity', 0)
                 .transition().delay(1400).duration(500).style('opacity', 1);
         }
@@ -537,8 +537,8 @@
         function drawDoubleEnvelopes() {
             const W = 700, H = 360, pad = 50;
             const svg = makeSvg(W, H);
-            const regular = DATA.totals.voted - DATA.totals.double_voted;
-            const dub = DATA.totals.double_voted;
+            const regular = DATA.totals.kosher - DATA.totals.double_kosher;
+            const dub = DATA.totals.double_kosher;
             const total = regular + dub;
 
             // Two-rectangle proportional display + a callout for the 9999 envelope
@@ -861,7 +861,7 @@
             // the viewport size.
             const note = document.createElement('div');
             note.style.cssText = 'position:fixed;left:1rem;right:1rem;bottom:3.2rem;text-align:center;color:var(--text2);font-size:0.82rem;line-height:1.4;pointer-events:none;z-index:25;';
-            note.textContent = 'D′Hondt טהור. בפועל הליכוד קיבל 32 ויה״ת 7 — הסכם העודפים עם הציונות הדתית הזיז את המנדט ה-120.';
+            note.textContent = 'D′Hondt טהור היה נותן לליכוד 31 מנדטים ולעבודה 5. בפועל, עם הסכמי העודפים (באדר-עופר), הליכוד קיבל 32 והעבודה 4.';
             visEl.appendChild(note);
         }
 

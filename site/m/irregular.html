@@ -147,6 +147,7 @@
         .anom-badge.statistical_outlier { background: rgba(6,182,212,0.2); color: #06b6d4; }
         .anom-badge.extreme_dominance { background: rgba(236,72,153,0.2); color: #ec4899; }
         .anom-badge.small_party_spike { background: rgba(234,179,8,0.2); color: #eab308; }
+        .anom-badge.unexpected_party_votes { background: rgba(45,212,191,0.2); color: #2dd4bf; }
 
         .expand-arrow {
             color: var(--text-muted);
@@ -211,6 +212,7 @@
         .anom-item.statistical_outlier { border-right-color: #06b6d4; }
         .anom-item.extreme_dominance { border-right-color: #ec4899; }
         .anom-item.small_party_spike { border-right-color: #eab308; }
+        .anom-item.unexpected_party_votes { border-right-color: #2dd4bf; }
 
         .anom-item-header {
             display: flex;
@@ -410,6 +412,7 @@
         received:            { he: 'קיבלה', en: 'received' },
         of_the_votes:        { he: 'מהקולות', en: 'of votes' },
         national_avg:        { he: 'ממוצע:', en: 'Avg:' },
+        settlement_expectation:{ he: 'צפוי משאר היישוב:', en: 'Expected from rest of settlement:' },
         ratio:               { he: 'יחס:', en: 'Ratio:' },
         anomalies_detected:  { he: 'חריגות שזוהו', en: 'Anomalies detected' },
         eligible:            { he: 'בעלי זכות', en: 'Eligible' },
@@ -439,7 +442,8 @@
         'turnout_anomaly': 'turnout_anomaly',
         'statistical_outlier': 'statistical_outlier',
         'extreme_dominance': 'extreme_dominance',
-        'small_party_spike': 'small_party_spike'
+        'small_party_spike': 'small_party_spike',
+        'unexpected_party_votes': 'unexpected_party_votes'
     };
 
     function getAnomalyTypeName(type) { return i18n.t(anomalyTypeKeys[type] || type); }
@@ -550,8 +554,12 @@
             case 'small_party_spike':
                 if (!Array.isArray(d)) return '';
                 return d.map(x => `<div><strong>${x.party_name ? i18n.partyName(x.party_name) : getPartyName(x.party)}</strong>: <code>${i18n.fmtNum(x.votes)}</code> (<code>${x.proportion}</code>), ${tl('national_avg')} <code>${x.national_avg}</code>, ${tl('ratio')} <code>${x.ratio}</code></div>`).join('');
+            case 'unexpected_party_votes':
+                if (!Array.isArray(d)) return '';
+                return d.map(x => `<div><strong>${x.party_name ? i18n.partyName(x.party_name) : getPartyName(x.party)}</strong>: <code>${i18n.fmtNum(x.votes)}</code> (<code>${x.proportion}</code>), ${tl('settlement_expectation')} <code>${x.expected_votes}</code> (<code>${x.expected_share}</code>), ${tl('ratio')} <code>${x.ratio}</code>, <code>z=${x.z_score}</code></div>`).join('');
             default:
-                return JSON.stringify(d);
+                // Unknown anomaly type: never dump raw details JSON into the page.
+                return '';
         }
     }
 

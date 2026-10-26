@@ -300,6 +300,7 @@
         statistical_outlier:   { he: 'חריג סטטיסטי', en: 'Statistical outlier' },
         extreme_dominance:     { he: 'שליטה קיצונית', en: 'Extreme dominance' },
         small_party_spike:     { he: 'זינוק מפלגה קטנה', en: 'Small party spike' },
+        unexpected_party_votes:{ he: 'קולות חריגים למפלגה קטנה', en: 'Unexpected small-party votes' },
         sort_by:               { he: 'מיון:', en: 'Sort:' },
         by_severity:           { he: 'לפי חומרה', en: 'By severity' },
         by_settlement:         { he: 'לפי יישוב', en: 'By settlement' },
