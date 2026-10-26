@@ -333,6 +333,12 @@
             <a class="pane-btn" data-preview="" href="k26.html"></a>
         </nav>
 
+        <nav class="preview-switch" id="td-switch" hidden aria-label="Day view / count view switcher">
+            <span class="preview-switch-label" id="td-switch-label"></span>
+            <a class="pane-btn" id="td-switch-day" href="?turnout=1"></a>
+            <a class="pane-btn" id="td-switch-count" href="?turnout=0"></a>
+        </nav>
+
         <section class="factoid-bar" id="factoid-bar" hidden title="">
             <span class="f-label" id="factoid-label"></span>
             <span class="f-text" id="factoid-text"></span>
@@ -1859,10 +1865,30 @@
         const pane = document.getElementById('pane-turnout-day');
         const toggle = document.getElementById('turnout-day-toggle');
         const td = DATA && DATA.turnoutDay;
+        const withTurnout = v => { const u = new URL(location.href); u.searchParams.set('turnout', v); return u.pathname + u.search; };
         if (toggle) {
             toggle.textContent = TURNOUT_ACTIVE ? (en() ? '← Back to full command centre' : '← חזרה למרכז המידע המלא') : (en() ? 'Election-day turnout view' : 'תצוגת אחוזי הצבעה ליום הבחירות');
-            toggle.setAttribute('href', TURNOUT_ACTIVE ? location.pathname : '?turnout=1');
+            // ?turnout=0 is explicit: without it, a kind="turnout" status
+            // would simply re-activate this view on the plain URL.
+            toggle.setAttribute('href', withTurnout(TURNOUT_ACTIVE ? '0' : '1'));
             if (!td && !TURNOUT_ACTIVE) toggle.hidden = true;
+        }
+        // Prominent day/count switcher under the hero: visible whenever
+        // turnout data exists or the day/count is actually running.
+        const tdSwitch = document.getElementById('td-switch');
+        if (tdSwitch) {
+            const showSwitch = !!td || K26STATUS.kind === 'turnout' || K26STATUS.kind === 'partial' || K26STATUS.kind === 'official';
+            tdSwitch.hidden = !showSwitch;
+            if (showSwitch) {
+                document.getElementById('td-switch-label').textContent = en() ? 'View:' : 'תצוגה:';
+                const day = document.getElementById('td-switch-day'), count = document.getElementById('td-switch-count');
+                day.textContent = en() ? '🗳 Election day — turnout' : '🗳 יום הבחירות — אחוזי הצבעה';
+                count.textContent = en() ? 'Count centre — results' : 'מרכז הספירה — תוצאות';
+                day.setAttribute('href', withTurnout('1'));
+                count.setAttribute('href', withTurnout('0'));
+                day.classList.toggle('gold', TURNOUT_ACTIVE);
+                count.classList.toggle('gold', !TURNOUT_ACTIVE);
+            }
         }
         document.querySelectorAll('.geomap-mode.td-mode').forEach(b => {
             b.hidden = !TURNOUT_ACTIVE;
