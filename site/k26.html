@@ -2172,8 +2172,9 @@
         const n = (snap && snap.national) || td.national || {}, meta = td.meta || {};
         const snapAsOf = (snap && snap.as_of) || meta.as_of;
         document.getElementById('td-title').textContent = en() ? 'Who is turning out? Turnout by K25 twin, sector and stronghold' : 'מי יוצא להצביע? אחוזי הצבעה לפי הקלפי התאומה ב־25, מגזר ומעוז';
-        document.getElementById('td-note').textContent = (en() ? (meta.note_en || '') : (meta.note_he || ''))
-            + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.');
+        // No simulated/rehearsal disclaimer here — the provenance
+        // banner at the top of the page already says it, bigger.
+        document.getElementById('td-note').textContent = en() ? '“Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : '״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.';
         document.getElementById('td-match-chips').innerHTML = (() => {
             const mk = n.match_kinds || {};
             const total = Object.values(mk).reduce((a, b) => a + b, 0);
