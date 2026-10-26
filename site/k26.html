@@ -925,18 +925,20 @@
         }
         // Who pays for the gained seat / who receives the lost seat:
         // diff the allocation at exactly the marginal vote change.
-        let gainVictims = [], loseBeneficiaries = [];
+        let gainVictims = [], loseBeneficiaries = [], gainDelta = 0, loseDelta = 0;
         if (toGain != null) {
             const after = allocateSeats({ ...votes, [name]: votes[name] + toGain }).seats;
+            gainDelta = (after[name] || 0) - cur;  // >1 when crossing the threshold (0 -> ~4)
             gainVictims = Object.keys(after).filter(n => n !== name && (after[n] || 0) < (baseSeats[n] || 0))
                 .map(n => ({ name: n, lost: (baseSeats[n] || 0) - (after[n] || 0) }));
         }
         if (toLose != null) {
             const after = allocateSeats({ ...votes, [name]: Math.max(0, votes[name] - toLose) }).seats;
+            loseDelta = cur - (after[name] || 0);  // >1 when falling below the threshold (~4 -> 0)
             loseBeneficiaries = Object.keys(after).filter(n => n !== name && (after[n] || 0) > (baseSeats[n] || 0))
                 .map(n => ({ name: n, gained: (after[n] || 0) - (baseSeats[n] || 0) }));
         }
-        return { toGain, toLose, gainVictims, loseBeneficiaries };
+        return { toGain, toLose, gainVictims, loseBeneficiaries, gainDelta, loseDelta };
     }
     function renderBubble() {
         const elx = document.getElementById('bubble-list');
@@ -955,9 +957,9 @@
         const seatCost = lastQuotient || 1;
         const rows = DATA.results.map(p => {
             const s = seats[p.name] || 0;
-            const { toGain, toLose, gainVictims, loseBeneficiaries } = marginalVotes(votes, p.name, seats);
+            const { toGain, toLose, gainVictims, loseBeneficiaries, gainDelta, loseDelta } = marginalVotes(votes, p.name, seats);
             const list = DATA.mks[p.name] || [];
-            return { p, s, toGain, toLose, gainVictims, loseBeneficiaries,
+            return { p, s, toGain, toLose, gainVictims, loseBeneficiaries, gainDelta, loseDelta, list,
                      inMk: s > 0 ? list[s - 1] : null, outMk: list[s] || null };
         });
         const seatsWord = en() ? 'seats' : 'מנדטים';
@@ -980,7 +982,7 @@
             const fill = Math.max(0, Math.min(100, 100 * (1 - r.toGain / seatCost)));
             return `<div class="bubble-row">
                 <div class="bubble-head"><span class="dot" style="background:${DATA.colorOf[r.p.name] || '#666'}"></span><b>${displayName(r.p.name)}</b><span class="bseats">${r.s} ${seatsWord}</span></div>
-                <div class="bubble-cands"><b>${r.outMk ? mkDisplayName(r.outMk) : '#' + (r.s + 1)}</b> (#${r.s + 1})</div>
+                <div class="bubble-cands">${Array.from({ length: Math.max(1, r.gainDelta || 1) }, (_, i) => { const mk = r.list[r.s + i]; return `<b>${mk ? mkDisplayName(mk) : '#' + (r.s + i + 1)}</b> (#${r.s + i + 1})`; }).join(' · ')}</div>
                 ${r.gainVictims && r.gainVictims.length ? `<div class="bubble-cands">${branchArrow} ${r.gainVictims.map(expenseOf).join(', ')}</div>` : ''}
                 <div class="bubble-nums"><span class="bubble-brick"><i style="width:${fill.toFixed(1)}%;background:${DATA.colorOf[r.p.name] || '#666'}"></i></span><span class="bubble-gain">▲ ${i18n.t(r.s > 0 ? 'k26_bubble_to_gain' : 'k26_bubble_to_enter', { n: fmt(r.toGain) })}</span></div>
             </div>`;
@@ -990,7 +992,7 @@
             const remain = Math.max(0, Math.min(100, 100 * (1 - r.toLose / seatCost)));
             return `<div class="bubble-row">
                 <div class="bubble-head"><span class="dot" style="background:${DATA.colorOf[r.p.name] || '#666'}"></span><b>${displayName(r.p.name)}</b><span class="bseats">${r.s} ${seatsWord}</span></div>
-                <div class="bubble-cands"><b>${r.inMk ? mkDisplayName(r.inMk) : '#' + r.s}</b> (#${r.s})</div>
+                <div class="bubble-cands">${Array.from({ length: Math.max(1, r.loseDelta || 1) }, (_, i) => { const idx = r.s - (r.loseDelta || 1) + i; const mk = r.list[idx]; return `<b>${mk ? mkDisplayName(mk) : '#' + (idx + 1)}</b> (#${idx + 1})`; }).join(' · ')}</div>
                 ${r.loseBeneficiaries && r.loseBeneficiaries.length ? `<div class="bubble-cands">${branchArrow} ${r.loseBeneficiaries.map(receiverOf).join(', ')}</div>` : ''}
                 <div class="bubble-nums"><span class="bubble-brick ${atRisk ? 'at-risk' : ''}"><i style="width:${remain.toFixed(1)}%;background:${DATA.colorOf[r.p.name] || '#666'}"></i></span><span class="bubble-lose">▼ ${i18n.t('k26_bubble_to_lose', { n: fmt(r.toLose) })}</span></div>
             </div>`;
