@@ -75,7 +75,7 @@
         .g-center { display:flex; flex-direction:column; gap:1rem; min-width:0; }
         .geomap-pane .mini-map { height:800px; }
         .geomap-modes { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin-bottom:.5rem; }
-        .geomap-party-select { background:#1a1f2b; color:var(--text-primary); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:.32rem .5rem; font:inherit; font-size:.82rem; }
+        .geomap-party-select { background:#1a1f2b; color:var(--text-primary); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:.32rem .5rem; font:inherit; font-size:.82rem; direction:inherit; text-align:start; }
         .geomap-legend { margin-bottom:.55rem; max-width:340px; }
         .geomap-legend-title { font-size:.8rem; color:var(--text-primary); margin-bottom:.25rem; }
         .geomap-legend-bar { height:9px; border-radius:4px; }
@@ -426,9 +426,9 @@
                     <button class="pane-btn geomap-mode" data-gmode="socioeconomic" data-i18n="socioeconomic">אשכול חברתי-כלכלי</button>
                     <button class="pane-btn geomap-mode" data-gmode="embed" data-i18n="embed_color">דפוס הצבעה</button>
                     <button class="pane-btn geomap-mode" data-gmode="party" data-i18n="party_support">תמיכה במפלגה</button>
+                    <select id="geomap-party" class="geomap-party-select" hidden></select>
                     <button class="pane-btn geomap-mode td-mode" data-gmode="td_turnout" hidden></button>
                     <button class="pane-btn geomap-mode td-mode" data-gmode="td_pace" hidden></button>
-                    <select id="geomap-party" class="geomap-party-select" hidden></select>
                 </div>
                 <div class="geomap-legend" id="geomap-legend" hidden>
                     <div class="geomap-legend-title" id="geomap-legend-title"></div>
