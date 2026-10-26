@@ -45,6 +45,7 @@ import argparse
 import csv
 import hashlib
 import io
+import math
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -373,6 +374,36 @@ def main():
     else:
         by_code, by_name, settle_by_code, settle_by_name = snapshot_records(args.snapshot[-1])
 
+    # K25 neighbour index: every K25 station with a pin, bucketed on a
+    # ~500 m grid, for the neighbour fallback below.
+    def hav_m(a, b):
+        p1, p2 = math.radians(a[0]), math.radians(b[0])
+        dp, dl = math.radians(b[0] - a[0]), math.radians(b[1] - a[1])
+        return 6371000 * 2 * math.asin(math.sqrt(math.sin(dp / 2) ** 2 + math.cos(p1) * math.cos(p2) * math.sin(dl / 2) ** 2))
+
+    k25_grid = defaultdict(list)
+    for s in tsne25["stations"]:
+        cd = coords.get(f"{s['n']}|{norm_ballot(s['b'])}") or coords.get(f"{s['n']}|{norm_ballot(s['b'])}.0") or {}
+        if cd.get("lat") is not None and cd.get("lng") is not None:
+            k25_grid[(int(float(cd["lat"]) * 200), int(float(cd["lng"]) * 200))].append(
+                (s["n"], float(cd["lat"]), float(cd["lng"]), s))
+
+    def k25_neighbours(name, lat, lng, radius_m=400):
+        """Same-settlement K25 stations within radius_m of a point."""
+        if lat is None or lng is None:
+            return []
+        ci, cj = int(lat * 200), int(lng * 200)
+        out = []
+        for i in (ci - 1, ci, ci + 1):
+            for j in (cj - 1, cj, cj + 1):
+                for n25, la, lo, s in k25_grid.get((i, j), []):
+                    if n25 != name and normalize_name(n25) != name:
+                        continue
+                    d = hav_m((lat, lng), (la, lo))
+                    if d <= radius_m:
+                        out.append((d, s))
+        return sorted(out, key=lambda x: x[0])
+
     stations, unmatched, settlement_level = [], 0, 0
     match_counts = defaultdict(int)
     groups = {k: defaultdict(agg) for k in
@@ -405,6 +436,15 @@ def main():
         if rec.get("settlement_level"):
             settlement_level += 1
 
+        try:
+            lat = float(row["k26_lat"]) if row.get("k26_lat") else None
+            lng = float(row["k26_lng"]) if row.get("k26_lng") else None
+        except ValueError:
+            lat = lng = None
+        if lat is None:
+            cd0 = coords.get(f"{name}|{ballot}") or {}
+            lat, lng = cd0.get("lat"), cd0.get("lng")
+
         # K25 twin pattern: crosswalked ballot, else settlement aggregate.
         # The match *kind* is part of the output (match field): how this
         # box was paired says how much the K25 comparison can be trusted.
@@ -413,6 +453,8 @@ def main():
         #   venue     same distinctive venue name in the settlement,
         #             ballots paired in ballot-number order
         #   coord     mutual nearest venue-grade pins within 150 m
+        #   neighbor  no paired ballot; voter-weighted K25 pattern of
+        #             same-settlement ballots within 400 m of this pin
         #   settlement no paired ballot; the settlement's K25 aggregate,
         #             apportioned by this box's eligible count
         #   none      no K25 baseline at all
@@ -421,10 +463,30 @@ def main():
             twin = st25.get(f"{row['k25_name']}|{norm_ballot(row['k25_ballot'])}") \
                 or st25.get(f"{normalize_name(row['k25_name'])}|{norm_ballot(row['k25_ballot'])}")
         props, k25_voters, k25_elig = {}, 0.0, 0.0
+        neighbour_n, nearest_m = 0, None
         if twin is not None:
             match_kind = row["decision"]
             props = twin.get("p") or {}
             k25_voters, k25_elig = float(twin.get("v") or 0), float(twin.get("e") or 0)
+        elif (neigh := k25_neighbours(name, lat, lng)) and sum(float(s.get("e") or 0) for _, s in neigh) >= 200:
+            # No paired ballot, but K25 ballots in the same settlement
+            # within 400 m: their voter-weighted pattern is a far
+            # better local baseline than the whole settlement (a
+            # Jerusalem-wide average says little about one ballot in
+            # Neve Yaakov vs. one in Ein Kerem).
+            match_kind = "neighbor"
+            neighbour_n = len(neigh)
+            nearest_m = round(neigh[0][0], 1)
+            tot_v = sum(float(s.get("v") or 0) for _, s in neigh)
+            tot_e = sum(float(s.get("e") or 0) for _, s in neigh)
+            for _, s in neigh:
+                w = float(s.get("v") or 0)
+                for party, pct in (s.get("p") or {}).items():
+                    props[party] = props.get(party, 0.0) + pct * w
+            if tot_v:
+                props = {k: v / tot_v for k, v in props.items()}
+            k25_elig = elig
+            k25_voters = elig * (tot_v / tot_e) if tot_e else 0.0
         elif name in by_settle25:
             match_kind = "settlement"
             s = by_settle25[name]
@@ -438,14 +500,6 @@ def main():
         winner = max(props.items(), key=lambda kv: kv[1])[0] if props else None
         k25_turnout = (100 * k25_voters / k25_elig) if k25_elig else None
 
-        try:
-            lat = float(row["k26_lat"]) if row.get("k26_lat") else None
-            lng = float(row["k26_lng"]) if row.get("k26_lng") else None
-        except ValueError:
-            lat = lng = None
-        if lat is None:
-            cd = coords.get(f"{name}|{ballot}") or {}
-            lat, lng = cd.get("lat"), cd.get("lng")
         sec = sectors.get(name, {})
         soc = (socio.get(f"{name}|{ballot}") or socio.get(f"{name}|{ballot}.0") or {}).get("cluster")
         if soc is None and name in by_settle25:
@@ -474,10 +528,13 @@ def main():
         settle_meta[name] = {"district": sec.get("district"), "population": sec.get("population")}
 
         # fields: see meta.station_fields in the output document
-        try:
-            match_m = round(float(row["distance_m"]), 1) if twin is not None and row.get("distance_m") else None
-        except ValueError:
-            match_m = None
+        if match_kind == "neighbor":
+            match_m = nearest_m
+        else:
+            try:
+                match_m = round(float(row["distance_m"]), 1) if twin is not None and row.get("distance_m") else None
+            except ValueError:
+                match_m = None
         stations.append([name, ballot, round(lat, 5) if lat else None, round(lng, 5) if lng else None,
                          round(elig), round(voters), round(100 * voters / elig, 1),
                          round(k25_turnout, 1) if k25_turnout is not None else None,
@@ -487,7 +544,7 @@ def main():
                          match_kind,
                          row["k25_name"] if twin is not None else None,
                          norm_ballot(row["k25_ballot"]) if twin is not None else None,
-                         match_m])
+                         match_m, neighbour_n])
 
     total_voters = total["voters"] or 1
     nat = finish(total)
@@ -538,7 +595,7 @@ def main():
                  if kind == "live" else "Rehearsal (simulated): synthetic election-day turnout, before any results.",
                  "station_fields": ["name", "ballot", "lat", "lng", "eligible", "voters", "turnout",
                                     "k25_turnout", "pace", "k25_winner", "bloc", "population", "district", "socio", "matched",
-                                    "match", "k25_name", "k25_ballot", "match_m"]},
+                                    "match", "k25_name", "k25_ballot", "match_m", "neighbor_n"]},
         "national": nat,
         "history": history,
         "groups": {

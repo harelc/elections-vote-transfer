@@ -173,6 +173,9 @@ def main():
           all(r["pace"] is None or 0 < r["pace"] <= 1.5
               for rows in data["groups"].values() for r in rows)
           and 0 < data["national"]["pace"] <= 1.5, f"max pace {max_pace}")
+    mk = data["national"].get("match_kinds", {})
+    check("unmatched ballots fall back to <400m neighbours before settlement",
+          mk.get("neighbor", 0) > mk.get("settlement", 0), str(mk))
     check("matched twins are the large majority",
           data["national"]["matched_ballots"] > 0.75 * data["national"]["reported_ballots"],
           f"{data['national']['matched_ballots']}/{data['national']['reported_ballots']}")
