@@ -961,6 +961,7 @@
                      inMk: s > 0 ? list[s - 1] : null, outMk: list[s] || null };
         });
         const seatsWord = en() ? 'seats' : 'מנדטים';
+        const branchArrow = i18n.isRTL() ? '↲' : '↳';  // branch/continuation arrow mirrors in RTL
         // Two ranked columns: closest to gaining a seat (first-out candidate)
         // and closest to losing one (last-in candidate).
         const gainRows = rows.filter(r => r.toGain != null).sort((a, b) => a.toGain - b.toGain);
@@ -980,7 +981,7 @@
             return `<div class="bubble-row">
                 <div class="bubble-head"><span class="dot" style="background:${DATA.colorOf[r.p.name] || '#666'}"></span><b>${displayName(r.p.name)}</b><span class="bseats">${r.s} ${seatsWord}</span></div>
                 <div class="bubble-cands"><b>${r.outMk ? mkDisplayName(r.outMk) : '#' + (r.s + 1)}</b> (#${r.s + 1})</div>
-                ${r.gainVictims && r.gainVictims.length ? `<div class="bubble-cands">↳ ${r.gainVictims.map(expenseOf).join(', ')}</div>` : ''}
+                ${r.gainVictims && r.gainVictims.length ? `<div class="bubble-cands">${branchArrow} ${r.gainVictims.map(expenseOf).join(', ')}</div>` : ''}
                 <div class="bubble-nums"><span class="bubble-brick"><i style="width:${fill.toFixed(1)}%;background:${DATA.colorOf[r.p.name] || '#666'}"></i></span><span class="bubble-gain">▲ ${i18n.t(r.s > 0 ? 'k26_bubble_to_gain' : 'k26_bubble_to_enter', { n: fmt(r.toGain) })}</span></div>
             </div>`;
         };
@@ -990,14 +991,14 @@
             return `<div class="bubble-row">
                 <div class="bubble-head"><span class="dot" style="background:${DATA.colorOf[r.p.name] || '#666'}"></span><b>${displayName(r.p.name)}</b><span class="bseats">${r.s} ${seatsWord}</span></div>
                 <div class="bubble-cands"><b>${r.inMk ? mkDisplayName(r.inMk) : '#' + r.s}</b> (#${r.s})</div>
-                ${r.loseBeneficiaries && r.loseBeneficiaries.length ? `<div class="bubble-cands">↳ ${r.loseBeneficiaries.map(receiverOf).join(', ')}</div>` : ''}
+                ${r.loseBeneficiaries && r.loseBeneficiaries.length ? `<div class="bubble-cands">${branchArrow} ${r.loseBeneficiaries.map(receiverOf).join(', ')}</div>` : ''}
                 <div class="bubble-nums"><span class="bubble-brick ${atRisk ? 'at-risk' : ''}"><i style="width:${remain.toFixed(1)}%;background:${DATA.colorOf[r.p.name] || '#666'}"></i></span><span class="bubble-lose">▼ ${i18n.t('k26_bubble_to_lose', { n: fmt(r.toLose) })}</span></div>
             </div>`;
         };
         elx.innerHTML = `<h4>${i18n.t('k26_bubble_pane')}</h4>
             <div class="bubble-cols">
-                <div><div class="bubble-col-title" style="color:#4ade80">▲ ${en() ? 'Closest to gaining a seat' : 'הקרובות להרוויח מנדט'}</div><div class="bubble-col-note">${en() ? 'Next candidate in line · ↳ whose seat it would take · votes still needed' : 'המועמד הבא בתור · ↳ ממי יילקח המנדט · כמה קולות חסרים'}</div>${gainRows.map(gainRow).join('')}</div>
-                <div><div class="bubble-col-title" style="color:#fca5a5">▼ ${en() ? 'Closest to losing a seat' : 'הקרובות להפסיד מנדט'}</div><div class="bubble-col-note">${en() ? 'Last candidate in · ↳ who would get the seat · votes above losing it' : 'המועמד האחרון בפנים · ↳ למי יעבור המנדט · כמה קולות מעל ההפסד'}</div>${loseRows.map(loseRow).join('')}</div>
+                <div><div class="bubble-col-title" style="color:#4ade80">▲ ${en() ? 'Closest to gaining a seat' : 'הקרובות להרוויח מנדט'}</div><div class="bubble-col-note">${en() ? 'Next candidate in line · ↳ whose seat it would take · votes still needed' : 'המועמד הבא בתור · ↲ ממי יילקח המנדט · כמה קולות חסרים'}</div>${gainRows.map(gainRow).join('')}</div>
+                <div><div class="bubble-col-title" style="color:#fca5a5">▼ ${en() ? 'Closest to losing a seat' : 'הקרובות להפסיד מנדט'}</div><div class="bubble-col-note">${en() ? 'Last candidate in · ↳ who would get the seat · votes above losing it' : 'המועמד האחרון בפנים · ↲ למי יעבור המנדט · כמה קולות מעל ההפסד'}</div>${loseRows.map(loseRow).join('')}</div>
             </div>`;
     }
 
