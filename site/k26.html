@@ -30,6 +30,7 @@
         .k26-badge { display:inline-block; margin-top:0.6rem; padding:0.28rem 0.7rem; border:1px solid var(--accent-primary); border-radius:999px; color:var(--accent-primary); font-size:0.82rem; font-weight:700; background:rgba(240,180,41,.08); }
         /* Data provenance: simulated vs real must be unmissable, in both
            the election-day turnout phase and the count phase. */
+        #k26-status-badge { display:none; } /* superseded by the provenance banner */
         .prov-banner { margin:1rem 1.5rem 0; padding:.85rem 1.2rem; border-radius:12px; display:flex; gap:.9rem; align-items:center; border:2px solid; }
         .prov-banner[hidden] { display:none; }
         .prov-banner.sim { border-color:#ef4444; color:#fecaca; background:repeating-linear-gradient(45deg, rgba(239,68,68,.16) 0 16px, rgba(239,68,68,.07) 16px 32px); }
@@ -340,14 +341,14 @@
             <nav class="view-switcher"></nav>
         </header>
 
-        <section class="k26-hero">
-            <p data-i18n="k26_subtitle">קולות מוחלטים, חלוקת מנדטים וכל התצוגות של כנסת 26 במסך אחד</p>
-            <span class="k26-badge" id="k26-status-badge">…</span>
-        </section>
-
         <section class="prov-banner sim" id="prov-banner" role="status">
             <span class="prov-icon" id="prov-icon">⚠</span>
             <div><div class="prov-title" id="prov-title"></div><div class="prov-sub" id="prov-sub"></div></div>
+        </section>
+
+        <section class="k26-hero">
+            <p data-i18n="k26_subtitle">קולות מוחלטים, חלוקת מנדטים וכל התצוגות של כנסת 26 במסך אחד</p>
+            <span class="k26-badge" id="k26-status-badge">…</span>
         </section>
 
         <section class="k26-stats" id="k26-stats"></section>

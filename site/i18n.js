@@ -1083,6 +1083,7 @@
        ──────────────────────────────────────────────────────────────── */
     function setupE26Widget() {
         if (document.getElementById('e26-widget')) return;  // already injected
+        if (document.getElementById('prov-banner')) return;  // the CC has its own provenance banner — don't duplicate the warning
 
         const css = document.createElement('style');
         css.textContent = `
