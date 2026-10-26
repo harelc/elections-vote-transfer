@@ -90,7 +90,7 @@
         k26_tsne_pane:         { he: 'התפלגות קלפיות', en: 'Ballot distribution' },
         k26_tsne_note:         { he: 'כל נקודה היא קלפי, צבועה במפלגה המנצחת בה. מרחק משמעותי רק בין שכנים קרובים', en: 'Each dot is a ballot box, coloured by its winning party. Distance matters only among near neighbours' },
         k26_geomap_pane:       { he: 'מפה גיאוגרפית', en: 'Geographic map' },
-        k26_geomap_note:       { he: 'המפה הגיאוגרפית במצב ברירת המחדל שלה (מפלגה מנצחת): כל נקודה היא קלפי, צבועה במפלגה המנצחת בה וממודרת לפי מצביעים. מעבר עכבר מציג את כרטיס הקלפי, לחיצה על אשכול מגדילה אליו ולחיצה על קלפי פותחת את הכרטיס — כמו במפה המלאה', en: 'The geographic map in its default (winning party) mode: each dot is a ballot box, coloured by its winning party and sized by voters. Hover shows the ballot card, clicking a cluster zooms in and clicking a ballot opens its card — as in the full map' },
+        k26_geomap_note:       { he: 'כל נקודה היא קלפי, צבועה במפלגה המנצחת בה. מעבר עכבר או לחיצה מציגים את כרטיס הקלפי', en: 'Each dot is a ballot box, coloured by its winning party. Hover or click to see its card' },
         k26_mks_pending:       { he: 'שמות חברי הכנסת (לפי סדר הרשימות) יופיעו כאן ובתוויות המושבים ברגע שיתקבל קישור הרשימות', en: 'MK names (in list order) will appear here and in the seat tooltips as soon as the lists link arrives' },
         k26_mks_seat:          { he: 'מושב', en: 'Seat' },
         k26_bubble_pane:       { he: 'על הקצה — המועמדים על סף הכניסה והיציאה', en: 'On the edge — candidates at the edge of in and out' },
