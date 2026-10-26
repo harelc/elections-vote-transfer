@@ -447,6 +447,7 @@
             </div>
             <div class="td-stats" id="td-stats"></div>
             <div class="td-tabs" id="td-tabs" role="group"></div>
+            <div class="td-tabs" id="td-metric" role="group"></div>
             <div id="td-groups"></div>
             <div class="td-settles" id="td-settles"></div>
         </section>
@@ -1889,6 +1890,11 @@
         ['k25_turnout_band', 'By K25 turnout rate', 'לפי שיעור הצבעה ב־25'],
     ];
     let tdDim = 'k25_winner';
+    // Group histograms can be ranked + painted (bar length) by the
+    // absolute turnout so far, or by the recovery ratio (voters so
+    // far / the group's final K25 voters) -- the two tell different
+    // stories mid-day, so the reader chooses.
+    let tdMetric = 'turnout';
     function renderTurnoutDay() {
         const pane = document.getElementById('pane-turnout-day');
         const toggle = document.getElementById('turnout-day-toggle');
@@ -1970,15 +1976,26 @@
         ].map(([v, l]) => `<div class="td-stat"><b>${v}</b><span>${l}</span></div>`).join('');
         document.getElementById('td-tabs').innerHTML = TD_DIMS.map(([id, enL, heL]) => `<button class="pane-btn ${id === tdDim ? 'gold' : ''}" data-td-dim="${id}">${en() ? enL : heL}</button>`).join('');
         pane.querySelectorAll('[data-td-dim]').forEach(b => b.addEventListener('click', () => { tdDim = b.dataset.tdDim; renderTurnoutDay(); }));
+        document.getElementById('td-metric').innerHTML =
+            `<span class="pane-note" style="align-self:center">${en() ? 'Rank & paint bars by:' : 'מיון וצביעת העמודות לפי:'}</span>` +
+            [['turnout', en() ? 'Turnout %' : 'אחוז הצבעה %'], ['pace', en() ? 'K25 recovery ratio ×' : 'שחזור 25 (יחס ×)']]
+            .map(([id, label]) => `<button class="pane-btn ${id === tdMetric ? 'gold' : ''}" data-td-metric="${id}">${label}</button>`).join('');
+        pane.querySelectorAll('[data-td-metric]').forEach(b => b.addEventListener('click', () => { tdMetric = b.dataset.tdMetric; renderTurnoutDay(); }));
         const colors = td.party_colors_25 || {};
-        const rows = ((td.groups || {})[tdDim] || []).slice(0, 18);
-        const maxT = Math.max(60, ...rows.map(r => r.turnout || 0));
+        const byPace = tdMetric === 'pace';
+        const rows = [...(((td.groups || {})[tdDim]) || [])]
+            .sort((a, b) => byPace ? ((b.pace ?? -1) - (a.pace ?? -1)) : ((b.turnout || 0) - (a.turnout || 0)))
+            .slice(0, 18);
+        const maxV = byPace ? Math.max(0.5, ...rows.map(r => r.pace || 0)) : Math.max(60, ...rows.map(r => r.turnout || 0));
         document.getElementById('td-groups').innerHTML = rows.map(r => {
             const label = en() ? (r.label_en || r.label_he) : r.label_he;
             const col = colors[r.id] || '#f0b429';
+            const primary = byPace ? (r.pace != null ? '×' + r.pace.toFixed(2) : '–') : (r.turnout || 0).toFixed(1) + '%';
+            const secondary = byPace ? `${en() ? 'turnout' : 'הצבעה'} ${(r.turnout || 0).toFixed(1)}%` : `${en() ? 'recovery' : 'שחזור'} ${r.pace != null ? '×' + r.pace.toFixed(2) : '–'}`;
+            const width = byPace ? (r.pace || 0) / maxV * 100 : (r.turnout || 0) / maxV * 100;
             return `<div class="td-row"><div title="${label}">${label}</div>
-              <div class="td-bar"><i style="width:${Math.min(100, (r.turnout || 0) / maxT * 100).toFixed(1)}%;background:${col}"></i></div>
-              <div class="td-nums"><b>${(r.turnout || 0).toFixed(1)}%</b> · ${en() ? 'recovery' : 'שחזור'} ${r.pace != null ? '×' + r.pace.toFixed(2) : '–'}<br>${fmt(r.voters)} / ${fmt(r.eligible)}</div></div>`;
+              <div class="td-bar"><i style="width:${Math.min(100, width).toFixed(1)}%;background:${col}"></i></div>
+              <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
         const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
         const S = td.settlements || {};
