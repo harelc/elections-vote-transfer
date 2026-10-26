@@ -618,6 +618,8 @@
 
         /* ── Rankings page ── */
         nav_rankings:          { he: 'דירוגים', en: 'Rankings' },
+        nav_polls:             { he: 'דיוק הסקרים', en: 'Poll accuracy' },
+        polls_subtitle:        { he: 'מי מהסוקרים היה הכי קרוב לתוצאות האמת', en: 'Which pollsters came closest to the real results' },
         tab_rankings:          { he: 'דירוגים', en: 'Rankings' },
         rankings_subtitle:     { he: 'דירוגי תנודתיות יישובים וריכוז גיאוגרפי', en: 'Settlement Volatility & Geographic Concentration Rankings' },
         card_rankings_desc:    { he: 'דירוג יישובים לפי תנודתיות הצבעה ומפלגות לפי ריכוז גיאוגרפי', en: 'Rank settlements by voting volatility and parties by geographic concentration' },
@@ -972,6 +974,7 @@
             { id: 'settlement', href: 'settlement.html', i18n: 'settlement_profile', text: 'פרופיל יישוב' },
             { id: 'party',      href: 'party.html',      i18n: 'party_profile',      text: 'פרופיל מפלגה' },
             { id: 'rankings',   href: 'rankings.html',   i18n: 'nav_rankings',       text: 'דירוגים' },
+            { id: 'polls',      href: 'polls.html',      i18n: 'nav_polls',          text: 'דיוק הסקרים' },
             { id: 'methodology', href: 'methodology.html', i18n: 'nav_methodology',  text: 'מתודולוגיה' },
             { id: 'discussions', href: 'discussions.html', i18n: 'nav_discussions',    text: 'דיונים' },
         ];

@@ -1,0 +1,46 @@
+{
+  "about": "Polls added from their original sources because Wikipedia does not have them yet, and the place to add election-night exit polls. Each poll keeps its sources. Column labels are the ones Wikipedia uses, so poll_list_map.py maps them. A poll dated election day counts as an exit poll. When Wikipedia later lists the same poll (same election, pollster, outlet, date within a day), the Wikipedia row is used and this one is skipped. Rebuild: python build_polls_db.py && python generate_poll_accuracy.py",
+  "polls": [
+    {
+      "election": "26",
+      "date": "2026-10-23",
+      "field_start": "2026-10-22",
+      "date_note": "published Friday 23/10/2026; fieldwork dates not given",
+      "firm_raw": "Kantar",
+      "publisher_raw": "Kan 11",
+      "sample_size": 1006,
+      "margin_of_error": 3.0,
+      "values": {
+        "Yashar": "22", "Likud": "20", "Together": "14", "Joint List": "9", "Dems": "8",
+        "Yisrael Beiteinu": "8", "Otzma": "8", "UTJ": "8", "Shas": "7", "RZP - Zehut": "7",
+        "Ra'am": "5", "Reserv. - NEP": "4", "Amcha Yisrael": "(2.9%)", "Haredi Public": "(0.7%)"
+      },
+      "source_urls": [
+        "https://www.ynet.co.il/news/elections2026/article/hy500sxt2mx",
+        "https://davar1.co.il/703301",
+        "https://www.i24news.tv/en/news/israeli-elections/artc-final-election-polls-point-to-deadlock-as-neither-bloc-secures-a-majority"
+      ],
+      "verification_he": "ynet: כל המפלגות, 1,006 נשאלים, טעות 3%, אבל הדמוקרטים 9 (סך 121). דבר: הדמוקרטים 8. סכומי הגושים של כאן (מרכז 52, קואליציה 50, ערביות 14), כפי שפורסמו בהארץ, מעריב ו-i24NEWS, מתאימים רק ל-8. לכן 8; הסך 120. האתר של כאן עצמו לא נפתח לבדיקה."
+    },
+    {
+      "election": "26",
+      "date": "2026-10-22",
+      "field_start": "2026-10-22",
+      "date_note": "fieldwork 22/10/2026; published 23/10/2026",
+      "firm_raw": "Direct Polls",
+      "publisher_raw": "i24 News",
+      "sample_size": 5124,
+      "margin_of_error": 1.4,
+      "values": {
+        "Likud": "26", "Yashar": "21", "Together": "12", "Joint List": "9", "Otzma": "8",
+        "Shas": "8", "Dems": "8", "UTJ": "7", "RZP - Zehut": "6", "Yisrael Beiteinu": "6",
+        "Ra'am": "5", "Amcha Yisrael": "4", "Reserv. - NEP": "(2.2%)", "Haredi Public": "(<1%)"
+      },
+      "source_urls": [
+        "https://www.i24news.tv/he/news/israel-elections-2026/polls/artc-07d162ea",
+        "https://davar1.co.il/703301"
+      ],
+      "verification_he": "מהכתבה של i24NEWS עצמה: דיירקט פולס, 22/10/2026, 5,124 נשאלים, טעות 1.4%. הציונות הדתית וזהות 6 כרשימה אחת. הסך 120. דבר מביא את אותם מספרים."
+    }
+  ]
+}

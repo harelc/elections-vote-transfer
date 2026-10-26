@@ -38,3 +38,6 @@ data/statistical_zones_2011.geojson
 
 # CEC snapshot downloaded by the K26 refresh action
 data/k26_inbox/
+
+# Wikipedia poll pages (re-fetched by pinned revision in build_polls_db.py)
+data/polls_wiki/

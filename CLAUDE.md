@@ -24,6 +24,9 @@ Live site: https://kolot-nodedim.netlify.app/
 ├── generate_command_center_data.py # Twelve Knessets + factoids + bellwether + gated nowcast → site/data/command_center_26.json (k26 panes)
 ├── generate_turnout_day_data.py # Election-day (pre-results) CEC turnout snapshot → site/data/turnout_day_26.json (k26 turnout view)
 ├── refresh_turnout_day.py # Publishes one accepted turnout snapshot; flips k26_status.json to kind=turnout (gated by turnout_auto)
+├── build_polls_db.py              # Knesset polls K19–K26 from Wikipedia poll tables (pinned revisions) + data/polls_manual.json → data/polls_db.json/.csv
+├── poll_list_map.py               # Poll column → final list (mergers/splits/withdrawals), pollster/outlet names, exclusions, bloc lists
+├── generate_poll_accuracy.py      # Scores polls vs official results per window/pollster/outlet → site/data/poll_accuracy.json (K26 unscored while simulated)
 ├── download_statistical_zones.py  # Loads CBS 2011 GDB, matches stations to zones via point-in-polygon
 ├── process_statistical_zones.py   # Joins CBS socioeconomic data to zones, creates station mapping
 ├── download_historical_ballots.py # Downloads K16-K20 ballot CSVs from CEC CKAN API
@@ -59,6 +62,7 @@ Live site: https://kolot-nodedim.netlify.app/
 │   ├── settlement.html            # Settlement profile page (?name=...)
 │   ├── party.html                 # Party profile page (?name=...)
 │   ├── rankings.html              # Settlement volatility (Pedersen) + party HHI
+│   ├── polls.html                 # Poll accuracy: 2026 polls as published; past elections polls vs results; pollster/outlet rankings (desktop only)
 │   ├── methodology.html           # Written methodology (convex solver, R², Dirichlet α)
 │   ├── primer.html                # Illustrated intro to K25 election data (D3 chapters)
 │   ├── animation.html             # Full-screen animated Sankey across K16→K25

@@ -1,0 +1,1664 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — דיוק הסקרים">
+    <meta property="og:description" content="מי מהסוקרים וכלי התקשורת היה הכי קרוב לתוצאות האמת, בכל מערכת בחירות מאז 2013">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="קולות נודדים — דיוק הסקרים">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <title>דיוק הסקרים - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <style>
+        :root {
+            --bg-primary: #16181d;
+            --bg-secondary: #1e212a;
+            --bg-tertiary: #272b36;
+            --text-primary: #f3f5f8;
+            --text-secondary: #c8ceda;
+            --text-muted: #939aab;
+            --border-color: #3a4050;
+            --accent-primary: #f0b429;
+            --accent-secondary: #f6d78a;
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.5);
+            --transition-fast: 150ms ease;
+            --transition-normal: 250ms ease;
+            --vol-green: #22c55e;
+            --vol-yellow: #eab308;
+            --vol-red: #ef4444;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Animated sand dunes background */
+        .dunes-container {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 250px;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .dune {
+            position: absolute; bottom: 0; left: 0;
+            width: 200%; height: 100%;
+            background-repeat: repeat-x;
+            background-position: bottom;
+        }
+        .dune-1 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23c9a66b' fill-opacity='0.15' d='M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,218.7C672,235,768,245,864,234.7C960,224,1056,192,1152,181.3C1248,171,1344,181,1392,186.7L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1440px 180px;
+            animation: dune-move-1 30s linear infinite;
+            opacity: 0.9;
+        }
+        .dune-2 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23d4a574' fill-opacity='0.12' d='M0,288L48,272C96,256,192,224,288,213.3C384,203,480,213,576,229.3C672,245,768,267,864,261.3C960,256,1056,224,1152,208C1248,192,1344,192,1392,192L1440,192L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1200px 150px;
+            animation: dune-move-2 25s linear infinite;
+            opacity: 0.8;
+        }
+        .dune-3 {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%23e6c9a8' fill-opacity='0.1' d='M0,256L60,245.3C120,235,240,213,360,218.7C480,224,600,256,720,261.3C840,267,960,245,1080,229.3C1200,213,1320,203,1380,197.3L1440,192L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-size: 1600px 200px;
+            animation: dune-move-3 40s linear infinite;
+            opacity: 0.7;
+        }
+        @keyframes dune-move-1 { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes dune-move-2 { 0% { transform: translateX(-50%); } 100% { transform: translateX(0); } }
+        @keyframes dune-move-3 { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+
+        /* Header */
+        .main-header {
+            text-align: center;
+            padding: 1.2rem 1.5rem 0.8rem;
+            background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
+            border-bottom: 1px solid var(--border-color);
+        }
+        .main-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.2rem;
+                        color: var(--text-primary);
+        }
+        .main-header h1::after {
+            content: '';
+            display: block;
+            width: 3.25rem;
+            height: 2px;
+            margin: 0.55rem auto 0;
+            background: var(--accent-primary);
+        }
+
+        .title-icon {
+            display: inline-block;
+            margin-left: 0.5rem;
+            -webkit-text-fill-color: initial;
+        }
+        .main-header .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+        .view-switcher {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.6rem;
+            position: relative;
+            padding-left: 120px;
+            padding-right: 120px;
+            flex-wrap: wrap;
+        }
+        .view-btn {
+            padding: 0.5rem 1.5rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            line-height: 1.25;
+            border: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .view-btn:hover { background: #252535; color: var(--text-primary); }
+        .view-btn.active {
+            background: var(--accent-primary);
+            color: #1a1408;
+            border-color: var(--accent-primary);
+        }
+
+        .nav-extras { display:flex; justify-content:center; align-items:center; gap:0.25rem; margin-top:0.35rem; padding-bottom:0.1rem; }
+        .nav-extras .view-btn { font-size:0.8rem; padding:0.3rem 0.7rem; opacity:0.7; border:none; background:transparent; }
+        .nav-extras .view-btn:hover { opacity:1; background:var(--bg-tertiary); }
+        .nav-extras .view-btn.active { opacity:1; background:var(--accent-primary); border:none; }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        :root {
+            --s1: #3987e5; --s2: #d95926; --s3: #199e70;   /* compared bodies (slots 1-3) */
+            --over: #e66767; --under: #3987e5; --mid: #383835;
+            --grid: #2a2f3b;
+        }
+        .main-content { gap: 1.1rem; }
+
+        /* filters: one row block above everything */
+        @media (max-width: 900px) { .filters { position: static !important; } .flabel { min-width: 100%; } }
+        #ov-heat { overflow-x: auto; }
+        .filters { position: sticky; top: 0; z-index: 20; display: flex; flex-direction: column; gap: 0.45rem;
+            background: rgba(30,33,42,0.96); backdrop-filter: blur(6px); border: 1px solid var(--border-color);
+            border-radius: 12px; padding: 0.7rem 1rem; }
+        .frow { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+        .flabel { color: var(--text-muted); font-size: 0.8rem; min-width: 6.5rem; }
+        .pill { padding: 0.28rem 0.8rem; background: var(--bg-tertiary); border: 1px solid var(--border-color);
+            border-radius: 999px; color: var(--text-secondary); font-family: inherit; font-size: 0.82rem; cursor: pointer;
+            transition: var(--transition-fast); white-space: nowrap; }
+        .pill:hover { color: var(--text-primary); background: #2f3442; }
+        .pill.active { background: var(--accent-primary); color: #1a1408; border-color: var(--accent-primary); font-weight: 600; }
+        .pill.muted { opacity: 0.6; }
+        .pill .dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-left: 0.35rem; vertical-align: 0; }
+        .pill.sel { border-width: 2px; color: var(--text-primary); }
+
+        .tabs { display: flex; gap: 0.3rem; border-bottom: 1px solid var(--border-color); flex-wrap: wrap; }
+        .tab { padding: 0.6rem 1.2rem; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary);
+            font-family: inherit; font-size: 1rem; font-weight: 500; cursor: pointer; margin-bottom: -1px; }
+        .tab:hover { color: var(--text-primary); }
+        .tab.active { color: var(--accent-primary); border-bottom-color: var(--accent-primary); }
+        .pane { display: none; flex-direction: column; gap: 1.1rem; }
+        .pane.active { display: flex; }
+
+        .card { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 1.1rem 1.25rem; }
+        .card h2 { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.15rem; }
+        .card .lead { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.7rem; }
+        .note { color: var(--text-muted); font-size: 0.82rem; }
+        .grid2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 1.1rem; }
+        .grid2 > *, .pane, .card { min-width: 0; }
+        .chart-box { overflow: hidden; }
+        .chart-box canvas { max-width: 100%; }
+        @media (max-width: 1100px) { .grid2 { grid-template-columns: 1fr; } }
+
+        .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 0.8rem; }
+        .tile { background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 14px; padding: 0.9rem 1.1rem; }
+        .tile .v { unicode-bidi: plaintext; font-size: 2.1rem; font-weight: 700; line-height: 1.1; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+        .tile .v small { font-size: 0.95rem; font-weight: 400; color: var(--text-secondary); margin-right: 0.25rem; }
+        .tile .k { color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.2rem; }
+        .tile.accent { border-color: #6b5520; background: linear-gradient(160deg, #2a2414, var(--bg-secondary) 70%); }
+
+        .hero { background: linear-gradient(150deg, #2c2512 0%, var(--bg-secondary) 55%); border: 1px solid #6b5520; border-radius: 16px; padding: 1.4rem 1.6rem; }
+        .hero .q { color: var(--accent-secondary); font-size: 0.95rem; font-weight: 500; }
+        .hero h2 { font-size: 1.7rem; font-weight: 700; line-height: 1.35; margin: 0.25rem 0 0.6rem; }
+        .hero h2 em { font-style: normal; color: var(--accent-primary); }
+        .hero p { color: var(--text-secondary); font-size: 1rem; max-width: 62rem; }
+        .hero .podium { display: flex; gap: 0.7rem; flex-wrap: wrap; margin-top: 0.9rem; }
+        .hero .podium div { background: rgba(0,0,0,0.25); border: 1px solid var(--border-color); border-radius: 12px; padding: 0.55rem 0.9rem; min-width: 11rem; }
+        .hero .podium b { display: block; font-size: 1.05rem; color: var(--text-primary); }
+        .hero .podium span { font-size: 0.82rem; color: var(--text-secondary); }
+        .hero .podium .medal { font-size: 1.2rem; margin-left: 0.3rem; }
+        .howto { display: flex; gap: 0.9rem; align-items: flex-start; background: #1b2433; border: 1px solid #2c4466; border-radius: 14px; padding: 0.9rem 1.1rem; }
+        .howto-icon { flex: 0 0 2rem; height: 2rem; border-radius: 50%; background: #3987e5; color: #fff; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .howto p { color: var(--text-secondary); font-size: 0.92rem; margin-top: 0.2rem; }
+        .answer { display: none !important; }
+        .answer-old { background: var(--bg-tertiary); border-radius: 10px; padding: 0.55rem 0.85rem; margin: 0.2rem 0 0.8rem; font-size: 0.98rem; color: var(--text-primary); border-right: 4px solid var(--accent-primary); }
+        .answer::before { content: 'בקצרה: '; color: var(--accent-secondary); font-weight: 600; }
+        .read { color: var(--text-muted); font-size: 0.82rem; margin-top: 0.5rem; }
+        .read::before { content: 'איך לקרוא: '; font-weight: 600; color: var(--text-secondary); }
+        .more-windows { display: none; }
+        .more-windows.open { display: inline-flex; gap: 0.35rem; flex-wrap: wrap; }
+        .linkbtn { background: none; border: none; color: var(--accent-secondary); font-family: inherit; font-size: 0.8rem; cursor: pointer; text-decoration: underline; }
+        .bb-bar { position: relative; display: flex; flex-direction: row; height: 46px; border-radius: 10px; overflow: visible; background: #2a2f3b; }
+        .bb-seg { display: flex; flex-direction: column; justify-content: center; align-items: center; color: #fff; overflow: hidden; white-space: nowrap; border-left: 2px solid var(--bg-secondary); }
+        .bb-seg:first-child { border-radius: 0 10px 10px 0; }
+        .bb-seg b { font-size: 1.15rem; line-height: 1.1; }
+        .bb-seg span { font-size: 0.72rem; opacity: 0.9; }
+        .bb-seg.rest { background: #3a4050; }
+        .bb-61 { position: absolute; top: -8px; bottom: -8px; width: 2px; background: #fff; }
+        .bb-61 span { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: #fff; }
+        table.polls26 th.blocsum, table.polls26 td.blocsum { border-right: 1px solid var(--border-color); color: var(--text-secondary); }
+        table.polls26 td, table.polls26 th { padding: 0.5rem 0.45rem; }
+        .insights { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 0.8rem; }
+        .insight { background: var(--bg-tertiary); border-radius: 12px; padding: 0.8rem 1rem; border-right: 4px solid var(--accent-primary); }
+        .insight b { color: var(--text-primary); display: block; font-size: 1rem; margin-bottom: 0.2rem; }
+        .ins-icon { display: inline-block; font-size: 0.8rem; font-weight: 700; color: #1a1408; background: var(--accent-primary); border-radius: 6px; padding: 0.05rem 0.45rem; margin-bottom: 0.4rem; }
+        .insight p { color: var(--text-secondary); font-size: 0.9rem; }
+
+        .chart-box { position: relative; width: 100%; }
+        .legend { display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.4rem; }
+        .legend i { display: inline-block; width: 18px; height: 3px; border-radius: 2px; vertical-align: middle; margin-left: 0.35rem; }
+        .legend i.dotm { width: 9px; height: 9px; border-radius: 50%; }
+        .legend i.dash { background: repeating-linear-gradient(90deg, currentColor 0 4px, transparent 4px 7px) !important; }
+
+        /* winners heat grid */
+        table.heat { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 0.82rem; }
+        table.heat th { color: var(--text-muted); font-weight: 500; padding: 0.3rem; text-align: center; }
+        table.heat th.rowh { text-align: right; color: var(--text-secondary); white-space: nowrap; }
+        table.heat td { border-radius: 8px; padding: 0.45rem 0.4rem; text-align: center; cursor: pointer; line-height: 1.3;
+            transition: transform 120ms ease, box-shadow 120ms ease; }
+        table.heat td:hover { transform: translateY(-1px); box-shadow: 0 0 0 2px var(--accent-primary); }
+        table.heat td b { display: block; font-weight: 600; color: #fff; }
+        table.heat td span { font-size: 0.75rem; color: rgba(255,255,255,0.8); font-variant-numeric: tabular-nums; }
+        table.heat td.empty { background: #23262e; cursor: default; color: var(--text-muted); font-size: 0.72rem; }
+        table.heat td.empty:hover { transform: none; box-shadow: none; }
+        .scale { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; }
+        .scale .bar { width: 160px; height: 8px; border-radius: 4px; background: linear-gradient(90deg, #104281, #3987e5, #9ec5f4); }
+
+        table.board { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+        table.board th { text-align: right; color: var(--text-muted); font-weight: 500; padding: 0.45rem 0.5rem;
+            border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        table.board td { padding: 0.42rem 0.5rem; border-bottom: 1px solid #2a2f3b; white-space: nowrap; }
+        table.board tr.clickable { cursor: pointer; }
+        table.board tr.clickable:hover { background: var(--bg-tertiary); }
+        td.num { font-variant-numeric: tabular-nums; direction: ltr; text-align: right; }
+        .pos { color: var(--over); } .neg { color: var(--under); }
+        .badge { display: inline-block; font-size: 0.7rem; padding: 0 0.4rem; border-radius: 4px; margin-right: 0.3rem; background: #333846; color: var(--text-muted); }
+        .poll-detail td { background: var(--bg-primary); white-space: normal; }
+        .cmp { display: flex; flex-wrap: wrap; gap: 0.3rem; padding: 0.3rem 0; }
+        .cmp span { background: var(--bg-tertiary); border-radius: 5px; padding: 0.1rem 0.45rem; font-size: 0.8rem; }
+        .src a, a { color: var(--accent-secondary); }
+        .src a { font-size: 0.8rem; margin-left: 0.5rem; }
+        details.more summary { cursor: pointer; color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.6rem; }
+
+        .profile { border-color: #6b5520; }
+        .warn { border-color: #e66767; background: #2a1717; }
+        .profile .close { float: left; background: none; border: 1px solid var(--border-color); color: var(--text-secondary);
+            border-radius: 8px; padding: 0.15rem 0.6rem; cursor: pointer; font-family: inherit; }
+        .empty-state { color: var(--text-muted); text-align: center; padding: 2rem 1rem; }
+        .method h3 { font-size: 1rem; font-weight: 600; margin: 0.9rem 0 0.35rem; color: var(--accent-secondary); }
+        .method p, .method li { color: var(--text-secondary); font-size: 0.9rem; }
+        .method ul { padding-right: 1.2rem; }
+        .main-footer { padding: 1.5rem; background: var(--bg-secondary); border-top: 1px solid var(--border-color); text-align: center; color: var(--text-muted); font-size: 0.85rem; }
+        .main-footer a { color: var(--text-secondary); }
+    </style>
+    <link rel="stylesheet" href="i18n.css">
+    <script src="i18n.js"></script>
+</head>
+<body>
+    <div class="dunes-container">
+        <div class="dune dune-3"></div>
+        <div class="dune dune-2"></div>
+        <div class="dune dune-1"></div>
+    </div>
+
+    <div class="app-container">
+        <header class="main-header">
+            <h1><span data-i18n="site_title">קולות נודדים</span></h1>
+            <p class="subtitle" data-i18n="polls_subtitle">מי מהסוקרים היה הכי קרוב לתוצאות האמת</p>
+            <nav class="view-switcher"></nav>
+        </header>
+
+        <main class="main-content">
+            <div class="filters">
+                <div class="frow" id="f-election"><span class="flabel">באילו בחירות?</span></div>
+                <div class="frow" id="f-window"><span class="flabel">מתי נעשה הסקר?</span></div>
+                <div class="frow" id="f-measure"><span class="flabel">מה מודדים?</span></div>
+                <div class="frow" id="f-dim"><span class="flabel">להשוות בין</span></div>
+            </div>
+
+            <div class="tabs" id="tabs"></div>
+
+            <!-- ═══ Now: the coming election, polls only ═══ -->
+            <section class="pane" id="pane-now">
+                <div class="hero" id="now-hero"></div>
+                <div class="card">
+                    <h2>הסקר האחרון של כל מכון</h2>
+                    <p class="lead">כל שורה היא הסקר האחרון שהמכון פרסם לפני איסור פרסום הסקרים, כפי שפורסם. מספר = מנדטים. אחוז באפור = המפלגה מתחת לאחוז החסימה באותו סקר. — = המפלגה לא נמדדה בנפרד. שלוש העמודות האחרונות: סכום המנדטים של מפלגות הגוש באותו סקר.</p>
+                    <div id="now-table" style="overflow-x:auto"></div>
+                </div>
+                <div class="card" id="now-night">
+                    <h2>ומה יקרה בליל הבחירות?</h2>
+                    <p class="lead">ב-22:00, כשהקלפיות נסגרות, הערוצים מפרסמים מדגם. אחרי שהספירה מסתיימת אפשר לבדוק מי צדק.
+                    כשמעדכנים את נתוני הסקרים והתוצאות באתר, הדף הזה יתחיל להראות לבד את המדגמים, את התוצאה האמיתית ואת דירוג המכונים לבחירות 2026.</p>
+                </div>
+            </section>
+
+            <!-- ═══ Single past election: polls against the result ═══ -->
+            <section class="pane" id="pane-single">
+                <div class="hero" id="single-hero"></div>
+                <div class="card">
+                    <h2 id="single-title"></h2>
+                    <div class="answer" id="single-answer"></div>
+                    <div class="chart-box" id="single-box"><canvas id="c-single"></canvas></div>
+                    <div class="legend" id="single-legend"></div>
+                    <p class="read">לכל מפלגה שלושה פסים: מה קיבלה בפועל (בצבע המפלגה), מה נתנו לה הסקרים בממוצע (אפור), ומה נתן המדגם בליל הבחירות (לבן). ככל שהפסים קרובים יותר באורכם, הסקרים קלעו טוב יותר.</p>
+                </div>
+                <div class="card">
+                    <h2 id="single-bloc-title"></h2>
+                    <div class="answer" id="single-bloc-answer"></div>
+                    <div class="chart-box" style="height:260px"><canvas id="c-single-bloc"></canvas></div>
+                    <div class="legend"><span><i class="dotm" style="background:var(--accent-primary)"></i>בפועל</span><span><i class="dotm" style="background:#6b7280"></i>ממוצע הסקרים</span><span><i class="dotm" style="background:#e5e7eb"></i>המדגם בליל הבחירות</span></div>
+                    <p class="read" id="single-bloc-read"></p>
+                </div>
+            </section>
+
+            <!-- ═══ Overview ═══ -->
+            <section class="pane" id="pane-overview">
+                <div class="hero" id="ov-hero"></div>
+                <div class="card" id="years-card">
+                    <h2>איך הסקרים הצליחו בכל שנה?</h2>
+                    <div class="answer" id="years-answer"></div>
+                    <div class="chart-box" style="height:300px"><canvas id="c-years"></canvas></div>
+                    <div class="legend"><span><i class="dotm" style="background:var(--accent-primary)"></i>הסקרים (בזמן שבחרתם)</span><span><i class="dotm" style="background:#f3f5f8"></i>המדגם בליל הבחירות</span></div>
+                    <p class="read">לכל שנה: בכמה מנדטים, בממוצע, הסקרים פספסו כל מפלגה. עמודה נמוכה = שנה שבה הסקרים היו מדויקים.</p>
+                </div>
+                <div class="howto">
+                    <div class="howto-icon">?</div>
+                    <div>
+                        <b>איך קוראים את המספרים בדף?</b>
+                        <p>המספר המרכזי הוא <b>הפספוס הממוצע למפלגה</b>: בכמה מנדטים הסקר טעה, בממוצע, בכל מפלגה.
+                        לדוגמה: אם סקר נתן לליכוד 30 והליכוד קיבל 32, הוא פספס את הליכוד ב-2 מנדטים. עושים את זה לכל המפלגות ומחשבים ממוצע.
+                        <b>מספר קטן יותר = סקר מדויק יותר.</b> פספוס של 1 הוא סקר טוב מאוד; פספוס של 3 הוא סקר רחוק.</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>מי היה הכי מדויק, בכל מערכת בחירות?</h2>
+                    <div class="answer" id="heat-answer"></div>
+                    <div id="ov-heat"></div>
+                    <div class="scale"><span>מדויק מאוד</span><span class="bar"></span><span>פחות מדויק</span></div>
+                    <p class="read">כל שורה היא מערכת בחירות, וכל עמודה היא מתי נעשה הסקר. בכל משבצת כתוב מי היה הכי קרוב לתוצאה, ובכמה מנדטים הוא פספס בממוצע למפלגה. לחיצה על משבצת מראה את כל המכונים באותן בחירות.</p>
+                </div>
+                <div class="grid2">
+                    <div class="card">
+                        <h2>האם סקר שנעשה קרוב לבחירות מדויק יותר?</h2>
+                        <div class="answer" id="conv-answer"></div>
+                        <div class="chart-box" style="height:300px"><canvas id="c-converge"></canvas></div>
+                        <div class="legend"><span><i style="background:var(--accent-primary)"></i>ממוצע כל מערכות הבחירות</span><span><i style="background:#5b6170"></i>כל מערכת בחירות לחוד</span></div>
+                        <p class="read">משמאל לימין: סקרים מ-4 חודשים לפני הבחירות ועד המדגם בליל הבחירות. ככל שהקו יורד, הסקרים מדויקים יותר.</p>
+                    </div>
+                    <div class="card">
+                        <h2>כדאי להסתכל על סקר אחד, או על הממוצע של כולם?</h2>
+                        <div class="answer" id="cons-answer"></div>
+                        <div class="chart-box" style="height:300px"><canvas id="c-consensus"></canvas></div>
+                        <div class="legend"><span><i class="dotm" style="background:#8a90a0;border-radius:1px;transform:rotate(45deg)"></i>הממוצע של כל הסקרים</span><span><i class="dotm" style="background:var(--accent-primary)"></i>המכון הכי מדויק</span><span><i class="dotm" style="background:#4b5162"></i>המכון הכי פחות מדויק</span></div>
+                        <p class="read">לכל מערכת בחירות: הפס האפור הוא הטווח בין המכון הכי טוב (צהוב) לגרוע (אפור כהה). המעוין הוא הממוצע של כל הסקרים. נמוך יותר = מדויק יותר.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ═══ Ranking ═══ -->
+            <section class="pane" id="pane-rank">
+                <div class="card">
+                    <h2 id="rank-title"></h2>
+                    <div class="answer" id="rank-answer"></div>
+                    <div class="chart-box" id="rank-box"><canvas id="c-rank"></canvas></div>
+                    <div class="legend" id="rank-legend"></div>
+                    <p class="read" id="rank-read"></p>
+                    <details class="more"><summary>טבלה מלאה עם כל המספרים</summary><div id="rank-table" style="overflow-x:auto;margin-top:0.5rem"></div></details>
+                </div>
+                <div class="card profile" id="profile" style="display:none"></div>
+            </section>
+
+            <!-- ═══ Blocs ═══ -->
+            <section class="pane" id="pane-blocs">
+                <div class="grid2" id="blocs-series">
+                    <div class="card"><h2>כמה מנדטים הסקרים נתנו לגוש נתניהו?</h2>
+                        <div class="answer" id="bibi-answer"></div>
+                        <div class="chart-box" style="height:320px"><canvas id="c-bibi"></canvas></div><div class="legend" id="bibi-legend"></div>
+                        <p class="read" id="bibi-read"></p></div>
+                    <div class="card"><h2>וכמה לרשימות הערביות?</h2>
+                        <div class="answer" id="arab-answer"></div>
+                        <div class="chart-box" style="height:320px"><canvas id="c-arab"></canvas></div><div class="legend" id="arab-legend"></div>
+                        <p class="read" id="arab-read"></p></div>
+                </div>
+                <div class="card" id="blocs-pick-card">
+                    <h2>רוצים להשוות מכונים מסוימים?</h2>
+                    <p class="lead">בחרו עד 3, והם יופיעו כקווים צבעוניים בגרפים. שאר הסקרים מופיעים כנקודות אפורות. המספר בסוגריים = כמה סקרים פרסמו.</p>
+                    <div class="frow" id="blocs-pick"></div>
+                </div>
+                <div class="grid2" id="blocs-bars">
+                    <div class="card"><h2>מי צדק בשאלה הגדולה: יהיו לנתניהו 61?</h2>
+                        <div class="answer" id="major-answer"></div>
+                        <div class="chart-box" id="major-box"><canvas id="c-major"></canvas></div>
+                        <p class="read">כל פס הוא מכון. ירוק = רוב הסקרים שלו צדקו, אדום = רובם טעו.</p></div>
+                    <div class="card"><h2>מי הגזים ומי החסיר בגושים?</h2>
+                        <div class="answer" id="blocerr-answer"></div>
+                        <div class="chart-box" id="blocerr-box"><canvas id="c-blocerr"></canvas></div>
+                        <div class="legend"><span><i class="dotm" style="background:var(--accent-primary)"></i>גוש נתניהו</span><span><i class="dotm" style="background:#9085e9"></i>הרשימות הערביות</span></div>
+                        <p class="read">הקו המקווקו באמצע הוא התוצאה. נקודה מימין לו = המכון נתן לגוש יותר מנדטים ממה שקיבל; משמאל = פחות.</p></div>
+                </div>
+                <div class="card" id="blocs-all" style="display:none">
+                    <h2>האם הסקרים טועים תמיד לאותו כיוון בגוש נתניהו?</h2>
+                    <div class="answer" id="bibiall-answer"></div>
+                    <div class="chart-box" style="height:320px"><canvas id="c-bibi-all"></canvas></div>
+                    <p class="read">כל נקודה אפורה היא מכון אחד באותן בחירות, והקו הצהוב הוא הממוצע של כל הסקרים. מעל הקו המקווקו = הסקרים נתנו לגוש יותר ממה שקיבל; מתחת = פחות.</p>
+                    <h2 style="margin-top:1.2rem">ובאותה שאלה לרשימות הערביות</h2>
+                    <div class="chart-box" style="height:280px"><canvas id="c-arab-all"></canvas></div>
+                </div>
+            </section>
+
+            <!-- ═══ Parties ═══ -->
+            <section class="pane" id="pane-parties">
+                <div class="card">
+                    <h2 id="bias-title"></h2>
+                    <div class="answer" id="bias-answer"></div>
+                    <div class="chart-box" id="bias-box"><canvas id="c-bias"></canvas></div>
+                    <div class="legend"><span><i class="dotm" style="background:var(--over)"></i>הסקרים נתנו לה יותר ממה שקיבלה</span><span><i class="dotm" style="background:var(--under)"></i>הסקרים נתנו לה פחות</span></div>
+                    <p class="read">ככל שהפס ארוך יותר, הסקרים פספסו את המפלגה יותר. פס קצר מאוד = הסקרים קלעו.</p>
+                </div>
+                <div class="card" id="party-series-card">
+                    <h2>מפלגה אחת לאורך הקמפיין</h2>
+                    <p class="lead">בחרו מפלגה:</p>
+                    <div class="frow" id="party-pick" style="margin-bottom:0.4rem"></div>
+                    <div class="answer" id="party-answer"></div>
+                    <div class="chart-box" style="height:320px"><canvas id="c-party"></canvas></div>
+                    <div class="legend" id="party-legend"></div>
+                    <p class="read">הקו הצהוב המקווקו הוא מה שהמפלגה קיבלה בפועל. כל נקודה היא סקר. 0 = הסקר אמר שהמפלגה לא תעבור את אחוז החסימה.</p>
+                    <p class="lead" style="margin-top:0.7rem">מכונים להשוואה (עד 3):</p>
+                    <div class="frow" id="party-ent-pick"></div>
+                </div>
+                <div class="card" id="party-heat-card">
+                    <details><summary style="cursor:pointer;font-weight:600">טבלה: כל מכון מול כל מפלגה</summary>
+                    <p class="lead" style="margin-top:0.5rem">בכמה מנדטים, בממוצע, כל מכון פספס כל מפלגה. אדום = נתן יותר, כחול = נתן פחות.</p>
+                    <div id="party-heat" style="overflow-x:auto"></div></details>
+                </div>
+            </section>
+
+            <!-- ═══ Threshold ═══ -->
+            <section class="pane" id="pane-thr">
+                <div class="card">
+                    <h2 id="thr-title"></h2>
+                    <div class="answer" id="thr-answer"></div>
+                    <div class="chart-box" id="thr-box"><canvas id="c-thr"></canvas></div>
+                    <div class="legend"><span><i class="dotm" style="background:#199e70"></i>רוב הסקרים צדקו</span><span><i class="dotm" style="background:var(--over)"></i>רוב הסקרים טעו</span></div>
+                    <p class="read">לכל מפלגה שהייתה קרובה לאחוז החסימה: איזה חלק מהסקרים אמרו שהיא תיכנס לכנסת. ליד השם כתוב מה קרה בפועל.</p>
+                </div>
+                <div class="card" id="thr-ent-card">
+                    <h2>איזה מכון טעה הכי הרבה באחוז החסימה?</h2>
+                    <div class="answer" id="thrent-answer"></div>
+                    <div class="chart-box" id="thr-ent-box"><canvas id="c-thr-ent"></canvas></div>
+                    <p class="read">בממוצע לסקר: כמה מפלגות המכון שם בצד הלא נכון של הקו (הכניס מפלגה שלא עברה, או השאיר בחוץ מפלגה שעברה). 0 = לא טעה אף פעם.</p>
+                </div>
+            </section>
+
+            <!-- ═══ Polls ═══ -->
+            <section class="pane" id="pane-polls">
+                <div class="card">
+                    <h2 id="polls-title">כל הסקרים</h2>
+                    <p class="lead">לחיצה על סקר מראה אותו מול התוצאה, מפלגה אחרי מפלגה, וקישור לכתבה המקורית.</p>
+                    <div id="polls-table" style="overflow-x:auto"></div>
+                </div>
+            </section>
+
+            <!-- ═══ Method ═══ -->
+            <section class="pane" id="pane-method">
+                <div class="card method" id="method-body"></div>
+            </section>
+        </main>
+
+        <footer class="main-footer">
+            <span data-i18n="credits_line">© הראל קין</span> |
+            <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank">CC BY-NC-SA 4.0</a> |
+            מקור הסקרים: ויקיפדיה האנגלית, דפי "Opinion polling for the … Israeli legislative election"
+        </footer>
+    </div>
+
+    <script>
+    // ════════════════════════════════════════════════════════════════
+    //  Poll accuracy page. Data: data/poll_accuracy.json
+    //  (generate_poll_accuracy.py). Everything shown is computed from it.
+    // ════════════════════════════════════════════════════════════════
+    let D = null;
+    const S = { tab: 'now', els: ['26'], election: '26', measure: 'party', win: 'd14', dim: 'pollster', sel: null, cmp: [], party: null, open: null };
+    const TABS_BY_MODE = {
+        now: [{ id: 'now', t: 'הסקרים האחרונים' }, { id: 'blocs', t: 'גושים לאורך הקמפיין' }, { id: 'parties', t: 'מפלגות לאורך הקמפיין' },
+              { id: 'polls', t: 'כל הסקרים' }, { id: 'method', t: 'איך חישבנו' }],
+        single: [{ id: 'single', t: 'הסקרים מול התוצאה' }, { id: 'rank', t: 'מי הכי מדויק?' }, { id: 'blocs', t: 'מי ינצח? (גושים)' },
+              { id: 'parties', t: 'באילו מפלגות טעו?' }, { id: 'thr', t: 'מי תעבור את החסימה?' }, { id: 'polls', t: 'כל הסקרים' }, { id: 'method', t: 'איך חישבנו' }],
+        compare: [{ id: 'overview', t: 'השוואה בין השנים' }, { id: 'rank', t: 'מי הכי מדויק לאורך השנים?' }, { id: 'blocs', t: 'גושים' },
+              { id: 'parties', t: 'באילו מפלגות טעו?' }, { id: 'thr', t: 'אחוז החסימה' }, { id: 'method', t: 'איך חישבנו' }],
+    };
+    const tabsNow = () => TABS_BY_MODE[mode()];
+    const TABS = [
+        { id: 'overview', t: 'בקצרה' }, { id: 'rank', t: 'מי הכי מדויק?' }, { id: 'blocs', t: 'מי ינצח? (גושים)' },
+        { id: 'parties', t: 'באילו מפלגות טעו?' }, { id: 'thr', t: 'מי תעבור את החסימה?' }, { id: 'polls', t: 'כל הסקרים' }, { id: 'method', t: 'איך חישבנו' },
+    ];
+    // plain names for the time windows (the data keeps its own keys)
+    const WIN_NAME = {
+        d120: '4 חודשים לפני', d90: '3 חודשים לפני', d60: 'חודשיים לפני', d30: 'בחודש האחרון',
+        d14: 'בשבועיים האחרונים', last: 'הסקר האחרון של כל מכון', exit: 'המדגם בליל הבחירות',
+    };
+    const MAIN_WINS = ['d30', 'd14', 'last', 'exit'];
+    const WIN_HELP = {
+        d120: 'כל הסקרים מ-4 החודשים שלפני הבחירות.', d90: 'כל הסקרים מ-3 החודשים שלפני הבחירות.',
+        d60: 'כל הסקרים מהחודשיים שלפני הבחירות.', d30: 'כל הסקרים מהחודש שלפני הבחירות.',
+        d14: 'כל הסקרים מהשבועיים שלפני הבחירות.',
+        last: 'רק הסקר האחרון שכל מכון פרסם לפני הבחירות.', exit: 'המדגם שהערוצים מציגים ב-22:00, כשהקלפיות נסגרות.',
+    };
+    const winName = (w = S.win) => WIN_NAME[w];
+    // words that follow the "rank pollsters / outlets" switch
+    const U = () => S.dim === 'pollster'
+        ? { one: 'מכון', many: 'מכונים', the: 'המכון', all: 'מכוני הסקרים' }
+        : { one: 'ערוץ או עיתון', many: 'ערוצים ועיתונים', the: 'כלי התקשורת', all: 'הערוצים והעיתונים' };
+    const le = n => (n.startsWith('ה') ? 'ל' + n.slice(1) : 'ל' + n);  // הליכוד -> לליכוד
+    const seatsTxt = x => { const v = Math.abs(x); return v < 0.05 ? 'בדיוק' : (v === 1 ? 'מנדט אחד' : v.toFixed(1).replace('.0', '') + ' מנדטים'); };
+    const CMP_COLORS = ['#3987e5', '#d95926', '#199e70'];
+    const C = { text: '#c8ceda', muted: '#939aab', grid: '#2a2f3b', accent: '#f0b429', gray: '#5b6170', over: '#e66767', under: '#3987e5' };
+    const charts = {};
+    const pollById = {};
+
+    const fmt = (x, d = 1) => x == null || isNaN(x) ? '—' : Number(x).toFixed(d);
+    const sgn = (x, d = 1) => x == null || isNaN(x) ? '—' : (x > 0 ? '+' : x < 0 ? '−' : '') + Math.abs(x).toFixed(d);
+    const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    const nameOf = (dim, key) => (D.meta.names[dim] || {})[key] || key;
+    const short = s => String(s).split(' (')[0].split(' / ')[0];
+    const fmtDate = s => { const [y, m, d] = s.split('-'); return `${+d}/${+m}/${y}`; };
+    const mean = a => { const v = a.filter(x => x != null && !isNaN(x)); return v.length ? v.reduce((s, x) => s + x, 0) / v.length : null; };
+    // the two separate measures: seats per party, or seats in the Netanyahu bloc
+    const M = () => S.measure === 'bloc'
+        ? { key: 'bibi_abs', name: 'פספוס בגוש נתניהו', u: 'מנדטים בגוש נתניהו', hi: 8,
+            poll: p => p.score.bloc_bibi == null ? null : Math.abs(p.score.bloc_bibi) }
+        : { key: 'mae', name: 'פספוס ממוצע למפלגה', u: 'מנדטים למפלגה', hi: 3, poll: p => p.score.mae };
+    const mv = s => s[M().key];
+    const median = a => { const v = a.filter(x => x != null).slice().sort((x, y) => x - y); if (!v.length) return null; const h = v.length / 2; return v.length % 2 ? v[Math.floor(h)] : (v[h - 1] + v[h]) / 2; };
+    // in comparison mode only the chosen years count; otherwise every scored year
+    const scoredEls = () => (S.els.length > 1 ? S.els : Object.keys(D.meta.elections)).filter(k => D.meta.elections[k].scored).sort((a, b) => a - b);
+    const isScored = k => D.meta.elections[k] && D.meta.elections[k].scored;
+    const mode = () => S.els.length > 1 ? 'compare' : isScored(S.els[0]) ? 'single' : 'now';
+    // a poll that can be drawn: scored, or (before the result) a complete row of seats
+    const seatTotal = p => Object.values(p.seats || {}).reduce((a, x) => a + x, 0);
+    const usable = p => !p.excluded && !p.unscorable && (p.score || (!isScored(p.election) && Math.abs(seatTotal(p) - 120) <= 6));
+    // across the chosen elections: own error minus that election's median, averaged
+    function cumOf(w) {
+        const out = {};
+        scoredEls().forEach(k => {
+            const st = D.agg[w][S.dim].by_election[k] || {};
+            const v = Object.values(st).map(s => mv(s)).filter(x => x != null).sort((a, b) => a - b);
+            if (!v.length) return;
+            const med = v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2;
+            Object.entries(st).filter(([, s]) => mv(s) != null).forEach(([e, s]) => {
+                const c = out[e] = out[e] || { by_election: {}, rel_by_election: {}, n_polls: 0 };
+                c.by_election[k] = mv(s); c.rel_by_election[k] = +(mv(s) - med).toFixed(3); c.n_polls += s.n;
+            });
+        });
+        Object.values(out).forEach(c => {
+            const ks = Object.keys(c.by_election);
+            c.n_elections = ks.length;
+            c.mae = mean(ks.map(k => c.by_election[k]));
+            c.rel = mean(ks.map(k => c.rel_by_election[k]));
+        });
+        const minEl = Math.min(D.meta.min_elections, scoredEls().length);
+        Object.entries(out).filter(([, c]) => c.n_elections >= minEl).sort((a, b) => a[1].rel - b[1].rel || a[1].mae - b[1].mae)
+            .forEach(([, c], i) => c.rank = i + 1);
+        Object.values(out).forEach(c => { if (c.rank === undefined) c.rank = null; });
+        return out;
+    }
+    const elShort = k => D.meta.elections[k].he.split(' (')[0];
+    const winObj = () => D.meta.windows.find(w => w.key === S.win);
+    const entsOf = p => S.dim === 'pollster' ? (p.pollster ? [p.pollster] : []) : p.outlets;
+
+    // ───────── Chart.js defaults in the site's dark style
+    Chart.defaults.font.family = 'Heebo, sans-serif';
+    Chart.defaults.color = C.muted;
+    Chart.defaults.borderColor = C.grid;
+    Chart.defaults.plugins.legend.display = false;
+    Object.assign(Chart.defaults.plugins.tooltip, { rtl: true, textDirection: 'rtl', backgroundColor: '#11131a',
+        borderColor: '#3a4050', borderWidth: 1, titleColor: '#f3f5f8', bodyColor: '#c8ceda', padding: 10, displayColors: false });
+
+    // reference lines and a shaded window, drawn under the data
+    const refPlugin = {
+        id: 'refs',
+        beforeDatasetsDraw(chart, _, o) {
+            const { ctx, chartArea: a, scales } = chart;
+            ctx.save();
+            (o.bands || []).forEach(b => {
+                const s = scales[b.axis];
+                const p1 = s.getPixelForValue(b.from), p2 = s.getPixelForValue(b.to);
+                ctx.fillStyle = b.color;
+                if (b.axis === 'x') ctx.fillRect(Math.min(p1, p2), a.top, Math.abs(p2 - p1), a.bottom - a.top);
+                else ctx.fillRect(a.left, Math.min(p1, p2), a.right - a.left, Math.abs(p2 - p1));
+            });
+            (o.lines || []).forEach(l => {
+                const s = scales[l.axis];
+                const p = s.getPixelForValue(l.value);
+                ctx.strokeStyle = l.color; ctx.lineWidth = l.width || 1.5; ctx.setLineDash(l.dash || []);
+                ctx.beginPath();
+                if (l.axis === 'y') { ctx.moveTo(a.left, p); ctx.lineTo(a.right, p); } else { ctx.moveTo(p, a.top); ctx.lineTo(p, a.bottom); }
+                ctx.stroke();
+                if (l.label) {
+                    ctx.setLineDash([]); ctx.fillStyle = l.color; ctx.font = '600 11px Heebo';
+                    ctx.textAlign = l.axis === 'y' ? 'left' : 'center';
+                    if (l.axis === 'y') ctx.fillText(l.label, a.left + 4, p - 5); else ctx.fillText(l.label, p, a.top + 10);
+                }
+            });
+            ctx.restore();
+        },
+    };
+    Chart.register(refPlugin);
+
+    function mk(id, cfg) {
+        if (charts[id]) charts[id].destroy();
+        const el = document.getElementById(id);
+        if (!el) return null;
+        cfg.options = cfg.options || {};
+        cfg.options.responsive = true;
+        cfg.options.maintainAspectRatio = false;
+        charts[id] = new Chart(el, cfg);
+        return charts[id];
+    }
+    const axis = (title, extra = {}) => Object.assign({ grid: { color: C.grid }, ticks: { color: C.muted },
+        title: title ? { display: true, text: title, color: C.muted } : undefined }, extra);
+
+    // ───────── data helpers
+    function windowPolls(k, win = S.win) {
+        const w = D.meta.windows.find(x => x.key === win);
+        let ps = D.polls.filter(p => p.election === k && p.score);
+        if (win === 'exit') return ps.filter(p => p.exit_poll);
+        ps = ps.filter(p => !p.exit_poll && p.days_before >= 1 && p.days_before <= w.days);
+        if (win !== 'last') return ps;
+        const ids = new Set();
+        Object.values(D.agg.last[S.dim].by_election[k] || {}).forEach(s => s.polls.forEach(i => ids.add(i)));
+        return ps.filter(p => ids.has(p.id));
+    }
+    // Average of all polls in the window, scored like one more poll: the mean
+    // signed error per list (lists measured on their own only), then the mean
+    // of its absolute value over the lists that matter.
+    function consensus(k, win = S.win) {
+        const ps = windowPolls(k, win);
+        if (!ps.length) return null;
+        if (S.measure === 'bloc') { const v = ps.map(p => p.score.bloc_bibi).filter(x => x != null); return v.length ? { mae: Math.abs(mean(v)), n: ps.length } : null; }
+        const f = D.finals[k].lists, acc = {};
+        ps.forEach(p => p.score.groups.forEach(g => {
+            if (g.lists.length !== 1 || g.others) return;
+            (acc[g.lists[0]] = acc[g.lists[0]] || []).push(g.poll);
+        }));
+        const errs = Object.entries(acc).filter(([n, v]) => f[n].seats > 0 || mean(v) > 0.5).map(([n, v]) => Math.abs(mean(v) - f[n].seats));
+        return { mae: mean(errs), n: ps.length };
+    }
+    function stats(k, win = S.win) { return (D.agg[win][S.dim].by_election[k]) || {}; }
+    function ranked(k, win = S.win) {
+        return Object.entries(stats(k, win)).filter(([, s]) => mv(s) != null).sort((a, b) => mv(a[1]) - mv(b[1]));
+    }
+    function best(k, win = S.win) {
+        const r = ranked(k, win).filter(([, s]) => win === 'last' || win === 'exit' || s.n >= D.meta.few_polls);
+        return r[0] || null;
+    }
+    function groupSeats(p, list) {
+        const g = p.score && p.score.groups.find(g => g.lists.length === 1 && g.lists[0] === list && !g.others);
+        return g ? g.poll : null;
+    }
+
+    // ───────── filters and tabs
+    function pills(rowId, items, cur, on) {
+        const row = document.getElementById(rowId);
+        row.querySelectorAll('.pill, .linkbtn').forEach(b => b.remove());
+        items.forEach(it => {
+            const b = document.createElement('button');
+            b.className = 'pill' + (cur === it.v ? ' active' : '') + (it.muted ? ' muted' : '') + (it.sel ? ' sel' : '');
+            b.innerHTML = (it.dot ? `<span class="dot" style="background:${it.dot}"></span>` : '') + esc(it.t);
+            if (it.sel) b.style.borderColor = it.sel;
+            if (it.title) b.title = it.title;
+            b.onclick = () => on(it.v);
+            row.appendChild(b);
+        });
+    }
+    function renderFilters() {
+        const els = Object.keys(D.meta.elections).sort((a, b) => b - a);
+        const row0 = document.getElementById('f-election');
+        row0.querySelectorAll('.pill, .linkbtn, .note').forEach(x => x.remove());
+        els.forEach(k => {
+            const on = S.els.includes(k);
+            const btn = document.createElement('button');
+            btn.className = 'pill' + (on ? ' active' : '');
+            btn.innerHTML = (on && S.els.length > 1 ? '✓ ' : '') + esc(isScored(k) ? elShort(k) : elShort(k) + ' — הבחירות הקרובות');
+            btn.title = on ? (S.els.length > 1 ? 'לחיצה מורידה את השנה מההשוואה' : '') : 'לחיצה מוסיפה את השנה להשוואה';
+            btn.onclick = ev => {
+                // a plain click adds/removes; with only one year chosen, clicking another adds it
+                if (on && S.els.length > 1) S.els = S.els.filter(x => x !== k);
+                else if (!on) S.els = S.els.concat(k);
+                S.sel = null; S.cmp = []; S.party = null; S.open = null; render();
+            };
+            row0.appendChild(btn);
+        });
+        const quick = (t, v) => { const q = document.createElement('button'); q.className = 'linkbtn'; q.textContent = t; q.onclick = () => { S.els = v; S.sel = null; S.cmp = []; S.party = null; render(); }; row0.appendChild(q); };
+        const allScored = els.filter(isScored);
+        if (!(S.els.length === 1 && S.els[0] === els[0])) quick('רק ' + elShort(els[0]), [els[0]]);
+        if (S.els.length !== allScored.length || S.els.some(k => !isScored(k))) quick('כל השנים שכבר נבדקו', allScored.slice());
+        const hint = document.createElement('span'); hint.className = 'note';
+        hint.textContent = S.els.length > 1 ? `משווים ${S.els.length} מערכות בחירות` : 'לחיצה על שנה נוספת תוסיף אותה להשוואה';
+        row0.appendChild(hint);
+        // four plain choices up front; the longer windows behind "עוד"
+        const extra = D.meta.windows.map(w => w.key).filter(w => !MAIN_WINS.includes(w));
+        const open = extra.includes(S.win) || S.moreWins;
+        pills('f-window', MAIN_WINS.map(w => ({ v: w, t: WIN_NAME[w], title: WIN_HELP[w] }))
+            .concat(open ? extra.map(w => ({ v: w, t: WIN_NAME[w], title: WIN_HELP[w] })) : []), S.win, v => { S.win = v; S.open = null; render(); });
+        const row = document.getElementById('f-window');
+        const more = document.createElement('button');
+        more.className = 'linkbtn'; more.textContent = open ? 'פחות' : 'עוד אפשרויות';
+        more.onclick = () => { S.moreWins = !open; if (open && extra.includes(S.win)) S.win = 'd14'; render(); };
+        row.appendChild(more);
+        pills('f-measure', [{ v: 'party', t: 'דיוק במפלגות', title: 'בכמה מנדטים הסקר פספס, בממוצע, כל מפלגה' },
+                            { v: 'bloc', t: 'דיוק בגושים', title: 'בכמה מנדטים הסקר פספס את גוש נתניהו — מי ירכיב ממשלה' }], S.measure, v => { S.measure = v; render(); });
+        document.getElementById('f-measure').style.display = mode() === 'now' ? 'none' : '';
+        pills('f-dim', [{ v: 'pollster', t: 'מכוני הסקרים' }, { v: 'outlet', t: 'ערוצים ועיתונים' }], S.dim, v => { S.dim = v; S.sel = null; S.cmp = []; render(); });
+        const tabs = document.getElementById('tabs');
+        tabs.innerHTML = tabsNow().map(t => `<button class="tab${S.tab === t.id ? ' active' : ''}" data-t="${t.id}">${t.t}</button>`).join('');
+        tabs.querySelectorAll('.tab').forEach(b => b.onclick = () => { S.tab = b.dataset.t; render(); });
+        document.querySelectorAll('.pane').forEach(p => p.classList.toggle('active', p.id === 'pane-' + S.tab));
+    }
+
+    // ───────── Overview
+    function renderOverview() {
+        const els = scoredEls();
+        renderHero(els);
+        renderYears(els);
+        renderHeat(els);
+        renderConverge(els);
+        renderConsensus(els);
+    }
+
+    // The short answer at the top, in plain words, from the data.
+    function renderHero(els) {
+        const u = U();
+        const wk = S.win;
+        const cum = cumOf(wk);
+        // the headline and podium only for bodies measured in 3+ elections
+        const top = Object.entries(cum).filter(([, c]) => c.rank && c.n_elections >= Math.min(3, els.length)
+            && (wk === 'last' || wk === 'exit' || c.n_polls >= D.meta.few_polls * c.n_elections)).sort((a, b) => a[1].rank - b[1].rank);
+        const avgAll = mean(els.map(k => mean(windowPolls(k, wk).map(p => M().poll(p)))).filter(x => x != null));
+        const medals = ['🥇', '🥈', '🥉'];
+        let h = `<div class="q">${esc(winName())} · בחירות ${els.map(elShort).join(', ')}</div>`;
+        if (!top.length) { document.getElementById('ov-hero').innerHTML = h + '<h2>אין מספיק נתונים לחלון הזה.</h2>'; return; }
+        const [e1, c1] = top[0];
+        const last = top[top.length - 1][1];
+        const gap = last.mae - c1.mae;
+        h += `<h2>מי היה הכי מדויק</h2>
+            <div class="podium">` + top.slice(0, 3).map(([e, c], i) => `<div><b><span class="medal">${medals[i]}</span>${esc(short(nameOf(S.dim, e)))}</b>
+                <span>פספס בממוצע ${fmt(c.mae, 1)} ${M().u} · ${c.n_elections === 1 ? 'מערכת בחירות אחת' : 'נבדק ב-' + c.n_elections + ' מערכות בחירות'}</span></div>`).join('') +
+            `</div><p class="note" style="margin-top:0.6rem">רק מי שנבדק לפחות ב-${Math.min(3, els.length)} מערכות בחירות. כל ${u.one} מושווה ל${u.many} האחרים באותן בחירות.</p>`;
+        document.getElementById('ov-hero').innerHTML = h;
+    }
+
+    function renderInsights(els) {
+        const out = [];
+        const wk = S.win === 'exit' ? 'd14' : S.win;
+        // 1. polls miss together, in the same direction
+        let worst = null, sameDir = 0;
+        els.forEach(k => {
+            const v = windowPolls(k, wk).map(p => p.score.bloc_bibi).filter(x => x != null);
+            const m = mean(v);
+            if (m == null) return;
+            const share = v.filter(x => Math.sign(x) === Math.sign(m) && x !== 0).length / v.length;
+            if (share >= 0.8 && Math.abs(m) >= 2) sameDir++;
+            if (!worst || Math.abs(m) > Math.abs(worst.m)) worst = { k, m };
+        });
+        if (worst) out.push({ icon: '↕', t: 'כשהסקרים טועים, הם טועים יחד',
+            p: `ב-${sameDir} מתוך ${els.length} מערכות בחירות כמעט כל הסקרים טעו בגוש נתניהו לאותו כיוון. הכי בולט: ${elShort(worst.k)}, שם הסקרים נתנו לגוש בממוצע ${seatsTxt(worst.m)} ${worst.m < 0 ? 'פחות' : 'יותר'} ממה שקיבל בפועל. לכן ממוצע של הרבה סקרים לא תמיד מציל.` });
+        // 2. exit poll vs last two weeks
+        const e = mean(els.map(k => mean(windowPolls(k, 'exit').map(p => p.score.mae))).filter(x => x != null));
+        const t = mean(els.map(k => mean(windowPolls(k, 'd14').map(p => p.score.mae))).filter(x => x != null));
+        if (e && t) out.push({ icon: '22:00', t: `המדגם בליל הבחירות מדויק בערך פי ${(t / e).toFixed(0)}`,
+            p: `בשבועיים שלפני הבחירות הסקרים פספסו בממוצע ${fmt(t, 1)} מנדטים למפלגה. המדגם של 22:00 פספס רק ${fmt(e, 1)}. הסיבה פשוטה: במדגם שואלים אנשים שכבר הצביעו, ולא מנחשים מי יגיע לקלפי.` });
+        // 3. small lists near the threshold
+        const misses = [];
+        els.forEach(k => {
+            const f = D.finals[k].lists, acc = {};
+            windowPolls(k, wk).forEach(p => p.score.groups.forEach(g => { if (g.lists.length === 1 && !g.others) (acc[g.lists[0]] = acc[g.lists[0]] || []).push(g.poll > 0); }));
+            Object.entries(acc).forEach(([n, v]) => { if (v.length >= 3 && v.filter(x => x !== (f[n].seats > 0)).length / v.length > 0.5) misses.push({ n, k, inn: f[n].seats > 0 }); });
+        });
+        if (misses.length) out.push({ icon: '3.25%', t: 'הנקודה החלשה: מפלגות על סף החסימה',
+            p: `ב-${misses.length} מקרים רוב הסקרים טעו אם מפלגה תיכנס לכנסת. למשל: ` +
+               misses.slice(-3).map(m => `${m.n} ב-${elShort(m.k)} (${m.inn ? 'הסקרים השאירו בחוץ, והיא נכנסה' : 'הסקרים הכניסו, והיא לא עברה'})`).join('; ') + '. טעות כזו מזיזה 4 מנדטים בבת אחת.' });
+        document.getElementById('ov-insights').innerHTML = out.map(o => `<div class="insight"><div class="ins-icon">${esc(o.icon)}</div><b>${esc(o.t)}</b><p>${o.p}</p></div>`).join('');
+    }
+
+    function renderConverge(els) {
+        const B = [[120, 91, '4–3 חודשים לפני'], [90, 61, '3–2 חודשים לפני'], [60, 31, 'חודשיים–חודש'], [30, 15, 'חודש–שבועיים'], [14, 1, 'שבועיים אחרונים'], [0, 0, 'מדגם 22:00']];
+        const line = k => B.map(([a, b]) => {
+            const v = D.polls.filter(p => p.election === k && p.score && (a === 0 ? p.exit_poll : !p.exit_poll && p.days_before <= a && p.days_before >= b)).map(p => M().poll(p));
+            return v.length ? +mean(v).toFixed(3) : null;
+        });
+        const per = els.map(k => ({ k, d: line(k) }));
+        const avg = B.map((_, i) => { const v = per.map(x => x.d[i]).filter(x => x != null); return v.length ? +mean(v).toFixed(3) : null; });
+        document.getElementById('conv-answer').innerHTML = `כן. 4 חודשים לפני הבחירות הסקרים פספסו בממוצע <b>${fmt(avg[0], 1)}</b> ${M().u}, בשבועיים האחרונים <b>${fmt(avg[4], 1)}</b>, והמדגם בליל הבחירות רק <b>${fmt(avg[5], 1)}</b>. אבל גם סקר מהשבוע האחרון טועה בדרך כלל בכמה מנדטים.`;
+        mk('c-converge', {
+            type: 'line',
+            data: { labels: B.map(b => b[2]), datasets: [
+                ...per.map(x => ({ label: elShort(x.k), data: x.d, borderColor: '#4b5162', borderWidth: 1.5, pointRadius: 3, pointBackgroundColor: '#4b5162',
+                    pointHoverRadius: 6, pointHoverBackgroundColor: '#c8ceda', hoverBorderColor: '#c8ceda', hoverBorderWidth: 2, tension: 0.25, spanGaps: true })),
+                { label: 'ממוצע', data: avg, borderColor: C.accent, backgroundColor: C.accent, borderWidth: 3, pointRadius: 5, tension: 0.25 },
+            ] },
+            options: { interaction: { mode: 'nearest', intersect: false },
+                scales: { x: axis('מתי נעשה הסקר'), y: axis(M().name + ' (מנדטים)', { beginAtZero: true }) },
+                plugins: { tooltip: { callbacks: { title: i => (i[0].dataset.label === 'ממוצע' ? 'ממוצע כל הבחירות' : 'בחירות ' + i[0].dataset.label) + ' · ' + i[0].label,
+                    label: i => 'הסקרים פספסו בממוצע ' + fmt(i.raw, 1) + ' ' + M().u } } } },
+        });
+    }
+
+    function renderConsensus(els) {
+        const labels = els.map(elShort);
+        const cons = els.map(k => { const c = consensus(k); return c ? +c.mae.toFixed(3) : null; });
+        const b = els.map(k => { const x = best(k); return x ? { y: +mv(x[1]).toFixed(3), n: nameOf(S.dim, x[0]) } : null; });
+        const w = els.map(k => { const r = ranked(k).filter(([, s]) => S.win === 'last' || S.win === 'exit' || s.n >= D.meta.few_polls); const x = r[r.length - 1]; return x ? { y: +mv(x[1]).toFixed(3), n: nameOf(S.dim, x[0]) } : null; });
+        let consBeat = 0, consMid = 0, nn = 0;
+        els.forEach((k, i) => { if (cons[i] == null || !b[i] || !w[i]) return; nn++; if (cons[i] <= b[i].y) consBeat++; else if (cons[i] < (b[i].y + w[i].y) / 2) consMid++; });
+        document.getElementById('cons-answer').innerHTML = `הממוצע הוא בחירה בטוחה, אבל לא קסם. הממוצע של כל הסקרים ניצח את המכון הכי מדויק ב-<b>${consBeat}</b> מתוך ${nn} מערכות בחירות, ובשאר הפעמים היה ${consMid >= nn - consBeat - consMid ? 'בדרך כלל קרוב יותר לטובים' : 'באמצע'}. הבעיה: אי אפשר לדעת מראש מי יהיה המכון הכי מדויק.`;
+        mk('c-consensus', {
+            type: 'line',
+            data: { labels, datasets: [
+                { type: 'bar', label: 'הטווח', data: els.map((_, i) => b[i] && w[i] ? [b[i].y, w[i].y] : null), backgroundColor: '#3a4050', barThickness: 6, borderRadius: 3 },
+                { label: 'החלש', data: w.map(x => x && x.y), meta: w, showLine: false, pointRadius: 6, pointBackgroundColor: '#4b5162', pointBorderColor: '#16181d', pointBorderWidth: 2 },
+                { label: 'הטוב', data: b.map(x => x && x.y), meta: b, showLine: false, pointRadius: 7, pointBackgroundColor: C.accent, pointBorderColor: '#16181d', pointBorderWidth: 2 },
+                { label: 'ממוצע הסקרים', data: cons, showLine: false, pointStyle: 'rectRot', pointRadius: 8, pointBackgroundColor: '#8a90a0', pointBorderColor: '#16181d', pointBorderWidth: 2 },
+            ] },
+            options: { scales: { x: axis(''), y: axis(M().name + ' (מנדטים)', { beginAtZero: true }) },
+                plugins: { tooltip: { filter: i => i.dataset.type !== 'bar', callbacks: { label: i => {
+                    const m = i.dataset.meta && i.dataset.meta[i.dataIndex];
+                    return (m ? short(m.n) + ': ' : i.dataset.label + ': ') + fmt(i.raw, 2) + ' ' + M().u;
+                } } } } },
+        });
+    }
+
+    function renderHeat(els) {
+        const wins = MAIN_WINS;
+        const lo = 0.3, hi = M().hi;
+        const color = v => { const t = Math.max(0, Math.min(1, (v - lo) / (hi - lo)));
+            const stops = [[16, 66, 129], [57, 135, 229], [158, 197, 244]];
+            const seg = t < 0.5 ? 0 : 1, u = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+            const c = stops[seg].map((s, i) => Math.round(s + (stops[seg + 1][i] - s) * u));
+            return `rgb(${c.join(',')})`; };
+        // who wins most often (two-week window)
+        const wins14 = {};
+        els.forEach(k => { const b = best(k, 'd14'); if (b) wins14[b[0]] = (wins14[b[0]] || 0) + 1; });
+        const topW = Object.entries(wins14).sort((a, b) => b[1] - a[1]);
+        document.getElementById('heat-answer').innerHTML = topW.length
+            ? `אין מנצח קבוע. בשבועיים שלפני הבחירות, ${topW.slice(0, 3).map(([e, n]) => `${esc(short(nameOf(S.dim, e)))} היה הכי מדויק ${n === 1 ? 'פעם אחת' : n + ' פעמים'}`).join(', ')} — מתוך ${els.length} מערכות בחירות.`
+            : '';
+        const html = `<table class="heat"><thead><tr><th></th>${wins.map(w => `<th>${esc(WIN_NAME[w])}</th>`).join('')}</tr></thead><tbody>` +
+            els.slice().reverse().map(k => `<tr><th class="rowh">${esc(elShort(k))}</th>` + wins.map(w => {
+                const b = best(k, w);
+                if (!b) {
+                    const why = Object.keys(stats(k, w)).length ? 'לכולם פחות מ-3 סקרים' : (w === 'exit' && S.dim === 'pollster' ? 'לא ידוע איזה מכון עשה את המדגם' : 'אין נתונים');
+                    return `<td class="empty">${why}</td>`;
+                }
+                const [e, s] = b;
+                const light = (mv(s) - lo) / (hi - lo) > 0.55;
+                return `<td data-e="${k}" data-w="${w}" style="background:${color(mv(s))}" title="${esc(nameOf(S.dim, e))}: פספס בממוצע ${fmt(mv(s), 1)} ${M().u} (${s.n === 1 ? 'סקר אחד' : s.n + ' סקרים'}). לחיצה: כל ה${U().many} באותן בחירות">
+                    <b style="${light ? 'color:#0b1a33' : ''}">${esc(short(nameOf(S.dim, e)))}</b><span style="${light ? 'color:#0b1a33cc' : ''}">פספוס ${fmt(mv(s), 1)}</span></td>`;
+            }).join('') + '</tr>').join('') + '</tbody></table>';
+        const box = document.getElementById('ov-heat');
+        box.innerHTML = html;
+        box.querySelectorAll('td[data-e]').forEach(td => td.onclick = () => { S.els = [td.dataset.e]; S.win = td.dataset.w; S.tab = 'rank'; S.sel = null; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    }
+
+    // ───────── The coming election: what the polls say (no result yet)
+    // Each body's last poll before the publication ban.
+    function lastPolls(k) {
+        const ps = D.polls.filter(p => p.election === k && usable(p) && !p.exit_poll && p.days_before >= 1);
+        const latest = {};
+        ps.forEach(p => entsOf(p).forEach(e => { if (!latest[e] || latest[e].date < p.date) latest[e] = p; }));
+        return latest;
+    }
+    function k26Lists(k) {
+        const lists = D.finals[k] ? Object.keys(D.finals[k].lists) : [];
+        return lists;
+    }
+    function blocSeats(p, lists) {
+        if (!p.seats) return null;
+        let s = 0;
+        for (const [key, v] of Object.entries(p.seats)) {
+            const parts = key.split(' + ');
+            const inside = parts.filter(x => lists.includes(x)).length;
+            if (inside && inside !== parts.length) return null;   // measured together with a list outside the bloc
+            if (inside) s += v;
+        }
+        return s;
+    }
+
+    // The coming election: the original polls only, each cell as published.
+    // No average and no other summary number across polls.
+    function renderNow() {
+        const k = S.els[0], f = D.finals[k].lists, u = U();
+        const last = lastPolls(k);
+        const ents = Object.entries(last).sort((a, b) => b[1].date.localeCompare(a[1].date) || short(nameOf(S.dim, a[0])).localeCompare(short(nameOf(S.dim, b[0]))));
+        const lp = ents.map(([, p]) => p);
+        const lastDate = lp.map(p => p.date).sort().pop();
+        const B = D.meta.k26_blocs;
+        document.getElementById('now-hero').innerHTML = `<div class="q">בחירות ${elShort(k)} · יום הבחירות ${fmtDate(D.meta.elections[k].date)}</div>
+            <h2>סקרי הבחירות לכנסת ה-26</h2>
+            <p>${lp.length} סקרים: הסקר האחרון של כל ${u.one}. האחרון פורסם ב-${lastDate ? fmtDate(lastDate) : '—'}. עדיין אין תוצאות.</p>
+            ${lp.some(p => p.manual) ? `<p class="note" style="margin-top:0.5rem"><b>מקורות:</b> ${lp.filter(p => p.manual).map(p => short(nameOf('outlet', p.outlets[0]))).join(' ו-')} — הסקר האחרון עוד לא מופיע בוויקיפדיה, ולכן נלקח מהכתבות המקוריות. כל השאר מוויקיפדיה. הקישורים בלשונית "כל הסקרים".</p>` : ''}
+            <p class="note" style="margin-top:0.5rem">איזו מפלגה שייכת לאיזה גוש: ${esc(D.meta.k26_blocs_note_he)} גוש הימין והחרדים: ${B.right.join(', ')}. גוש המרכז: ${B.center.join(', ')}. הרשימות הערביות: ${B.arab.join(', ')}.</p>`;
+        // party columns in the order the newest poll lists them
+        const lists = [];
+        lp.forEach(p => Object.keys(p.seats).forEach(n => { if (!lists.includes(n) && !n.includes(' + ')) lists.push(n); }));
+        // the cell exactly as published: seats, or the % for a list below the threshold
+        const cell = (p, n) => {
+            const m = (p.mapped || []).find(x => x.he === n);
+            const raw = m ? m.raw : (p.seats[n] != null ? String(p.seats[n]) : null);
+            if (raw == null) return '<span class="note">—</span>';
+            return /%/.test(raw) ? `<span class="note">${esc(raw.replace(/[()]/g, ''))}</span>` : esc(raw);
+        };
+        const sumOf = (p, ls) => blocSeats(p, ls);
+        document.getElementById('now-table').innerHTML = `<table class="board polls26"><thead><tr><th>${u.one}</th><th>פורסם ב</th><th>תאריך</th><th>נשאלים</th>` +
+            lists.map(n => `<th style="text-align:center"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${(f[n] || {}).color || '#6b7280'};margin-left:4px"></span>${esc(n)}</th>`).join('') +
+            `<th class="blocsum">ימין וחרדים</th><th class="blocsum">מרכז</th><th class="blocsum">ערביות</th></tr></thead><tbody>` +
+            ents.map(([e, p]) => `<tr><td>${esc(short(nameOf(S.dim, e)))}</td><td>${p.outlets.map(o => esc(short(nameOf('outlet', o)))).join(', ')}</td>
+                <td class="note">${fmtDate(p.date)}</td><td class="num note">${p.sample_size ? p.sample_size.toLocaleString('he-IL') : '—'}</td>` +
+                lists.map(n => `<td class="num" style="text-align:center">${cell(p, n)}</td>`).join('') +
+                [B.right, B.center, B.arab].map(ls => { const v = sumOf(p, ls); return `<td class="num blocsum" style="text-align:center">${v ?? '—'}</td>`; }).join('') +
+                `</tr>`).join('') + '</tbody></table>';
+        document.getElementById('now-night').style.display = D.meta.elections[k].scored ? 'none' : '';
+    }
+
+    function renderBlocsNow() {
+        const k = S.els[0], B = D.meta.k26_blocs;
+        ['blocs-bars', 'blocs-all'].forEach(id => document.getElementById(id).style.display = 'none');
+        ['blocs-pick-card', 'blocs-series'].forEach(id => document.getElementById(id).style.display = '');
+        document.querySelector('#blocs-series .card h2').textContent = 'כמה מנדטים הסקרים נותנים לגוש הימין והחרדים?';
+        document.querySelectorAll('#blocs-series .card h2')[1].textContent = 'וכמה לרשימות הערביות?';
+        entityPicker('blocs-pick', k);
+        const lp = Object.values(lastPolls(k));
+        const rv = lp.map(p => blocSeats(p, B.right)).filter(x => x != null);
+        const av = lp.map(p => blocSeats(p, B.arab)).filter(x => x != null);
+        const n61 = rv.filter(x => x >= 61).length;
+        document.getElementById('bibi-answer').innerHTML = `${n61} מתוך ${rv.length} הסקרים האחרונים (אחד מכל ${U().one}) נותנים לגוש 61 ומעלה. בסקר האמצעי: <b>${fmt(median(rv), 0)}</b> (מ-${Math.min(...rv)} עד ${Math.max(...rv)}). התוצאה תופיע כאן אחרי הבחירות.`;
+        document.getElementById('arab-answer').innerHTML = `בסקר האמצעי: <b>${fmt(median(av), 0)}</b> מנדטים (מ-${Math.min(...av)} עד ${Math.max(...av)}).`;
+        document.getElementById('bibi-read').textContent = `הגוש (הנחה עד שהמפלגות ימליצו על מועמד): ${B.right.join(', ')}. כל נקודה היא סקר; הקו האפור הוא 61, רוב בכנסת.`;
+        document.getElementById('arab-read').textContent = `${B.arab.join(', ')}. כל נקודה היא סקר.`;
+        const d1 = seriesChart('c-bibi', k, p => blocSeats(p, B.right), null, [{ axis: 'y', value: 61, color: '#8a90a0', dash: [2, 3], label: '61' }], 'מנדטים לגוש');
+        legendFor('bibi-legend', d1, `<span><i class="dash" style="color:#8a90a0"></i>רוב (61)</span>`);
+        const d2 = seriesChart('c-arab', k, p => blocSeats(p, B.arab), null, [], 'מנדטים');
+        legendFor('arab-legend', d2);
+    }
+
+    function renderPartiesNow() {
+        const k = S.els[0], f = D.finals[k].lists;
+        // no summary across polls here: only each party over the campaign
+        document.getElementById('bias-box').closest('.card').style.display = 'none';
+        document.getElementById('party-heat-card').style.display = 'none';
+        document.getElementById('party-series-card').style.display = '';
+        const lp = Object.values(lastPolls(k));
+        const rows = k26Lists(k).map(n => { const v = lp.map(p => p.seats[n]).filter(x => x != null); if (!v.length) return null;
+                const pass = v.filter(x => x > 0).length; return { n, m: median(v), c: f[n].color, pass, cnt: v.length, edge: pass > 0 && pass < v.length }; })
+            .filter(r => r && (r.m > 0 || r.pass > 0)).sort((a, b) => (b.pass === b.cnt) - (a.pass === a.cnt) || b.m - a.m);
+        document.getElementById('bias-title').textContent = `כמה מנדטים כל מפלגה מקבלת בסקרים?`;
+        document.getElementById('bias-answer').innerHTML = `לפי הסקר האמצעי מבין הסקר האחרון של כל ${U().one}. מפלגה על הקו מוצגת עם מספר הסקרים שמכניסים אותה. אחרי הבחירות יופיע כאן בכמה הסקרים פספסו כל מפלגה.`;
+        const bb = document.getElementById('bias-box'); bb.style.height = (34 * rows.length + 70) + 'px';
+        mk('c-bias', { type: 'bar', data: { labels: rows.map(r => r.edge ? `${r.n} — עוברת ב-${r.pass} מתוך ${r.cnt}` : r.n), datasets: [{ data: rows.map(r => r.edge ? null : +r.m.toFixed(1)), backgroundColor: rows.map(r => r.c), borderRadius: 4, barThickness: 18, minBarLength: 3 }] },
+            options: { indexAxis: 'y', scales: { x: axis('מנדטים בסקר האמצעי', { min: 0, reverse: true }), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text, font: { size: 13 } } }) },
+                plugins: { tooltip: { callbacks: { label: i => rows[i.dataIndex].edge ? `עוברת ב-${rows[i.dataIndex].pass} מתוך ${rows[i.dataIndex].cnt} סקרים` : `${fmt(rows[i.dataIndex].m, 1)} מנדטים בסקר האמצעי` } } } } });
+        const lists = rows.map(r => r.n);
+        if (!S.party || !lists.includes(S.party)) S.party = lists[0];
+        pills('party-pick', lists.map(n => ({ v: n, t: n, dot: f[n].color })), S.party, v => { S.party = v; renderPartiesNow(); });
+        entityPicker('party-ent-pick', k);
+        const v = lp.map(p => p.seats[S.party]).filter(x => x != null);
+        const pv = v.filter(x => x > 0).length;
+        document.getElementById('party-answer').innerHTML = pv > 0 && pv < v.length
+            ? `${esc(S.party)} על הקו: ${pv} מתוך ${v.length} הסקרים האחרונים מכניסים אותה לכנסת (עם ${Math.max(...v)} מנדטים), והשאר משאירים אותה בחוץ.`
+            : `בסקר האמצעי ${esc(S.party)} מקבלת <b>${fmt(median(v), 0)}</b> מנדטים (בין ${Math.min(...v)} ל-${Math.max(...v)}).`;
+        const ds = seriesChart('c-party', k, p => (p.seats || {})[S.party] ?? null, null, [], 'מנדטים (0 = מתחת לאחוז החסימה)');
+        legendFor('party-legend', ds);
+    }
+
+    function renderThrNow() {
+        const k = S.els[0], f = D.finals[k].lists;
+        document.getElementById('thr-ent-card').style.display = 'none';
+        const ps = D.polls.filter(p => p.election === k && usable(p) && !p.exit_poll && p.days_before >= 1 && p.days_before <= (S.win.startsWith('d') ? winObj().days : 14));
+        const rows = k26Lists(k).map(n => { const v = ps.map(p => p.seats[n]).filter(x => x != null); if (!v.length) return null;
+            return { n, share: v.filter(x => x > 0).length / v.length, cnt: v.length, avg: mean(v) }; })
+            .filter(r => r && r.avg < 7).sort((a, b) => b.share - a.share);
+        document.getElementById('thr-title').textContent = 'אילו מפלגות על הקו של אחוז החסימה?';
+        const torn = rows.filter(r => r.share > 0.1 && r.share < 0.9);
+        document.getElementById('thr-answer').innerHTML = torn.length ? `הסקרים חלוקים לגבי ${torn.map(r => `<b>${esc(r.n)}</b> (${Math.round(r.share * 100)}% מכניסים)`).join(', ')}. כאן הסקרים יכולים לטעות ב-4 מנדטים בבת אחת.` : 'אין מפלגה שהסקרים חלוקים לגביה.';
+        const box = document.getElementById('thr-box');
+        box.innerHTML = '<canvas id="c-thr"></canvas>'; box.style.height = (36 * rows.length + 70) + 'px';
+        mk('c-thr', { type: 'bar', data: { labels: rows.map(r => r.n), datasets: [{ data: rows.map(r => Math.round(r.share * 100)), backgroundColor: rows.map(r => f[r.n].color), borderRadius: 4, barThickness: 18, minBarLength: 3 }] },
+            options: { indexAxis: 'y', scales: { x: axis('% מהסקרים שמכניסים אותה לכנסת', { min: 0, max: 100, reverse: true }), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text } }) },
+                plugins: { refs: { lines: [{ axis: 'x', value: 50, color: '#5b6170', dash: [3, 3], label: 'חצי' }] },
+                    tooltip: { callbacks: { label: i => `${rows[i.dataIndex].cnt} סקרים · ${Math.round(rows[i.dataIndex].share * 100)}% הכניסו אותה` } } } } });
+    }
+
+    // ───────── One past election: the polls against the result
+    function renderSingle() {
+        const k = S.els[0], f = D.finals[k].lists, u = U();
+        const wp = windowPolls(k), ex = windowPolls(k, 'exit');
+        const b = best(k);
+        const avgMiss = mean(wp.map(p => M().poll(p)));
+        const exMiss = mean(ex.map(p => M().poll(p)));
+        const bib = mean(wp.map(p => p.score.bloc_bibi).filter(x => x != null));
+        document.getElementById('single-hero').innerHTML = `<div class="q">בחירות ${elShort(k)} · ${esc(winName())}</div>
+            <h2>הסקרים מול התוצאה</h2>
+            <div class="podium">${['party', 'bloc'].map(m => { const keep = S.measure; S.measure = m; const x = best(k); const v = x ? mv(x[1]) : null; S.measure = keep;
+                return `<div><b>${m === 'party' ? 'הכי מדויק במפלגות' : 'הכי מדויק בגוש נתניהו'}: ${x ? esc(short(nameOf(S.dim, x[0]))) : '—'}</b>
+                <span>${x ? 'פספוס ממוצע: ' + fmt(v, 1) + (m === 'party' ? ' מנדטים למפלגה' : ' מנדטים בגוש') : ''}</span></div>`; }).join('')}
+              <div><b>כל הסקרים</b><span>פספוס ממוצע: ${fmt(avgMiss, 1)} מנדטים למפלגה</span></div>
+              <div><b>המדגם בליל הבחירות</b><span>${exMiss != null ? 'פספוס ממוצע: ' + fmt(exMiss, 1) + ' מנדטים למפלגה' : 'המקור מציין רק את הערוץ'}</span></div></div>`;
+        // list by list: result, poll average, exit poll average
+        const avgOf = (ps, n) => { const v = ps.map(p => groupSeats(p, n)).filter(x => x != null); return v.length ? +mean(v).toFixed(1) : null; };
+        const lists = Object.keys(f).filter(n => f[n].seats > 0 || (avgOf(wp, n) || 0) > 0.5).sort((a, b) => f[b].seats - f[a].seats);
+        const pa = lists.map(n => avgOf(wp, n)), ea = lists.map(n => avgOf(ex, n));
+        let worst = null;
+        lists.forEach((n, i) => { if (pa[i] != null && (!worst || Math.abs(pa[i] - f[n].seats) > Math.abs(worst.d))) worst = { n, d: pa[i] - f[n].seats }; });
+        document.getElementById('single-title').textContent = `מה אמרו הסקרים, ומה קרה בפועל? (${elShort(k)})`;
+        document.getElementById('single-answer').innerHTML = worst ? `הפספוס הגדול: <b>${esc(worst.n)}</b> — הסקרים נתנו ${seatsTxt(worst.d)} ${worst.d > 0 ? 'יותר' : 'פחות'} ממה שקיבלה (${f[worst.n].seats}).` : '';
+        const box = document.getElementById('single-box'); box.style.height = (52 * lists.length + 70) + 'px';
+        mk('c-single', { type: 'bar', data: { labels: lists, datasets: [
+                { label: 'בפועל', data: lists.map(n => f[n].seats), backgroundColor: lists.map(n => f[n].color), borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.8, minBarLength: 2 },
+                { label: 'ממוצע הסקרים', data: pa, backgroundColor: '#6b7280', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.8, minBarLength: 2 },
+                ...(ex.length ? [{ label: 'המדגם', data: ea, backgroundColor: '#e5e7eb', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.8, minBarLength: 2 }] : [])] },
+            options: { indexAxis: 'y', scales: { x: axis('מנדטים', { min: 0, reverse: true }), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text, font: { size: 13 } } }) },
+                plugins: { tooltip: { displayColors: true, callbacks: { label: i => `${i.dataset.label}: ${i.raw == null ? 'נמדדה יחד עם מפלגה אחרת' : i.raw}` } } } } });
+        // the same, by bloc: a different question (who forms the government)
+        const F = D.finals[k];
+        const blocAvg = (ps, key, real) => { const v = ps.map(p => p.score[key]).filter(x => x != null); return v.length ? +(real + mean(v)).toFixed(1) : null; };
+        const bR = [F.bibi_real, F.arab_real, 120 - F.bibi_real - F.arab_real];
+        const bP = [blocAvg(wp, 'bloc_bibi', F.bibi_real), blocAvg(wp, 'bloc_arab', F.arab_real)];
+        bP.push(bP[0] != null && bP[1] != null ? +(120 - bP[0] - bP[1]).toFixed(1) : null);
+        const bE = [blocAvg(ex, 'bloc_bibi', F.bibi_real), blocAvg(ex, 'bloc_arab', F.arab_real)];
+        bE.push(bE[0] != null && bE[1] != null ? +(120 - bE[0] - bE[1]).toFixed(1) : null);
+        document.getElementById('single-bloc-title').textContent = `ומה לגבי הגושים? (${elShort(k)})`;
+        document.getElementById('single-bloc-answer').innerHTML = bP[0] == null ? 'הסקרים בזמן הזה לא מאפשרים לחשב את הגוש.'
+            : `לגוש נתניהו היו בפועל <b>${bR[0]}</b> מנדטים — ${bR[0] >= 61 ? 'רוב' : 'בלי רוב'}. הסקרים נתנו לו בממוצע <b>${fmt(bP[0], 1)}</b>${(bP[0] >= 61) === (bR[0] >= 61) ? ', כלומר בשאלה "יש רוב או אין" הם צדקו' : ', כלומר בשאלה "יש רוב או אין" הם טעו'}.`;
+        document.getElementById('single-bloc-read').textContent = `גוש נתניהו: ${(D.meta.netanyahu[k] || []).join(', ')} (מפלגות הימין והחרדים במחנה של נתניהו באותן בחירות). הקו המקווקו הוא 61. "כל השאר" = 120 פחות שני הגושים.`;
+        mk('c-single-bloc', { type: 'bar', data: { labels: ['גוש נתניהו', 'הרשימות הערביות', 'כל השאר'], datasets: [
+                { label: 'בפועל', data: bR, backgroundColor: C.accent, borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 },
+                { label: 'ממוצע הסקרים', data: bP, backgroundColor: '#6b7280', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 },
+                ...(ex.length ? [{ label: 'המדגם', data: bE, backgroundColor: '#e5e7eb', borderRadius: 3, barPercentage: 0.9, categoryPercentage: 0.75 }] : [])] },
+            options: { indexAxis: 'y', scales: { x: axis('מנדטים', { min: 0, max: 70, reverse: true }), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text, font: { size: 13 } } }) },
+                plugins: { refs: { lines: [{ axis: 'x', value: 61, color: '#8a90a0', dash: [3, 3], label: '61' }] },
+                    tooltip: { displayColors: true, callbacks: { label: i => `${i.dataset.label}: ${i.raw == null ? '—' : i.raw}` } } } } });
+        document.getElementById('single-legend').innerHTML = `<span><i class="dotm" style="background:#c9a66b"></i>בפועל (בצבע המפלגה)</span><span><i class="dotm" style="background:#6b7280"></i>ממוצע הסקרים (${esc(winName())})</span>` +
+            (ex.length ? `<span><i class="dotm" style="background:#e5e7eb"></i>המדגם בליל הבחירות</span>` : '');
+    }
+
+    // ───────── Several elections: how the polls did each year
+    function renderYears(els) {
+        const pm = els.map(k => { const v = windowPolls(k).map(p => M().poll(p)); return v.length ? +mean(v).toFixed(2) : null; });
+        const em = els.map(k => { const v = windowPolls(k, 'exit').map(p => M().poll(p)); return v.length ? +mean(v).toFixed(2) : null; });
+        const ok = els.map((k, i) => ({ k, v: pm[i] })).filter(x => x.v != null).sort((a, b) => a.v - b.v);
+        const pending = S.els.filter(k => !isScored(k));
+        const pendTxt = pending.length ? ` <span class="note">(${pending.map(elShort).join(', ')} עוד לא בהשוואה — אין עדיין תוצאות. את הסקרים שלה אפשר לראות כשבוחרים רק אותה.)</span>` : '';
+        document.getElementById('years-answer').innerHTML = (ok.length > 1 ?`השנה שבה הסקרים היו הכי מדויקים: <b>${elShort(ok[0].k)}</b> (פספוס ${fmt(ok[0].v, 1)} ${M().u}). הכי פחות מדויקים: <b>${elShort(ok[ok.length - 1].k)}</b> (${fmt(ok[ok.length - 1].v, 1)}).` : '') + pendTxt;
+        mk('c-years', { type: 'bar', data: { labels: els.map(elShort), datasets: [
+                { label: 'הסקרים', data: pm, backgroundColor: C.accent, borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.6 },
+                { label: 'המדגם', data: em, backgroundColor: '#e5e7eb', borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.6 }] },
+            options: { scales: { x: axis(''), y: axis(M().name + ' (מנדטים)', { beginAtZero: true }) },
+                plugins: { tooltip: { displayColors: true, callbacks: { label: i => `${i.dataset.label}: ${i.raw == null ? 'אין נתון' : fmt(i.raw, 1) + ' ' + M().u}` } } },
+                onClick: (_, e) => { if (e.length) { S.els = [els[e[0].index]]; S.tab = 'single'; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); } } } });
+    }
+
+    // ───────── Ranking
+    function renderRank() {
+        const box = document.getElementById('rank-box');
+        if (S.election === 'all') return renderRankAll(box);
+        if (!D.meta.elections[S.election].scored) return renderUnscored(box);
+        const k = S.election, u = U();
+        const r = ranked(k);
+        document.getElementById('rank-title').textContent = `מי הכי מדויק ב-${elShort(k)}? (${winName()})`;
+        if (!r.length) { box.innerHTML = '<p class="empty-state">אין סקרים בזמן הזה.</p>'; document.getElementById('rank-answer').innerHTML = ''; return; }
+        const few = s => S.win !== 'last' && S.win !== 'exit' && s.n < D.meta.few_polls;
+        const cons = consensus(k);
+        const okR = r.filter(([, s]) => !few(s));
+        const [bE, bS] = okR[0] || r[0];
+        const [wE, wS] = (okR.length ? okR : r)[(okR.length ? okR : r).length - 1];
+        document.getElementById('rank-answer').innerHTML = `<b>${esc(short(nameOf(S.dim, bE)))}</b> היה הכי מדויק: פספס בממוצע ${fmt(mv(bS), 1)} ${M().u}.
+            הכי פחות מדויק: ${esc(short(nameOf(S.dim, wE)))} (${fmt(mv(wS), 1)}).${cons ? ` הממוצע של כל הסקרים יחד פספס ${fmt(cons.mae, 1)}.` : ''}
+            ${okR.length < r.length ? `<span class="note">(${u.many} עם פחות מ-${D.meta.few_polls} סקרים מוצגים בצבע חלש ולא נספרו כאן.)</span>` : ''}`;
+        document.getElementById('rank-read').textContent = `כל פס הוא ${u.one}. פס קצר = פספס פחות = מדויק יותר. הקו המקווקו הוא הממוצע של כל הסקרים יחד. לחיצה על פס מראה את כל הסקרים של ה${u.one}.`;
+        box.innerHTML = '<canvas id="c-rank"></canvas>';
+        box.style.height = Math.max(220, 46 * r.length + 70) + 'px';
+        mk('c-rank', {
+            type: 'bar',
+            data: { labels: r.map(([e, s], i) => `${i + 1}. ${short(nameOf(S.dim, e))}` + (few(s) ? ' (מעט סקרים)' : '')),
+                datasets: [{ data: r.map(([, s]) => +mv(s).toFixed(3)),
+                    backgroundColor: r.map(([e, s]) => e === S.sel ? '#f6d78a' : few(s) ? 'rgba(240,180,41,0.35)' : C.accent),
+                    borderRadius: 4, barThickness: 22 }] },
+            options: { indexAxis: 'y',
+                scales: { x: axis(M().name + ' (מנדטים) — פחות זה טוב', { beginAtZero: true, position: 'bottom', reverse: true }),
+                          y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text, font: { size: 13 } } }) },
+                plugins: {
+                    refs: { lines: cons ? [{ axis: 'x', value: cons.mae, color: '#c8ceda', dash: [5, 4], label: 'ממוצע כל הסקרים' }] : [] },
+                    tooltip: { callbacks: { title: i => nameOf(S.dim, r[i[0].dataIndex][0]), label: i => { const s = r[i.dataIndex][1]; return [
+                        `פספס בממוצע ${fmt(mv(s), 1)} ${M().u}`, `${s.n === 1 ? 'סקר אחד' : s.n + ' סקרים'}`,
+                        s.bibi_signed != null ? `גוש נתניהו: ${s.bibi_signed < 0 ? 'נתן ' + seatsTxt(s.bibi_signed) + ' פחות' : s.bibi_signed > 0 ? 'נתן ' + seatsTxt(s.bibi_signed) + ' יותר' : 'קלע'}` : '',
+                        'לחיצה: כל הסקרים שלו'].filter(Boolean); } } } },
+                onClick: (_, el) => { if (el.length) { S.sel = r[el[0].index][0]; renderRank(); renderProfile(); document.getElementById('profile').scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+            },
+        });
+        document.getElementById('rank-legend').innerHTML = `<span><i class="dotm" style="background:rgba(240,180,41,0.35)"></i>פחות מ-${D.meta.few_polls} סקרים — אולי מזל</span>
+            <span><i class="dash" style="color:#c8ceda"></i>הממוצע של כל הסקרים יחד</span>`;
+        rankTable(r, k);
+        renderProfile();
+    }
+
+    function rankTable(r, k) {
+        document.getElementById('rank-table').innerHTML = `<table class="board"><thead><tr><th>מקום</th><th>שם</th><th>סקרים</th><th>פספוס ממוצע למפלגה</th><th>אותו דבר, כשסקר קרוב לבחירות שוקל יותר</th>
+            <th>גוש נתניהו (+ נתן יותר, − נתן פחות)</th><th>רשימות ערביות</th><th>טעויות בחסימה לסקר</th><th>טעות באחוזים</th><th>תאריכים</th></tr></thead><tbody>` +
+            r.map(([e, s], i) => `<tr class="clickable" data-k="${esc(e)}"><td>${i + 1}</td><td>${esc(nameOf(S.dim, e))}</td><td class="num">${s.n}</td>
+              <td class="num"><b>${fmt(s.mae, 2)}</b></td><td class="num">${fmt(s.mae_w, 2)}</td>
+              <td class="num ${s.bibi_signed > 0 ? 'pos' : s.bibi_signed < 0 ? 'neg' : ''}">${sgn(s.bibi_signed)}</td>
+              <td class="num ${s.arab_signed > 0 ? 'pos' : s.arab_signed < 0 ? 'neg' : ''}">${sgn(s.arab_signed)}</td>
+              <td class="num">${fmt(s.thr_miss, 2)}</td><td class="num">${s.pct_err == null ? '—' : fmt(s.pct_err, 2) + ' (' + s.pct_n + ')'}</td>
+              <td class="note">${s.first === s.last ? fmtDate(s.last) : fmtDate(s.first) + ' – ' + fmtDate(s.last)}</td></tr>`).join('') + '</tbody></table>';
+        document.querySelectorAll('#rank-table tr.clickable').forEach(tr => tr.onclick = () => { S.sel = tr.dataset.k; renderRank(); });
+    }
+
+    // Across elections: how much better (or worse) than the average body in
+    // the same elections. Each election counts the same.
+    function renderRankAll(box) {
+        const els = scoredEls(), u = U();
+        const cum = cumOf(S.win);
+        const r = Object.entries(cum).filter(([, c]) => c.rank).sort((a, b) => a[1].rank - b[1].rank);
+        const un = Object.entries(cum).filter(([, c]) => !c.rank);
+        document.getElementById('rank-title').textContent = `מי הכי מדויק לאורך השנים? (${winName()})`;
+        if (!r.length) { box.innerHTML = '<p class="empty-state">אין מספיק נתונים.</p>'; return; }
+        const [bE, bC] = r[0];
+        const spread = Math.max(...r.map(([, c]) => c.rel)) - Math.min(...r.map(([, c]) => c.rel));
+        document.getElementById('rank-answer').innerHTML = `<b>${esc(short(nameOf(S.dim, bE)))}</b> הכי מדויק לאורך זמן: בממוצע הוא פספס ${fmt(Math.abs(bC.rel), 2)} ${M().u} ${bC.rel < 0 ? 'פחות' : 'יותר'} מה${u.one} הממוצע באותן בחירות.
+            ההבדל בין הראשון לאחרון הוא רק ${fmt(spread, 2)} ${M().u} — כלומר כולם די דומים.`;
+        document.getElementById('rank-read').textContent = `כל פס הוא ${u.one}. פס ירוק שהולך ימינה = מדויק יותר מה${u.one} הממוצע; פס אפור שמאלה = פחות מדויק. משווים כל ${u.one} רק לבחירות שבהן סקר, כך שבחירות "קשות" לא מקפחות אף אחד. לחיצה על פס מראה את הפירוט לפי שנים.`;
+        box.innerHTML = '<canvas id="c-rank"></canvas>';
+        box.style.height = Math.max(240, 44 * r.length + 70) + 'px';
+        const vals = r.map(([, c]) => +(-c.rel).toFixed(3));
+        mk('c-rank', {
+            type: 'bar',
+            data: { labels: r.map(([e, c], i) => `${i + 1}. ${short(nameOf(S.dim, e))} (${c.n_elections} בחירות)`),
+                datasets: [{ data: vals, backgroundColor: r.map(([e], i) => e === S.sel ? '#f6d78a' : vals[i] >= 0 ? '#199e70' : '#5b6170'), borderRadius: 4, barThickness: 22, minBarLength: 3 }] },
+            options: { indexAxis: 'y',
+                scales: { x: axis(`${M().u} — ימינה: מדויק יותר מה${u.one} הממוצע`),
+                          y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text, font: { size: 13 } } }) },
+                plugins: { refs: { lines: [{ axis: 'x', value: 0, color: '#8a90a0', dash: [4, 4], label: `ה${u.one} הממוצע` }] },
+                    tooltip: { callbacks: { title: i => nameOf(S.dim, r[i[0].dataIndex][0]), label: i => { const c = r[i.dataIndex][1]; return [
+                        `פספס בממוצע ${fmt(c.mae, 1)} ${M().u}`,
+                        `זה ${fmt(Math.abs(c.rel), 2)} ${c.rel < 0 ? 'פחות' : 'יותר'} מה${u.one} הממוצע`,
+                        `נבדק ב-${c.n_elections} מערכות בחירות, ${c.n_polls} סקרים`]; } } } },
+                onClick: (_, el) => { if (el.length) { S.sel = r[el[0].index][0]; renderRank(); document.getElementById('profile').scrollIntoView({ behavior: 'smooth', block: 'start' }); } },
+            },
+        });
+        document.getElementById('rank-legend').innerHTML = `<span><i class="dotm" style="background:#199e70"></i>מדויק יותר מהממוצע</span><span><i class="dotm" style="background:#5b6170"></i>פחות מדויק מהממוצע</span>` +
+            (un.length ? `<span>לא בדירוג, כי נבדקו רק בבחירות אחת: ${un.map(([e]) => esc(short(nameOf(S.dim, e)))).join(', ')}</span>` : '');
+        document.getElementById('rank-table').innerHTML = `<table class="board"><thead><tr><th>מקום</th><th>שם</th><th>בחירות</th><th>סקרים</th><th>לעומת הממוצע (− = מדויק יותר)</th><th>פספוס ממוצע</th>` +
+            els.map(k => `<th>${elShort(k)}</th>`).join('') + '</tr></thead><tbody>' +
+            Object.entries(cum).sort((a, b) => (a[1].rank ?? 1e9) - (b[1].rank ?? 1e9)).map(([e, c]) => `<tr class="clickable" data-k="${esc(e)}"><td>${c.rank ?? '—'}</td>
+              <td>${esc(nameOf(S.dim, e))}</td><td class="num">${c.n_elections}</td><td class="num">${c.n_polls}</td>
+              <td class="num ${c.rel < 0 ? 'neg' : 'pos'}"><b>${sgn(c.rel, 2)}</b></td><td class="num">${fmt(c.mae, 2)}</td>` +
+              els.map(k => `<td class="num">${c.by_election[k] != null ? fmt(c.by_election[k], 2) : '—'}</td>`).join('') + '</tr>').join('') + '</tbody></table>';
+        document.querySelectorAll('#rank-table tr.clickable').forEach(tr => tr.onclick = () => { S.sel = tr.dataset.k; renderRank(); });
+        renderProfile();
+    }
+
+    function renderProfile() {
+        const el = document.getElementById('profile');
+        if (!S.sel) { el.style.display = 'none'; return; }
+        el.style.display = '';
+        const name = nameOf(S.dim, S.sel);
+        if (S.election === 'all') {
+            const c = cumOf(S.win)[S.sel];
+            if (!c) { el.style.display = 'none'; return; }
+            const els = Object.keys(c.by_election).sort((a, b) => a - b);
+            el.innerHTML = `<button class="close" onclick="S.sel=null;render()">סגירה</button><h2>${esc(name)}</h2>
+              <p class="lead">${c.n_elections} מערכות בחירות · ${c.n_polls} סקרים · ${winName()}. לחיצה על עמודה פותחת את אותן בחירות.</p>
+              <div class="chart-box" style="height:280px"><canvas id="c-prof"></canvas></div>
+              <div class="legend"><span><i class="dotm" style="background:${C.accent}"></i>${esc(short(name))}</span><span><i class="dotm" style="background:#4b5162"></i>המכון הממוצע באותן בחירות</span></div>`;
+            mk('c-prof', { type: 'bar', data: { labels: els.map(elShort), datasets: [
+                    { label: short(name), data: els.map(k => c.by_election[k]), backgroundColor: C.accent, borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.6 },
+                    { label: 'המכון הממוצע', data: els.map(k => +(c.by_election[k] - c.rel_by_election[k]).toFixed(3)), backgroundColor: '#4b5162', borderRadius: 4, barPercentage: 0.7, categoryPercentage: 0.6 }] },
+                options: { scales: { x: axis(''), y: axis(M().name, { beginAtZero: true }) },
+                    plugins: { tooltip: { displayColors: true, callbacks: { label: i => `${i.dataset.label}: ${fmt(i.raw, 2)}` } } },
+                    onClick: (_, e) => { if (e.length) { S.els = [els[e[0].index]]; S.tab = 'single'; render(); } } } });
+            return;
+        }
+        const st = stats(S.election)[S.sel];
+        if (!st) { el.style.display = 'none'; return; }
+        const ps = st.polls.map(id => pollById[id]).sort((a, b) => a.days_before - b.days_before);
+        const total = Object.keys(stats(S.election)).length;
+        el.innerHTML = `<button class="close" onclick="S.sel=null;render()">סגירה</button><h2>${esc(name)} — ${esc(D.meta.elections[S.election].he)}</h2>
+          <div class="tiles" style="margin:0.6rem 0 1rem">
+            <div class="tile accent"><div class="v">${ranked(S.election).findIndex(([e]) => e === S.sel) + 1}<small>מתוך ${total}</small></div><div class="k">מקום בדירוג</div></div>
+            <div class="tile"><div class="v">${fmt(mv(st), 2)}</div><div class="k">${M().name} (${st.n} סקרים)</div></div>
+            <div class="tile"><div class="v">${sgn(st.bibi_signed)}</div><div class="k">גוש נתניהו: הפרש מול ${D.finals[S.election].bibi_real} בפועל</div></div>
+            <div class="tile"><div class="v">${fmt(st.thr_miss, 2)}</div><div class="k">טעויות בחסימה, לכל סקר</div></div>
+          </div>
+          <div class="chart-box" style="height:240px"><canvas id="c-prof"></canvas></div>
+          <div class="legend"><span><i class="dotm" style="background:${C.accent}"></i>הסקרים של ${esc(short(name))} בחלון הזמן</span><span><i class="dotm" style="background:rgba(240,180,41,0.35)"></i>הסקרים שלו מחוץ לחלון</span><span><i class="dotm" style="background:#4b5162"></i>שאר הסקרים</span></div>
+          <h2 style="margin-top:1rem">הסקרים</h2>${pollsTable(ps.slice().reverse(), true)}`;
+        // all of its polls in the campaign; the ones inside the window are full colour
+        const pool = D.polls.filter(p => p.election === S.election && p.score && !p.exit_poll && p.days_before <= 120);
+        const mineAll = pool.filter(p => entsOf(p).includes(S.sel));
+        const inWin = new Set(st.polls);
+        const others = pool.filter(p => !entsOf(p).includes(S.sel));
+        const winDays = S.win.startsWith('d') ? winObj().days : null;
+        mk('c-prof', { type: 'scatter', data: { datasets: [
+                { data: others.map(p => ({ x: -p.days_before, y: M().poll(p), p })), pointRadius: 3, pointBackgroundColor: 'rgba(91,97,112,0.6)', pointBorderWidth: 0 },
+                { data: mineAll.map(p => ({ x: -p.days_before, y: M().poll(p), p })), pointRadius: 6,
+                    pointBackgroundColor: mineAll.map(p => inWin.has(p.id) ? C.accent : 'rgba(240,180,41,0.35)'), pointBorderColor: '#16181d', pointBorderWidth: 1.5 }] },
+            options: { scales: { x: axis('ימים לפני הבחירות', { min: -120, max: 0, ticks: { callback: v => Math.abs(v) } }), y: axis('פספוס למפלגה', { beginAtZero: true }) },
+                plugins: { refs: { bands: winDays ? [{ axis: 'x', from: -winDays, to: 0, color: 'rgba(240,180,41,0.06)' }] : [] },
+                    tooltip: { callbacks: { label: i => `${fmtDate(i.raw.p.date)} · ${short(nameOf(S.dim === 'pollster' ? 'outlet' : 'pollster', S.dim === 'pollster' ? i.raw.p.outlets[0] : i.raw.p.pollster) || '')} · טעות ${fmt(i.raw.y, 2)}` } } } } });
+        bindPollRows(el);
+    }
+
+    function renderUnscored(box) {
+        const k = S.election;
+        document.getElementById('rank-title').textContent = 'בחירות 2026: עוד אי אפשר לדעת מי צדק';
+        document.getElementById('rank-answer').innerHTML = 'הבחירות עוד לא התקיימו, ולכן אין תוצאה להשוות אליה. (מה שהאתר מציג כרגע לכנסת ה-26 הוא תרחיש מדומה, לא תוצאה.) כשיתפרסמו התוצאות הרשמיות, הדירוג יחושב מחדש. בינתיים אפשר לראות את כל סקרי 2026 בלשונית "כל הסקרים".';
+        document.getElementById('rank-read').textContent = '';
+        box.style.height = 'auto';
+        box.innerHTML = '';
+        document.getElementById('rank-legend').innerHTML = '';
+        document.getElementById('rank-table').innerHTML = '';
+        document.getElementById('profile').style.display = 'none';
+    }
+
+    // ───────── Blocs
+    function entityPicker(rowId, k) {
+        const counts = {};
+        D.polls.filter(p => p.election === k && usable(p) && !p.exit_poll && p.days_before <= 120).forEach(p => entsOf(p).forEach(e => counts[e] = (counts[e] || 0) + 1));
+        const ents = Object.entries(counts).sort((a, b) => b[1] - a[1]).map(([e]) => e);
+        if (!S.cmp.length || S.cmp.some(e => !counts[e])) S.cmp = ents.slice(0, 3);
+        pills(rowId, ents.map(e => { const i = S.cmp.indexOf(e); return { v: e, t: short(nameOf(S.dim, e)) + ` (${counts[e]})`, dot: i >= 0 ? CMP_COLORS[i] : null, sel: i >= 0 ? CMP_COLORS[i] : null }; }), null,
+            v => { const i = S.cmp.indexOf(v); if (i >= 0) S.cmp.splice(i, 1); else { if (S.cmp.length >= 3) S.cmp.shift(); S.cmp.push(v); } render(); });
+    }
+
+    function seriesChart(id, k, valueOf, real, extraLines, yTitle) {
+        const pts = D.polls.filter(p => p.election === k && usable(p) && p.days_before <= 120 && valueOf(p) != null);
+        const winDays = S.win.startsWith('d') ? winObj().days : null;
+        const ds = [{ label: 'כל הסקרים', data: pts.filter(p => !p.exit_poll).map(p => ({ x: -p.days_before, y: valueOf(p), p })),
+            pointRadius: 3, pointBackgroundColor: 'rgba(110,116,132,0.55)', pointBorderWidth: 0, showLine: false }];
+        S.cmp.forEach((e, i) => {
+            const mine = pts.filter(p => !p.exit_poll && entsOf(p).includes(e)).sort((a, b) => b.days_before - a.days_before);
+            ds.push({ label: short(nameOf(S.dim, e)), data: mine.map(p => ({ x: -p.days_before, y: valueOf(p), p })), showLine: true,
+                borderColor: CMP_COLORS[i], backgroundColor: CMP_COLORS[i], borderWidth: 2, pointRadius: 4, pointBorderColor: '#16181d', pointBorderWidth: 1.5, tension: 0 });
+        });
+        const ex = pts.filter(p => p.exit_poll);
+        if (ex.length) ds.push({ label: 'מדגם 22:00', data: ex.map(p => ({ x: 0, y: valueOf(p), p })), pointStyle: 'rectRot', pointRadius: 7,
+            pointBackgroundColor: '#f3f5f8', pointBorderColor: '#16181d', pointBorderWidth: 1.5, showLine: false });
+        // the real result and the reference lines must always be in view
+        const ys = pts.map(valueOf).concat(real == null ? [] : [real], (extraLines || []).map(l => l.value));
+        const yMin = Math.max(0, Math.floor(Math.min(...ys)) - 1), yMax = Math.ceil(Math.max(...ys)) + 1;
+        mk(id, { type: 'scatter', data: { datasets: ds },
+            options: { scales: { x: axis('ימים לפני הבחירות', { min: -120, max: 3, ticks: { stepSize: 15, callback: v => v <= 0 ? Math.abs(v) : '' } }),
+                    y: axis(yTitle, { min: yMin, max: yMax, ticks: { stepSize: yMax - yMin > 12 ? 2 : 1 } }) },
+                plugins: { refs: { bands: winDays ? [{ axis: 'x', from: -winDays, to: 0, color: 'rgba(240,180,41,0.06)' }] : [],
+                        lines: [...(real == null ? [] : [{ axis: 'y', value: real, color: C.accent, dash: [6, 4], width: 2, label: 'התוצאה: ' + real }]), ...(extraLines || [])] },
+                    tooltip: { callbacks: { title: i => i[0].raw.p.exit_poll ? 'מדגם 22:00' : fmtDate(i[0].raw.p.date) + ' · ' + i[0].raw.p.days_before + ' ימים לפני',
+                        label: i => { const p = i.raw.p; return `${short(nameOf('pollster', p.pollster) || 'מכון לא צוין')} / ${p.outlets.map(o => short(nameOf('outlet', o))).join(', ') || '—'}: ${fmt(i.raw.y, 0)}`; } } } } } });
+        return ds;
+    }
+
+    function legendFor(id, ds, extra) {
+        document.getElementById(id).innerHTML = ds.slice(1).map(d => `<span><i class="dotm" style="background:${d.borderColor || d.pointBackgroundColor}"></i>${esc(d.label)}</span>`).join('') +
+            `<span><i class="dotm" style="background:rgba(110,116,132,0.8)"></i>שאר הסקרים</span><span><i class="dash" style="color:${C.accent}"></i>התוצאה בפועל</span>` + (extra || '');
+    }
+
+    function renderBlocs() {
+        const single = S.election !== 'all' && D.meta.elections[S.election].scored;
+        ['blocs-pick-card', 'blocs-series', 'blocs-bars'].forEach(id => document.getElementById(id).style.display = single ? '' : 'none');
+        document.getElementById('blocs-all').style.display = single ? 'none' : '';
+        if (!single) return renderBlocsAll();
+        const k = S.election, F = D.finals[k];
+        entityPicker('blocs-pick', k);
+        const wp = windowPolls(k);
+        const mb1 = mean(wp.map(p => p.score.bloc_bibi).filter(x => x != null));
+        const ma1 = mean(wp.map(p => p.score.bloc_arab).filter(x => x != null));
+        const dirTxt = (m, real, got = 'קיבל') => m == null ? '' : Math.abs(m) < 0.5 ? `הסקרים קלעו כמעט בדיוק (${real} בפועל).`
+            : `הסקרים נתנו בממוצע ${seatsTxt(m)} ${m < 0 ? 'פחות' : 'יותר'} ממה ש${got} בפועל (${real}).`;
+        document.getElementById('bibi-answer').innerHTML = `${esc(winName())}: ${dirTxt(mb1, F.bibi_real)}`;
+        document.getElementById('arab-answer').innerHTML = `${esc(winName())}: ${dirTxt(ma1, F.arab_real, 'קיבלו')}`;
+        document.getElementById('bibi-read').textContent = `הגוש: ${(D.meta.netanyahu[k] || []).join(', ')} (מפלגות הימין והחרדים במחנה של נתניהו באותן בחירות). הקו הצהוב המקווקו = מה שקיבלו בפועל; הקו האפור = 61, רוב בכנסת. כל נקודה היא סקר; המעוינים הלבנים בקצה הם המדגם בליל הבחירות. האזור המודגש = הזמן שבחרתם.`;
+        document.getElementById('arab-read').textContent = `${(D.meta.arab_lists[k] || []).join(', ')}. הקו הצהוב המקווקו = מה שקיבלו בפועל.`;
+        const d1 = seriesChart('c-bibi', k, p => p.score.bloc_bibi == null ? null : F.bibi_real + p.score.bloc_bibi, F.bibi_real,
+            [{ axis: 'y', value: 61, color: '#8a90a0', dash: [2, 3], label: '61' }], 'מנדטים לגוש');
+        legendFor('bibi-legend', d1, `<span><i class="dash" style="color:#8a90a0"></i>רוב (61)</span>`);
+        const d2 = seriesChart('c-arab', k, p => p.score.bloc_arab == null ? null : F.arab_real + p.score.bloc_arab, F.arab_real, [], 'מנדטים');
+        legendFor('arab-legend', d2);
+
+        // majority call
+        const real61 = F.bibi_real >= 61;
+        const st = Object.entries(stats(k));
+        const rows = st.map(([e, s]) => {
+            const ps = s.polls.map(i => pollById[i]).filter(p => p.score.bloc_bibi != null);
+            const ok = ps.filter(p => (F.bibi_real + p.score.bloc_bibi >= 61) === real61).length;
+            return { e, ok, n: ps.length, r: ps.length ? ok / ps.length : null };
+        }).filter(x => x.n).sort((a, b) => b.r - a.r || b.n - a.n);
+        const totOk = rows.reduce((s, x) => s + x.ok, 0), totN = rows.reduce((s, x) => s + x.n, 0);
+        document.getElementById('major-answer').innerHTML = `בפועל לגוש היו <b>${F.bibi_real}</b> — ${real61 ? 'כן, היה רוב' : 'לא, לא היה רוב'}. ${totN ? `${Math.round(100 * totOk / totN)}% מהסקרים (${esc(winName())}) צפו את זה נכון.` : ''}`;
+        const mb = document.getElementById('major-box'); mb.style.height = Math.max(200, 34 * rows.length + 60) + 'px';
+        mk('c-major', { type: 'bar', data: { labels: rows.map(x => short(nameOf(S.dim, x.e))),
+                datasets: [{ data: rows.map(x => Math.round(x.r * 100)), backgroundColor: rows.map(x => x.r >= 0.5 ? '#199e70' : C.over), borderRadius: 4, barThickness: 18, minBarLength: 4 }] },
+            options: { indexAxis: 'y', scales: { x: axis('% מהסקרים שצפו נכון', { min: 0, max: 100, reverse: true }), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text } }) },
+                plugins: { refs: { lines: [{ axis: 'x', value: 50, color: '#5b6170', dash: [3, 3] }] },
+                    tooltip: { callbacks: { label: i => `${rows[i.dataIndex].ok} מתוך ${rows[i.dataIndex].n} סקרים צפו נכון` } } } } });
+
+        // bloc error per body
+        const be = st.filter(([, s]) => s.bibi_signed != null || s.arab_signed != null).sort((a, b) => (a[1].bibi_signed ?? 0) - (b[1].bibi_signed ?? 0));
+        const bb = document.getElementById('blocerr-box'); bb.style.height = Math.max(200, 34 * be.length + 60) + 'px';
+        const lab = be.map(([e]) => short(nameOf(S.dim, e)));
+        const under = be.filter(([, s]) => s.bibi_signed != null && s.bibi_signed < -0.5).length, over = be.filter(([, s]) => s.bibi_signed > 0.5).length;
+        document.getElementById('blocerr-answer').innerHTML = under === be.length ? `כל ה${U().many} נתנו לגוש נתניהו פחות ממה שקיבל.`
+            : over === be.length ? `כל ה${U().many} נתנו לגוש נתניהו יותר ממה שקיבל.`
+            : `${under} ${U().many} נתנו לגוש נתניהו פחות מהתוצאה, ${over} נתנו יותר, והשאר קלעו בערך.`;
+        mk('c-blocerr', { type: 'scatter', data: { datasets: [
+                { label: 'גוש נתניהו', data: be.map(([, s], i) => ({ x: s.bibi_signed, y: i })), pointRadius: 7, pointBackgroundColor: C.accent, pointBorderColor: '#16181d', pointBorderWidth: 2 },
+                { label: 'הרשימות הערביות', data: be.map(([, s], i) => ({ x: s.arab_signed, y: i })), pointRadius: 6, pointBackgroundColor: '#9085e9', pointBorderColor: '#16181d', pointBorderWidth: 2 }] },
+            options: { scales: { x: axis('טעות במנדטים (פלוס = נתן יותר)'), y: axis('', { position: 'right', reverse: true, min: -0.6, max: be.length - 0.4, grid: { color: '#22252e' },
+                    afterBuildTicks: s => { s.ticks = lab.map((_, i) => ({ value: i })); }, ticks: { color: C.text, callback: v => lab[v] } }) },
+                plugins: { refs: { lines: [{ axis: 'x', value: 0, color: '#8a90a0', dash: [4, 4], label: 'התוצאה' }] },
+                    tooltip: { callbacks: { label: i => `${lab[i.raw.y]} · ${i.dataset.label}: ${sgn(i.raw.x)}` } } } } });
+    }
+
+    function renderBlocsAll() {
+        const els = scoredEls();
+        const draw = (id, key) => {
+            const dots = [], avg = [];
+            els.forEach((k, i) => {
+                const st = stats(k);
+                Object.entries(st).forEach(([e, s]) => { if (s[key] != null) dots.push({ x: i, y: s[key], e, k }); });
+                const v = windowPolls(k).map(p => p.score[key === 'bibi_signed' ? 'bloc_bibi' : 'bloc_arab']).filter(x => x != null);
+                avg.push({ x: i, y: v.length ? +mean(v).toFixed(2) : null });
+            });
+            mk(id, { type: 'scatter', data: { datasets: [
+                    { data: dots, pointRadius: 5, pointBackgroundColor: 'rgba(147,154,171,0.5)', pointBorderWidth: 0 },
+                    { data: avg, showLine: true, borderColor: C.accent, backgroundColor: C.accent, borderWidth: 2.5, pointRadius: 6, pointBorderColor: '#16181d', pointBorderWidth: 2 }] },
+                options: { scales: { x: axis('', { min: -0.5, max: els.length - 0.5, afterBuildTicks: s => { s.ticks = els.map((_, i) => ({ value: i })); }, ticks: { color: C.text, callback: v => els[v] ? elShort(els[v]) : '' } }),
+                        y: axis('טעות במנדטים') },
+                    plugins: { refs: { lines: [{ axis: 'y', value: 0, color: '#8a90a0', dash: [4, 4], label: 'התוצאה' }] },
+                        tooltip: { callbacks: { label: i => i.raw.e ? `${short(nameOf(S.dim, i.raw.e))}, ${elShort(i.raw.k)}: ${sgn(i.raw.y)}` : `ממוצע כל הסקרים: ${sgn(i.raw.y)}` } } } } });
+        };
+        draw('c-bibi-all', 'bibi_signed');
+        draw('c-arab-all', 'arab_signed');
+        const per = els.map(k => ({ k, m: mean(windowPolls(k).map(p => p.score.bloc_bibi).filter(x => x != null)) })).filter(x => x.m != null);
+        const lo = per.filter(x => x.m < -1).map(x => elShort(x.k)), hi = per.filter(x => x.m > 1).map(x => elShort(x.k));
+        document.getElementById('bibiall-answer').innerHTML = `לא תמיד לאותו כיוון. ${lo.length ? `הסקרים נתנו לגוש פחות מהתוצאה ב: ${lo.join(', ')}.` : ''} ${hi.length ? `יותר מהתוצאה ב: ${hi.join(', ')}.` : ''} אבל בכל מערכת בחירות לחוד, רוב הסקרים טעו יחד לאותו כיוון.`;
+    }
+
+    // ───────── Parties
+    function renderParties() {
+        document.getElementById('bias-box').closest('.card').style.display = '';
+        const single = S.election !== 'all' && D.meta.elections[S.election].scored;
+        ['party-series-card', 'party-heat-card'].forEach(id => document.getElementById(id).style.display = single ? '' : 'none');
+        const bb = document.getElementById('bias-box');
+        if (!single) {
+            // the biggest list misses across all elections
+            const rows = [];
+            scoredEls().forEach(k => {
+                const acc = {};
+                windowPolls(k).forEach(p => Object.entries(p.score.signed).forEach(([n, v]) => (acc[n] = acc[n] || []).push(v)));
+                Object.entries(acc).forEach(([n, v]) => { if (v.length >= 3) rows.push({ n, k, m: mean(v), c: D.finals[k].lists[n].color, real: D.finals[k].lists[n].seats }); });
+            });
+            rows.sort((a, b) => Math.abs(b.m) - Math.abs(a.m));
+            const top = rows.slice(0, 16).sort((a, b) => b.m - a.m);
+            document.getElementById('bias-title').textContent = 'באילו מפלגות הסקרים טעו הכי הרבה, בכל השנים?';
+            { const t0 = top.slice().sort((a, b) => Math.abs(b.m) - Math.abs(a.m))[0]; document.getElementById('bias-answer').innerHTML = t0 ? `הפספוס הגדול ביותר: <b>${esc(t0.n)} ב-${elShort(t0.k)}</b> — הסקרים נתנו לה בממוצע ${seatsTxt(t0.m)} ${t0.m > 0 ? 'יותר' : 'פחות'} ממה שקיבלה (${t0.real}). בגרף: 16 הפספוסים הגדולים בכל השנים. כדי לראות כל מפלגה, בחרו שנת בחירות למעלה.` : ''; }
+            bb.style.height = (34 * top.length + 70) + 'px';
+            biasBars(top.map(x => ({ label: `${x.n} · ${elShort(x.k)}`, m: x.m, c: x.c, real: x.real })));
+            return;
+        }
+        const k = S.election, f = D.finals[k].lists;
+        const acc = {};
+        windowPolls(k).forEach(p => Object.entries(p.score.signed).forEach(([n, v]) => (acc[n] = acc[n] || []).push(v)));
+        const rows = Object.entries(acc).filter(([n, v]) => f[n].seats > 0 || mean(v.map((x) => x + f[n].seats)) > 0.5).map(([n, v]) => ({ label: n, m: mean(v), c: f[n].color, real: f[n].seats, n: v.length }))
+            .sort((a, b) => b.m - a.m);
+        document.getElementById('bias-title').textContent = `באילו מפלגות הסקרים טעו ב-${elShort(k)}?`;
+        { const big = rows.slice().sort((a, b) => Math.abs(b.m) - Math.abs(a.m)).filter(r => Math.abs(r.m) >= 1); document.getElementById('bias-answer').innerHTML = big.length ? `${esc(winName())}, כל הסקרים יחד: ` + big.slice(0, 3).map(r => `${esc(le(r.label))} נתנו ${seatsTxt(r.m)} ${r.m > 0 ? 'יותר' : 'פחות'} (קיבלה ${r.real})`).join('; ') + '. בשאר המפלגות הם היו קרובים, פחות ממנדט.' : 'הסקרים היו קרובים לתוצאה בכל המפלגות — פחות ממנדט לכל אחת.'; }
+        bb.style.height = (34 * rows.length + 70) + 'px';
+        biasBars(rows);
+
+        // one list over time
+        const lists = Object.keys(f).filter(n => f[n].seats > 0 || f[n].pct >= 2).sort((a, b) => f[b].seats - f[a].seats);
+        if (!S.party || !lists.includes(S.party)) S.party = lists[0];
+        pills('party-pick', lists.map(n => ({ v: n, t: n, dot: f[n].color })), S.party, v => { S.party = v; renderParties(); });
+        entityPicker('party-ent-pick', k);
+        const real = f[S.party].seats;
+        { const v = windowPolls(k).map(p => groupSeats(p, S.party)).filter(x => x != null);
+          const m = mean(v);
+          document.getElementById('party-answer').innerHTML = m == null ? 'הסקרים בזמן הזה מדדו את המפלגה הזו יחד עם מפלגה אחרת, ולכן אין להם מספר נפרד לה.'
+            : `${esc(winName())} הסקרים נתנו ${esc(le(S.party))} בממוצע <b>${fmt(m, 1)}</b> מנדטים. בפועל היא קיבלה <b>${real}</b>${real === 0 ? ` (${fmt(f[S.party].pct, 2)}% מהקולות, מתחת לאחוז החסימה)` : ''}.`; }
+        const ds = seriesChart('c-party', k, p => groupSeats(p, S.party), real,
+            [], 'מנדטים (0 = מתחת לאחוז החסימה)');
+        legendFor('party-legend', ds);
+
+        // heat: body x list
+        const st = Object.entries(stats(k)).sort((a, b) => a[1].rank - b[1].rank);
+        const cell = v => { if (v == null) return '<td class="num note" style="text-align:center">—</td>';
+            const a = Math.min(1, Math.abs(v) / 4), col = v > 0 ? `rgba(230,103,103,${0.15 + 0.7 * a})` : v < 0 ? `rgba(57,135,229,${0.15 + 0.7 * a})` : 'transparent';
+            return `<td class="num" style="text-align:center;background:${col};color:#fff">${sgn(v)}</td>`; };
+        document.getElementById('party-heat').innerHTML = `<table class="board"><thead><tr><th>${S.dim === 'pollster' ? 'מכון' : 'כלי תקשורת'}</th><th>סקרים</th>
+            <th style="text-align:center">גוש נתניהו<br><span class="note">${D.finals[k].bibi_real}</span></th><th style="text-align:center">ערביות<br><span class="note">${D.finals[k].arab_real}</span></th>` +
+            lists.map(n => `<th style="text-align:center"><span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${f[n].color};margin-left:4px"></span>${esc(n)}<br><span class="note">${f[n].seats}</span></th>`).join('') +
+            '</tr></thead><tbody>' + st.map(([e, s]) => `<tr><td>${esc(short(nameOf(S.dim, e)))}</td><td class="num">${s.n}</td>${cell(s.bibi_signed)}${cell(s.arab_signed)}` +
+            lists.map(n => cell(s.signed[n])).join('') + '</tr>').join('') + '</tbody></table>';
+    }
+
+    function biasBars(rows) {
+        mk('c-bias', { type: 'bar', data: { labels: rows.map(r => r.label),
+                datasets: [{ data: rows.map(r => +r.m.toFixed(2)), backgroundColor: rows.map(r => r.m > 0 ? C.over : C.under), borderRadius: 4, barThickness: 18 }] },
+            options: { indexAxis: 'y', scales: { x: axis('טעות ממוצעת במנדטים (פלוס = הסקרים נתנו יותר)'), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text, font: { size: 13 } } }) },
+                plugins: { refs: { lines: [{ axis: 'x', value: 0, color: '#8a90a0' }] },
+                    tooltip: { callbacks: { label: i => `טעות ממוצעת ${sgn(rows[i.dataIndex].m)} · בפועל ${rows[i.dataIndex].real} מנדטים` + (rows[i.dataIndex].n ? ` · ${rows[i.dataIndex].n} סקרים` : '') } } } } });
+    }
+
+    // ───────── Threshold
+    function renderThr() {
+        const single = S.election !== 'all' && D.meta.elections[S.election].scored;
+        document.getElementById('thr-ent-card').style.display = single ? '' : 'none';
+        const rows = [];
+        (single ? [S.election] : scoredEls()).forEach(k => {
+            const f = D.finals[k].lists, acc = {};
+            windowPolls(k).forEach(p => p.score.groups.forEach(g => { if (g.lists.length === 1 && !g.others) (acc[g.lists[0]] = acc[g.lists[0]] || []).push(g.poll > 0); }));
+            Object.entries(acc).forEach(([n, v]) => {
+                const share = v.filter(Boolean).length / v.length, inn = f[n].seats > 0;
+                const near = f[n].pct >= 1.2 && f[n].pct <= 6;
+                const disputed = share > 0 && share < 1;
+                if ((near || disputed || share >= 0.5 !== inn) && v.length >= (single ? 1 : 3))
+                    rows.push({ n, k, share, inn, pct: f[n].pct, cnt: v.length, right: (share >= 0.5) === inn });
+            });
+        });
+        const show = single ? rows.sort((a, b) => b.share - a.share) : rows.filter(r => !r.right || (r.share > 0.15 && r.share < 0.85)).sort((a, b) => a.right - b.right || b.share - a.share);
+        document.getElementById('thr-title').textContent = single ? `מי עברה את אחוז החסימה ב-${elShort(S.election)}, ומה אמרו הסקרים?` : 'באילו מפלגות על הקו הסקרים טעו, בכל השנים?';
+        { const wrong = show.filter(r => !r.right); document.getElementById('thr-answer').innerHTML = !show.length ? '' : wrong.length ? (wrong.length === 1 ? 'רוב הסקרים טעו במפלגה אחת: ' : `רוב הסקרים טעו ב-${wrong.length} מפלגות: `) + wrong.slice(0, 4).map(r => `${esc(r.n)}${single ? '' : ' (' + elShort(r.k) + ')'} — ${r.inn ? 'הסקרים השאירו בחוץ, והיא נכנסה' : 'הסקרים הכניסו, והיא לא עברה'}`).join('; ') + '.' : 'רוב הסקרים צדקו לגבי כל המפלגות שעל הקו.'; }
+            (single ? '' : ' מוצגות רק רשימות שהסקרים היו חלוקים עליהן או טעו לגביהן.');
+        const box = document.getElementById('thr-box');
+        if (!show.length) { box.style.height = 'auto'; box.innerHTML = '<p class="empty-state">אין רשימות קרובות לחסימה בחלון הזה.</p>'; return; }
+        box.innerHTML = '<canvas id="c-thr"></canvas>';
+        box.style.height = (36 * show.length + 70) + 'px';
+        const lab = show.map(r => `${r.n}${single ? '' : ' · ' + elShort(r.k)} — ${r.inn ? 'עברה' : 'לא עברה'} (${r.pct.toFixed(2)}%)`);
+        mk('c-thr', { type: 'bar', data: { labels: lab, datasets: [{ data: show.map(r => Math.round(r.share * 100)),
+                backgroundColor: show.map(r => r.right ? '#199e70' : C.over), borderRadius: 4, barThickness: 18, minBarLength: 3 }] },
+            options: { indexAxis: 'y', scales: { x: axis('% מהסקרים שהכניסו אותה לכנסת', { min: 0, max: 100, reverse: true }), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text } }) },
+                plugins: { refs: { lines: [{ axis: 'x', value: 50, color: '#5b6170', dash: [3, 3], label: 'חצי' }] },
+                    tooltip: { callbacks: { label: i => { const r = show[i.dataIndex]; return [`${Math.round(r.share * 100)}% מ-${r.cnt} סקרים הכניסו אותה`, `בפועל: ${r.inn ? 'עברה' : 'לא עברה'}, ${r.pct.toFixed(2)}% מהקולות`]; } } } } } });
+        if (!single) return;
+        const st = Object.entries(stats(S.election)).filter(([, s]) => s.thr_miss != null).sort((a, b) => a[1].thr_miss - b[1].thr_miss);
+        { const zero = st.filter(([, s]) => s.thr_miss === 0).map(([e]) => short(nameOf(S.dim, e)));
+          const w = st[st.length - 1];
+          document.getElementById('thrent-answer').innerHTML = !st.length ? '' : zero.length === st.length ? `כולם צדקו בכל הסקרים לגבי אחוז החסימה.`
+            : st[0][1].thr_miss === w[1].thr_miss ? `כל ה${U().many} טעו באותה מידה: ${fmt(w[1].thr_miss, 1)} טעויות לכל סקר.` : (zero.length ? `לא טעו אף פעם: ${zero.map(esc).join(', ')}. ` : 'כולם טעו לפחות פעם אחת. ') + `הכי הרבה טעויות: ${esc(short(nameOf(S.dim, w[0])))} (${fmt(w[1].thr_miss, 1)} לכל סקר).`; }
+        const eb = document.getElementById('thr-ent-box'); eb.style.height = Math.max(180, 32 * st.length + 60) + 'px';
+        mk('c-thr-ent', { type: 'bar', data: { labels: st.map(([e]) => short(nameOf(S.dim, e))), datasets: [{ data: st.map(([, s]) => s.thr_miss), backgroundColor: C.accent, borderRadius: 4, barThickness: 16, minBarLength: 2 }] },
+            options: { indexAxis: 'y', scales: { x: axis('טעויות בחסימה, לכל סקר', { beginAtZero: true, reverse: true }), y: axis('', { position: 'right', grid: { display: false }, ticks: { color: C.text } }) },
+                plugins: { tooltip: { callbacks: { label: i => `${fmt(i.raw, 2)} טעויות לסקר · ${st[i.dataIndex][1].n} סקרים` } } } } });
+    }
+
+    // ───────── Polls table
+    function renderPolls() {
+        const t = document.getElementById('polls-table');
+        if (S.election === 'all') { t.innerHTML = '<p class="empty-state">בחרו מערכת בחירות בשורת הסינון למעלה.</p>'; return; }
+        const k = S.election, w = winObj();
+        let ps = D.polls.filter(p => p.election === k);
+        ps = S.win === 'exit' ? ps.filter(p => p.exit_poll) : ps.filter(p => !p.exit_poll && p.days_before >= 1 && p.days_before <= w.days);
+        if (S.win === 'last') { const ids = new Set(Object.values(lastPolls(k)).map(p => p.id)); ps = ps.filter(p => ids.has(p.id)); }
+        ps.sort((a, b) => b.date.localeCompare(a.date));
+        document.getElementById('polls-title').textContent = `כל הסקרים — ${D.meta.elections[k].he} — ${w.he} (${ps.length})`;
+        t.innerHTML = ps.length ? pollsTable(ps, D.meta.elections[k].scored) : '<p class="empty-state">אין סקרים בחלון הזה.</p>';
+        bindPollRows(t);
+    }
+
+    function pollsTable(ps, scored) {
+        return `<table class="board"><thead><tr><th>תאריך</th><th>ימים לפני</th><th>מכון</th><th>כלי תקשורת</th><th>מדגם</th>` +
+            (scored ? `<th>פספוס למפלגה</th><th>גוש נתניהו</th><th>ערביות</th><th>טעויות חסימה</th>` : '') +
+            `<th>מקורות</th></tr></thead><tbody>` + ps.map(p => {
+                const s = p.score;
+                const flag = p.excluded ? `<span class="badge">לא נכלל</span>` : p.unscorable ? `<span class="badge">בלי ציון</span>` : '';
+                const row = `<tr class="clickable poll-row" data-id="${p.id}">
+                  <td>${fmtDate(p.date)}${flag}</td><td class="num">${p.exit_poll ? 'מדגם' : p.days_before}</td>
+                  <td>${p.pollster ? esc(short(nameOf('pollster', p.pollster))) : '<span class="note">לא צוין</span>'}</td>
+                  <td>${p.outlets.map(o => esc(short(nameOf('outlet', o)))).join(', ') || '<span class="note">לא צוין</span>'}</td>
+                  <td class="num">${p.sample_size || '—'}</td>` +
+                  (scored ? `<td class="num"><b>${s ? fmt(s.mae, 2) : '—'}</b></td><td class="num">${s ? sgn(s.bloc_bibi) : '—'}</td>
+                    <td class="num">${s ? sgn(s.bloc_arab) : '—'}</td><td class="num">${s ? s.thr_miss : '—'}</td>` : '') +
+                  `<td class="src">${p.source_urls.slice(0, 1).map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">כתבה</a>`).join('')}
+                    ${p.wiki.url ? `<a href="${esc(p.wiki.url)}" target="_blank" rel="noopener">ויקיפדיה</a>` : '<span class="badge">מהכתבה, לא מוויקיפדיה</span>'}</td></tr>`;
+                return row + (S.open === p.id ? `<tr class="poll-detail"><td colspan="${scored ? 10 : 6}">${pollDetail(p)}</td></tr>` : '');
+            }).join('') + '</tbody></table>';
+    }
+
+    function pollDetail(p) {
+        let h = '';
+        if (p.score) {
+            h += '<div class="cmp">' + p.score.groups.filter(g => g.poll > 0 || g.real > 0).map(g => {
+                const d = g.poll - g.real, nm = g.others ? 'אחרות' : g.lists.join(' + ');
+                return `<span>${esc(nm)}: סקר <b>${g.poll}</b> · תוצאה <b>${g.real}</b> <span class="${d > 0 ? 'pos' : d < 0 ? 'neg' : ''}">(${sgn(d, 0)})</span></span>`;
+            }).join('') + '</div>';
+            if (p.score.thr_detail.length) h += '<p class="note">טעויות חסימה: ' + p.score.thr_detail.map(t => `${esc(t.list)} — ${t.poll_in ? 'בסקר עברה, בפועל לא' : 'בסקר לא עברה, בפועל עברה'}`).join('; ') + '</p>';
+            if (p.score.withdrawn.length) h += '<p class="note">הסקר כלל רשימה שפרשה לפני הבחירות: ' + esc(p.score.withdrawn.join(', ')) + ' (לא נספרה).</p>';
+        } else {
+            h += '<div class="cmp">' + p.mapped.map(m => `<span>${esc(m.he)}: <b>${esc(m.raw)}</b></span>`).join('') + '</div>';
+            if (p.excluded) h += `<p class="note">לא נכלל בדירוג: ${esc(p.excluded)}</p>`;
+            if (p.unscorable) h += `<p class="note">בלי ציון: ${esc(p.unscorable)}</p>`;
+        }
+        h += `<p class="note">כפי שרשום במקור: ${esc(p.firm_raw)}${p.publisher_raw ? ' / ' + esc(p.publisher_raw) : ''} · מזהה ${p.id} · ${p.wiki.url ? 'ויקיפדיה טבלה ' + p.wiki.table + ' שורה ' + p.wiki.row : 'נלקח מהכתבות המקוריות'}${p.sample_size ? ' · ' + p.sample_size + ' נשאלים' : ''}${p.margin_of_error ? ' · טעות דגימה ' + p.margin_of_error + '%' : ''}</p>`;
+        if (p.verification_he) h += `<p class="note">איך נבדק: ${esc(p.verification_he)}</p>`;
+        if (p.manual) h += '<p class="src">' + p.source_urls.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.replace(/^https?:\/\/(www\.)?/, '').slice(0, 50))}</a>`).join(' · ') + '</p>';
+        return h;
+    }
+
+    function bindPollRows(root) {
+        root.querySelectorAll('tr.poll-row').forEach(tr => tr.onclick = ev => {
+            if (ev.target.tagName === 'A') return;
+            S.open = S.open === tr.dataset.id ? null : tr.dataset.id;
+            if (S.tab === 'polls') renderPolls(); else renderProfile();
+        });
+    }
+
+    // ───────── Method
+    function renderMethod() {
+        const m = D.meta;
+        const pages = Object.entries(m.source.pages).map(([k, p]) => `<li>${esc(m.elections[k].he)}: <a href="${esc(p.url)}" target="_blank" rel="noopener">גרסה ${p.revid}</a></li>`).join('');
+        const counts = {};
+        D.polls.forEach(p => { const c = counts[p.election] = counts[p.election] || { all: 0, sc: 0, ex: 0, un: 0, exit: 0 };
+            c.all++; if (p.score) c.sc++; if (p.excluded) c.ex++; if (p.unscorable) c.un++; if (p.exit_poll) c.exit++; });
+        document.getElementById('method-body').innerHTML = `
+          <h2>הגדרות ושיטה</h2>
+          <h3>המדידות</h3>
+          <ul>
+            <li><b>פספוס ממוצע למפלגה</b> — לכל רשימה: כמה מנדטים הסקר נתן, פחות כמה קיבלה בפועל, בלי סימן. ואז ממוצע. נכנסות רק רשימות שזכו במנדטים או שהסקר נתן להן מנדטים.</li>
+            <li><b>גוש נתניהו</b> — סכום המנדטים שהסקר נתן למפלגות הימין והחרדים במחנה של נתניהו באותן בחירות (הרשימה המלאה לכל בחירות מופיעה ליד הגרפים), פחות הסכום בפועל. מפלגות שהצטרפו לממשלה שלו בלי להיות במחנה, כמו יש עתיד והתנועה ב-2013, לא נספרות בגוש. <b>הרשימות הערביות</b> — אותו דבר. ההגדרות לכל בחירות לקוחות מקובץ blocs.py של האתר.</li>
+            <li><b>מי צדק מי מגיע ל-61</b> — האם הסקר נתן לגוש נתניהו 61 ומעלה, ומה קרה בפועל.</li>
+            <li><b>טעויות חסימה</b> — כמה רשימות הסקר שם בצד הלא נכון של אחוז החסימה.</li>
+            <li><b>הטעות של כל הענף</b> — הממוצע של כל הסקרים לכל רשימה, פחות התוצאה. מראה טעות משותפת לכולם.</li>
+            <li><b>ממוצע כל הסקרים</b> — מחשבים את הממוצע של כל הסקרים בחלון לכל רשימה, ומודדים אותו כאילו היה סקר אחד. זה בודק אם "חוכמת ההמונים" עדיפה על כל מכון לבד.</li>
+            <li><b>טעות באחוזים</b> — רק כשהסקר פרסם אחוז הצבעה (בדרך כלל רק לרשימות מתחת לחסימה), ולכן מופיעה רק בטבלה המלאה.</li>
+          </ul>
+          <h3>חלונות הזמן</h3>
+          <ul>${m.windows.map(w => `<li><b>${esc(w.he)}</b> — ${WIN_HELP[w.key]}</li>`).join('')}</ul>
+          <p>החלונות מקוננים: 120 הימים כוללים גם את 30 הימים. התאריך הוא סוף העבודה בשטח, או תאריך הפרסום כשרק הוא ידוע. החוק אוסר לפרסם סקרים בימים האחרונים לפני הבחירות, ולכן "השבועיים האחרונים" הם בפועל כעשרה ימים.</p>
+          <h3>דירוג ושקלול</h3>
+          <ul>
+            <li>בכל מערכת בחירות מדרגים לפי הטעות הממוצעת לרשימה. בטבלה המלאה יש גם גרסה משוקללת: סקר שנעשה ${m.half_life_days} יום לפני הבחירות שוקל חצי מסקר של יום הבחירות.</li>
+            <li>גוף עם פחות מ-${m.few_polls} סקרים בחלון מסומן "מעט סקרים", ולא נכנס לטבלת "מי היה הכי קרוב".</li>
+            <li>בדירוג המצטבר כל מערכת בחירות שוקלת אותו דבר. בכל בחירות מחשבים את הטעות של הגוף פחות הטעות של המכון הממוצע (החציון), ואז ממוצע. כך בחירות שהיה קשה לחזות לא מענישות את מי שסקר רק בהן. מדורג רק מי שנמדד לפחות ב-${m.min_elections} מערכות.</li>
+            <li>בדירוג כלי התקשורת, סקר שפורסם בשני כלים נספר לשניהם.</li>
+          </ul>
+          <h3>הוגנות: איחודים, פיצולים ורשימות שפרשו</h3>
+          <ul>${m.list_notes_he.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+          <h3>שמות המכונים וכלי התקשורת</h3>
+          <ul>${m.merge_notes_he.map(t => `<li>${esc(t)}</li>`).join('')}
+            <li>בטבלאות של 2013, 2015 ואפריל 2019 בוויקיפדיה יש עמודה אחת לסוקר ולכלי התקשורת יחד. כשרק אחד מהם רשום, השני "לא צוין". במדגמים של אותן שנים רשום רק הערוץ, ולא השלמתי מכון מניחוש.</li>
+          </ul>
+          <h3>מה לא נכלל</h3>
+          <ul>
+            <li>סקרים של מגזר אחד, סקרים פנימיים, סקרים שהזמינה מפלגה וסקרים שהסוקר פרסם בעצמו בלי כלי תקשורת. טבלאות "תרחיש" בוויקיפדיה לא נקראו בכלל.</li>
+            <li>סקר מדגם שפורסם בערוץ 7 ב-9/1/2020: בכתבה עצמה כתוב שזה סקר פנימי שהזמינו גורמים בימין.</li>
+            <li>שתי שורות שבהן כל המספרים זהים הן כמעט תמיד טעות העתקה בוויקיפדיה, ואי אפשר לדעת איזו נכונה — שתיהן בלי ציון. דוגמה: קנטר וסמית ב-18/3/2021.</li>
+            <li>שורה שסכום המנדטים בה רחוק מ-120 ביותר מ-${m.max_total_gap} (חסרות בה רשימות) — בלי ציון.</li>
+            <li>סקרים מלפני יותר מ-${m.source.keep_days} יום לפני הבחירות לא נשמרו.</li>
+          </ul>
+          <h3>מקורות</h3>
+          <p>כל הסקרים מדפי "סקרי דעת קהל" בוויקיפדיה האנגלית, מטבלאות התחזית הראשיות, כל דף בגרסה קבועה. לכל סקר שמור הקישור לכתבה המקורית. התוצאות: המנדטים מקובץ התוצאות הרשמיות של האתר, האחוזים מקובצי הקלפיות של ועדת הבחירות.</p>
+          <ul>${pages}</ul>
+          <p>גודל המדגם רשום בוויקיפדיה רק לסקרי 2026. טעות הדגימה לא רשומה שם בכלל.</p>
+          <h3>בדיקות שנעשו</h3>
+          <ul>
+            <li>שורת "תוצאות הבחירות" שוויקיפדיה מציגה בכל טבלה עברה את אותו עיבוד, ויצאה זהה לתוצאה הרשמית, 0 מנדטים הפרש, בכל 7 מערכות הבחירות.</li>
+            <li><b>ביקורת 25/10/2026:</b> כל 929 הסקרים נקראו שוב בדרך נפרדת (מקוד המקור של ויקיפדיה ולא מהדף המוצג), והתאימו. 45 ציונים חושבו מחדש בקוד נפרד, והתאימו. 29 סקרים נבדקו מול ויקיפדיה (כולם תואמים) ו-16 מהם גם מול הכתבה המקורית (תואמים, חוץ משלושה מקרים שבהם הכתבה עצמה מראה עדכון מאוחר יותר או מספרים שלא מסתכמים).</li>
+            <li>בביקורת נמצאו ותוקנו: (1) שורות "מה אם" — וריאציות של אותו סקר (למשל אם שתי מפלגות יתאחדו) — נספרו כסקרים נפרדים; 34 שורות כאלה הוצאו. (2) מקף "–" נקרא כ"לא נמדד" גם כשמשמעותו "מתחת לחסימה"; עכשיו, כשהשורה מסתכמת ל-120 בלעדיו, הוא נקרא כ-0. (3) טעות באחוזים חושבה גם לעמודה של מפלגה קטנה מול רשימה גדולה שהתאחדה איתה; תוקן. (4) ב-2026 "הבית הציוני" (הנדל וטרופר) ו"מפלגת וינטר" נזרקו; עכשיו הם ממופים. (5) כותרת 2026 נשענה על ממוצע שסקר חריג אחד מושך; עכשיו תצוגת 2026 מראה רק את הסקרים המקוריים, כל אחד כפי שפורסם, בלי ממוצע ובלי מספר מסכם אחר.</li>
+            <li>בטבלה של 2013 השנה מופיעה רק בשורות כותרת. בגרסה הראשונה חלק מסקרי 2012 נרשמו כינואר 2013; זה תוקן.</li>
+            ${m.sample_checks.map(c => `<li><a href="${esc(c.url)}" target="_blank" rel="noopener">${c.id}</a> — ${esc(c.he)}</li>`).join('')}
+          </ul>
+          <h3>קלפיות המדגם</h3>
+          <p>${esc(m.exit_boxes_he)}</p>
+          <p class="src">${m.exit_boxes_sources.map(u => `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(u.slice(0, 70))}</a>`).join('<br>')}</p>
+          <h3>כמה סקרים יש במאגר</h3>
+          <table class="board" style="max-width:44rem"><thead><tr><th>בחירות</th><th>במאגר</th><th>עם ציון</th><th>מדגמים</th><th>לא נכללו</th><th>בלי ציון</th></tr></thead><tbody>
+          ${Object.keys(counts).sort((a, b) => a - b).map(k => `<tr><td>${esc(m.elections[k].he)}</td><td class="num">${counts[k].all}</td><td class="num">${counts[k].sc}</td>
+             <td class="num">${counts[k].exit}</td><td class="num">${counts[k].ex}</td><td class="num">${counts[k].un}</td></tr>`).join('')}</tbody></table>`;
+    }
+
+    function render() {
+        S.election = S.els.length === 1 ? S.els[0] : 'all';
+        const ids = tabsNow().map(t => t.id);
+        if (!ids.includes(S.tab)) S.tab = ids[0];
+        renderFilters();
+        const m = mode();
+        if (S.tab === 'now') renderNow();
+        if (S.tab === 'single') renderSingle();
+        if (S.tab === 'overview') renderOverview();
+        if (S.tab === 'rank') renderRank();
+        if (S.tab === 'blocs') m === 'now' ? renderBlocsNow() : renderBlocs();
+        if (S.tab === 'parties') m === 'now' ? renderPartiesNow() : renderParties();
+        if (S.tab === 'thr') m === 'now' ? renderThrNow() : renderThr();
+        if (S.tab === 'polls') renderPolls();
+    }
+
+    fetch('data/poll_accuracy.json', { cache: 'no-cache' }).then(r => r.json()).then(d => {
+        D = d;
+        D.polls.forEach(p => pollById[p.id] = p);
+        renderMethod();
+        render();
+    }).catch(e => { console.error(e); document.querySelector('.main-content').insertAdjacentHTML('afterbegin', '<div class="card warn"><b>שגיאה בהצגת הדף:</b> ' + esc(e) + '</div>'); });
+    </script>
+    <script>i18n.renderNav('polls');</script>
+</body>
+</html>
