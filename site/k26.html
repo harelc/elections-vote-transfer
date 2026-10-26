@@ -99,6 +99,12 @@
         .td-stat b { display:block; font-size:1.25rem; color:var(--text-primary); }
         .td-stat span { font-size:.72rem; color:var(--text-muted); }
         .td-tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem; }
+        .td-slider-wrap { margin:.35rem 0 .55rem; max-width:640px; }
+        .td-slider-row { display:flex; align-items:center; gap:.6rem; }
+        .td-slider-row input[type=range] { flex:1; accent-color:#f0b429; cursor:pointer; }
+        .td-slider-label { font-size:.78rem; color:var(--text-muted); white-space:nowrap; }
+        .td-slider-time { font-size:.85rem; font-weight:700; color:#ffd75e; white-space:nowrap; }
+        .td-slider-ticks { display:flex; justify-content:space-between; font-size:.65rem; color:var(--text-muted); margin-top:.15rem; }
         .td-row { display:grid; grid-template-columns:minmax(120px,190px) 1fr 118px; gap:.6rem; align-items:center; padding:.32rem 0; border-bottom:1px solid rgba(255,255,255,.05); font-size:.84rem; }
         .td-bar { height:12px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden; }
         .td-bar i { display:block; height:100%; border-radius:6px; }
@@ -429,6 +435,14 @@
                     <select id="geomap-party" class="geomap-party-select" hidden></select>
                     <button class="pane-btn geomap-mode td-mode" data-gmode="td_turnout" hidden></button>
                     <button class="pane-btn geomap-mode td-mode" data-gmode="td_pace" hidden></button>
+                </div>
+                <div class="td-slider-wrap" id="td-slider-wrap" hidden>
+                    <div class="td-slider-row">
+                        <span class="td-slider-label" id="td-slider-label"></span>
+                        <input type="range" id="td-slider" min="0" step="1" value="0" aria-label="turnout snapshot time">
+                        <span class="td-slider-time" id="td-slider-time"></span>
+                    </div>
+                    <div class="td-slider-ticks" id="td-slider-ticks"></div>
                 </div>
                 <div class="geomap-legend" id="geomap-legend" hidden>
                     <div class="geomap-legend-title" id="geomap-legend-title"></div>
@@ -1303,6 +1317,7 @@
         if (sel) sel.hidden = geoMode !== 'party';
         if (geoMode === 'party') populateGeoParties();
         if (geoMode === 'socioeconomic') ensureSocioData();
+        updateTdSlider();
         updateGeoLegend();
         if (geoLayer && geoItems.length) {
             geoItems.forEach(it => { it.color = stationGeoColor(it.station); });
@@ -1436,8 +1451,9 @@
         // Stations come from turnout_day_26.json (fields per meta.station_fields),
         // already carrying roster coordinates; no K26 result is shown.
         const tdOf = a => ({ k25t: a[7], pace: a[8], winner: a[9], bloc: a[10], population: a[11], district: a[12], socio: a[13], matched: a[14], match: a[15], k25name: a[16], k25ballot: a[17], matchM: a[18], neighborN: a[19],
-            snapE: a[4], snapV: a[5], snapT: a[6], k25v: a[8] ? Math.round(a[5] / a[8]) : null });
+            snapE: a[4], snapV: a[5], snapT: a[6], k25base: a[8] ? a[5] / a[8] : null, k25v: a[8] ? Math.round(a[5] / a[8]) : null });
         const tdByKey = new Map(((DATA.turnoutDay && DATA.turnoutDay.stations) || []).map(a => [`${a[0]}|${a[1]}`, a]));
+        tdSnapStationIdx = new Map(((DATA.turnoutDay && DATA.turnoutDay.stations) || []).map((a, i) => [`${a[0]}|${a[1]}`, i]));
         const geoSource = (TURNOUT_ACTIVE && DATA.turnoutDay && DATA.turnoutDay.stations)
             ? DATA.turnoutDay.stations.map(a => ({ n: a[0], b: a[1], _lat: a[2], _lng: a[3], e: a[4], v: a[5], t: a[6], p: {}, td: tdOf(a) }))
             // Count stage: result stations, each carrying its election-day
@@ -1902,12 +1918,72 @@
         ['k25_turnout_band', 'By K25 turnout rate', 'לפי שיעור הצבעה ב־25'],
     ];
     let tdDim = 'k25_winner';
+    let tdSnapIdx = null, tdSnapStationIdx = new Map();
+
+    // ---- turnout time axis: the CEC publishes a handful of snapshots
+    // over election day (~every 3 hours). Each keeps its per-station
+    // voters + group aggregates in turnout_day_26.json snapshots[];
+    // scrubbing swaps them into the map and the pane below.
+    function tdSnapshots() {
+        const td = DATA && DATA.turnoutDay;
+        if (!td) return [];
+        if (Array.isArray(td.snapshots) && td.snapshots.length) return td.snapshots;
+        return [{ as_of: (td.meta || {}).as_of, national: td.national, groups: td.groups,
+                  settlements: td.settlements, voters: (td.stations || []).map(a => a[5]) }];
+    }
+    function tdSnapTime(s) {
+        if (!s || !s.as_of) return '–';
+        return new Date(s.as_of).toLocaleTimeString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit' });
+    }
+    function updateTdSlider() {
+        const wrap = document.getElementById('td-slider-wrap');
+        if (!wrap) return;
+        const snaps = tdSnapshots();
+        const show = snaps.length > 1 && (TURNOUT_ACTIVE || geoMode === 'td_turnout' || geoMode === 'td_pace');
+        wrap.hidden = !show;
+        if (!show) return;
+        if (tdSnapIdx == null || tdSnapIdx >= snaps.length) tdSnapIdx = snaps.length - 1;
+        const slider = document.getElementById('td-slider');
+        slider.max = String(snaps.length - 1);
+        slider.value = String(tdSnapIdx);
+        document.getElementById('td-slider-label').textContent = en() ? 'Snapshot time:' : 'שעת תמונת המצב:';
+        const snap = snaps[tdSnapIdx];
+        document.getElementById('td-slider-time').textContent =
+            `${tdSnapTime(snap)} · ${(snap.national || {}).turnout != null ? (snap.national.turnout || 0).toFixed(1) + '%' : ''}`;
+        document.getElementById('td-slider-ticks').innerHTML = snaps.map(s => `<span>${tdSnapTime(s)}</span>`).join('');
+    }
+    function applyTdSnapshot(idx) {
+        const snaps = tdSnapshots();
+        if (!snaps.length) return;
+        tdSnapIdx = Math.max(0, Math.min(snaps.length - 1, idx));
+        const voters = snaps[tdSnapIdx].voters || [];
+        geoItems.forEach(it => {
+            const st = it.station, td = st.td;
+            if (!td) return;
+            const i = tdSnapStationIdx.get(`${st.n}|${st.b}`);
+            const v = i == null ? null : voters[i];
+            td.snapV = v;
+            td.snapT = v != null && td.snapE ? 100 * v / td.snapE : null;
+            td.pace = v != null && td.k25base ? v / td.k25base : null;
+        });
+        if (geoLayer && geoItems.length) {
+            geoItems.forEach(it => { it.color = stationGeoColor(it.station); });
+            geoLayer.setStations(geoItems);
+        }
+        updateTdSlider();
+        if (TURNOUT_ACTIVE) renderTurnoutDay();
+    }
     // Group histograms can be ranked + painted (bar length) by the
     // absolute turnout so far, or by the recovery ratio (voters so
     // far / the group's final K25 voters) -- the two tell different
     // stories mid-day, so the reader chooses.
     let tdMetric = 'turnout';
     function renderTurnoutDay() {
+        const sliderEl = document.getElementById('td-slider');
+        if (sliderEl && !sliderEl.dataset.wired) {
+            sliderEl.dataset.wired = '1';
+            sliderEl.addEventListener('input', () => applyTdSnapshot(Number(sliderEl.value)));
+        }
         const pane = document.getElementById('pane-turnout-day');
         const toggle = document.getElementById('turnout-day-toggle');
         const td = DATA && DATA.turnoutDay;
@@ -1955,11 +2031,16 @@
         }
         const partySel = document.getElementById('geomap-party'); if (partySel && TURNOUT_ACTIVE) partySel.hidden = true;
         const twinsBtn = document.getElementById('twins-toggle'); if (twinsBtn && TURNOUT_ACTIVE) twinsBtn.hidden = true;
+        updateTdSlider();
         if (!pane) return;
         pane.hidden = !TURNOUT_ACTIVE;
         if (!TURNOUT_ACTIVE) return;
         if (!td) { document.getElementById('td-groups').innerHTML = `<p class="pane-note">${en() ? 'No turnout snapshot yet (data/turnout_day_26.json).' : 'עדיין אין קובץ אחוזי הצבעה (data/turnout_day_26.json).'}</p>`; return; }
-        const n = td.national || {}, meta = td.meta || {};
+        const snaps = tdSnapshots();
+        if (tdSnapIdx == null || tdSnapIdx >= snaps.length) tdSnapIdx = Math.max(0, snaps.length - 1);
+        const snap = snaps[tdSnapIdx] || null;
+        const n = (snap && snap.national) || td.national || {}, meta = td.meta || {};
+        const snapAsOf = (snap && snap.as_of) || meta.as_of;
         document.getElementById('td-title').textContent = en() ? 'Who is turning out? Turnout by K25 twin, sector and stronghold' : 'מי יוצא להצביע? אחוזי הצבעה לפי הקלפי התאומה ב־25, מגזר ומעוז';
         document.getElementById('td-note').textContent = (en() ? (meta.note_en || '') : (meta.note_he || ''))
             + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.')
@@ -1971,14 +2052,14 @@
                 const parts = ['id', 'id_dot1', 'venue', 'coord', 'neighbor', 'settlement', 'none'].map(part).filter(Boolean);
                 return (en() ? ` How each ballot was matched to K25: ${parts.join(' · ')}.` : ` איך הותאמה כל קלפי ל־25: ${parts.join(' · ')}.`);
             })();
-        document.getElementById('td-updated').textContent = meta.as_of ? `${en() ? 'Updated' : 'עודכן'}: ${new Date(meta.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal (simulated)' : ' · חזרה (סימולציה)') : ''}` : '';
+        document.getElementById('td-updated').textContent = snapAsOf ? `${en() ? 'Updated' : 'עודכן'}: ${new Date(snapAsOf).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal (simulated)' : ' · חזרה (סימולציה)') : ''}` : '';
         // Clear data timestamp, front and centre: which snapshot this is,
         // when it was taken, and how old it is right now.
         const tsEl = document.getElementById('td-timestamp');
         if (tsEl) {
             tsEl.hidden = false;
-            if (meta.as_of) {
-                const when = new Date(meta.as_of);
+            if (snapAsOf) {
+                const when = new Date(snapAsOf);
                 const full = when.toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 const mins = Math.max(0, Math.round((Date.now() - when.getTime()) / 60000));
                 const age = mins < 1 ? (en() ? 'just now' : 'ממש עכשיו')
@@ -1989,7 +2070,8 @@
                 tsEl.textContent = en() ? 'Turnout data: no timestamp on this snapshot' : 'נתוני אחוזי הצבעה: אין חותמת זמן בקובץ זה';
             }
         }
-        const prev = (td.history || []).length > 1 ? td.history[td.history.length - 2].national : null;
+        const prev = tdSnapIdx > 0 && snaps[tdSnapIdx - 1] ? snaps[tdSnapIdx - 1].national
+            : ((td.history || []).length > 1 ? td.history[td.history.length - 2].national : null);
         document.getElementById('td-stats').innerHTML = [
             [(n.turnout || 0).toFixed(1) + '%', en() ? 'National turnout so far' : 'אחוז הצבעה ארצי עד כה'],
             [fmt(n.voters || 0), en() ? 'Voters so far' : 'הצביעו עד כה'],
@@ -2007,7 +2089,7 @@
         pane.querySelectorAll('[data-td-metric]').forEach(b => b.addEventListener('click', () => { tdMetric = b.dataset.tdMetric; renderTurnoutDay(); }));
         const colors = td.party_colors_25 || {};
         const byPace = tdMetric === 'pace';
-        const rows = [...(((td.groups || {})[tdDim]) || [])]
+        const rows = [...((((snap && snap.groups) || td.groups || {})[tdDim]) || [])]
             .sort((a, b) => byPace ? ((b.pace ?? -1) - (a.pace ?? -1)) : ((b.turnout || 0) - (a.turnout || 0)))
             .slice(0, 18);
         const maxV = byPace ? Math.max(0.5, ...rows.map(r => r.pace || 0)) : Math.max(60, ...rows.map(r => r.turnout || 0));
@@ -2022,7 +2104,7 @@
               <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
         const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
-        const S = td.settlements || {};
+        const S = (snap && snap.settlements) || td.settlements || {};
         document.getElementById('td-settles').innerHTML =
             settleBlock(en() ? 'Highest turnout settlements' : 'היישובים עם ההצבעה הגבוהה ביותר', S.highest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Lowest turnout settlements' : 'היישובים עם ההצבעה הנמוכה ביותר', S.lowest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +

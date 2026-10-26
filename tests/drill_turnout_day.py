@@ -155,6 +155,9 @@ def main():
               nat["reported_ballots"] == nat["roster_ballots"] and nat["unmatched_rows"] == 0,
               f"{nat['reported_ballots']}/{nat['roster_ballots']} unmatched={nat['unmatched_rows']}")
         check(f"snapshot {i + 1}: history accumulates", len(data["history"]) == i + 1)
+        check(f"snapshot {i + 1}: time-axis snapshots accumulate with aligned voters",
+              len(data.get("snapshots", [])) == i + 1
+              and all(len(s["voters"]) == len(data["stations"]) for s in data["snapshots"]))
         check(f"snapshot {i + 1}: source sha recorded", data["meta"]["source_sha256"] == sha256(snap))
     check("turnout monotonic over the day", turnouts == sorted(turnouts) and len(set(turnouts)) == 3,
           str(turnouts))

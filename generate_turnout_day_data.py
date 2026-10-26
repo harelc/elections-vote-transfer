@@ -572,7 +572,7 @@ def main():
         return rows[:limit]
 
     out_path = SITE_DATA / args.out
-    history = []
+    history, prev_snapshots, prev = [], [], None
     if out_path.exists():
         try:
             prev = json.loads(out_path.read_text(encoding="utf-8"))
@@ -583,9 +583,49 @@ def main():
             seen = {h.get("as_of") for h in history}
             if prev.get("meta", {}).get("as_of") and prev["meta"]["as_of"] not in seen and prev["meta"]["as_of"] != args.as_of:
                 history.append({"as_of": prev["meta"]["as_of"], "national": prev.get("national")})
+            prev_snapshots = [s for s in prev.get("snapshots", []) if s.get("as_of") != args.as_of]
+            if not prev_snapshots and prev.get("meta", {}).get("as_of") and prev["meta"]["as_of"] != args.as_of:
+                # Migrate a pre-snapshots file: its top level is one snapshot.
+                prev_snapshots = [{"as_of": prev["meta"]["as_of"], "national": prev.get("national"),
+                                   "groups": prev.get("groups"), "settlements": prev.get("settlements"),
+                                   "voters": [s[5] for s in prev.get("stations", [])],
+                                   "_keys": [f"{s[0]}|{s[1]}" for s in prev.get("stations", [])]}]
         except Exception:
-            history = []
+            history, prev_snapshots, prev = [], [], None
     history = (history + [{"as_of": args.as_of, "national": nat}])[-12:]
+
+    groups_out = {
+            "k25_winner": group_rows(groups["k25_winner"], lambda g: OTHER_LABEL if g == "other" else (g, g), total_voters),
+            "k25_bloc": group_rows(groups["k25_bloc"], lambda g: BLOC_LABELS.get(g, (g, g)), total_voters),
+            "stronghold": group_rows(groups["stronghold"], lambda g: (g, g), total_voters),
+            "population": group_rows(groups["population"], lambda g: POP_LABELS.get(g, (g, g)), total_voters),
+            "form": group_rows(groups["form"], lambda g: FORM_LABELS.get(g, (g, g)), total_voters),
+            "district": group_rows(groups["district"], lambda g: UNKNOWN_LABEL if g == "unknown" else (g, g), total_voters),
+            "socio": group_rows(groups["socio"], lambda g: ({"cluster_1": ("אשכול 1", "Cluster 1"), "unknown": UNKNOWN_LABEL}.get(g) or
+                                                             ((f"אשכול {g.split('_')[-1]}", f"Cluster {g.split('_')[-1]}") if g.startswith("cluster_") else (g, g))), total_voters),
+            "k25_turnout_band": group_rows(groups["k25_turnout_band"], lambda g: ("שיעור הצבעה ב־25: לא ידוע", "K25 turnout rate: unknown") if g == "unknown" else (f"שיעור הצבעה ב־25: {g}%", f"K25 turnout rate: {g}%"), total_voters),
+        }
+    settlements_out = {
+            "highest_turnout": settle_rows(lambda r: r["turnout"], True),
+            "lowest_turnout": settle_rows(lambda r: r["turnout"], False),
+            "fastest_pace": settle_rows(lambda r: (r["pace"] is not None, r["pace"] or 0), True),
+            "most_remaining": settle_rows(lambda r: r["remaining"], True),
+        }
+
+    # Time axis: every snapshot keeps its per-station voters (aligned
+    # to *this* run's station order; carried snapshots are re-aligned
+    # by key) plus its group aggregates, so k26.html can scrub the day.
+    cur_keys = [f"{s[0]}|{s[1]}" for s in stations]
+    snapshots = []
+    for snap in prev_snapshots:
+        by_key = dict(zip(snap.get("_keys") or cur_keys, snap.get("voters", [])))
+        aligned = {"as_of": snap.get("as_of"), "national": snap.get("national"),
+                   "groups": snap.get("groups"), "settlements": snap.get("settlements"),
+                   "voters": [by_key.get(k) for k in cur_keys]}
+        snapshots.append(aligned)
+    snapshots.append({"as_of": args.as_of, "national": nat, "groups": groups_out,
+                      "settlements": settlements_out, "voters": [s[5] for s in stations]})
+    snapshots = snapshots[-16:]
 
     out = {
         "meta": {"kind": kind, "as_of": args.as_of, "source_sha256": args.sha256,
@@ -598,24 +638,10 @@ def main():
                                     "match", "k25_name", "k25_ballot", "match_m", "neighbor_n"]},
         "national": nat,
         "history": history,
-        "groups": {
-            "k25_winner": group_rows(groups["k25_winner"], lambda g: OTHER_LABEL if g == "other" else (g, g), total_voters),
-            "k25_bloc": group_rows(groups["k25_bloc"], lambda g: BLOC_LABELS.get(g, (g, g)), total_voters),
-            "stronghold": group_rows(groups["stronghold"], lambda g: (g, g), total_voters),
-            "population": group_rows(groups["population"], lambda g: POP_LABELS.get(g, (g, g)), total_voters),
-            "form": group_rows(groups["form"], lambda g: FORM_LABELS.get(g, (g, g)), total_voters),
-            "district": group_rows(groups["district"], lambda g: UNKNOWN_LABEL if g == "unknown" else (g, g), total_voters),
-            "socio": group_rows(groups["socio"], lambda g: ({"cluster_1": ("אשכול 1", "Cluster 1"), "unknown": UNKNOWN_LABEL}.get(g) or
-                                                             ((f"אשכול {g.split('_')[-1]}", f"Cluster {g.split('_')[-1]}") if g.startswith("cluster_") else (g, g))), total_voters),
-            "k25_turnout_band": group_rows(groups["k25_turnout_band"], lambda g: ("שיעור הצבעה ב־25: לא ידוע", "K25 turnout rate: unknown") if g == "unknown" else (f"שיעור הצבעה ב־25: {g}%", f"K25 turnout rate: {g}%"), total_voters),
-        },
+        "snapshots": snapshots,
+        "groups": groups_out,
         "party_colors_25": color25,
-        "settlements": {
-            "highest_turnout": settle_rows(lambda r: r["turnout"], True),
-            "lowest_turnout": settle_rows(lambda r: r["turnout"], False),
-            "fastest_pace": settle_rows(lambda r: (r["pace"] is not None, r["pace"] or 0), True),
-            "most_remaining": settle_rows(lambda r: r["remaining"], True),
-        },
+        "settlements": settlements_out,
         "stations": stations,
     }
     out_path.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
