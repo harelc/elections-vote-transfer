@@ -99,9 +99,9 @@
         .td-stat b { display:block; font-size:1.25rem; color:var(--text-primary); }
         .td-stat span { font-size:.72rem; color:var(--text-muted); }
         .td-tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem; }
-        .td-slider-wrap { margin:.35rem 0 .55rem; max-width:640px; }
-        .td-slider-row { display:flex; align-items:center; gap:.6rem; }
-        .td-slider-row input[type=range] { flex:1; accent-color:#f0b429; cursor:pointer; }
+        .td-slider-wrap { margin:.35rem 0 .55rem; max-width:640px; direction:ltr; } /* time axes run left→right even on the RTL page */
+        .td-slider-row { display:flex; align-items:center; justify-content:space-between; gap:.6rem; }
+        .td-slider-wrap input[type=range] { width:100%; accent-color:#f0b429; cursor:pointer; margin:.15rem 0 0; }
         .td-slider-label { font-size:.78rem; color:var(--text-muted); white-space:nowrap; }
         .td-slider-time { font-size:.85rem; font-weight:700; color:#ffd75e; white-space:nowrap; }
         .td-slider-ticks { display:flex; justify-content:space-between; font-size:.65rem; color:var(--text-muted); margin-top:.15rem; }
@@ -439,9 +439,9 @@
                 <div class="td-slider-wrap" id="td-slider-wrap" hidden>
                     <div class="td-slider-row">
                         <span class="td-slider-label" id="td-slider-label"></span>
-                        <input type="range" id="td-slider" min="0" step="1" value="0" aria-label="turnout snapshot time">
                         <span class="td-slider-time" id="td-slider-time"></span>
                     </div>
+                    <input type="range" id="td-slider" min="0" step="1" value="0" aria-label="turnout snapshot time">
                     <div class="td-slider-ticks" id="td-slider-ticks"></div>
                 </div>
                 <div class="geomap-legend" id="geomap-legend" hidden>
