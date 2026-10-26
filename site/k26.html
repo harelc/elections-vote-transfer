@@ -147,6 +147,7 @@
         .hemi-legend .dot { display:inline-block; width:9px; height:9px; border-radius:50%; margin-inline-end:4px; }
         @media (max-width:900px){ .k26-grid{grid-template-columns:1fr;} }
         .pane { background:var(--bg-card); border:1px solid var(--border-color); border-radius:12px; padding:1rem 1.1rem; min-width:0; }
+        #pane-stage { padding-inline:0.45rem; }
         .pane.wide { grid-column:1/-1; }
         .pane.expanded { grid-column:1/-1; }
         .pane-head { display:flex; align-items:flex-start; gap:0.6rem; margin-bottom:0.7rem; }
@@ -1074,7 +1075,7 @@
         const linked = new Set(); links.forEach(l => { linked.add(l.source); linked.add(l.target); });
         const el = document.getElementById(elId); if (!el) return; el.innerHTML = '';
         const W = el.clientWidth || 900, H = height;
-        const margin = { top: 12, right: 100, bottom: 12, left: 100 };
+        const margin = { top: 12, right: 58, bottom: 12, left: 58 };
         const innerW = W - margin.left - margin.right, innerH = H - margin.top - margin.bottom;
         const svg = d3.select(el).append('svg').attr('width', W).attr('height', H);
         const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
@@ -1987,10 +1988,18 @@
         const flowsEl = document.getElementById('nc-flows-diagram');
         const nc = DATA && DATA.cc && DATA.cc.nowcast;
         if (!flowsEl || !nc || !nc.ready || !nc.projection || !nc.projection.projected_sankey) return;
-        if (flowsEl.clientWidth >= 480) {
-            if (!flowsEl.querySelector('svg')) renderSankey(nc.projection.projected_sankey, 'nc-flows-diagram', 780);
-        } else if (!flowsEl.innerHTML) {
-            flowsEl.innerHTML = `<div class="pane-note" style="margin-top:.4rem">${en() ? 'Shown alongside the seat nowcast in the wide election-night view (see the preview link below).' : 'מוצגים לצד תחזית המנדטים בתצוגה הרחבה של ליל הבחירות (ראו קישור התצוגה המקדימה למטה).'}</div>`;
+        const w = flowsEl.clientWidth;
+        if (w >= 200) {
+            const svg = flowsEl.querySelector('svg');
+            // Re-render when the container width changed since the last
+            // draw (mount moves side -> stage, window resizes): a stale
+            // fixed-width svg otherwise stays squeezed or stretched.
+            if (!svg || Math.abs((+svg.getAttribute('width') || 0) - w) > 4) renderSankey(nc.projection.projected_sankey, 'nc-flows-diagram', 780);
+        } else if (!flowsEl.querySelector('svg')) {
+            // Too narrow right now (e.g. still in the hidden side mount):
+            // leave a note but do not burn it in — activation/resize
+            // re-runs this and replaces it once there is room.
+            flowsEl.innerHTML = `<div class="pane-note" style="margin-top:.4rem">${en() ? 'The predicted vote transfers appear here when the nowcast stage is open.' : 'מעברי הקולות החזויים יופיעו כאן כששלב התחזית פתוח.'}</div>`;
         }
     }
     // Twins: cosine similarity over party-share vectors (t-SNE stations).
