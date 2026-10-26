@@ -82,9 +82,9 @@ jobs:
           # K26_TURNOUT_AUTH (optional, "user:password") is the CEC
           # turnout map's Basic auth; a secret, never committed.
           if [ -n "$K26_TURNOUT_AUTH" ]; then
-            curl -fsSL -u "$K26_TURNOUT_AUTH" "$K26_TURNOUT_URL" -o data/k26_inbox/turnout.bin
+            curl -fsSL -u "$K26_TURNOUT_AUTH" "$K26_TURNOUT_URL?v=$(date +%s)" -o data/k26_inbox/turnout.bin
           else
-            curl -fsSL "$K26_TURNOUT_URL" -o data/k26_inbox/turnout.bin
+            curl -fsSL "$K26_TURNOUT_URL?v=$(date +%s)" -o data/k26_inbox/turnout.bin
           fi
 
       - name: Rebuild turnout view data

@@ -116,6 +116,19 @@ def main():
     print(f"map is public (HTTP {status}, {len(raw):,} bytes). Scanning assets...")
 
     candidates = set()
+    # GovMap election apps publish a catalog first: the current
+    # election's path under /data/votes/, then one data file per layer.
+    try:
+        _, _, cat_raw = fetch(urljoin(args.base, "data/votes/elections.json"))
+        catalog = json.loads(decode(cat_raw))
+        for entry in (catalog.get("elections") or {}).values():
+            if isinstance(entry, dict) and entry.get("path"):
+                for layer in ("kalpi", "municipal", "neighborhood"):
+                    candidates.add(urljoin(args.base, f"data/votes/{entry['path']}/{layer}_data.json"))
+        print("catalog found; added per-layer data files for:",
+              ", ".join(e.get("path", "?") for e in (catalog.get("elections") or {}).values() if isinstance(e, dict)))
+    except Exception:
+        pass
     assets = []
     for m in re.finditer(r"""(?:src|href)=["']([^"']+)["']""", page):
         u = urljoin(args.base, m.group(1))
@@ -131,7 +144,10 @@ def main():
             continue
         js = decode(js_raw)
         for m in URL_IN_TEXT.finditer(js):
-            u = urljoin(asset, m.group(1).replace("\\/", "/"))
+            try:
+                u = urljoin(asset, m.group(1).replace("\\/", "/"))
+            except ValueError:
+                continue
             if urlparse(u).netloc != urlparse(args.base).netloc:
                 continue
             if re.search(r"\.(json|csv)(\?|$)", u) or (INTERESTING.search(u) and "/api" in u):

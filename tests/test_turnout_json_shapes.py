@@ -86,5 +86,16 @@ _, _, _, settle_by_name = snap("settle.json", [
 report("settlement pct-only -> rate by name",
        abs(settle_by_name.get("ירושלים", {}).get("rate", 0) - 0.415) < 1e-9, str(settle_by_name))
 
+# 7. The real thing: CEC turnout kalpi_data.json (mapvotes, K26).
+#    features keyed by an id, record = {code, nbr, kalpi, בזב, מצביעים, percent}
+by_code, _, _, _ = snap("kalpi.json", {
+    "version": 1, "kind": "percent", "layer": "kalpi", "join": "nbr",
+    "features": {
+        "101": {"code": 3000, "nbr": None, "kalpi": "572.1", "בזב": 664, "מצביעים": 201, "percent": 30.3},
+        "102": {"code": 3000, "nbr": 12, "kalpi": "573", "בזב": 700, "מצביעים": 0, "percent": 0},
+    }})
+report("cec kalpi_data.json -> per-ballot index",
+       by_code.get(("3000", "572.1"), {}).get("voters") == 201.0, str(by_code))
+
 print(f"\n{sum(results)}/{len(results)} passed")
 sys.exit(0 if all(results) else 1)

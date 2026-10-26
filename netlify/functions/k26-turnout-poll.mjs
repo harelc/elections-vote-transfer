@@ -31,9 +31,12 @@ export async function pollTurnout(env = process.env, now = new Date(), fetchImpl
   if (env.K26_TURNOUT_AUTH) {
     headers.Authorization = `Basic ${Buffer.from(env.K26_TURNOUT_AUTH).toString("base64")}`;
   }
+  // The CEC app cache-busts its data files (?v=<now>); do the same so
+  // a CDN-cached copy cannot hide a fresh turnout drop.
+  const fetchUrl = `${url}${url.includes("?") ? "&" : "?"}v=${Date.now()}`;
   let response;
   try {
-    response = await fetchImpl(url, { redirect: "follow", headers });
+    response = await fetchImpl(fetchUrl, { redirect: "follow", headers });
   } catch (error) {
     return { ok: false, action: "reject", reason: "fetch failed", detail: String(error) };
   }
