@@ -2101,7 +2101,7 @@
             const width = byPace ? (r.pace || 0) / maxV * 100 : (r.turnout || 0) / maxV * 100;
             return `<div class="td-row"><div title="${label}">${label}</div>
               <div class="td-bar"><i style="width:${Math.min(100, width).toFixed(1)}%;background:${col}"></i></div>
-              <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)}</div></div>`;
+              <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)} · ${r.share_of_voters != null ? r.share_of_voters.toFixed(1) + (en() ? '% of voters' : '% מהמצביעים') : ''}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
         const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
         const S = (snap && snap.settlements) || td.settlements || {};
