@@ -80,6 +80,27 @@
         .geomap-legend-title { font-size:.8rem; color:var(--text-primary); margin-bottom:.25rem; }
         .geomap-legend-bar { height:9px; border-radius:4px; }
         .geomap-legend-labels { display:flex; justify-content:space-between; font-size:.7rem; color:var(--text-muted); margin-top:.15rem; }
+        /* Election-day turnout view (?turnout=1 / status kind=turnout):
+           pre-results, so every result-bearing pane is hidden and the
+           geomap carries only the turnout layers. */
+        body.td-on .gemara { grid-template-columns:minmax(0,1150px); justify-content:center; }
+        body.td-on .g-side { display:none; }
+        body.td-on #pane-votes, body.td-on #pane-dhondt-mini, body.td-on #pane-nowcast,
+        body.td-on #pane-stage, body.td-on #pane-twelveknessets, body.td-on #pane-turnout,
+        body.td-on #pane-suspects, body.td-on #pane-bellwether, body.td-on #factoid-bar { display:none !important; }
+        .td-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.6rem; margin-bottom:.8rem; }
+        .td-stat { background:var(--bg-tertiary); border-radius:8px; padding:.55rem .7rem; }
+        .td-stat b { display:block; font-size:1.25rem; color:var(--text-primary); }
+        .td-stat span { font-size:.72rem; color:var(--text-muted); }
+        .td-tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem; }
+        .td-row { display:grid; grid-template-columns:minmax(120px,190px) 1fr 118px; gap:.6rem; align-items:center; padding:.32rem 0; border-bottom:1px solid rgba(255,255,255,.05); font-size:.84rem; }
+        .td-bar { height:12px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden; }
+        .td-bar i { display:block; height:100%; border-radius:6px; }
+        .td-nums { text-align:end; color:var(--text-muted); font-size:.76rem; white-space:nowrap; }
+        .td-nums b { color:var(--text-primary); font-size:.88rem; }
+        .td-settles { display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:.9rem; margin-top:.9rem; }
+        .td-settles h4 { font-size:.86rem; margin-bottom:.35rem; color:var(--text-primary); }
+        .td-settle-row { display:flex; justify-content:space-between; gap:.5rem; font-size:.8rem; padding:.22rem 0; border-bottom:1px solid rgba(255,255,255,.05); }
         .stage-tabs { display:flex; flex-wrap:wrap; gap:.45rem; align-items:center; margin-bottom:.8rem; }
         .stage-panel[hidden] { display:none; }
         @media (max-width:1250px){ .gemara{grid-template-columns:340px minmax(0,1fr) 340px;} }
@@ -381,7 +402,7 @@
             <section class="pane geomap-pane" id="pane-geomap">
                 <div class="pane-head">
                     <div><h3 data-i18n="k26_geomap_pane">מפה גיאוגרפית</h3><div class="pane-note" data-i18n="k26_geomap_note"></div></div>
-                    <div class="pane-actions"><button class="pane-btn" id="twins-toggle"></button><a class="full-view-cta" href="geomap.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
+                    <div class="pane-actions"><button class="pane-btn" id="twins-toggle"></button><a class="pane-btn" id="turnout-day-toggle" href="?turnout=1"></a><a class="full-view-cta" href="geomap.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
                 </div>
                 <div class="pane-note" id="twins-status" style="margin-bottom:.5rem"></div>
                 <div class="pane-note" id="geomap-partial-note" style="margin-bottom:.5rem;color:#f59e0b" hidden></div>
@@ -391,6 +412,8 @@
                     <button class="pane-btn geomap-mode" data-gmode="socioeconomic" data-i18n="socioeconomic">אשכול חברתי-כלכלי</button>
                     <button class="pane-btn geomap-mode" data-gmode="embed" data-i18n="embed_color">דפוס הצבעה</button>
                     <button class="pane-btn geomap-mode" data-gmode="party" data-i18n="party_support">תמיכה במפלגה</button>
+                    <button class="pane-btn geomap-mode td-mode" data-gmode="td_turnout" hidden></button>
+                    <button class="pane-btn geomap-mode td-mode" data-gmode="td_pace" hidden></button>
                     <select id="geomap-party" class="geomap-party-select" hidden></select>
                 </div>
                 <div class="geomap-legend" id="geomap-legend" hidden>
@@ -403,6 +426,18 @@
                     <div class="cluster-tooltip" id="geomap-tooltip" style="display:none"></div>
                 </div>
             </section>
+        <!-- Election-day turnout analyses (optional pre-results view) -->
+        <section class="pane" id="pane-turnout-day" hidden>
+            <div class="pane-head">
+                <div><h3 id="td-title"></h3><div class="pane-note" id="td-note"></div></div>
+                <div class="pane-actions"><span class="pane-note" id="td-updated"></span></div>
+            </div>
+            <div class="td-stats" id="td-stats"></div>
+            <div class="td-tabs" id="td-tabs" role="group"></div>
+            <div id="td-groups"></div>
+            <div class="td-settles" id="td-settles"></div>
+        </section>
+
         <section class="pane" id="pane-twelveknessets" hidden>
             <div class="pane-head">
                 <div><h3 id="tk-title"></h3><div class="pane-note" id="tk-note"></div></div>
@@ -469,6 +504,14 @@
     // Purely presentational; the default page is unchanged.
     const PREVIEW_MODE = new URLSearchParams(location.search).get('preview');
     const PREVIEW_PARTIAL = ['partial', 'partial17', 'partial12'].includes(PREVIEW_MODE);
+    // Election-day turnout view: optional pre-results layer. ?turnout=1
+    // forces it, ?turnout=0 forces it off; otherwise it activates only
+    // when k26_status.json reports kind="turnout" (CEC turnout snapshots
+    // published, no results yet). Data: data/turnout_day_26.json from
+    // generate_turnout_day_data.py. Once results flow (partial/official)
+    // it never auto-activates.
+    const TURNOUT_PARAM = new URLSearchParams(location.search).get('turnout');
+    let TURNOUT_ACTIVE = false;
     const CC_FILE = PREVIEW_MODE === 'partial17' ? 'data/command_center_26_p17.json'
         : PREVIEW_MODE === 'partial12' ? 'data/command_center_26_p12.json'
         : 'data/command_center_26.json';
@@ -512,6 +555,8 @@
         const countText = hasCount ? `${fmt(counted)} / ${fmt(total)} (${pct.toFixed(1)}%)` : '';
         badge.textContent = s.kind === 'official' ? i18n.t('k26_live_official') + (countText ? ' · ' + countText : '')
             : s.kind === 'partial' ? i18n.t('k26_live_partial') + (countText ? ' · ' + countText : '')
+            : s.kind === 'turnout' ? (en() ? 'Election day — turnout only, no results yet' : 'יום הבחירות — אחוזי הצבעה בלבד, עדיין אין תוצאות')
+            : TURNOUT_ACTIVE ? (en() ? 'Election-day turnout view (pre-results)' : 'תצוגת אחוזי הצבעה של יום הבחירות (לפני תוצאות)')
             : i18n.t('k26_simulated');
         if ((s.kind !== 'partial' && s.kind !== 'official') || !hasCount) { banner.hidden = true; return; }
         banner.hidden = false;
@@ -538,7 +583,7 @@
         // no-store: on election night these JSONs are recommitted every few
         // minutes; a cached copy would freeze the command center mid-count.
         const F = { cache: 'no-store' };
-        const [wiki, map, transfer, tsne, suspects, mks, coords, cc] = await Promise.all([
+        const [wiki, map, transfer, tsne, suspects, mks, coords, cc, turnoutDay, liveStatus] = await Promise.all([
             fetch('data/wiki_official_results.json', F).then(r => r.json()),
             fetch('data/map_26.json', F).then(r => r.json()),
             fetch('data/transfer_25_to_26.json', F).then(r => r.json()),
@@ -547,10 +592,15 @@
             fetch('data/k26_mks.json', F).then(r => r.ok ? r.json() : { parties: {} }).catch(() => ({ parties: {} })),
             fetch('data/station_coordinates.json', F).then(r => r.ok ? r.json() : { stations: {} }).catch(() => ({ stations: {} })),
             fetch(CC_FILE, F).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('data/turnout_day_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('data/k26_status.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
+        if (liveStatus && !PREVIEW_PARTIAL) K26STATUS = liveStatus;
+        TURNOUT_ACTIVE = !!turnoutDay && (TURNOUT_PARAM === '1' || (TURNOUT_PARAM !== '0' && K26STATUS.kind === 'turnout'));
+        if (TURNOUT_ACTIVE) { document.body.classList.add('td-on'); geoMode = 'td_turnout'; }
         const enNames = {}, enLeaders = {};
         (transfer.nodes_to || []).forEach(n => { if (n.info) { enNames[n.name] = n.info.name_en || n.name; enLeaders[n.name] = n.info.leader_en || ''; } });
-        DATA = { wiki, map, transfer, tsne, suspects, cc, twinsMode: false, mks: (mks && mks.parties) || {}, coords: coords || { stations: {} }, enNames, enLeaders,
+        DATA = { wiki, map, transfer, tsne, suspects, cc, turnoutDay, twinsMode: false, mks: (mks && mks.parties) || {}, coords: coords || { stations: {} }, enNames, enLeaders,
                  parties: map.parties, results: wiki['26'] || [],
                  colorOf: {}, infoOf: {} };
         map.parties.forEach(p => { DATA.colorOf[p.name] = p.color; DATA.infoOf[p.name] = p.info || {}; });
@@ -567,6 +617,19 @@
     }
 
     function renderStats() {
+        if (TURNOUT_ACTIVE && DATA.turnoutDay) {
+            const n = DATA.turnoutDay.national || {};
+            const items = [
+                [fmt(n.eligible || 0), i18n.t('eligible_voters')],
+                [fmt(n.voters || 0), i18n.t('voted')],
+                [((n.turnout || 0).toFixed(1)) + '%', i18n.t('turnout_pct')],
+                [n.pace != null ? Math.round(n.pace * 100) + '%' : '–', en() ? 'of K25 final voters (same ballots)' : 'מקולות 25 הסופיים (אותן קלפיות)'],
+                [fmt(n.remaining_voters || 0), en() ? 'still to vote' : 'טרם הצביעו'],
+                [fmt(n.reported_ballots || 0), i18n.t('k26_ballots_label')],
+            ];
+            document.getElementById('k26-stats').innerHTML = items.map(([v, l]) => `<div class="k26-stat"><b>${v}</b><span>${l}</span></div>`).join('');
+            return;
+        }
         const m = DATA.map, valid = DATA.results.reduce((a,p)=>a+p.votes,0);
         // Eligible/cast come from the raw CSV totals (map stats lose the few
         // sub-50-vote stations dropped by the tsne filter); valid = party sum.
@@ -1080,7 +1143,14 @@
         geoScaleCache[name] = values.length ? (Math.ceil(values[Math.floor(values.length * 0.98)]) || 50) : 50;
         return geoScaleCache[name];
     }
+    function paceColor(p) {
+        if (p == null) return '#374151';
+        if (p < 0.6) return interpolateColor('#ef4444', '#fbbf24', Math.max(0, Math.min(1, (p - 0.3) / 0.3)));
+        return interpolateColor('#fbbf24', '#10b981', Math.max(0, Math.min(1, (p - 0.6) / 0.35)));
+    }
     function stationGeoColor(station) {
+        if (geoMode === 'td_turnout') return turnoutColor(station.t || 0);
+        if (geoMode === 'td_pace') return paceColor(station.td ? station.td.pace : null);
         if (geoMode === 'turnout') return turnoutColor(station.t || 0);
         if (geoMode === 'socioeconomic') {
             const c = getGeoCluster(station);
@@ -1100,7 +1170,12 @@
     function geoClusterColor(clusterStations) {
         // Non-winner modes: one representative colour per cluster, computed
         // the way geomap.html colours its cluster icons.
-        if (geoMode === 'turnout') {
+        if (geoMode === 'td_pace') {
+            let v = 0, k = 0;
+            clusterStations.forEach(it => { v += it.station.v || 0; if (it.station.td && it.station.td.k25v) k += it.station.td.k25v; });
+            return paceColor(k ? v / k : null);
+        }
+        if (geoMode === 'turnout' || geoMode === 'td_turnout') {
             let v = 0, e = 0;
             clusterStations.forEach(it => { v += it.station.v || 0; e += it.station.e || 0; });
             return turnoutColor(e ? v / e * 100 : 0);
@@ -1140,6 +1215,16 @@
         bar.style.display = ''; mn.textContent = ''; mx.textContent = '';
         if (geoMode === 'winner') { wrap.hidden = true; return; }
         wrap.hidden = false;
+        if (geoMode === 'td_turnout') {
+            title.textContent = en() ? 'Turnout so far (election day)' : 'אחוז הצבעה עד כה (יום הבחירות)';
+            bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
+            mn.textContent = '40%'; mx.textContent = '90%'; return;
+        }
+        if (geoMode === 'td_pace') {
+            title.textContent = en() ? 'Pace vs K25: voters so far ÷ twin’s final K25 voters' : 'קצב מול 25: מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25';
+            bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
+            mn.textContent = '30%'; mx.textContent = '95%'; return;
+        }
         if (geoMode === 'turnout') {
             title.textContent = i18n.t('turnout');
             bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
@@ -1171,6 +1256,23 @@
         }
     }
     function stationCardHTML(station, pinned) {
+        if (station.td) {
+            const td = station.td;
+            return `<div class="station-popup" style="direction:${i18n.isRTL() ? 'rtl' : 'ltr'}">
+            ${pinned ? '<button class="tip-close" aria-label="close">×</button>' : ''}
+            <div class="station-popup-title">${en() ? i18n.settlementName(station.n) : station.n}</div>
+            <div class="station-popup-ballot">${i18n.t('ballot')} ${station.b}</div>
+            <div class="station-popup-stats">
+                <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span><span class="station-popup-stat-value">${fmt(station.e || 0)}</span>
+                <span class="station-popup-stat-label">${i18n.t('voted')}:</span><span class="station-popup-stat-value">${fmt(station.v || 0)}</span>
+                <span class="station-popup-stat-label">${i18n.t('turnout')}:</span><span class="station-popup-stat-value">${(station.t || 0).toFixed(1)}%</span>
+                ${td.k25t != null ? `<span class="station-popup-stat-label">${en() ? 'K25 twin final turnout' : 'הצבעה סופית בקלפי התאומה ב־25'}:</span><span class="station-popup-stat-value">${td.k25t.toFixed(1)}%</span>` : ''}
+                ${td.pace != null ? `<span class="station-popup-stat-label">${en() ? 'Pace vs K25' : 'קצב מול 25'}:</span><span class="station-popup-stat-value">${Math.round(td.pace * 100)}%</span>` : ''}
+                ${td.winner ? `<span class="station-popup-stat-label">${en() ? 'K25 twin winner' : 'מנצחת הקלפי התאומה ב־25'}:</span><span class="station-popup-stat-value">${td.winner}</span>` : ''}
+            </div>
+            <div class="station-popup-location">${en() ? 'Election-day turnout only — no result for this ballot yet.' : 'אחוז הצבעה של יום הבחירות בלבד — עדיין אין תוצאה לקלפי זו.'}</div>
+        </div>`;
+        }
         const sorted = Object.entries(station.p || {}).sort((a, b) => b[1] - a[1]);
         let displayed = sorted.filter(([, pct]) => pct >= 7);
         if (!displayed.length) displayed = sorted.slice(0, 3);
@@ -1252,10 +1354,17 @@
         const ncForMap = DATA.cc && DATA.cc.nowcast;
         const uncountedSet = (K26STATUS.kind === 'partial' && ncForMap && ncForMap.geo_uncounted)
             ? new Set(ncForMap.geo_uncounted.map(([n, b]) => `${n}|${b}`)) : null;
-        DATA.tsne.stations.forEach(station => {
+        // Election-day turnout view: the ONLY layer is turnout so far.
+        // Stations come from turnout_day_26.json (fields per meta.station_fields),
+        // already carrying roster coordinates; no K26 result is shown.
+        const geoSource = (TURNOUT_ACTIVE && DATA.turnoutDay && DATA.turnoutDay.stations)
+            ? DATA.turnoutDay.stations.map(a => ({ n: a[0], b: a[1], _lat: a[2], _lng: a[3], e: a[4], v: a[5], t: a[6], p: {},
+                td: { k25t: a[7], pace: a[8], winner: a[9], bloc: a[10], population: a[11], district: a[12], socio: a[13], matched: a[14], k25v: a[8] ? Math.round(a[5] / a[8]) : null } }))
+            : DATA.tsne.stations;
+        geoSource.forEach(station => {
             const settlement = station.n, ballot = station.b, key = `${settlement}|${ballot}`;
             if (uncountedSet && uncountedSet.has(key)) return;
-            let cd = stationsCoord[key];
+            let cd = station._lat != null ? { lat: station._lat, lng: station._lng } : stationsCoord[key];
             if (!cd || !cd.lat || !cd.lng) cd = settlementCoords[settlement] || settlementCoords[normalizeName(settlement)];
             if (!cd || !cd.lat || !cd.lng) return;
             const voters = station.v || 0;
@@ -1697,7 +1806,73 @@
         renderFactoids(); renderTwelveKnessets(); renderBellwether(); renderNowcast(); renderTwinsUI();
     }
 
-    function renderAll() { renderCountStatus(); renderStats(); renderVotes(); renderBubble(); renderTurnout(); renderSuspects(); renderSankey(); renderGeomap(); renderTsne(); renderDhondt(); renderExtras(); }
+    // ---------- Election-day turnout view ----------
+    const TD_DIMS = [
+        ['k25_winner', 'K25 twin winner', 'מנצחת הקלפי התאומה ב־25'],
+        ['k25_bloc', 'K25 bloc', 'גוש ב־25'],
+        ['stronghold', 'K25 strongholds (≥40%)', 'מעוזי 25 (≥40%)'],
+        ['population', 'Sector', 'מגזר'],
+        ['form', 'Locality form', 'צורת יישוב'],
+        ['district', 'District', 'מחוז'],
+        ['socio', 'Socioeconomic cluster', 'אשכול חברתי־כלכלי'],
+        ['k25_turnout_band', 'K25 turnout band', 'רצועת הצבעה ב־25'],
+    ];
+    let tdDim = 'k25_winner';
+    function renderTurnoutDay() {
+        const pane = document.getElementById('pane-turnout-day');
+        const toggle = document.getElementById('turnout-day-toggle');
+        const td = DATA && DATA.turnoutDay;
+        if (toggle) {
+            toggle.textContent = TURNOUT_ACTIVE ? (en() ? '← Back to full command centre' : '← חזרה למרכז המידע המלא') : (en() ? 'Election-day turnout view' : 'תצוגת אחוזי הצבעה ליום הבחירות');
+            toggle.setAttribute('href', TURNOUT_ACTIVE ? location.pathname : '?turnout=1');
+            if (!td && !TURNOUT_ACTIVE) toggle.hidden = true;
+        }
+        document.querySelectorAll('.geomap-mode.td-mode').forEach(b => {
+            b.hidden = !TURNOUT_ACTIVE;
+            b.textContent = b.dataset.gmode === 'td_turnout' ? (en() ? 'Turnout so far' : 'אחוז הצבעה עד כה') : (en() ? 'Pace vs K25' : 'קצב מול 25');
+        });
+        document.querySelectorAll('.geomap-mode:not(.td-mode)').forEach(b => { b.hidden = TURNOUT_ACTIVE; });
+        const partySel = document.getElementById('geomap-party'); if (partySel && TURNOUT_ACTIVE) partySel.hidden = true;
+        const twinsBtn = document.getElementById('twins-toggle'); if (twinsBtn && TURNOUT_ACTIVE) twinsBtn.hidden = true;
+        if (!pane) return;
+        pane.hidden = !TURNOUT_ACTIVE;
+        if (!TURNOUT_ACTIVE) return;
+        if (!td) { document.getElementById('td-groups').innerHTML = `<p class="pane-note">${en() ? 'No turnout snapshot yet (data/turnout_day_26.json).' : 'עדיין אין קובץ אחוזי הצבעה (data/turnout_day_26.json).'}</p>`; return; }
+        const n = td.national || {}, meta = td.meta || {};
+        document.getElementById('td-title').textContent = en() ? 'Who is turning out? Turnout by K25 twin, sector and stronghold' : 'מי יוצא להצביע? אחוזי הצבעה לפי הקלפי התאומה ב־25, מגזר ומעוז';
+        document.getElementById('td-note').textContent = en() ? (meta.note_en || '') : (meta.note_he || '');
+        document.getElementById('td-updated').textContent = meta.as_of ? `${en() ? 'Updated' : 'עודכן'}: ${new Date(meta.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal (simulated)' : ' · חזרה (סימולציה)') : ''}` : '';
+        const prev = (td.history || []).length > 1 ? td.history[td.history.length - 2].national : null;
+        document.getElementById('td-stats').innerHTML = [
+            [(n.turnout || 0).toFixed(1) + '%', en() ? 'National turnout so far' : 'אחוז הצבעה ארצי עד כה'],
+            [fmt(n.voters || 0), en() ? 'Voters so far' : 'הצביעו עד כה'],
+            [n.pace != null ? Math.round(n.pace * 100) + '%' : '–', en() ? 'Pace vs K25 final (matched)' : 'קצב מול תוצאת 25 הסופית (מוצלב)'],
+            [n.k25_turnout != null ? n.k25_turnout.toFixed(1) + '%' : '–', en() ? 'K25 final turnout, same ballots' : 'הצבעה סופית ב־25, אותן קלפיות'],
+            [fmt(n.remaining_voters || 0), en() ? 'Eligible still to vote' : 'בעלי זכות שטרם הצביעו'],
+            [prev ? ((n.turnout - prev.turnout) >= 0 ? '+' : '') + (n.turnout - prev.turnout).toFixed(1) + ' pts' : '–', en() ? 'Since previous update' : 'מהעדכון הקודם'],
+        ].map(([v, l]) => `<div class="td-stat"><b>${v}</b><span>${l}</span></div>`).join('');
+        document.getElementById('td-tabs').innerHTML = TD_DIMS.map(([id, enL, heL]) => `<button class="pane-btn ${id === tdDim ? 'gold' : ''}" data-td-dim="${id}">${en() ? enL : heL}</button>`).join('');
+        pane.querySelectorAll('[data-td-dim]').forEach(b => b.addEventListener('click', () => { tdDim = b.dataset.tdDim; renderTurnoutDay(); }));
+        const colors = td.party_colors_25 || {};
+        const rows = ((td.groups || {})[tdDim] || []).slice(0, 18);
+        const maxT = Math.max(60, ...rows.map(r => r.turnout || 0));
+        document.getElementById('td-groups').innerHTML = rows.map(r => {
+            const label = en() ? (r.label_en || r.label_he) : r.label_he;
+            const col = colors[r.id] || '#f0b429';
+            return `<div class="td-row"><div title="${label}">${label}</div>
+              <div class="td-bar"><i style="width:${Math.min(100, (r.turnout || 0) / maxT * 100).toFixed(1)}%;background:${col}"></i></div>
+              <div class="td-nums"><b>${(r.turnout || 0).toFixed(1)}%</b> · ${en() ? 'pace' : 'קצב'} ${r.pace != null ? Math.round(r.pace * 100) + '%' : '–'}<br>${fmt(r.voters)} / ${fmt(r.eligible)}</div></div>`;
+        }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
+        const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
+        const S = td.settlements || {};
+        document.getElementById('td-settles').innerHTML =
+            settleBlock(en() ? 'Highest turnout settlements' : 'היישובים עם ההצבעה הגבוהה ביותר', S.highest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
+            settleBlock(en() ? 'Lowest turnout settlements' : 'היישובים עם ההצבעה הנמוכה ביותר', S.lowest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
+            settleBlock(en() ? 'Fastest pace vs their K25 result' : 'הקצב המהיר ביותר מול תוצאתם ב־25', S.fastest_pace, r => r.pace != null ? Math.round(r.pace * 100) + '%' : '–') +
+            settleBlock(en() ? 'Most eligible voters still to vote' : 'הכי הרבה בעלי זכות שטרם הצביעו', S.most_remaining, r => fmt(r.remaining || 0));
+    }
+
+    function renderAll() { renderCountStatus(); renderStats(); renderVotes(); renderBubble(); renderTurnout(); renderSuspects(); renderSankey(); renderGeomap(); renderTsne(); renderDhondt(); renderExtras(); renderTurnoutDay(); }
 
     const STAGE_FULL = { sankey:'sankey.html', tsne:'tsne.html', dhondt:'dhondt.html' };
     function activateStage(stage) {

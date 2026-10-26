@@ -1,0 +1,112 @@
+name: Refresh K26 election-day turnout
+
+# Pre-results counterpart of k26-refresh.yml. The Netlify turnout poller
+# dispatches this when the CEC turnout feed changes; it downloads the
+# feed, rebuilds site/data/turnout_day_26.json, flips k26_status.json to
+# kind="turnout" (k26.html then auto-activates the turnout view), and
+# commits just those two files. Once results flow, refresh_k26.py owns
+# k26_status.json again and this workflow refuses to publish.
+
+on:
+  workflow_dispatch:
+    inputs:
+      sha256:
+        description: sha256 of the turnout file the poller accepted
+        required: true
+        type: string
+      rows:
+        description: data rows in that file
+        required: true
+        type: string
+      as_of:
+        description: source timestamp
+        required: false
+        type: string
+        default: ""
+      force:
+        description: rebuild even though k26_control.json turnout_auto is false
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: k26-turnout-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read the chicken bit
+        id: gate
+        run: |
+          python - <<'PY'
+          import json, os
+          forced = os.environ["K26_FORCE"] == "true"
+          auto = json.load(open("k26_control.json", encoding="utf-8")).get("turnout_auto") is True
+          proceed = forced or auto
+          if not proceed:
+              print("k26_control.json turnout_auto is not true; leaving the site as it is")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write("proceed=" + ("true" if proceed else "false") + "\n")
+          PY
+        env:
+          K26_FORCE: ${{ inputs.force }}
+
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.proceed == 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+        if: steps.gate.outputs.proceed == 'true'
+
+      - name: Download the turnout file
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          K26_TURNOUT_URL: ${{ secrets.K26_TURNOUT_URL }}
+        run: |
+          if [ -z "$K26_TURNOUT_URL" ]; then
+            echo "K26_TURNOUT_URL is not set on this GitHub repo"
+            exit 1
+          fi
+          mkdir -p data/k26_inbox
+          curl -fsSL "$K26_TURNOUT_URL" -o data/k26_inbox/turnout.bin
+
+      - name: Rebuild turnout view data
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          python refresh_turnout_day.py \
+            --snapshot data/k26_inbox/turnout.bin \
+            --sha256 "${{ inputs.sha256 }}" \
+            --as-of "${{ inputs.as_of }}" \
+            ${{ inputs.force == true && '--force' || '' }}
+
+      - name: Commit the snapshot
+        if: steps.gate.outputs.proceed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            site/data/turnout_day_26.json \
+            site/data/k26_status.json
+          if git diff --cached --quiet; then
+            echo "no file changes"
+            exit 0
+          fi
+          git commit -m "Update K26 election-day turnout"
+          git reset -q --hard
+          git clean -fdq
+          for attempt in 1 2 3; do
+            git pull --rebase -X theirs origin "${GITHUB_REF_NAME}" && git push && exit 0
+            git rebase --abort 2>/dev/null || true
+            sleep $((attempt * 5))
+          done
+          exit 1

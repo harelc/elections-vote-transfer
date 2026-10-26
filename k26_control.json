@@ -3,7 +3,11 @@
   "poll": true,
   "poll_start": "2026-10-27T21:00",
   "poll_end": "2026-10-31T23:59",
+  "turnout_auto": false,
+  "turnout_poll": true,
+  "turnout_poll_start": "2026-10-27T07:00",
+  "turnout_poll_end": "2026-10-27T22:00",
   "timezone": "Asia/Jerusalem",
   "roster": 12018,
-  "_comment": "The Netlify schedule fires every 10 minutes all year. The function fetches only from poll_start through poll_end, Israel local time, and only while poll is true. Set poll to false to stop early. auto false notices a newer file and does not deploy it. K26_AUTO=0 on Netlify stops dispatch even when auto is true. K26_AUTO=1 allows dispatch even when auto is false. K26_POLL=0 stops fetching even inside the window."
+  "_comment": "The Netlify schedule fires every 10 minutes all year. The function fetches only from poll_start through poll_end, Israel local time, and only while poll is true. Set poll to false to stop early. auto false notices a newer file and does not deploy it. K26_AUTO=0 on Netlify stops dispatch even when auto is true. K26_AUTO=1 allows dispatch even when auto is false. K26_POLL=0 stops fetching even inside the window. Turnout (pre-results, election day): turnout_poll/turnout_poll_start/turnout_poll_end gate k26-turnout-poll the same way over the daytime window; turnout_auto is its chicken bit (K26_TURNOUT_AUTO / K26_TURNOUT_POLL env overrides; feed URL is K26_TURNOUT_URL)."
 }

@@ -26,7 +26,7 @@
             .then((r) => r.ok ? r.json() : null)
             .catch(() => null)
             .then((data) => {
-                if (data && (data.kind === 'official' || data.kind === 'partial' || data.kind === 'simulated')) k26Status = data;
+                if (data && (data.kind === 'official' || data.kind === 'partial' || data.kind === 'simulated' || data.kind === 'turnout')) k26Status = data;
                 return k26Status;
             });
     })();
