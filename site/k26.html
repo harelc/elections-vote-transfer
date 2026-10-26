@@ -76,13 +76,16 @@
         .geomap-pane .mini-map { height:800px; }
         .geomap-modes { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin-bottom:.5rem; }
         .geomap-party-select { background:#1a1f2b; color:var(--text-primary); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:.32rem .5rem; font:inherit; font-size:.82rem; direction:inherit; text-align:start; }
-        .geomap-legend { margin-bottom:.55rem; max-width:340px; }
-        .geomap-legend-title { font-size:.8rem; color:var(--text-primary); margin-bottom:.25rem; }
-        .geomap-legend-bar { height:9px; border-radius:4px; }
-        /* Legend scale is physical, not textual: low on the left, high on
-           the right, whatever the page direction. Without this, RTL puts
-           the min label under the high end of the bar. */
-        .geomap-legend-labels { display:flex; justify-content:space-between; font-size:.7rem; color:var(--text-muted); margin-top:.15rem; direction:ltr; }
+        /* Vertical legend overlaid on the map itself: low at the bottom,
+           high at the top, whatever the page direction. */
+        .geomap-legend { position:absolute; top:10px; inset-inline-end:10px; z-index:6; pointer-events:none;
+            display:flex; flex-direction:column; align-items:center; gap:.3rem;
+            background:rgba(13,16,22,.78); border:1px solid rgba(255,255,255,.12); border-radius:8px;
+            padding:.45rem .4rem; backdrop-filter:blur(3px); }
+        .geomap-legend[hidden] { display:none; }
+        .geomap-legend-title { font-size:.68rem; line-height:1.3; color:var(--text-primary); max-width:126px; text-align:center; }
+        .geomap-legend-bar { width:12px; height:180px; border-radius:6px; }
+        .geomap-legend-val { font-size:.7rem; color:var(--text-muted); direction:ltr; }
         /* Election-day turnout view (?turnout=1 / status kind=turnout):
            pre-results, so every result-bearing pane is hidden and the
            geomap carries only the turnout layers. */
@@ -99,7 +102,7 @@
         .td-stat b { display:block; font-size:1.25rem; color:var(--text-primary); }
         .td-stat span { font-size:.72rem; color:var(--text-muted); }
         .td-tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem; }
-        .td-slider-wrap { margin:.35rem 0 .55rem; max-width:640px; direction:ltr; } /* time axes run left→right even on the RTL page */
+        .td-slider-wrap { margin:.35rem 0 .55rem; width:100%; direction:ltr; } /* time axes run left→right even on the RTL page */
         .td-slider-row { display:flex; align-items:center; justify-content:space-between; gap:.6rem; }
         .td-slider-wrap input[type=range] { width:100%; accent-color:#f0b429; cursor:pointer; margin:.15rem 0 0; }
         .td-slider-label { font-size:.78rem; color:var(--text-muted); white-space:nowrap; }
@@ -444,13 +447,14 @@
                     <input type="range" id="td-slider" min="0" step="1" value="0" aria-label="turnout snapshot time">
                     <div class="td-slider-ticks" id="td-slider-ticks"></div>
                 </div>
-                <div class="geomap-legend" id="geomap-legend" hidden>
-                    <div class="geomap-legend-title" id="geomap-legend-title"></div>
-                    <div class="geomap-legend-bar" id="geomap-legend-bar"></div>
-                    <div class="geomap-legend-labels"><span id="geomap-legend-min"></span><span id="geomap-legend-max"></span></div>
-                </div>
                 <div style="position:relative">
                     <div class="mini-map" id="geomap-mini"></div>
+                    <div class="geomap-legend" id="geomap-legend" hidden>
+                        <div class="geomap-legend-title" id="geomap-legend-title"></div>
+                        <span class="geomap-legend-val" id="geomap-legend-max"></span>
+                        <div class="geomap-legend-bar" id="geomap-legend-bar"></div>
+                        <span class="geomap-legend-val" id="geomap-legend-min"></span>
+                    </div>
                     <div class="cluster-tooltip" id="geomap-tooltip" style="display:none"></div>
                 </div>
             </section>
@@ -1288,18 +1292,18 @@
                 ? (en() ? 'K25 turnout recovery — a ratio, not a turnout: voters so far ÷ twin’s final K25 voters' : 'שחזור שיעור ההצבעה של 25 — יחס, לא אחוז הצבעה: מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25')
                 : (en() ? 'Turnout so far (election day)' : 'אחוז הצבעה עד כה (יום הבחירות)'))
                 + (scale ? (en() ? ` · adaptive scale ${pct(scale.lo)}–${pct(scale.hi)}` : ` · סולם מותאם להתפלגות: ${pct(scale.lo)}–${pct(scale.hi)}`) : '');
-            // TD_PALETTE runs low -> high (purple -> teal); bar runs
-            // left (low) -> right (high), labels read the same way.
-            bar.style.background = `linear-gradient(to right, ${TD_PALETTE.join(', ')})`;
+            // TD_PALETTE runs low -> high (purple -> teal); the vertical
+            // bar runs bottom (low) -> top (high), labels read the same way.
+            bar.style.background = `linear-gradient(to top, ${TD_PALETTE.join(', ')})`;
             mn.textContent = scale ? pct(scale.lo) : ''; mx.textContent = scale ? pct(scale.hi) : ''; return;
         }
         if (geoMode === 'turnout') {
             title.textContent = i18n.t('turnout');
-            bar.style.background = 'linear-gradient(to right, #ef4444, #fbbf24, #10b981)';
+            bar.style.background = 'linear-gradient(to top, #ef4444, #fbbf24, #10b981)';
             mn.textContent = '40%'; mx.textContent = '90%';
         } else if (geoMode === 'socioeconomic') {
             title.textContent = i18n.t('socioeconomic');
-            bar.style.background = 'linear-gradient(to right, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
+            bar.style.background = 'linear-gradient(to top, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
             mn.textContent = '1'; mx.textContent = '10';
         } else if (geoMode === 'embed') {
             title.textContent = i18n.t('embed_color');
@@ -1307,7 +1311,7 @@
         } else if (geoMode === 'party' && geoPartyName) {
             const party = DATA.tsne.parties.find(p => p.name === geoPartyName);
             title.textContent = `${i18n.t('party_support')}: ${displayName(geoPartyName)}`;
-            bar.style.background = party ? `linear-gradient(to right, ${lightenColor(party.color, 0.8)}, ${party.color})` : '';
+            bar.style.background = party ? `linear-gradient(to top, ${lightenColor(party.color, 0.8)}, ${party.color})` : '';
             mn.textContent = '0%'; mx.textContent = `${geoPartyScaleMax(geoPartyName)}%`;
         }
     }
