@@ -629,7 +629,7 @@
                 [fmt(n.eligible || 0), i18n.t('eligible_voters')],
                 [fmt(n.voters || 0), i18n.t('voted')],
                 [((n.turnout || 0).toFixed(1)) + '%', i18n.t('turnout_pct')],
-                [n.pace != null ? Math.round(n.pace * 100) + '%' : '–', en() ? 'of K25 final voters (same ballots)' : 'מקולות 25 הסופיים (אותן קלפיות)'],
+                [n.pace != null ? '×' + n.pace.toFixed(2) : '–', en() ? 'K25 turnout recovery (ratio, not a turnout)' : 'שחזור שיעור ההצבעה של 25 (יחס, לא אחוז הצבעה)'],
                 [fmt(n.remaining_voters || 0), en() ? 'still to vote' : 'טרם הצביעו'],
                 [fmt(n.reported_ballots || 0), i18n.t('k26_ballots_label')],
             ];
@@ -1260,9 +1260,9 @@
         if (geoMode === 'td_turnout' || geoMode === 'td_pace') {
             const isPace = geoMode === 'td_pace';
             const scale = tdScale(isPace ? 8 : 6);
-            const pct = v => isPace ? Math.round(v * 100) + '%' : v.toFixed(0) + '%';
+            const pct = v => isPace ? '×' + v.toFixed(2) : v.toFixed(0) + '%';
             title.textContent = (isPace
-                ? (en() ? 'Pace vs K25: voters so far ÷ twin’s final K25 voters' : 'קצב מול 25: מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25')
+                ? (en() ? 'K25 turnout recovery — a ratio, not a turnout: voters so far ÷ twin’s final K25 voters' : 'שחזור שיעור ההצבעה של 25 — יחס, לא אחוז הצבעה: מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25')
                 : (en() ? 'Turnout so far (election day)' : 'אחוז הצבעה עד כה (יום הבחירות)'))
                 + (scale ? (en() ? ` · adaptive scale ${pct(scale.lo)}–${pct(scale.hi)}` : ` · סולם מותאם להתפלגות: ${pct(scale.lo)}–${pct(scale.hi)}`) : '');
             bar.style.background = `linear-gradient(to left, ${[...TD_PALETTE].reverse().join(', ')})`;
@@ -1310,7 +1310,7 @@
                 <span class="station-popup-stat-label">${i18n.t('voted')}:</span><span class="station-popup-stat-value">${fmt(station.v || 0)}</span>
                 <span class="station-popup-stat-label">${i18n.t('turnout')}:</span><span class="station-popup-stat-value">${(station.t || 0).toFixed(1)}%</span>
                 ${td.k25t != null ? `<span class="station-popup-stat-label">${en() ? 'K25 twin final turnout' : 'הצבעה סופית בקלפי התאומה ב־25'}:</span><span class="station-popup-stat-value">${td.k25t.toFixed(1)}%</span>` : ''}
-                ${td.pace != null ? `<span class="station-popup-stat-label">${en() ? 'Pace vs K25' : 'קצב מול 25'}:</span><span class="station-popup-stat-value">${Math.round(td.pace * 100)}%</span>` : ''}
+                ${td.pace != null ? `<span class="station-popup-stat-label">${en() ? 'K25 turnout recovery (ratio)' : 'שחזור שיעור ההצבעה של 25 (יחס)'}:</span><span class="station-popup-stat-value">×${td.pace.toFixed(2)}</span>` : ''}
                 ${td.winner ? `<span class="station-popup-stat-label">${en() ? 'K25 twin winner' : 'מנצחת הקלפי התאומה ב־25'}:</span><span class="station-popup-stat-value">${td.winner}</span>` : ''}
             </div>
             <div class="station-popup-location">${en() ? 'Election-day turnout only — no result for this ballot yet.' : 'אחוז הצבעה של יום הבחירות בלבד — עדיין אין תוצאה לקלפי זו.'}</div>
@@ -1892,7 +1892,7 @@
         }
         document.querySelectorAll('.geomap-mode.td-mode').forEach(b => {
             b.hidden = !TURNOUT_ACTIVE;
-            b.textContent = b.dataset.gmode === 'td_turnout' ? (en() ? 'Turnout so far' : 'אחוז הצבעה עד כה') : (en() ? 'Pace vs K25' : 'קצב מול 25');
+            b.textContent = b.dataset.gmode === 'td_turnout' ? (en() ? 'Turnout so far' : 'אחוז הצבעה עד כה') : (en() ? 'K25 turnout recovery (ratio)' : 'שחזור שיעור ההצבעה של 25 (יחס)');
         });
         document.querySelectorAll('.geomap-mode:not(.td-mode)').forEach(b => { b.hidden = TURNOUT_ACTIVE; });
         const partySel = document.getElementById('geomap-party'); if (partySel && TURNOUT_ACTIVE) partySel.hidden = true;
@@ -1903,13 +1903,14 @@
         if (!td) { document.getElementById('td-groups').innerHTML = `<p class="pane-note">${en() ? 'No turnout snapshot yet (data/turnout_day_26.json).' : 'עדיין אין קובץ אחוזי הצבעה (data/turnout_day_26.json).'}</p>`; return; }
         const n = td.national || {}, meta = td.meta || {};
         document.getElementById('td-title').textContent = en() ? 'Who is turning out? Turnout by K25 twin, sector and stronghold' : 'מי יוצא להצביע? אחוזי הצבעה לפי הקלפי התאומה ב־25, מגזר ומעוז';
-        document.getElementById('td-note').textContent = en() ? (meta.note_en || '') : (meta.note_he || '');
+        document.getElementById('td-note').textContent = (en() ? (meta.note_en || '') : (meta.note_he || ''))
+            + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.');
         document.getElementById('td-updated').textContent = meta.as_of ? `${en() ? 'Updated' : 'עודכן'}: ${new Date(meta.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal (simulated)' : ' · חזרה (סימולציה)') : ''}` : '';
         const prev = (td.history || []).length > 1 ? td.history[td.history.length - 2].national : null;
         document.getElementById('td-stats').innerHTML = [
             [(n.turnout || 0).toFixed(1) + '%', en() ? 'National turnout so far' : 'אחוז הצבעה ארצי עד כה'],
             [fmt(n.voters || 0), en() ? 'Voters so far' : 'הצביעו עד כה'],
-            [n.pace != null ? Math.round(n.pace * 100) + '%' : '–', en() ? 'Pace vs K25 final (matched)' : 'קצב מול תוצאת 25 הסופית (מוצלב)'],
+            [n.pace != null ? '×' + n.pace.toFixed(2) : '–', en() ? 'K25 turnout recovery (ratio, not a turnout)' : 'שחזור שיעור ההצבעה של 25 (יחס, לא אחוז הצבעה)'],
             [n.k25_turnout != null ? n.k25_turnout.toFixed(1) + '%' : '–', en() ? 'K25 final turnout, same ballots' : 'הצבעה סופית ב־25, אותן קלפיות'],
             [fmt(n.remaining_voters || 0), en() ? 'Eligible still to vote' : 'בעלי זכות שטרם הצביעו'],
             [prev ? ((n.turnout - prev.turnout) >= 0 ? '+' : '') + (n.turnout - prev.turnout).toFixed(1) + ' pts' : '–', en() ? 'Since previous update' : 'מהעדכון הקודם'],
@@ -1924,14 +1925,14 @@
             const col = colors[r.id] || '#f0b429';
             return `<div class="td-row"><div title="${label}">${label}</div>
               <div class="td-bar"><i style="width:${Math.min(100, (r.turnout || 0) / maxT * 100).toFixed(1)}%;background:${col}"></i></div>
-              <div class="td-nums"><b>${(r.turnout || 0).toFixed(1)}%</b> · ${en() ? 'pace' : 'קצב'} ${r.pace != null ? Math.round(r.pace * 100) + '%' : '–'}<br>${fmt(r.voters)} / ${fmt(r.eligible)}</div></div>`;
+              <div class="td-nums"><b>${(r.turnout || 0).toFixed(1)}%</b> · ${en() ? 'recovery' : 'שחזור'} ${r.pace != null ? '×' + r.pace.toFixed(2) : '–'}<br>${fmt(r.voters)} / ${fmt(r.eligible)}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
         const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
         const S = td.settlements || {};
         document.getElementById('td-settles').innerHTML =
             settleBlock(en() ? 'Highest turnout settlements' : 'היישובים עם ההצבעה הגבוהה ביותר', S.highest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Lowest turnout settlements' : 'היישובים עם ההצבעה הנמוכה ביותר', S.lowest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
-            settleBlock(en() ? 'Fastest pace vs their K25 result' : 'הקצב המהיר ביותר מול תוצאתם ב־25', S.fastest_pace, r => r.pace != null ? Math.round(r.pace * 100) + '%' : '–') +
+            settleBlock(en() ? 'Highest recovery of their K25 turnout (ratio ×, not a turnout)' : 'הכי גבוהים בשחזור שיעור ההצבעה של 25 (יחס ×, לא אחוז הצבעה)', S.fastest_pace, r => r.pace != null ? '×' + r.pace.toFixed(2) : '–') +
             settleBlock(en() ? 'Most eligible voters still to vote' : 'הכי הרבה בעלי זכות שטרם הצביעו', S.most_remaining, r => fmt(r.remaining || 0));
     }
 
