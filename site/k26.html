@@ -88,6 +88,8 @@
         body.td-on #pane-votes, body.td-on #pane-dhondt-mini, body.td-on #pane-nowcast,
         body.td-on #pane-stage, body.td-on #pane-twelveknessets, body.td-on #pane-turnout,
         body.td-on #pane-suspects, body.td-on #pane-bellwether, body.td-on #factoid-bar { display:none !important; }
+        .td-timestamp { max-width:1150px; margin:0 auto 0.2rem; padding:0.55rem 1rem; text-align:center; font-size:0.95rem; font-weight:700; color:#ffd75e; background:rgba(240,180,41,.1); border:1px solid rgba(240,180,41,.45); border-radius:10px; }
+        .td-timestamp .td-ts-age { color:var(--text-secondary); font-weight:500; font-size:0.83rem; }
         .td-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.6rem; margin-bottom:.8rem; }
         .td-stat { background:var(--bg-tertiary); border-radius:8px; padding:.55rem .7rem; }
         .td-stat b { display:block; font-size:1.25rem; color:var(--text-primary); }
@@ -338,6 +340,8 @@
             <a class="pane-btn" id="td-switch-day" href="?turnout=1"></a>
             <a class="pane-btn" id="td-switch-count" href="?turnout=0"></a>
         </nav>
+
+        <div class="td-timestamp" id="td-timestamp" hidden role="status"></div>
 
         <section class="factoid-bar" id="factoid-bar" hidden title="">
             <span class="f-label" id="factoid-label"></span>
@@ -1906,6 +1910,23 @@
         document.getElementById('td-note').textContent = (en() ? (meta.note_en || '') : (meta.note_he || ''))
             + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.');
         document.getElementById('td-updated').textContent = meta.as_of ? `${en() ? 'Updated' : 'עודכן'}: ${new Date(meta.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal (simulated)' : ' · חזרה (סימולציה)') : ''}` : '';
+        // Clear data timestamp, front and centre: which snapshot this is,
+        // when it was taken, and how old it is right now.
+        const tsEl = document.getElementById('td-timestamp');
+        if (tsEl) {
+            tsEl.hidden = false;
+            if (meta.as_of) {
+                const when = new Date(meta.as_of);
+                const full = when.toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const mins = Math.max(0, Math.round((Date.now() - when.getTime()) / 60000));
+                const age = mins < 1 ? (en() ? 'just now' : 'ממש עכשיו')
+                    : mins < 60 ? (en() ? `${mins} min ago` : `לפני ${mins} דק׳`)
+                    : (en() ? `${Math.floor(mins / 60)}h ${mins % 60}m ago` : `לפני ${Math.floor(mins / 60)} שע׳ ו־${mins % 60} דק׳`);
+                tsEl.innerHTML = `${en() ? 'Turnout data as of' : 'נתוני אחוזי ההצבעה נכונים ל'} ${full} <span class="td-ts-age">(${age}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal, simulated — not real data' : ' · חזרה (סימולציה) — לא נתוני אמת') : ''})</span>`;
+            } else {
+                tsEl.textContent = en() ? 'Turnout data: no timestamp on this snapshot' : 'נתוני אחוזי הצבעה: אין חותמת זמן בקובץ זה';
+            }
+        }
         const prev = (td.history || []).length > 1 ? td.history[td.history.length - 2].national : null;
         document.getElementById('td-stats').innerHTML = [
             [(n.turnout || 0).toFixed(1) + '%', en() ? 'National turnout so far' : 'אחוז הצבעה ארצי עד כה'],
@@ -1968,6 +1989,8 @@
     }));
     let rz; window.addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(!DATA) return; const fl=document.getElementById('nc-flows-diagram'); if (fl && !document.getElementById('panel-nowcast').hidden) { fl.innerHTML=''; renderNcFlows(); } const ps=document.getElementById('panel-sankey'); if (ps && !ps.hidden) renderSankey(); renderGeomap(); if(!document.getElementById('panel-tsne').hidden) renderTsne(); }, 200); });
     window.addEventListener('langchange', ()=>{ if (DATA) renderAll(); });
+    // Keep the "data as of ... (x min ago)" stamp honest while the page sits open.
+    setInterval(() => { if (DATA && TURNOUT_ACTIVE) renderTurnoutDay(); }, 60000);
     if (!i18n.SHOW_E26) { document.querySelector('.gemara').innerHTML = '<section class="pane wide"><p class="err">K26 is hidden (e26=0). <a href="k26.html">Enable K26</a></p></section>'; return; }
     load().catch(e => { document.getElementById('votes-table').innerHTML = '<p class="err">'+i18n.t('error_loading')+': '+e.message+'</p>'; });
 })();
