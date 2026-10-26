@@ -608,7 +608,7 @@
         if (TURNOUT_ACTIVE) {
             sim = tdMeta.kind !== 'live';
             title = sim
-                ? (en() ? '⚠ SIMULATED DATA — rehearsal turnout, not CEC figures' : '⚠ נתונים מדומים — אחוזי הצבעה של חזרה, לא נתוני ועדת הבחירות')
+                ? (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת')
                 : (en() ? '● REAL DATA — live CEC turnout' : '● נתוני אמת — אחוזי הצבעה חיים מוועדת הבחירות');
             sub = sim
                 ? (en() ? 'A synthetic snapshot built for rehearsal. Real CEC turnout replaces it on election day; every map and table below is simulated until then.' : 'תמונת מצב סינתטית שנבנתה לחזרה. ביום הבחירות יחליפו אותה נתוני האמת של ועדת הבחירות; עד אז כל מפה וטבלה כאן מדומים.')
@@ -624,7 +624,7 @@
                 : (en() ? 'Real ballot boxes counted so far by the CEC. Figures change as the count proceeds.' : 'קלפיות אמיתיות שנספרו עד כה בידי ועדת הבחירות. הנתונים משתנים ככל שהספירה מתקדמת.');
         } else {
             sim = true;
-            title = en() ? '⚠ SIMULATED SCENARIO — not election results' : '⚠ תרחיש מדומה — אלה אינן תוצאות בחירות';
+            title = en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת';
             sub = en()
                 ? 'Knesset 26 has not happened on this page yet: every seat, vote and flow below is a polling-calibrated simulation, replaced automatically when the CEC publishes real data.'
                 : 'כנסת 26 טרם התרחשה בעמוד זה: כל מנדט, קול ומעבר כאן הוא סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.';
