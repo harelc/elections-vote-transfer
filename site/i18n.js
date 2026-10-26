@@ -563,7 +563,7 @@
         e26_ballots:           { he: '{n} קלפיות', en: '{n} ballots' },
         e26_ballots_of:        { he: '{n} מתוך {total} קלפיות', en: '{n} of {total} ballots' },
         e26_close:             { he: 'סגור', en: 'Close' },
-        e26_reopen_sim:        { he: 'הסבר על הסימולציה', en: 'About the simulation' },
+        e26_reopen_sim:        { he: '⚠ תרחיש מדומה', en: '⚠ Simulated scenario' },
         e26_reopen_official:   { he: 'פרטי הספירה', en: 'About this count' },
         k26_intro_title:       { he: 'מוכנים לבחירות לכנסת ה־26', en: 'Ready for the Knesset 26 election' },
         k26_intro_lead:        {
@@ -1164,6 +1164,18 @@
                 color: rgba(255, 237, 213, 0.75);
             }
             #e26-widget.official .e26-kicker { color: rgba(248, 241, 222, 0.72); }
+            #e26-widget.sim-banner {
+                background: rgba(42, 20, 8, 0.94);
+                border-color: #f97316;
+                color: #ffedd5;
+                max-width: calc(100vw - 28px);
+            }
+            #e26-widget.sim-banner .e26-status { font-size: 0.85rem; font-weight: 700; white-space: nowrap; }
+            #e26-widget.sim-banner .e26-why { margin-top: 0; white-space: nowrap; }
+            #e26-widget.sim-banner .e26-close {
+                border: 1px solid currentColor; border-radius: 999px; padding: 1px 8px;
+                font-size: 0.72rem; cursor: pointer; background: none; color: inherit; font: inherit; white-space: nowrap;
+            }
             #e26-widget.collapsed.sim {
                 background: rgba(42, 20, 8, 0.94);
                 border-color: #f97316;
@@ -1290,11 +1302,8 @@
         try { noticeClosed = sessionStorage.getItem('e26_notice_closed') === '1'; } catch (e) {}
 
         function paint() {
-            // The simulated warning is not dismissible: while the data
-            // is simulated the full card always shows (a closed notice
-            // only collapses the live-results card).
-            if (SHOW_E26 && noticeClosed && k26Live()) {
-                const live = true;
+            if (SHOW_E26 && noticeClosed) {
+                const live = k26Live();
                 widget.className = 'collapsed ' + (live ? 'official' : 'sim');
                 widget.innerHTML =
                     '<button type="button" class="e26-reopen">' +
@@ -1315,13 +1324,15 @@
             }
             widget.className = 'provenance ' + (live ? 'official' : 'sim');
             if (!live) {
+                // Simulated: a compact badge pill, not a floating card.
+                // Close collapses it to a small pill that still carries
+                // the warning.
+                widget.className = 'sim-banner';
                 widget.innerHTML =
-                    '<div class="e26-head">' +
-                        '<span class="e26-kicker">' + esc(t('e26_kicker')) + '</span>' +
-                    '</div>' +
-                    '<div class="e26-status">' + esc(t('e26_sim_headline')) + '</div>' +
-                    '<p class="e26-detail">' + esc(t('e26_sim_detail')) + '</p>' +
-                    '<button type="button" class="e26-why">' + esc(t('e26_why_link')) + '</button>';
+                    '<span class="e26-dot"></span>' +
+                    '<span class="e26-status">' + esc(t('e26_sim_headline')) + '</span>' +
+                    '<button type="button" class="e26-why">' + esc(t('e26_why_link')) + '</button>' +
+                    '<button type="button" class="e26-close">' + esc(t('e26_close')) + '</button>';
                 return;
             }
             const when = formatAsOf(k26Status.as_of);
