@@ -552,7 +552,7 @@
         e26_modal_dismiss:     { he: 'הבנתי', en: 'Got it' },
         e26_off_state:         { he: 'מצב כנסת 26: כבוי', en: 'K26 mode: off' },
         e26_kicker:            { he: 'כנסת 26', en: 'Knesset 26' },
-        e26_sim_headline:      { he: 'סימולציה', en: 'Simulation' },
+        e26_sim_headline:      { he: 'תרחיש מדומה — אלה אינם נתוני אמת', en: 'Simulated scenario — not real data' },
         e26_sim_detail:        {
             he: 'המספרים במצב הזה אינם נתוני אמת עדיין, אלא נתוני סימולציה שתואמת את ממוצע הסקרים. המטרה העיקרית היא לבדוק את מוכנות האתר.',
             en: 'These figures are not real data yet. They are a simulation matched to the polling average. Its main goal is to test the site\'s preparedness.'
@@ -1198,7 +1198,7 @@
                 font: inherit;
             }
             #e26-widget .e26-status {
-                font-size: 1.35rem;
+                font-size: 1.18rem;
                 font-weight: 700;
                 line-height: 1.15;
             }
