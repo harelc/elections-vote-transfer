@@ -1190,16 +1190,32 @@
     // actual band in use.
     const TD_PALETTE = ['#7b2d8b', '#d73027', '#fc8d2e', '#f7d038', '#7fc24a', '#0f9b8e'];
     const tdScaleCache = {};
+    // The band follows the SELECTED snapshot: as CEC updates land over
+    // the day (and when scrubbing the time axis) the p5-p95 band
+    // re-stretches, so a mid-morning map is not one flat colour under
+    // the evening band. Cached per field+snapshot; a fresh page load
+    // on a new file starts with an empty cache.
     function tdScale(fieldIdx) {
-        if (tdScaleCache[fieldIdx]) return tdScaleCache[fieldIdx];
+        const snaps = tdSnapshots();
+        const snapIdx = tdSnapIdx == null ? snaps.length - 1 : tdSnapIdx;
+        const key = fieldIdx + ':' + snapIdx;
+        if (tdScaleCache[key]) return tdScaleCache[key];
         const stations = (DATA && DATA.turnoutDay && DATA.turnoutDay.stations) || [];
-        const values = stations.map(a => a[fieldIdx]).filter(v => v != null && isFinite(v)).sort((a, b) => a - b);
+        const snap = snaps[snapIdx];
+        const voters = snap && snap.voters;
+        const values = stations.map((a, i) => {
+            const v = voters ? voters[i] : a[5];
+            if (v == null) return null;
+            // field 6: turnout % of eligible; field 8: pace vs the
+            // station's exact K25 baseline voters (a[5]/a[8] at latest)
+            return fieldIdx === 8 ? (a[8] ? v / (a[5] / a[8]) : null) : (a[4] ? 100 * v / a[4] : null);
+        }).filter(v => v != null && isFinite(v)).sort((a, b) => a - b);
         if (!values.length) return null;
         let lo = values[Math.floor(values.length * 0.05)], hi = values[Math.min(values.length - 1, Math.floor(values.length * 0.95))];
         const minSpan = fieldIdx === 8 ? 0.12 : 8;
         if (hi - lo < minSpan) { const mid = (lo + hi) / 2; lo = mid - minSpan / 2; hi = mid + minSpan / 2; }
-        tdScaleCache[fieldIdx] = { lo, hi };
-        return tdScaleCache[fieldIdx];
+        tdScaleCache[key] = { lo, hi };
+        return tdScaleCache[key];
     }
     function multiStopColor(palette, frac) {
         const f = Math.max(0, Math.min(1, frac)) * (palette.length - 1);
@@ -1975,6 +1991,7 @@
             geoLayer.setStations(geoItems);
         }
         updateTdSlider();
+        updateGeoLegend();
         if (TURNOUT_ACTIVE) renderTurnoutDay();
     }
     // Group histograms can be ranked + painted (bar length) by the
