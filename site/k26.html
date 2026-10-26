@@ -79,7 +79,10 @@
         .geomap-legend { margin-bottom:.55rem; max-width:340px; }
         .geomap-legend-title { font-size:.8rem; color:var(--text-primary); margin-bottom:.25rem; }
         .geomap-legend-bar { height:9px; border-radius:4px; }
-        .geomap-legend-labels { display:flex; justify-content:space-between; font-size:.7rem; color:var(--text-muted); margin-top:.15rem; }
+        /* Legend scale is physical, not textual: low on the left, high on
+           the right, whatever the page direction. Without this, RTL puts
+           the min label under the high end of the bar. */
+        .geomap-legend-labels { display:flex; justify-content:space-between; font-size:.7rem; color:var(--text-muted); margin-top:.15rem; direction:ltr; }
         /* Election-day turnout view (?turnout=1 / status kind=turnout):
            pre-results, so every result-bearing pane is hidden and the
            geomap carries only the turnout layers. */
@@ -1269,16 +1272,18 @@
                 ? (en() ? 'K25 turnout recovery — a ratio, not a turnout: voters so far ÷ twin’s final K25 voters' : 'שחזור שיעור ההצבעה של 25 — יחס, לא אחוז הצבעה: מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25')
                 : (en() ? 'Turnout so far (election day)' : 'אחוז הצבעה עד כה (יום הבחירות)'))
                 + (scale ? (en() ? ` · adaptive scale ${pct(scale.lo)}–${pct(scale.hi)}` : ` · סולם מותאם להתפלגות: ${pct(scale.lo)}–${pct(scale.hi)}`) : '');
-            bar.style.background = `linear-gradient(to left, ${[...TD_PALETTE].reverse().join(', ')})`;
+            // TD_PALETTE runs low -> high (purple -> teal); bar runs
+            // left (low) -> right (high), labels read the same way.
+            bar.style.background = `linear-gradient(to right, ${TD_PALETTE.join(', ')})`;
             mn.textContent = scale ? pct(scale.lo) : ''; mx.textContent = scale ? pct(scale.hi) : ''; return;
         }
         if (geoMode === 'turnout') {
             title.textContent = i18n.t('turnout');
-            bar.style.background = 'linear-gradient(to left, #10b981, #fbbf24, #ef4444)';
+            bar.style.background = 'linear-gradient(to right, #ef4444, #fbbf24, #10b981)';
             mn.textContent = '40%'; mx.textContent = '90%';
         } else if (geoMode === 'socioeconomic') {
             title.textContent = i18n.t('socioeconomic');
-            bar.style.background = 'linear-gradient(to left, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
+            bar.style.background = 'linear-gradient(to right, #5e4fa2, #3288bd, #66c2a5, #abdda4, #e6f598, #fee08b, #fdae61, #f46d43, #d53e4f, #9e0142)';
             mn.textContent = '1'; mx.textContent = '10';
         } else if (geoMode === 'embed') {
             title.textContent = i18n.t('embed_color');
@@ -1286,7 +1291,7 @@
         } else if (geoMode === 'party' && geoPartyName) {
             const party = DATA.tsne.parties.find(p => p.name === geoPartyName);
             title.textContent = `${i18n.t('party_support')}: ${displayName(geoPartyName)}`;
-            bar.style.background = party ? `linear-gradient(to left, ${party.color}, ${lightenColor(party.color, 0.8)})` : '';
+            bar.style.background = party ? `linear-gradient(to right, ${lightenColor(party.color, 0.8)}, ${party.color})` : '';
             mn.textContent = '0%'; mx.textContent = `${geoPartyScaleMax(geoPartyName)}%`;
         }
     }
