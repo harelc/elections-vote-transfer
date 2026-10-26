@@ -273,8 +273,14 @@ def rehearsal_records(target_turnout, seed=42):
 
     Each ballot's final simulated turnout is scaled by a national
     progress factor plus a sector lag (Haredi and Arab/Bedouin ballots
-    report slower in this scenario) and deterministic hash noise. This
-    is a rehearsal of the plumbing, not a forecast of election day.
+    report slower in this scenario) and deterministic hash noise.
+    Each ballot also has its own reporting speed: progress is raised
+    to a per-ballot exponent gamma in [0.65, 1.45], so fast boxes
+    surge early and slow ones catch up. Cast stays monotonic in
+    progress per ballot, but the local pattern (and therefore any
+    per-snapshot adaptive colour band) genuinely evolves over the
+    day instead of being one rescaled picture. This is a rehearsal
+    of the plumbing, not a forecast of election day.
     """
     df_rows = read_snapshot(ROOT / "ballot26.csv")
     sectors = (load("settlement_sectors.json", {"settlements": {}}) or {}).get("settlements", {})
@@ -291,10 +297,12 @@ def rehearsal_records(target_turnout, seed=42):
     for row, elig, voters in finals:
         code = str(row.get("סמל ישוב") or "").strip()
         ballot = norm_ballot(row.get("קלפי"))
-        noise = 0.92 + 0.16 * (int(hashlib.sha256(f"{code}|{ballot}".encode()).hexdigest()[:6], 16) % 1000) / 1000
+        h = int(hashlib.sha256(f"{code}|{ballot}".encode()).hexdigest()[:12], 16)
+        noise = 0.92 + 0.16 * ((h % 1000) / 1000)
+        gamma = 0.65 + 0.8 * (((h // 1000) % 1000) / 1000)
         sec = sectors.get(normalize_name(row.get("שם ישוב") or ""), {})
         lag = 0.82 if sec.get("haredi") else 0.78 if sec.get("population") in ("arab", "bedouin") else 0.9 if sec.get("population") == "druze" else 1.0
-        cast = int(round(voters * min(1.0, base_progress * noise * lag)))
+        cast = int(round(voters * min(1.0, (base_progress ** gamma) * noise * lag)))
         by_code[(code, ballot)] = {"eligible": elig, "voters": float(cast)}
     return by_code, {}, {}, {}
 
