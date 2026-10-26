@@ -633,7 +633,25 @@ def main():
         snapshots.append(aligned)
     snapshots.append({"as_of": args.as_of, "national": nat, "groups": groups_out,
                       "settlements": settlements_out, "voters": [s[5] for s in stations]})
-    snapshots = snapshots[-16:]
+    # The 07:00 polls-open baseline is always there and always kept:
+    # every station at zero voters, so the time axis starts at
+    # opening on election day whatever the first CEC publish is.
+    zero_asof = f"{str(args.as_of)[:10]}T07:00:00+02:00"
+    if zero_asof < str(args.as_of):
+        snapshots = [s for s in snapshots if s.get("as_of") != zero_asof]
+        def zeroed(obj):
+            if isinstance(obj, dict):
+                return {k: (0 if k in ("voters",) else 0.0 if k in ("turnout", "pace", "share_of_voters") else zeroed(v)) for k, v in obj.items()}
+            if isinstance(obj, list):
+                return [zeroed(v) for v in obj]
+            return obj
+        zero_nat = dict(nat, voters=0, turnout=0.0, pace=0.0,
+                        remaining_voters=nat.get("eligible"),
+                        delta_vs_k25_final_pp=(-nat["k25_turnout"] if nat.get("k25_turnout") is not None else None))
+        snapshots.insert(0, {"as_of": zero_asof, "baseline": True, "national": zero_nat,
+                             "groups": zeroed(groups_out), "settlements": zeroed(settlements_out),
+                             "voters": [0] * len(stations)})
+    snapshots = snapshots[:1] + snapshots[1:][-15:] if snapshots and snapshots[0].get("baseline") else snapshots[-16:]
 
     out = {
         "meta": {"kind": kind, "as_of": args.as_of, "source_sha256": args.sha256,
