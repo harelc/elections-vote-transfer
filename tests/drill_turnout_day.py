@@ -166,10 +166,13 @@ def main():
     check("all group dimensions present and non-empty",
           all(data["groups"].get(k) for k in
               ("k25_winner", "k25_bloc", "stronghold", "population", "form", "district", "socio", "k25_turnout_band")))
-    check("pace within (0, 1] everywhere",
-          all(r["pace"] is None or 0 < r["pace"] <= 1.05
+    # Pace can legitimately exceed 1 late in the day (a group that has
+    # already cast more ballots than in all of K25); it must stay sane.
+    max_pace = max((r["pace"] or 0) for rows in data["groups"].values() for r in rows)
+    check("pace positive and sane everywhere (max reported)",
+          all(r["pace"] is None or 0 < r["pace"] <= 1.5
               for rows in data["groups"].values() for r in rows)
-          and 0 < data["national"]["pace"] <= 1.05)
+          and 0 < data["national"]["pace"] <= 1.5, f"max pace {max_pace}")
     check("matched twins are the large majority",
           data["national"]["matched_ballots"] > 0.75 * data["national"]["reported_ballots"],
           f"{data['national']['matched_ballots']}/{data['national']['reported_ballots']}")
@@ -205,7 +208,7 @@ def main():
     node_script = tmp / "poller_drill.mjs"
     node_script.write_text(f"""
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import {{ readFileSync }} from "node:fs";
 import {{ pollTurnout }} from "{(repo / 'netlify/functions/k26-turnout-poll.mjs').as_posix()}";
 
 const snapBytes = readFileSync("{snaps[1][0].as_posix()}");

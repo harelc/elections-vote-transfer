@@ -19,7 +19,12 @@ git -C "$REPO" worktree add --force "$TMP/repo" HEAD >/dev/null
 python3 -m venv "$TMP/venv"
 "$TMP/venv/bin/pip" install --quiet --upgrade pip
 "$TMP/venv/bin/pip" install --quiet -r "$TMP/repo/requirements.txt"
+# Copy the working-tree versions of everything under test, so the drill
+# can validate uncommitted fixes too (the worktree itself is HEAD).
 cp "$REPO/tests/drill_turnout_day.py" "$TMP/repo/tests/drill_turnout_day.py"
+cp "$REPO/generate_turnout_day_data.py" "$REPO/refresh_turnout_day.py" "$TMP/repo/"
+cp "$REPO/netlify/functions/k26-turnout-poll.mjs" "$TMP/repo/netlify/functions/"
+cp "$REPO/netlify/lib/k26/turnout.mjs" "$REPO/netlify/lib/k26/turnout.test.mjs" "$TMP/repo/netlify/lib/k26/"
 "$TMP/venv/bin/python" "$TMP/repo/tests/drill_turnout_day.py" --repo "$TMP/repo"
 node --test "$TMP/repo/netlify/lib/k26/turnout.test.mjs" "$TMP/repo/netlify/lib/k26/decide.test.mjs"
 echo

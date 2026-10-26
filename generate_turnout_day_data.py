@@ -396,7 +396,11 @@ def main():
         try:
             prev = json.loads(out_path.read_text(encoding="utf-8"))
             history = [h for h in prev.get("history", []) if h.get("as_of") != args.as_of]
-            if prev.get("meta", {}).get("as_of") and prev["meta"]["as_of"] != args.as_of:
+            # prev.history normally already ends with prev's own entry;
+            # append it only if it somehow is not there (no duplicates --
+            # a duplicate inflates the count and breaks the delta display).
+            seen = {h.get("as_of") for h in history}
+            if prev.get("meta", {}).get("as_of") and prev["meta"]["as_of"] not in seen and prev["meta"]["as_of"] != args.as_of:
                 history.append({"as_of": prev["meta"]["as_of"], "national": prev.get("national")})
         except Exception:
             history = []
