@@ -431,7 +431,6 @@
                 </div>
                 <div class="stage-panel" id="panel-sankey">
                     <div class="pane-note"><span data-i18n="k26_sankey_note"></span> · <span id="sankey-r2"></span></div>
-                    <a class="explainer-cta" href="sankey-explainer.html" data-i18n="k26_sankey_explainer">📘 איך מחשבים את מעברי הקולות? להסבר המונפש</a>
                     <div id="sankey-mini"></div>
                 </div>
                 <div class="stage-panel" id="panel-tsne" hidden style="position:relative">
@@ -1820,8 +1819,8 @@
         pane.hidden = false;
         document.getElementById('tk-title').textContent = en() ? 'A Knesset for every tribe and district' : 'כנסת לכל שבט ומחוז';
         document.getElementById('tk-note').textContent = en()
-            ? 'The K26 result re-allocated (Bader-Ofer, threshold and surplus agreements included) as if only the settlements in each slice had voted — seats are computed inside each slice. Slices are classified by locality form, population group, socioeconomic cluster and district — never by how they vote.'
-            : 'תוצאת כנסת 26 מחושבת מחדש (באדר–עופר, כולל אחוז חסימה והסכמי עודפים) כאילו הצביעו רק היישובים בכל קבוצה — המנדטים מחושבים בתוך כל קבוצה. הסיווג לפי צורת יישוב, קבוצת אוכלוסייה, אשכול חברתי־כלכלי ומחוז — לעולם לא לפי אופן ההצבעה.';
+            ? 'The result re-allocated inside each slice of settlements (Bader-Ofer). Slices by form, population, cluster and district — never by voting.'
+            : 'התוצאה מחושבת מחדש בתוך כל קבוצת יישובים (באדר–עופר). הסיווג לפי צורת יישוב, אוכלוסייה, אשכול ומחוז — לא לפי הצבעה.';
         if (!DATA._tkSelected || !slices.some(s => s.id === DATA._tkSelected)) DATA._tkSelected = slices[0].id;
         const sel = slices.find(s => s.id === DATA._tkSelected);
         document.getElementById('tk-grid').innerHTML = slices.map(s => {
@@ -1835,8 +1834,7 @@
         pane.querySelectorAll('[data-tk]').forEach(elx => elx.addEventListener('click', () => { DATA._tkSelected = elx.dataset.tk; renderTwelveKnessets(); }));
         document.getElementById('tk-detail').innerHTML =
             `<h4 style="color:var(--text-primary);font-size:1.05rem">${en() ? sel.label_en : sel.label_he}</h4>
-             <div class="pane-note">${fmt(sel.settlements)} ${en() ? 'settlements' : 'יישובים'} · ${fmt(sel.voters)} ${en() ? 'votes' : 'קולות'} · ${sel.share_national}% ${en() ? 'of the national vote' : 'מהקול הארצי'} · ${i18n.t('k26_bloc_right')} ${sel.blocs.right} · ${i18n.t('k26_bloc_center')} ${sel.blocs.center} · ${i18n.t('k26_bloc_arab')} ${sel.blocs.arab}</div>` +
-            hemicycleSVG(null, { results: sel.all || sel.top, local: true, noMks: true });
+            ` + hemicycleSVG(null, { results: sel.all || sel.top, local: true, noMks: true });
     }
     function renderBellwether() {
         const pane = document.getElementById('pane-bellwether');
@@ -1845,8 +1843,8 @@
         pane.hidden = false;
         document.getElementById('bw-title').textContent = en() ? 'Which ballot votes most like the national result?' : 'איזו קלפי מצביעה הכי דומה לתוצאה הארצית';
         document.getElementById('bw-note').textContent = en()
-            ? 'Ballot boxes whose party mix is closest (total-variation distance) to the final national result, averaged over every election K16-K25 in which the same settlement+ballot number appears (at least 6). Ballot numbers can be reassigned between elections, so read this as a venue-level title, not a physical box.'
-            : 'הקלפיות שתמהיל המפלגות בהן הכי קרוב (מרחק וריאציה כולל) לתוצאה הארצית הסופית, בממוצע על כל הבחירות 16–25 שבהן מופיע אותו צירוף יישוב+מספר קלפי (לפחות 6). מספרי קלפיות עשויים לעבור שיבוץ מחדש בין בחירות, ולכן זו תואר ברמת מקום ההצבעה, לא קופסה פיזית.';
+            ? 'Ballot boxes whose party mix is closest to the national result, averaged over K16–K25 (same settlement+ballot in at least 6 elections).'
+            : 'הקלפיות שתמהיל המפלגות בהן הכי קרוב לתוצאה הארצית, בממוצע על בחירות 16–25 (אותו יישוב+מספר בלפחות 6 בחירות).';
         const rows = bw.leaderboard.map((r, i) => `<div class="flow-row bw-row" data-bw="${i}" style="cursor:pointer"><span>#${i + 1} ${en() ? r.n_en : r.n} · ${en() ? 'ballot' : 'קלפי'} ${r.b}</span><b>${(r.mean_tvd * 100).toFixed(1)}% · ${r.elections} ${en() ? 'elections' : 'בחירות'} ${r.k26 ? '· 📊' : ''}</b></div>`).join('');
         const k26 = bw.k26_most_representative ? `<div class="pane-note" style="margin-top:.6rem">${en() ? 'Most representative single K26 ballot' : 'הקלפי המייצגת ביותר בכנסת 26'}: <b style="color:var(--text-primary)">${en() ? bw.k26_most_representative.n_en : bw.k26_most_representative.n} ${bw.k26_most_representative.b}</b> (${(bw.k26_most_representative.tvd * 100).toFixed(1)}% ${en() ? 'from the national mix' : 'מהתמהיל הארצי'})${DATA.cc.meta && DATA.cc.meta.simulated ? (en() ? ' — simulated scenario' : ' — תרחיש מדומה') : ''}</div>` : '';
         document.getElementById('bw-body').innerHTML = rows + `<div id="bw-detail" style="margin-top:.8rem"></div>` + k26;
@@ -1901,8 +1899,8 @@
         const title = (en() ? 'National forecast from the partially counted ballots and the national transfer model' : 'תחזית ארצית לפי הקלפיות החלקיות שנספרו ומודל המעבר הארצי')
             + (rehearsal ? (en() ? ' — rehearsal on simulated data' : ' — חזרה על נתונים מדומים') : '');
         const note = rehearsal
-            ? (en() ? 'Simulated scenario — not real results. The fake count is deliberately skewed (the large Haredi cities almost entirely uncounted), so the counted-only "now" understates the Haredi lists and the projection has to correct it; on election night the same code runs on the real counted snapshot.' : 'תרחיש מדומה — לא תוצאות אמת. הספירה המדומה מוטה בכוונה (הערים החרדיות הגדולות כמעט שלא נספרו), כך שה"כעת" ממעיט במפלגות החרדיות ועל התחזית לתקן זאת; בליל הבחירות אותו קוד ירוץ על הספירה האמיתית.')
-            : (en() ? 'Uncounted boxes predicted from their K25 ballot through the analyzed 25→26 transfer matrix. Below, in plain terms: how much has been counted, and why the estimate can (or cannot yet) be trusted.' : 'קלפיות שלא נספרו נחזות מקלפי 25 שלהן דרך מטריצת המעבר המנותחת 25←26. למטה, בשפה פשוטה: כמה נספר, ולמה כבר אפשר (או עדיין אי אפשר) לסמוך על ההערכה.');
+            ? (en() ? 'Rehearsal on simulated data — the fake count is deliberately skewed (large Haredi cities almost uncounted).' : 'חזרה על נתונים מדומים — הספירה המדומה מוטה בכוונה (הערים החרדיות הגדולות כמעט שלא נספרו).')
+            : (en() ? 'Uncounted boxes predicted from their K25 twin via the analyzed 25→26 transfer matrix.' : 'קלפיות שלא נספרו נחזות מהקלפי התאומה ב־25 דרך מטריצת המעבר 25←26.');
         const checks = nc.checks.map(c => {
             const val = Array.isArray(c.value) ? (c.value.length ? c.value.map(displayName).join(', ') : '✓') : (c.id === 'r2' ? Number(c.value).toFixed(2) : (c.id === 'share' || c.id === 'tvd' ? Math.round(Number(c.value) * 100) + '%' : fmt(c.value)));
             const need = c.id === 'tvd' ? `${en() ? 'at most' : 'לכל היותר'} ${Math.round(c.threshold * 100)}%`
@@ -1919,14 +1917,8 @@
         // demoted to a collapsible details section for the curious.
         const countedPct = Math.round(nc.counted_ballots / Math.max(1, nc.roster_ballots) * 100);
         const laySummary = nc.ready
-            ? `<b style="color:var(--text-primary)">${en() ? '✅ The final result can already be estimated' : '✅ אפשר כבר להעריך את התוצאה הסופית'}</b>
-               <div class="pane-note" style="margin-top:.3rem">${en()
-                 ? `Counted so far: ${fmt(nc.counted_ballots)} of ${fmt(nc.roster_ballots)} ballot boxes (${countedPct}%), and what has been counted already resembles the country as a whole — so the final result can be estimated, and the ranges below will narrow as more boxes are counted.`
-                 : `נספרו עד כה ${fmt(nc.counted_ballots)} מתוך ${fmt(nc.roster_ballots)} קלפיות (${countedPct}%), ומה שנספר כבר דומה בהרכבו לארץ כולה — לכן אפשר להעריך את התוצאה הסופית, והטווחים שלמטה יתקצרו ככל שייספרו עוד קלפיות.`}</div>`
-            : `<b style="color:var(--text-primary)">${en() ? '⏳ Too early for an estimate' : '⏳ עדיין מוקדם מדי להערכה'}</b>
-               <div class="pane-note" style="margin-top:.3rem">${en()
-                 ? `Only ${fmt(nc.counted_ballots)} of ${fmt(nc.roster_ballots)} ballot boxes (${countedPct}%) have been counted, and they do not yet represent the whole country. The seat estimate will appear here automatically once enough representative results are in.`
-                 : `נספרו רק ${fmt(nc.counted_ballots)} מתוך ${fmt(nc.roster_ballots)} קלפיות (${countedPct}%), ומה שנספר עדיין לא מייצג את כל הארץ. הערכת המנדטים תופיע כאן אוטומטית כשיצטבר מספיק מידע מייצג.`}</div>`;
+            ? `<b style="color:var(--text-primary)">${en() ? `✅ The final result can already be estimated — counted so far: ${fmt(nc.counted_ballots)} of ${fmt(nc.roster_ballots)} boxes (${countedPct}%)` : `✅ אפשר כבר להעריך את התוצאה הסופית — נספרו ${fmt(nc.counted_ballots)} מתוך ${fmt(nc.roster_ballots)} קלפיות (${countedPct}%)`}</b>`
+            : `<b style="color:var(--text-primary)">${en() ? `⏳ Too early for an estimate — only ${fmt(nc.counted_ballots)} of ${fmt(nc.roster_ballots)} boxes counted (${countedPct}%)` : `⏳ עדיין מוקדם מדי להערכה — נספרו רק ${fmt(nc.counted_ballots)} מתוך ${fmt(nc.roster_ballots)} קלפיות (${countedPct}%)`}</b>`;
         let body = `<div class="nc-gate ${nc.ready ? 'ready' : ''}">${laySummary}
             <details class="nc-details"><summary>${en() ? 'Why do we trust this? The technical checks' : 'למה סומכים על זה? הבדיקות הטכניות'}</summary>
             ${checks}
@@ -1964,12 +1956,12 @@
             const blocs = Object.entries(P.blocs).map(([b, v]) => `${i18n.t('k26_bloc_' + b)} <b>${v.proj_seats ?? Math.round(v.mean ?? v.median)}</b>`).join(' · ');
             const tableHead = `<div class="nc-table-head"><span>${en() ? 'Party' : 'מפלגה'}</span><span>${en() ? 'Final-seat distribution' : 'התפלגות מנדטים סופית'}</span><span class="nc-th-forecast">${en() ? 'Forecast' : 'תחזית'}</span><span>${en() ? 'Mean' : 'ממוצע'}</span><span>${en() ? 'Counted' : 'נספר'}</span></div>`;
             body += `<div style="margin-top:.7rem">${tableHead}${rows}<div class="pane-note" style="margin-top:.4rem">${blocs}<br>${fmt(P.uncounted_ballots)} ${en() ? 'uncounted boxes' : 'קלפיות לא ספורות'} · ${fmt(P.expected_uncounted_votes)} ${en() ? 'expected votes' : 'קולות צפויים'} · ${P.sims} ${en() ? 'simulations' : 'סימולציות'} · α=${P.alpha}</div>
-            <div class="pane-note" style="margin-top:.35rem">${en() ? 'How to read the colour strips: position along the strip is the final seat count, and the stronger the party colour, the more of the simulated completions of the uncounted ballots ended there (saturated = likely, fading = rare). The ticks: ' : 'איך קוראים את פסי הצבע: המיקום לאורך הפס הוא מספר המנדטים הסופי, וככל שצבע המפלגה חזק יותר — כך יותר מההשלמות המדומות של הקלפיות שטרם נספרו הסתיימו שם (רווי = סביר, דהוי = נדיר). הקווים: '}<span class="nc-tick-key" style="background:#22d3ee"></span>${en() ? 'per the national forecast from the partial count (bold integer; a Bader-Ofer allocation of the projected final votes — a coherent 120-seat map, never an impossible count), ' : 'לפי התחזית הארצית מהספירה החלקית (המספר המודגש; חלוקת מנדטים בבאדר–עופר על הקולות החזויים הסופיים — מפה שלמה של 120, בלי מספרים בלתי אפשריים), '}<span class="nc-tick-key" style="background:#f59e0b"></span>${en() ? 'mean of runs, ' : 'ממוצע הרצות, '}<span class="nc-tick-key" style="background:#fff"></span>${en() ? 'per the partial count — the seats if the election stopped now.' : 'לפי הספירה החלקית — המנדטים אילו הבחירות נעצרו עכשיו.'}</div></div>`;
+            <div class="pane-note" style="margin-top:.35rem">${en() ? 'Strip saturation = how many simulated completions ended at that seat count. Ticks: ' : 'רווית הפס = כמה מההשלמות המדומות הסתיימו במספר המנדטים הזה. הקווים: '}<span class="nc-tick-key" style="background:#22d3ee"></span>${en() ? 'forecast · ' : 'תחזית · '}<span class="nc-tick-key" style="background:#f59e0b"></span>${en() ? 'mean · ' : 'ממוצע · '}<span class="nc-tick-key" style="background:#fff"></span>${en() ? 'counted so far' : 'נספר עד כה'}</div></div>`;
             // Predicted vote transfers live together with the seat nowcast,
             // not as a separate "Sankey" stage.
             if (P.projected_sankey) {
                 body += `<div style="margin-top:1rem"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4>
-                <div class="pane-note">${en() ? 'Counted ballots at their actual results + predicted uncounted ballots, each K25 party flowing by its own estimated row. Flows under 15,000 votes are hidden, as in the main transfer diagram.' : 'קלפיות שנספרו בתוצאותיהן בפועל + קלפיות חזויות שטרם נספרו, כשכל מפלגת־מקור ב־25 זורמת לפי השורה המשוערת שלה. מעברים של פחות מ־15,000 קולות מוסתרים, כמו בתרשים המעברים הראשי.'}</div>
+                <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.'}</div>
                 <div id="nc-flows-diagram"></div></div>`;
             }
         }
