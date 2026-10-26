@@ -374,6 +374,7 @@ def main():
         by_code, by_name, settle_by_code, settle_by_name = snapshot_records(args.snapshot[-1])
 
     stations, unmatched, settlement_level = [], 0, 0
+    match_counts = defaultdict(int)
     groups = {k: defaultdict(agg) for k in
               ("k25_winner", "k25_bloc", "stronghold", "population", "form", "district", "socio", "k25_turnout_band")}
     total = agg()
@@ -405,20 +406,35 @@ def main():
             settlement_level += 1
 
         # K25 twin pattern: crosswalked ballot, else settlement aggregate.
+        # The match *kind* is part of the output (match field): how this
+        # box was paired says how much the K25 comparison can be trusted.
+        #   id        same settlement code + ballot number
+        #   id_dot1   K26 x.1 paired to the K25 base ballot x
+        #   venue     same distinctive venue name in the settlement,
+        #             ballots paired in ballot-number order
+        #   coord     mutual nearest venue-grade pins within 150 m
+        #   settlement no paired ballot; the settlement's K25 aggregate,
+        #             apportioned by this box's eligible count
+        #   none      no K25 baseline at all
         twin = None
         if row["decision"] in MATCHED_DECISIONS and row["k25_name"]:
             twin = st25.get(f"{row['k25_name']}|{norm_ballot(row['k25_ballot'])}") \
                 or st25.get(f"{normalize_name(row['k25_name'])}|{norm_ballot(row['k25_ballot'])}")
         props, k25_voters, k25_elig = {}, 0.0, 0.0
         if twin is not None:
+            match_kind = row["decision"]
             props = twin.get("p") or {}
             k25_voters, k25_elig = float(twin.get("v") or 0), float(twin.get("e") or 0)
         elif name in by_settle25:
+            match_kind = "settlement"
             s = by_settle25[name]
             props = s.get("proportions") or {}
             # settlement-level K25 baseline, apportioned by this box's size
             share = elig / (s.get("eligible") or elig or 1)
             k25_voters, k25_elig = (s.get("voters") or 0) * share, (s.get("eligible") or 0) * share
+        else:
+            match_kind = "none"
+        match_counts[match_kind] += 1
         winner = max(props.items(), key=lambda kv: kv[1])[0] if props else None
         k25_turnout = (100 * k25_voters / k25_elig) if k25_elig else None
 
@@ -457,14 +473,21 @@ def main():
         add(settle_agg[name], elig, voters, k25_voters, k25_elig)
         settle_meta[name] = {"district": sec.get("district"), "population": sec.get("population")}
 
-        # fields: name, ballot, lat, lng, eligible, voters, turnout,
-        # k25_turnout, pace, k25_winner, bloc, population, district, socio
+        # fields: see meta.station_fields in the output document
+        try:
+            match_m = round(float(row["distance_m"]), 1) if twin is not None and row.get("distance_m") else None
+        except ValueError:
+            match_m = None
         stations.append([name, ballot, round(lat, 5) if lat else None, round(lng, 5) if lng else None,
                          round(elig), round(voters), round(100 * voters / elig, 1),
                          round(k25_turnout, 1) if k25_turnout is not None else None,
                          round(voters / k25_voters, 3) if k25_voters else None,
                          winner, dims["k25_bloc"], dims["population"], dims["district"], soc,
-                         1 if twin is not None else 0])
+                         1 if twin is not None else 0,
+                         match_kind,
+                         row["k25_name"] if twin is not None else None,
+                         norm_ballot(row["k25_ballot"]) if twin is not None else None,
+                         match_m])
 
     total_voters = total["voters"] or 1
     nat = finish(total)
@@ -473,6 +496,7 @@ def main():
         "remaining_voters": round(total["eligible"] - total["voters"]),
         "matched_ballots": sum(1 for s in stations if s[14]),
         "settlement_level_ballots": settlement_level,
+        "match_kinds": dict(match_counts),
         "reported_ballots": len(stations), "roster_ballots": len(roster), "unmatched_rows": unmatched,
         "eligible_coverage": round(total["eligible"] / sum(float(r["k26_eligible"] or 0) for r in roster), 3)
         if roster else 0.0,
@@ -513,7 +537,8 @@ def main():
                  "note_en": "Election-day turnout — before any results. Comparisons are to the matched K25 twin ballot, not to a K26 result."
                  if kind == "live" else "Rehearsal (simulated): synthetic election-day turnout, before any results.",
                  "station_fields": ["name", "ballot", "lat", "lng", "eligible", "voters", "turnout",
-                                    "k25_turnout", "pace", "k25_winner", "bloc", "population", "district", "socio", "matched"]},
+                                    "k25_turnout", "pace", "k25_winner", "bloc", "population", "district", "socio", "matched",
+                                    "match", "k25_name", "k25_ballot", "match_m"]},
         "national": nat,
         "history": history,
         "groups": {

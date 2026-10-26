@@ -1302,9 +1302,27 @@
             geoLayer.setStations(geoItems);
         }
     }
+    // How each K26 box was paired with its K25 baseline (crosswalk
+    // decision in generate_turnout_day_data.py, from
+    // build_k26_ballot_crosswalk.py). Shown in the turnout popup so a
+    // "K25 twin" figure is never presented without its provenance.
+    const TD_MATCH = {
+        id:         { he: 'אותו מספר קלפי', en: 'Same ballot number', dhe: 'אותו סמל יישוב ומספר קלפי ב־25', den: 'Same settlement code + ballot number in K25' },
+        id_dot1:    { he: 'מספר קלפי עם ‎.1‎ ← קלפי בסיס', en: 'Ballot x.1 → base ballot x', dhe: 'קלפי ‎x.1‎ בכנסת 26 הותאמה לקלפי הבסיס x ב־25', den: 'The K26 x.1 ballot was paired to the base ballot x in K25' },
+        venue:      { he: 'אותו מקום קלפי', en: 'Same venue', dhe: 'אותו שם מקום קלפי מובהק ביישוב; הקלפיות הותאמו לפי סדר מספרי הקלפי', den: 'Same distinctive venue name in the settlement; ballots paired in ballot-number order' },
+        coord:      { he: 'הסיכה הקרובה ביותר', en: 'Nearest pin', dhe: 'סיכות מקום־קלפי קרובות הדדית עד 150 מ׳, בלי סתירה בשם המקום', den: 'Mutual nearest venue pins within 150 m, no venue-name conflict' },
+        settlement: { he: 'אין קלפי מותאמת — סך היישוב ב־25', en: 'No paired ballot — settlement aggregate', dhe: 'לא נמצאה קלפי תאומה; נתוני 25 הם סך היישוב, מחולק לפי בעלי זכות הבחירה של קלפי זו', den: 'No twin ballot found; K25 figures are the settlement total, apportioned by this ballot’s eligible voters' },
+        none:       { he: 'אין התאמה ל־25', en: 'No K25 match', dhe: 'אין בסיס השוואה של 25 לקלפי זו — מוצג רק אחוז ההצבעה הנוכחי', den: 'No K25 baseline for this ballot — only current turnout is shown' },
+    };
+    function tdMatchInfo(td) {
+        return TD_MATCH[td.match] || (td.matched ? TD_MATCH.id : TD_MATCH.none);
+    }
     function stationCardHTML(station, pinned) {
         if (station.td) {
             const td = station.td;
+            const mi = tdMatchInfo(td);
+            const isTwin = !!td.matched;
+            const twinRef = td.k25ballot ? `${en() ? 'K25 ballot' : 'קלפי 25'} ${td.k25ballot}${td.k25name && td.k25name !== station.n ? ` · ${en() ? i18n.settlementName(td.k25name) : td.k25name}` : ''}` : '';
             return `<div class="station-popup" style="direction:${i18n.isRTL() ? 'rtl' : 'ltr'}">
             ${pinned ? '<button class="tip-close" aria-label="close">×</button>' : ''}
             <div class="station-popup-title">${en() ? i18n.settlementName(station.n) : station.n}</div>
@@ -1313,11 +1331,12 @@
                 <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span><span class="station-popup-stat-value">${fmt(station.e || 0)}</span>
                 <span class="station-popup-stat-label">${i18n.t('voted')}:</span><span class="station-popup-stat-value">${fmt(station.v || 0)}</span>
                 <span class="station-popup-stat-label">${i18n.t('turnout')}:</span><span class="station-popup-stat-value">${(station.t || 0).toFixed(1)}%</span>
-                ${td.k25t != null ? `<span class="station-popup-stat-label">${en() ? 'K25 twin final turnout' : 'הצבעה סופית בקלפי התאומה ב־25'}:</span><span class="station-popup-stat-value">${td.k25t.toFixed(1)}%</span>` : ''}
+                <span class="station-popup-stat-label">${en() ? 'K25 match' : 'התאמה ל־25'}:</span><span class="station-popup-stat-value">${en() ? mi.en : mi.he}${twinRef ? ` (${twinRef})` : ''}${td.match === 'coord' && td.matchM != null ? ` · ${fmt(td.matchM)} ${en() ? 'm between pins' : 'מ׳ בין הסיכות'}` : ''}</span>
+                ${td.k25t != null ? `<span class="station-popup-stat-label">${isTwin ? (en() ? 'K25 twin final turnout' : 'הצבעה סופית בקלפי התאומה ב־25') : (en() ? 'K25 settlement final turnout (aggregate)' : 'הצבעה סופית ב־25, סך היישוב') }:</span><span class="station-popup-stat-value">${td.k25t.toFixed(1)}%</span>` : ''}
                 ${td.pace != null ? `<span class="station-popup-stat-label">${en() ? 'K25 turnout recovery (ratio)' : 'שחזור שיעור ההצבעה של 25 (יחס)'}:</span><span class="station-popup-stat-value">×${td.pace.toFixed(2)}</span>` : ''}
-                ${td.winner ? `<span class="station-popup-stat-label">${en() ? 'K25 twin winner' : 'מנצחת הקלפי התאומה ב־25'}:</span><span class="station-popup-stat-value">${td.winner}</span>` : ''}
+                ${td.winner ? `<span class="station-popup-stat-label">${isTwin ? (en() ? 'K25 twin winner' : 'מנצחת הקלפי התאומה ב־25') : (en() ? 'K25 settlement winner' : 'מנצחת היישוב ב־25')}:</span><span class="station-popup-stat-value">${td.winner}</span>` : ''}
             </div>
-            <div class="station-popup-location">${en() ? 'Election-day turnout only — no result for this ballot yet.' : 'אחוז הצבעה של יום הבחירות בלבד — עדיין אין תוצאה לקלפי זו.'}</div>
+            <div class="station-popup-location">${en() ? mi.den : mi.dhe}. ${en() ? 'Election-day turnout only — no result for this ballot yet.' : 'אחוז הצבעה של יום הבחירות בלבד — עדיין אין תוצאה לקלפי זו.'}</div>
         </div>`;
         }
         const sorted = Object.entries(station.p || {}).sort((a, b) => b[1] - a[1]);
@@ -1406,7 +1425,7 @@
         // already carrying roster coordinates; no K26 result is shown.
         const geoSource = (TURNOUT_ACTIVE && DATA.turnoutDay && DATA.turnoutDay.stations)
             ? DATA.turnoutDay.stations.map(a => ({ n: a[0], b: a[1], _lat: a[2], _lng: a[3], e: a[4], v: a[5], t: a[6], p: {},
-                td: { k25t: a[7], pace: a[8], winner: a[9], bloc: a[10], population: a[11], district: a[12], socio: a[13], matched: a[14], k25v: a[8] ? Math.round(a[5] / a[8]) : null } }))
+                td: { k25t: a[7], pace: a[8], winner: a[9], bloc: a[10], population: a[11], district: a[12], socio: a[13], matched: a[14], match: a[15], k25name: a[16], k25ballot: a[17], matchM: a[18], k25v: a[8] ? Math.round(a[5] / a[8]) : null } }))
             : DATA.tsne.stations;
         geoSource.forEach(station => {
             const settlement = station.n, ballot = station.b, key = `${settlement}|${ballot}`;
@@ -1908,7 +1927,15 @@
         const n = td.national || {}, meta = td.meta || {};
         document.getElementById('td-title').textContent = en() ? 'Who is turning out? Turnout by K25 twin, sector and stronghold' : 'מי יוצא להצביע? אחוזי הצבעה לפי הקלפי התאומה ב־25, מגזר ומעוז';
         document.getElementById('td-note').textContent = (en() ? (meta.note_en || '') : (meta.note_he || ''))
-            + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.');
+            + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.')
+            + (() => {
+                const mk = n.match_kinds || {};
+                const total = Object.values(mk).reduce((a, b) => a + b, 0);
+                if (!total) return '';
+                const part = (k) => mk[k] ? `${Math.round(100 * mk[k] / total)}% ${en() ? TD_MATCH[k].en.toLowerCase() : TD_MATCH[k].he}` : null;
+                const parts = ['id', 'id_dot1', 'venue', 'coord', 'settlement', 'none'].map(part).filter(Boolean);
+                return (en() ? ` How each ballot was matched to K25: ${parts.join(' · ')}.` : ` איך הותאמה כל קלפי ל־25: ${parts.join(' · ')}.`);
+            })();
         document.getElementById('td-updated').textContent = meta.as_of ? `${en() ? 'Updated' : 'עודכן'}: ${new Date(meta.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal (simulated)' : ' · חזרה (סימולציה)') : ''}` : '';
         // Clear data timestamp, front and centre: which snapshot this is,
         // when it was taken, and how old it is right now.
