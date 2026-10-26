@@ -261,6 +261,7 @@
         .bubble-gain { color:#4ade80; } .bubble-lose { color:#fca5a5; }
         .bubble-cols { display:grid; grid-template-columns:1fr 1fr; gap:0.4rem 1rem; margin-top:0.4rem; }
         .bubble-col-title { font-size:0.8rem; font-weight:800; margin-bottom:0.2rem; }
+        .bubble-col-note { font-size:0.68rem; color:var(--text-muted); line-height:1.4; margin-bottom:0.35rem; }
         @media (max-width:560px){ .bubble-cols{grid-template-columns:1fr;} }
         .bubble-brick { width:34px; height:9px; border-radius:2px; background:rgba(255,255,255,.09); overflow:hidden; display:inline-block; vertical-align:middle; }
         .bubble-brick i { display:block; height:100%; }
@@ -293,7 +294,13 @@
         .nc-miss-row { display:grid; grid-template-columns:110px 1fr 52px; gap:0.5rem; align-items:center; font-size:0.75rem; color:var(--text-secondary); }
         .nc-miss-row .nc-track { height:7px; border-radius:4px; background:rgba(255,255,255,.08); overflow:hidden; }
         .nc-miss-row .nc-track i { display:block; height:100%; background:#f59e0b; }
-        .nc-seat-row { display:grid; grid-template-columns:86px 1fr 86px; gap:0.5rem; align-items:center; font-size:0.76rem; padding:0.22rem 0; color:var(--text-secondary); }
+        .nc-seat-row { display:grid; grid-template-columns:86px 1fr 34px 46px 34px; gap:0.5rem; align-items:center; font-size:0.76rem; padding:0.22rem 0; color:var(--text-secondary); }
+        .nc-table-head { display:grid; grid-template-columns:86px 1fr 34px 46px 34px; gap:0.5rem; align-items:end; font-size:.64rem; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,.12); padding-bottom:.3rem; margin-bottom:.15rem; }
+        .nc-table-head .nc-th-forecast { color:#22d3ee; font-weight:700; }
+        .nc-table-head span:not(:first-child) { text-align:center; }
+        .nc-seat-row .nc-forecast { font-size:1.4rem; font-weight:800; color:#22d3ee; text-align:center; line-height:1; }
+        .nc-seat-row .nc-num { text-align:center; font-variant-numeric:tabular-nums; }
+        .nc-seat-row .nc-pass { display:block; font-size:.64rem; color:#f59e0b; }
         .nc-seat-row .nc-track { height:12px; border-radius:4px; background:rgba(255,255,255,.07); position:relative; }
         .nc-seat-row .nc-densstrip { position:absolute; top:2px; bottom:2px; inset-inline-start:0; inset-inline-end:0; border-radius:4px; }
         .nc-seat-row .nc-tick { position:absolute; top:-3px; width:2px; height:calc(100% + 6px); z-index:3; border-radius:1px; }
@@ -313,7 +320,9 @@
         .nc-seat-row .nc-now { position:absolute; top:-2px; width:2px; height:16px; background:#fff; }
         .nc-seat-row b { color:var(--text-primary); }
         /* Nowcast on the central stage (partial count) gets the wide layout */
-        #panel-nowcast .nc-seat-row { grid-template-columns:150px 1fr 240px; font-size:0.92rem; padding:0.38rem 0; }
+        #panel-nowcast .nc-seat-row { grid-template-columns:150px 1fr 56px 70px 56px; font-size:0.92rem; padding:0.38rem 0; }
+        #panel-nowcast .nc-table-head { grid-template-columns:150px 1fr 56px 70px 56px; font-size:.72rem; }
+        #panel-nowcast .nc-seat-row .nc-forecast { font-size:2.1rem; }
         #panel-nowcast .nc-seat-row .nc-track { height:17px; }
         #panel-nowcast .nc-seat-row .nc-now { height:21px; }
         #panel-nowcast .nc-miss-row { grid-template-columns:150px 1fr 60px; font-size:0.88rem; }
@@ -969,8 +978,8 @@
             const fill = Math.max(0, Math.min(100, 100 * (1 - r.toGain / seatCost)));
             return `<div class="bubble-row">
                 <div class="bubble-head"><span class="dot" style="background:${DATA.colorOf[r.p.name] || '#666'}"></span><b>${displayName(r.p.name)}</b><span class="bseats">${r.s} ${seatsWord}</span></div>
-                <div class="bubble-cands">${i18n.t('k26_bubble_first_out')}: <b>${r.outMk ? mkDisplayName(r.outMk) : '#' + (r.s + 1)}</b> (#${r.s + 1})</div>
-                ${r.gainVictims && r.gainVictims.length ? `<div class="bubble-cands">${i18n.t('k26_bubble_at_expense')}: ${r.gainVictims.map(expenseOf).join(', ')}</div>` : ''}
+                <div class="bubble-cands"><b>${r.outMk ? mkDisplayName(r.outMk) : '#' + (r.s + 1)}</b> (#${r.s + 1})</div>
+                ${r.gainVictims && r.gainVictims.length ? `<div class="bubble-cands">↳ ${r.gainVictims.map(expenseOf).join(', ')}</div>` : ''}
                 <div class="bubble-nums"><span class="bubble-brick"><i style="width:${fill.toFixed(1)}%;background:${DATA.colorOf[r.p.name] || '#666'}"></i></span><span class="bubble-gain">▲ ${i18n.t(r.s > 0 ? 'k26_bubble_to_gain' : 'k26_bubble_to_enter', { n: fmt(r.toGain) })}</span></div>
             </div>`;
         };
@@ -979,15 +988,15 @@
             const remain = Math.max(0, Math.min(100, 100 * (1 - r.toLose / seatCost)));
             return `<div class="bubble-row">
                 <div class="bubble-head"><span class="dot" style="background:${DATA.colorOf[r.p.name] || '#666'}"></span><b>${displayName(r.p.name)}</b><span class="bseats">${r.s} ${seatsWord}</span></div>
-                <div class="bubble-cands">${i18n.t('k26_bubble_last_in')}: <b>${r.inMk ? mkDisplayName(r.inMk) : '#' + r.s}</b> (#${r.s})</div>
-                ${r.loseBeneficiaries && r.loseBeneficiaries.length ? `<div class="bubble-cands">${i18n.t('k26_bubble_seat_to')}: ${r.loseBeneficiaries.map(receiverOf).join(', ')}</div>` : ''}
+                <div class="bubble-cands"><b>${r.inMk ? mkDisplayName(r.inMk) : '#' + r.s}</b> (#${r.s})</div>
+                ${r.loseBeneficiaries && r.loseBeneficiaries.length ? `<div class="bubble-cands">↳ ${r.loseBeneficiaries.map(receiverOf).join(', ')}</div>` : ''}
                 <div class="bubble-nums"><span class="bubble-brick ${atRisk ? 'at-risk' : ''}"><i style="width:${remain.toFixed(1)}%;background:${DATA.colorOf[r.p.name] || '#666'}"></i></span><span class="bubble-lose">▼ ${i18n.t('k26_bubble_to_lose', { n: fmt(r.toLose) })}</span></div>
             </div>`;
         };
         elx.innerHTML = `<h4>${i18n.t('k26_bubble_pane')}</h4>
             <div class="bubble-cols">
-                <div><div class="bubble-col-title" style="color:#4ade80">▲ ${en() ? 'Closest to gaining a seat' : 'הקרובות להרוויח מנדט'}</div>${gainRows.map(gainRow).join('')}</div>
-                <div><div class="bubble-col-title" style="color:#fca5a5">▼ ${en() ? 'Closest to losing a seat' : 'הקרובות להפסיד מנדט'}</div>${loseRows.map(loseRow).join('')}</div>
+                <div><div class="bubble-col-title" style="color:#4ade80">▲ ${en() ? 'Closest to gaining a seat' : 'הקרובות להרוויח מנדט'}</div><div class="bubble-col-note">${en() ? 'Next candidate in line · ↳ whose seat it would take · votes still needed' : 'המועמד הבא בתור · ↳ ממי יילקח המנדט · כמה קולות חסרים'}</div>${gainRows.map(gainRow).join('')}</div>
+                <div><div class="bubble-col-title" style="color:#fca5a5">▼ ${en() ? 'Closest to losing a seat' : 'הקרובות להפסיד מנדט'}</div><div class="bubble-col-note">${en() ? 'Last candidate in · ↳ who would get the seat · votes above losing it' : 'המועמד האחרון בפנים · ↳ למי יעבור המנדט · כמה קולות מעל ההפסד'}</div>${loseRows.map(loseRow).join('')}</div>
             </div>`;
     }
 
@@ -1943,12 +1952,13 @@
                 stops.push(`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0) 100%`);
                 const strip = `<span class="nc-densstrip" style="background:linear-gradient(${i18n.isRTL() ? 'to left' : 'to right'}, ${stops.join(',')})"></span>`;
                 const meanVal = p.mean ?? p.median, intVal = p.proj_seats ?? p.mode ?? Math.round(meanVal);
-                return `<div class="nc-seat-row"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DATA.colorOf[p.name] || '#666'};margin-inline-end:4px"></span>${displayName(p.name)}</span>
+                return `<div class="nc-seat-row"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DATA.colorOf[p.name] || '#666'};margin-inline-end:4px"></span>${displayName(p.name)}${p.p_pass != null && p.p_pass < 0.99 ? `<span class="nc-pass">${en() ? 'threshold' : 'אחוז חסימה'} ${Math.round(p.p_pass * 100)}%</span>` : ''}</span>
                     <span class="nc-track">${strip}<span class="nc-tick nc-tick-mean" style="inset-inline-start:${(meanVal / maxSeat * 100).toFixed(2)}%"></span><span class="nc-tick nc-tick-int" style="inset-inline-start:${(intVal / maxSeat * 100).toFixed(2)}%"></span><span class="nc-now" style="inset-inline-start:${now}%"></span></span>
-                    <span class="nc-stats"><span class="nc-main"><b>${p.proj_seats ?? p.mode ?? Math.round(p.mean ?? p.median)}</b><span class="nc-lab">${en() ? 'national forecast from the partial count' : 'התחזית הארצית לפי הספירה החלקית'}</span></span><span class="nc-sub">${en() ? 'mean of runs' : 'ממוצע הרצות'} <b class="nc-val">${(p.mean ?? p.median).toFixed(2)}</b> · ${en() ? 'per the partial count' : 'לפי הספירה החלקית'} <b class="nc-val">${p.seats_now}</b></span>${p.p_pass != null && p.p_pass < 0.99 ? `<span class="nc-sub">${en() ? 'chance of passing the electoral threshold' : 'סיכוי לעבור את אחוז החסימה'}: <b class="nc-val">${Math.round(p.p_pass * 100)}%</b></span>` : ''}</span></div>`;
+                    <b class="nc-forecast">${intVal}</b><span class="nc-num">${meanVal.toFixed(2)}</span><span class="nc-num">${p.seats_now}</span></div>`;
             }).join('');
-            const blocs = Object.entries(P.blocs).map(([b, v]) => `${i18n.t('k26_bloc_' + b)} <b>${v.proj_seats ?? Math.round(v.mean ?? v.median)}</b> (${en() ? 'mean of runs' : 'ממוצע הרצות'} ${(v.mean ?? v.median).toFixed(2)})`).join(' · ');
-            body += `<div style="margin-top:.7rem">${rows}<div class="pane-note" style="margin-top:.4rem">${blocs}<br>${fmt(P.uncounted_ballots)} ${en() ? 'uncounted boxes' : 'קלפיות לא ספורות'} · ${fmt(P.expected_uncounted_votes)} ${en() ? 'expected votes' : 'קולות צפויים'} · ${P.sims} ${en() ? 'simulations' : 'סימולציות'} · α=${P.alpha}</div>
+            const blocs = Object.entries(P.blocs).map(([b, v]) => `${i18n.t('k26_bloc_' + b)} <b>${v.proj_seats ?? Math.round(v.mean ?? v.median)}</b>`).join(' · ');
+            const tableHead = `<div class="nc-table-head"><span>${en() ? 'Party' : 'מפלגה'}</span><span>${en() ? 'Final-seat distribution' : 'התפלגות מנדטים סופית'}</span><span class="nc-th-forecast">${en() ? 'Forecast' : 'תחזית'}</span><span>${en() ? 'Mean' : 'ממוצע'}</span><span>${en() ? 'Counted' : 'נספר'}</span></div>`;
+            body += `<div style="margin-top:.7rem">${tableHead}${rows}<div class="pane-note" style="margin-top:.4rem">${blocs}<br>${fmt(P.uncounted_ballots)} ${en() ? 'uncounted boxes' : 'קלפיות לא ספורות'} · ${fmt(P.expected_uncounted_votes)} ${en() ? 'expected votes' : 'קולות צפויים'} · ${P.sims} ${en() ? 'simulations' : 'סימולציות'} · α=${P.alpha}</div>
             <div class="pane-note" style="margin-top:.35rem">${en() ? 'How to read the colour strips: position along the strip is the final seat count, and the stronger the party colour, the more of the simulated completions of the uncounted ballots ended there (saturated = likely, fading = rare). The ticks: ' : 'איך קוראים את פסי הצבע: המיקום לאורך הפס הוא מספר המנדטים הסופי, וככל שצבע המפלגה חזק יותר — כך יותר מההשלמות המדומות של הקלפיות שטרם נספרו הסתיימו שם (רווי = סביר, דהוי = נדיר). הקווים: '}<span class="nc-tick-key" style="background:#22d3ee"></span>${en() ? 'per the national forecast from the partial count (bold integer; a Bader-Ofer allocation of the projected final votes — a coherent 120-seat map, never an impossible count), ' : 'לפי התחזית הארצית מהספירה החלקית (המספר המודגש; חלוקת מנדטים בבאדר–עופר על הקולות החזויים הסופיים — מפה שלמה של 120, בלי מספרים בלתי אפשריים), '}<span class="nc-tick-key" style="background:#f59e0b"></span>${en() ? 'mean of runs, ' : 'ממוצע הרצות, '}<span class="nc-tick-key" style="background:#fff"></span>${en() ? 'per the partial count — the seats if the election stopped now.' : 'לפי הספירה החלקית — המנדטים אילו הבחירות נעצרו עכשיו.'}</div></div>`;
             // Predicted vote transfers live together with the seat nowcast,
             // not as a separate "Sankey" stage.
