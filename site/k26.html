@@ -115,6 +115,10 @@
         body.td-on #pane-suspects, body.td-on #pane-bellwether, body.td-on #factoid-bar { display:none !important; }
         .td-timestamp { max-width:1150px; margin:0 auto 0.2rem; padding:0.55rem 1rem; text-align:center; font-size:0.95rem; font-weight:700; color:#ffd75e; background:rgba(240,180,41,.1); border:1px solid rgba(240,180,41,.45); border-radius:10px; }
         .td-timestamp .td-ts-age { color:var(--text-secondary); font-weight:500; font-size:0.83rem; }
+        .td-match-chips { display:flex; flex-wrap:wrap; gap:.35rem; margin-bottom:.7rem; }
+        .td-match-chips:empty { display:none; }
+        .td-match-chip { background:var(--bg-tertiary); border:1px solid rgba(255,255,255,.07); border-radius:999px; padding:.16rem .55rem; font-size:.72rem; color:var(--text-secondary); }
+        .td-match-chip b { color:var(--text-primary); }
         .td-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.6rem; margin-bottom:.8rem; }
         .td-stat { background:var(--bg-tertiary); border-radius:8px; padding:.55rem .7rem; }
         .td-stat b { display:block; font-size:1.25rem; color:var(--text-primary); }
@@ -494,9 +498,11 @@
         <!-- Election-day turnout analyses (optional pre-results view) -->
         <section class="pane" id="pane-turnout-day" hidden>
             <div class="pane-head">
-                <div><h3 id="td-title"></h3><div class="pane-note" id="td-note"></div></div>
+                <div><h3 id="td-title"></h3></div>
                 <div class="pane-actions"><span class="pane-note" id="td-updated"></span></div>
             </div>
+            <div class="pane-note" id="td-note" style="margin-bottom:.35rem"></div>
+            <div class="td-match-chips" id="td-match-chips"></div>
             <div class="td-stats" id="td-stats"></div>
             <div class="td-tabs" id="td-tabs" role="group"></div>
             <div class="td-tabs" id="td-metric" role="group"></div>
@@ -2167,15 +2173,17 @@
         const snapAsOf = (snap && snap.as_of) || meta.as_of;
         document.getElementById('td-title').textContent = en() ? 'Who is turning out? Turnout by K25 twin, sector and stronghold' : 'מי יוצא להצביע? אחוזי הצבעה לפי הקלפי התאומה ב־25, מגזר ומעוז';
         document.getElementById('td-note').textContent = (en() ? (meta.note_en || '') : (meta.note_he || ''))
-            + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.')
-            + (() => {
-                const mk = n.match_kinds || {};
-                const total = Object.values(mk).reduce((a, b) => a + b, 0);
-                if (!total) return '';
-                const part = (k) => mk[k] ? `${Math.round(100 * mk[k] / total)}% ${en() ? TD_MATCH[k].en.toLowerCase() : TD_MATCH[k].he}` : null;
-                const parts = ['id', 'id_dot1', 'venue', 'coord', 'neighbor', 'settlement', 'none'].map(part).filter(Boolean);
-                return (en() ? ` How each ballot was matched to K25: ${parts.join(' · ')}.` : ` איך הותאמה כל קלפי ל־25: ${parts.join(' · ')}.`);
-            })();
+            + (en() ? ' “Recovery” (×) is a ratio — voters so far ÷ the K25 twin’s final voters — not a turnout percentage.' : ' ״שחזור״ (×) הוא יחס — מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25 — ולא אחוז הצבעה.');
+        document.getElementById('td-match-chips').innerHTML = (() => {
+            const mk = n.match_kinds || {};
+            const total = Object.values(mk).reduce((a, b) => a + b, 0);
+            if (!total) return '';
+            const chips = ['id', 'id_dot1', 'venue', 'coord', 'neighbor', 'settlement', 'none']
+                .filter(k => mk[k])
+                .map(k => `<span class="td-match-chip"><b>${Math.round(100 * mk[k] / total)}%</b> ${en() ? TD_MATCH[k].en : TD_MATCH[k].he}</span>`)
+                .join('');
+            return `<span class="td-match-chip" style="background:none;border:none;padding-inline:0">${en() ? 'How each ballot was matched to K25:' : 'איך הותאמה כל קלפי ל־25:'}</span>` + chips;
+        })();
         document.getElementById('td-updated').textContent = snapAsOf ? `${en() ? 'Updated' : 'עודכן'}: ${new Date(snapAsOf).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal (simulated)' : ' · חזרה (סימולציה)') : ''}` : '';
         // Clear data timestamp, front and centre: which snapshot this is,
         // when it was taken, and how old it is right now.
