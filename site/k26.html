@@ -101,7 +101,13 @@
         /* Election-day turnout view (?turnout=1 / status kind=turnout):
            pre-results, so every result-bearing pane is hidden and the
            geomap carries only the turnout layers. */
-        body.td-on .gemara { grid-template-columns:minmax(0,1150px); justify-content:center; }
+        body.td-on .gemara { grid-template-columns:minmax(0,1320px); justify-content:center; }
+        /* During-the-day layout: Israel is a narrow portrait shape, so
+           the map gets a tall narrow column and the turnout analyses
+           sit beside it (to its left in RTL) instead of below. */
+        body.td-on .g-center { display:grid; grid-template-columns:minmax(350px,430px) minmax(0,1fr); gap:1rem; align-items:start; }
+        body.td-on .geomap-pane .mini-map { height:min(82vh,880px); }
+        @media (max-width:980px){ body.td-on .g-center { grid-template-columns:1fr; } body.td-on .geomap-pane .mini-map { height:70vh; } }
         body.td-on .g-side { display:none; }
         body.td-on #pane-votes, body.td-on #pane-dhondt-mini, body.td-on #pane-nowcast,
         body.td-on #geomap-full-cta { display:none; }
