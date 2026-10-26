@@ -45,6 +45,23 @@ test("columns/rows json and generic xml are recognised", () => {
   assert.equal(inspectTurnout(xml).rowCount, 3);
 });
 
+test("map-service json shapes are recognised", () => {
+  const enc = (o) => new TextEncoder().encode(JSON.stringify(o));
+  // GovMap-style: features dict keyed by settlement code
+  assert.equal(inspectTurnout(enc({ version: 2, generated: "2026-10-27T10:00:00Z",
+    features: { "3000": { "בזב": 1000, "מצביעים": 400 }, "5000": { "בזב": 900, "מצביעים": 300 } } })).rowCount, 2);
+  // GeoJSON / ArcGIS feature arrays
+  assert.equal(inspectTurnout(enc({ features: [{ properties: { a: 1 } }, { attributes: { b: 2 } }] })).rowCount, 2);
+  // Bare record array
+  assert.equal(inspectTurnout(enc([{ code: 1 }, { code: 2 }, { code: 3 }])).rowCount, 3);
+  // Nested records container + as_of alias
+  const found = inspectTurnout(enc({ generated: "2026-10-27T12:00:00Z", data: [{ x: 1 }] }));
+  assert.equal(found.rowCount, 1);
+  assert.equal(found.asOf, "2026-10-27T12:00:00Z");
+  // A scalar-only object is not a feed
+  assert.equal(inspectTurnout(enc({ turnout_national: 42.5 })), null);
+});
+
 test("an html page or unrelated csv is not a turnout feed", () => {
   assert.equal(inspectTurnout(new TextEncoder().encode("<html><body>soon</body></html>")), null);
   assert.equal(inspectTurnout(new TextEncoder().encode("a,b\n1,2\n")), null);

@@ -65,14 +65,30 @@ def classify(url, status, ctype, raw):
             data = json.loads(text)
         except json.JSONDecodeError:
             return "json (unparseable)"
-        if isinstance(data, dict) and isinstance(data.get("rows"), list) and isinstance(data.get("columns"), list):
-            return f"{{columns,rows}} JSON, {len(data['rows'])} rows -- poller-ready"
+        # Summarise the record collection in any map-service shape and
+        # show a sample record's field names, so the ALIASES mapping in
+        # generate_turnout_day_data.py can be confirmed at a glance.
+        records = []
         if isinstance(data, list):
-            return f"JSON array, {len(data)} items -- check shape against generate_turnout_day_data ALIASES"
-        if isinstance(data, dict):
-            keys = list(data)[:6]
-            return f"JSON object, keys {keys} -- check shape (e.g. GovMap-style features)"
-        return "json"
+            records = data
+        elif isinstance(data, dict) and isinstance(data.get("rows"), list) and isinstance(data.get("columns"), list):
+            return f"{{columns,rows}} JSON, {len(data['rows'])} rows -- poller-ready"
+        elif isinstance(data, dict):
+            for key in ("features", "rows", "records", "data", "stations", "items", "results"):
+                if key in data:
+                    items = data[key]
+                    records = list(items.values()) if isinstance(items, dict) else items
+                    break
+            else:
+                records = [v for v in data.values() if isinstance(v, dict)]
+        sample = next((r for r in records if isinstance(r, dict)), {})
+        for wrap in ("properties", "attributes", "fields"):
+            if isinstance(sample.get(wrap), dict):
+                sample = sample[wrap]
+                break
+        fields = ", ".join(list(sample)[:10])
+        return (f"JSON, {len(records)} records, sample fields: {fields} "
+                f"-- poller-ready if fields match generate_turnout_day_data ALIASES")
     lines = [ln for ln in text.splitlines() if ln.strip()]
     if len(lines) >= 2 and re.search(r"קלפי|ballot|אחוז|turnout|מצביעים|voters", lines[0], re.I):
         return f"CSV, {len(lines) - 1} rows, header: {lines[0][:110]} -- poller-ready"

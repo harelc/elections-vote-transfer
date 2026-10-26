@@ -78,6 +78,23 @@ function decodeText(bytes) {
   }
 }
 
+/** Records in any plausible map-service JSON shape, or 0. Mirrors
+ * json_rows() in generate_turnout_day_data.py. */
+function jsonRowCount(data) {
+  if (Array.isArray(data)) return data.length;
+  if (!data || typeof data !== "object") return 0;
+  if (Array.isArray(data.rows) && Array.isArray(data.columns)) return data.rows.length;
+  for (const key of ["features", "rows", "records", "data", "stations", "items", "results"]) {
+    const items = data[key];
+    if (Array.isArray(items)) return items.length;
+    if (items && typeof items === "object") {
+      return Object.values(items).filter((v) => v && typeof v === "object").length;
+    }
+  }
+  // A bare {code: record} map (GovMap-style without a wrapper).
+  return Object.values(data).filter((v) => v && typeof v === "object" && !Array.isArray(v)).length;
+}
+
 /** Shallow feed inspection: { rowCount, asOf } or null.
  * rowCount counts data rows for CSV/JSON feeds; XML feeds report the
  * number of repeated row elements. This intentionally does NOT parse
@@ -87,14 +104,17 @@ export function inspectTurnout(bytes, headers = new Headers()) {
   const trimmed = text.trim();
   if (!trimmed) return null;
   if (/^<!doctype html|^<html[\s>]/i.test(trimmed)) return null;
-  if (trimmed.startsWith("{")) {
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     let data;
     try { data = JSON.parse(trimmed); } catch { return null; }
-    if (Array.isArray(data.rows) && Array.isArray(data.columns)) {
-      return { rowCount: data.rows.length, asOf: typeof data.as_of === "string" ? data.as_of : null };
-    }
-    if (Array.isArray(data)) return { rowCount: data.length, asOf: null };
-    return null;
+    // The daytime feed is expected to be JSON inside the CEC map
+    // service, in one of its plausible shapes; count records in any
+    // of them. Values are parsed CI-side by the generator, not here.
+    const rowCount = jsonRowCount(data);
+    if (!rowCount) return null;
+    const asOf = [data && data.as_of, data && data.generated, data && data.updated_at]
+      .find((v) => typeof v === "string") || null;
+    return { rowCount, asOf };
   }
   if (trimmed.startsWith("<")) {
     // XML: count the most-repeated child element of the root.

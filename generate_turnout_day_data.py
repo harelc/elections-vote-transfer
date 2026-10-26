@@ -104,27 +104,87 @@ def norm_ballot(b):
 
 
 # --------------------------------------------------------------- snapshots
+# The daytime turnout source is expected to be a JSON payload inside
+# the CEC map service (mapvotes.bechirot.gov.il), not a CSV file, so
+# the aliases cover map-service style field names (GovMap / ArcGIS /
+# GeoJSON) as well as the CEC CSV headers.
 ALIASES = {
-    "code": ("סמל ישוב", "סמל_ישוב", "settlement_code", "code", "סמל יישוב"),
-    "name": ("שם ישוב", "שם_ישוב", "settlement", "name", "שם יישוב"),
-    "ballot": ("קלפי", "מספר קלפי", "ballot", "ballot_number"),
-    "eligible": ("בזב", "בז\"ב", "eligible", "eligible_voters"),
-    "voters": ("מצביעים", "voters", "voted", "cast"),
-    "turnout": ("אחוז הצבעה", "אחוז_הצבעה", "turnout", "turnout_pct", "pct"),
+    "code": ("סמל ישוב", "סמל_ישוב", "settlement_code", "settlementCode", "cityID", "cityId",
+             "yishuv_code", "code", "סמל יישוב", "id"),
+    "name": ("שם ישוב", "שם_ישוב", "settlement", "settlementName", "cityName", "name", "שם יישוב"),
+    "ballot": ("קלפי", "מספר קלפי", "ballot", "ballot_number", "BallotNumber", "ballotNumber",
+               "kalpi", "stationNumber", "station_number"),
+    "eligible": ("בזב", "בז\"ב", "eligible", "eligible_voters", "eligibleVoters", "numEligible",
+                 "totalEligible", "electors", "בוחרים"),
+    "voters": ("מצביעים", "voters", "voted", "cast", "votersCount", "numVoters", "actualVoters",
+               "votedCount", "מספר מצביעים", "הצביעו"),
+    "turnout": ("אחוז הצבעה", "אחוז_הצבעה", "turnout", "turnout_pct", "turnoutPct", "pct",
+                "votingPercentage", "voting_percent", "percentage", "אחוז מצביעים", "שיעור הצבעה"),
 }
+
+# Dict keys under which a map-service JSON nests its record collection.
+RECORD_CONTAINERS = ("features", "rows", "records", "data", "stations", "items", "results")
+
+
+def json_rows(data):
+    """Any plausible map-service JSON -> flat row dicts.
+
+    Handles {columns, rows}; a bare record array; records nested under
+    a RECORD_CONTAINERS key; GeoJSON/ArcGIS features (properties /
+    attributes are flattened); and a GovMap-style features dict keyed
+    by settlement code (the key becomes the code when the record has
+    none). Field *names* are resolved later, by ALIASES.
+    """
+    if isinstance(data, list):
+        items = data
+    elif isinstance(data, dict) and "columns" in data and "rows" in data:
+        cols = [str(c).strip() for c in data["columns"]]
+        return [{c: (str(v) if v is not None else "") for c, v in zip(cols, row)} for row in data["rows"]]
+    elif isinstance(data, dict):
+        items = None
+        for key in RECORD_CONTAINERS:
+            if key in data:
+                items = data[key]
+                break
+        if items is None:
+            # A bare {code: record} map, GovMap without the wrapper.
+            items = data
+        if isinstance(items, dict):
+            rows = []
+            for key, rec in items.items():
+                if isinstance(rec, dict):
+                    rec = dict(rec)
+                    if not any(a in rec for a in ALIASES["code"]):
+                        rec["סמל ישוב"] = str(key)
+                    rows.append(rec)
+            return rows
+        if not isinstance(items, list):
+            return []
+    else:
+        return []
+    rows = []
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        rec = None
+        for wrap in ("properties", "attributes", "fields"):
+            if isinstance(item.get(wrap), dict):
+                rec = dict(item[wrap])
+                break
+        rows.append(rec if rec is not None else dict(item))
+    return rows
 
 
 def read_snapshot(path):
-    """CEC CSV (utf-8-sig / cp1255) or {columns, rows} JSON -> row dicts."""
+    """CEC CSV (utf-8-sig / cp1255) or map-service JSON -> row dicts."""
     raw = Path(path).read_bytes()
     try:
         text = raw.decode("utf-8-sig")
     except UnicodeDecodeError:
         text = raw.decode("cp1255")
-    if text.lstrip().startswith("{"):
-        data = json.loads(text)
-        cols = [str(c).strip() for c in data["columns"]]
-        return [dict(zip(cols, (str(v) if v is not None else "" for v in row))) for row in data["rows"]]
+    if text.lstrip().startswith(("{", "[")):
+        return [{str(k).strip(): (str(v) if v is not None else "") for k, v in row.items()}
+                for row in json_rows(json.loads(text))]
     if text.lstrip().startswith("<"):
         # Generic XML adapter (the CEC interface is not yet known): row
         # elements are the repeated children of the root; fields come from
@@ -154,8 +214,15 @@ def read_snapshot(path):
 
 
 def snapshot_records(path):
-    """Normalise a snapshot to {(code, ballot): {eligible, voters}} + name index."""
-    by_code, by_name = {}, {}
+    """Normalise a snapshot to per-ballot + per-settlement indexes.
+
+    Returns (by_code, by_name, settle_by_code, settle_by_name). A row
+    with a ballot number lands in the per-ballot indexes; a row without
+    one (a map service may publish settlement aggregates only) lands in
+    the settlement indexes as a turnout *rate*, which main() applies
+    to each roster ballot of that settlement by its eligible count.
+    """
+    by_code, by_name, settle_by_code, settle_by_name = {}, {}, {}, {}
     unmatched_cols = None
     for row in read_snapshot(path):
         get = {}
@@ -164,25 +231,40 @@ def snapshot_records(path):
                 if a in row and str(row[a]).strip() != "":
                     get[field] = str(row[a]).strip()
                     break
-        if "ballot" not in get or ("code" not in get and "name" not in get):
+        if "code" not in get and "name" not in get:
             unmatched_cols = list(row.keys())
             continue
-        ballot = norm_ballot(get["ballot"])
         elig = float(get["eligible"]) if get.get("eligible") else None
         if get.get("voters"):
             voters = float(get["voters"])
         elif get.get("turnout") and elig:
             voters = round(elig * float(get["turnout"].replace("%", "")) / 100.0)
         else:
-            continue
-        rec = {"eligible": elig, "voters": voters}
-        if get.get("code"):
-            by_code[(str(get["code"]).strip(), ballot)] = rec
-        if get.get("name"):
-            by_name[(normalize_name(get["name"]), ballot)] = rec
-    if unmatched_cols and not by_code and not by_name:
+            voters = None
+        code = str(get["code"]).strip() if get.get("code") else None
+        name = normalize_name(get["name"]) if get.get("name") else None
+        if "ballot" in get:
+            if voters is None:
+                continue
+            ballot = norm_ballot(get["ballot"])
+            rec = {"eligible": elig, "voters": voters}
+            if code:
+                by_code[(code, ballot)] = rec
+            if name:
+                by_name[(name, ballot)] = rec
+        else:
+            rate = (voters / elig) if (voters is not None and elig) else \
+                (float(get["turnout"].replace("%", "")) / 100.0 if get.get("turnout") else None)
+            if rate is None:
+                continue
+            rec = {"eligible": elig, "voters": voters, "rate": rate}
+            if code:
+                settle_by_code[code] = rec
+            if name:
+                settle_by_name[name] = rec
+    if unmatched_cols and not by_code and not by_name and not settle_by_code and not settle_by_name:
         raise SystemExit(f"snapshot has no recognisable ballot/code columns; saw {unmatched_cols}")
-    return by_code, by_name
+    return by_code, by_name, settle_by_code, settle_by_name
 
 
 def rehearsal_records(target_turnout, seed=42):
@@ -213,7 +295,7 @@ def rehearsal_records(target_turnout, seed=42):
         lag = 0.82 if sec.get("haredi") else 0.78 if sec.get("population") in ("arab", "bedouin") else 0.9 if sec.get("population") == "druze" else 1.0
         cast = int(round(voters * min(1.0, base_progress * noise * lag)))
         by_code[(code, ballot)] = {"eligible": elig, "voters": float(cast)}
-    return by_code, {}
+    return by_code, {}, {}, {}
 
 
 # ------------------------------------------------------------------ groups
@@ -287,11 +369,11 @@ def main():
     # --- snapshot lookup
     kind = "rehearsal" if args.rehearsal else "live"
     if args.rehearsal:
-        by_code, by_name = rehearsal_records(args.target_turnout)
+        by_code, by_name, settle_by_code, settle_by_name = rehearsal_records(args.target_turnout)
     else:
-        by_code, by_name = snapshot_records(args.snapshot[-1])
+        by_code, by_name, settle_by_code, settle_by_name = snapshot_records(args.snapshot[-1])
 
-    stations, unmatched = [], 0
+    stations, unmatched, settlement_level = [], 0, 0
     groups = {k: defaultdict(agg) for k in
               ("k25_winner", "k25_bloc", "stronghold", "population", "form", "district", "socio", "k25_turnout_band")}
     total = agg()
@@ -303,6 +385,15 @@ def main():
         ballot = norm_ballot(row["k26_ballot"])
         rec = by_code.get((str(row["k26_code"]).strip(), ballot)) or by_name.get((name, ballot))
         if rec is None:
+            # Settlement-aggregate snapshot (map service with no ballot
+            # resolution): apply the settlement turnout rate to this
+            # ballot's roster eligible count.
+            srec = settle_by_code.get(str(row["k26_code"]).strip()) or settle_by_name.get(name)
+            roster_elig = float(row["k26_eligible"] or 0)
+            if srec is not None and srec.get("rate") is not None and roster_elig:
+                rec = {"eligible": roster_elig, "voters": roster_elig * srec["rate"],
+                       "settlement_level": True}
+        if rec is None:
             unmatched += 1
             continue
         elig = rec["eligible"] or float(row["k26_eligible"] or 0)
@@ -310,6 +401,8 @@ def main():
             unmatched += 1
             continue
         voters = float(rec["voters"])
+        if rec.get("settlement_level"):
+            settlement_level += 1
 
         # K25 twin pattern: crosswalked ballot, else settlement aggregate.
         twin = None
@@ -379,6 +472,7 @@ def main():
         "delta_vs_k25_final_pp": round(nat["turnout"] - nat["k25_turnout"], 1) if nat["k25_turnout"] is not None else None,
         "remaining_voters": round(total["eligible"] - total["voters"]),
         "matched_ballots": sum(1 for s in stations if s[14]),
+        "settlement_level_ballots": settlement_level,
         "reported_ballots": len(stations), "roster_ballots": len(roster), "unmatched_rows": unmatched,
         "eligible_coverage": round(total["eligible"] / sum(float(r["k26_eligible"] or 0) for r in roster), 3)
         if roster else 0.0,
