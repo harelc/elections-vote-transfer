@@ -65,7 +65,7 @@ def load_box_votes(path, encoding):
     with Path(path).open(encoding=encoding) as fh:
         reader = csv.DictReader(fh)
         cols = reader.fieldnames or []
-        party_cols = cols[cols.index("כשרים") + 1:]
+        party_cols = [c for c in cols[cols.index("כשרים") + 1:] if c not in ("חיצוניות", "חיצוניים")]
         for row in reader:
             votes = {}
             for col in party_cols:

@@ -39,6 +39,10 @@ def bader_ofer(votes, threshold_pct=3.25, total_seats=120, agreements=None, vali
     total = max(valid_total or 0, sum(votes.values()))
     thresh = total * threshold_pct / 100.0
     passed = {k: v for k, v in votes.items() if v >= thresh}
+    if not passed:
+        # No list over the threshold yet (e.g. the CEC dummy's uniform
+        # placeholder votes): every list gets zero seats, never a crash.
+        return {k: 0 for k in votes}
     partner = {}
     for a, b in (agreements or []):
         if a in passed and b in passed:
@@ -76,7 +80,12 @@ def bader_ofer(votes, threshold_pct=3.25, total_seats=120, agreements=None, vali
 
 def load_rows(path):
     raw = Path(path).read_bytes()
-    text = raw.decode("utf-8-sig")
+    try:
+        text = raw.decode("utf-8-sig")
+    except UnicodeDecodeError:
+        # The official K26 dummy expb.csv is cp1255 (as K21-K24 were);
+        # a direct --csv on the raw CEC file must not crash on it.
+        text = raw.decode("cp1255")
     stripped = text.lstrip()
     if stripped.startswith("{"):
         data = json.loads(stripped)
@@ -108,7 +117,10 @@ def summarize(path):
     columns, rows = load_rows(path)
     ballot_column(columns)
     meta_columns = set(columns[: columns.index("כשרים") + 1])
-    symbols = [column for column in columns if column not in meta_columns]
+    # חיצוניות/חיצוניים sit after כשרים in the K26 CEC file but are
+    # external-ballot tallies, not lists (refresh_k26 strips them too).
+    symbols = [column for column in columns
+               if column not in meta_columns and column not in ("חיצוניות", "חיצוניים")]
     votes_by_symbol = {symbol: 0 for symbol in symbols}
     eligible = voters = valid = 0
     for row in rows:

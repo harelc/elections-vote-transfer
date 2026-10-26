@@ -146,10 +146,18 @@ test("K26_POLL=0 stops fetching inside the window", () => {
   assert.equal(gate.reason, "polling stopped");
 });
 
-test("a missing results URL does not dispatch", async () => {
-  const result = await poll({}, new Date("2026-10-27T19:00:00Z"));
-  assert.equal(result.action, "skip");
-  assert.equal(result.reason, "K26_RESULTS_URL unset");
+test("a roster-prefilled file with nothing counted does not dispatch", async () => {
+  const body = "\uFEFFסמל ועדה,קלפי,בזב,מצביעים,כשרים,מחל\n1,1,500,0,0,0\n1,2,500,0,0,0\n";
+  const stub = async () => new Response(body, { status: 200 });
+  const result = await poll({}, new Date("2026-10-27T19:00:00Z"), stub);
+  assert.equal(result.action, "reject");
+  assert.equal(result.reason, "no counted ballots yet");
+});
+
+test("uncounted roster rows do not inflate the ballot count", () => {
+  const body = new TextEncoder().encode(
+    "\uFEFFסמל ועדה,קלפי,בזב,מצביעים,כשרים,מחל\n1,1,500,120,118,40\n1,2,500,0,0,0\n1,3,500,90,88,30\n");
+  assert.equal(inspect(body).ballotCount, 2);
 });
 
 test("today does not fetch the results URL", async () => {

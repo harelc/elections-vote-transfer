@@ -1,9 +1,20 @@
 /** Election-day turnout polling: gate, feed inspection, dispatch decision.
  *
- * The CEC turnout interface is NOT yet known (unknown URL, unknown
- * shape). The seams are deliberately narrow:
- *   - URL: env K26_TURNOUT_URL only (never user input; the fetch target
- *     is operator-configured, which is the SSRF control here -- CWE-918).
+ * Per the CEC K26 guide, daytime turnout lives only behind the
+ * turnout map at https://mapvotes.bechirot.gov.il. Before it opens
+ * the map sits behind a Basic-auth login, but that login is removed
+ * at midnight: from 00:00 the night before election day the map and
+ * its data files are public, no credentials anywhere. The guide
+ * publishes no raw turnout feed URL, so after midnight run
+ * discover_turnout_feed.py (repo root -- it scans the page and its
+ * JS bundles for the data file and test-classifies each candidate),
+ * or find the file manually in DevTools -> Network, and set that
+ * URL as K26_TURNOUT_URL (Netlify env + the GitHub secret of the
+ * same name). K26_TURNOUT_AUTH ("user:password") remains only as a
+ * fallback if auth ever returns; it is sent only to that
+ * operator-configured URL (the SSRF control here -- CWE-918).
+ * The seams are deliberately narrow:
+ *   - URL: env K26_TURNOUT_URL only (never user input).
  *   - Shape: inspectTurnout() below is the single adapter. Today it
  *     accepts CSV / {columns,rows} JSON / generic XML and extracts only
  *     a row count + timestamp; extend it when the real feed is known,

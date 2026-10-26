@@ -51,7 +51,7 @@ def load():
     df = df[df['בזב'] > 0]
     in_bloc = {s for syms in BLOCS.values() for s in syms}
     symbols = [s for s in E26_PARTIES if s in df.columns and s in in_bloc]
-    lists = list(df.columns[df.columns.get_loc('כשרים') + 1:])
+    lists = [c for c in df.columns[df.columns.get_loc('כשרים') + 1:] if c not in ('חיצוניות', 'חיצוניים')]
     E = df['בזב'].to_numpy(float)
     V = df['מצביעים'].to_numpy(float)
     P = df[symbols].to_numpy(float)

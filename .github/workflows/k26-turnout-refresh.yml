@@ -72,13 +72,20 @@ jobs:
         if: steps.gate.outputs.proceed == 'true'
         env:
           K26_TURNOUT_URL: ${{ secrets.K26_TURNOUT_URL }}
+          K26_TURNOUT_AUTH: ${{ secrets.K26_TURNOUT_AUTH }}
         run: |
           if [ -z "$K26_TURNOUT_URL" ]; then
             echo "K26_TURNOUT_URL is not set on this GitHub repo"
             exit 1
           fi
           mkdir -p data/k26_inbox
-          curl -fsSL "$K26_TURNOUT_URL" -o data/k26_inbox/turnout.bin
+          # K26_TURNOUT_AUTH (optional, "user:password") is the CEC
+          # turnout map's Basic auth; a secret, never committed.
+          if [ -n "$K26_TURNOUT_AUTH" ]; then
+            curl -fsSL -u "$K26_TURNOUT_AUTH" "$K26_TURNOUT_URL" -o data/k26_inbox/turnout.bin
+          else
+            curl -fsSL "$K26_TURNOUT_URL" -o data/k26_inbox/turnout.bin
+          fi
 
       - name: Rebuild turnout view data
         if: steps.gate.outputs.proceed == 'true'

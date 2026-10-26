@@ -5,21 +5,27 @@ import { autoEnabled, decide, pollGate } from "../lib/k26/decide.mjs";
 const require = createRequire(import.meta.url);
 const controlFile = require("../../k26_control.json");
 
+// CEC guide for K26 (Oct 2026): the live ballot-level results file is
+// public at a fixed URL -- https://media26.bechirot.gov.il/files/expb.csv
+// (settlement-level sibling: expc.csv). It goes live on votes26.bechirot
+// .gov.il the night before election day and updates as ballots are
+// counted. K26_RESULTS_URL (Netlify env) overrides it, e.g. for a mirror.
+export const DEFAULT_RESULTS_URL = "https://media26.bechirot.gov.il/files/expb.csv";
+
 export default async function handler() {
   const result = await poll();
   return Response.json(result);
 }
 
-export async function poll(env = process.env, now = new Date()) {
+export async function poll(env = process.env, now = new Date(), fetchImpl = fetch) {
   const gate = pollGate(env, controlFile, now);
   if (!gate.open) return { ok: true, action: "skip", reason: gate.reason };
 
-  const url = env.K26_RESULTS_URL;
-  if (!url) return { ok: true, action: "skip", reason: "K26_RESULTS_URL unset" };
+  const url = env.K26_RESULTS_URL || DEFAULT_RESULTS_URL;
 
   let response;
   try {
-    response = await fetch(url, { redirect: "follow" });
+    response = await fetchImpl(url, { redirect: "follow" });
   } catch (error) {
     return { ok: false, action: "reject", reason: "fetch failed", detail: String(error) };
   }
@@ -32,6 +38,9 @@ export async function poll(env = process.env, now = new Date()) {
   if (!inspected) {
     return { ok: false, action: "reject", reason: "unrecognized file" };
   }
+  if (!inspected.ballotCount) {
+    return { ok: false, action: "reject", reason: "no counted ballots yet" };
+  }
 
   const roster = Number(controlFile.roster) || 12018;
   const next = {
@@ -40,7 +49,7 @@ export async function poll(env = process.env, now = new Date()) {
     asOf: inspected.asOf || response.headers.get("last-modified") || new Date().toISOString(),
     final: inspected.final || inspected.ballotCount >= roster,
   };
-  const github = await githubState(env);
+  const github = await githubState(env, fetchImpl);
   const decision = decide({
     previous: { accepted: github.accepted },
     next,
@@ -55,7 +64,7 @@ export async function poll(env = process.env, now = new Date()) {
   if (github.runs > 0) {
     return { ok: true, action: "skip", reason: "rebuild in progress", ...result };
   }
-  const dispatched = await dispatch(env, next);
+  const dispatched = await dispatch(env, next, fetchImpl);
   if (!dispatched.ok) {
     return { ok: false, action: "hold", reason: dispatched.reason, ballots: next.ballotCount, sha256: next.sha256 };
   }
@@ -75,13 +84,13 @@ function githubHeaders(token) {
   };
 }
 
-async function githubState(env) {
+async function githubState(env, fetchImpl = fetch) {
   const token = env.GITHUB_DISPATCH_TOKEN;
   if (!token) return { accepted: null, runs: 0 };
   const repo = env.K26_GITHUB_REPO || "harelc/elections-vote-transfer";
   const headers = githubHeaders(token);
   const ref = env.K26_GIT_REF || "master";
-  const statusRes = await fetch(`https://api.github.com/repos/${repo}/contents/site/data/k26_status.json?ref=${encodeURIComponent(ref)}`, { headers });
+  const statusRes = await fetchImpl(`https://api.github.com/repos/${repo}/contents/site/data/k26_status.json?ref=${encodeURIComponent(ref)}`, { headers });
   let accepted = null;
   if (statusRes.ok) {
     const body = await statusRes.json();
@@ -93,7 +102,7 @@ async function githubState(env) {
   }
   let runs = 0;
   for (const status of ["queued", "in_progress"]) {
-    const runRes = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/k26-refresh.yml/runs?status=${status}&per_page=1`, { headers });
+    const runRes = await fetchImpl(`https://api.github.com/repos/${repo}/actions/workflows/k26-refresh.yml/runs?status=${status}&per_page=1`, { headers });
     if (!runRes.ok) continue;
     const body = await runRes.json();
     runs += body.total_count || 0;
@@ -110,6 +119,17 @@ function decodeText(bytes) {
   }
 }
 
+/** A ballot is counted when it reports voters or valid votes. The CEC
+ * dummy expb.csv (identical in shape to the live file) ships the full
+ * 12,018-box roster, so rows alone cannot be trusted: if the live file
+ * is roster-prefilled, uncounted boxes must not read as a final count. */
+function countedRows(columns, rows) {
+  const vi = columns.findIndex((c) => ["מצביעים", "voters"].includes(String(c).trim()));
+  const ki = columns.findIndex((c) => ["כשרים", "valid"].includes(String(c).trim()));
+  if (vi < 0 && ki < 0) return rows.length;
+  return rows.filter((r) => Number(r[vi]) > 0 || Number(r[ki]) > 0).length;
+}
+
 export function inspect(bytes, headers = new Headers()) {
   const text = decodeText(bytes).replace(/^\uFEFF/, "");
   const trimmed = text.trim();
@@ -120,7 +140,7 @@ export function inspect(bytes, headers = new Headers()) {
     const rows = Array.isArray(data.rows) ? data.rows : null;
     if (!rows || !Array.isArray(data.columns)) return null;
     return {
-      ballotCount: rows.length,
+      ballotCount: countedRows(data.columns, rows),
       asOf: typeof data.as_of === "string" ? data.as_of : null,
       final: data.final === true || headers.get("x-k26-final") === "true",
     };
@@ -129,18 +149,20 @@ export function inspect(bytes, headers = new Headers()) {
   if (lines.length < 2) return null;
   const header = lines[0].replace(/^\uFEFF/, "");
   if (!header.includes("קלפי") && !header.includes("מספר קלפי")) return null;
+  const columns = header.split(",");
+  const rows = lines.slice(1).map((line) => line.split(","));
   return {
-    ballotCount: lines.length - 1,
+    ballotCount: countedRows(columns, rows),
     asOf: null,
     final: headers.get("x-k26-final") === "true",
   };
 }
 
-async function dispatch(env, next) {
+async function dispatch(env, next, fetchImpl = fetch) {
   const token = env.GITHUB_DISPATCH_TOKEN;
   if (!token) return { ok: false, reason: "GITHUB_DISPATCH_TOKEN unset" };
   const repo = env.K26_GITHUB_REPO || "harelc/elections-vote-transfer";
-  const response = await fetch(`https://api.github.com/repos/${repo}/actions/workflows/k26-refresh.yml/dispatches`, {
+  const response = await fetchImpl(`https://api.github.com/repos/${repo}/actions/workflows/k26-refresh.yml/dispatches`, {
     method: "POST",
     headers: githubHeaders(token),
     body: JSON.stringify({

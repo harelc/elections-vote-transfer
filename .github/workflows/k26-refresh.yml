@@ -71,12 +71,10 @@ jobs:
         env:
           K26_RESULTS_URL: ${{ secrets.K26_RESULTS_URL }}
         run: |
-          if [ -z "$K26_RESULTS_URL" ]; then
-            echo "K26_RESULTS_URL is not set on this GitHub repo"
-            exit 1
-          fi
+          # Public per the CEC K26 guide; the secret only overrides it.
+          URL="${K26_RESULTS_URL:-https://media26.bechirot.gov.il/files/expb.csv}"
           mkdir -p data/k26_inbox
-          curl -fsSL "$K26_RESULTS_URL" -o data/k26_inbox/snapshot.bin
+          curl -fsSL "$URL" -o data/k26_inbox/snapshot.bin
 
       - name: Rebuild K26
         if: steps.gate.outputs.proceed == 'true'

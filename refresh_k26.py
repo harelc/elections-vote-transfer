@@ -124,8 +124,33 @@ def refresh_turnout():
         print(f"turnout data was not updated ({error})")
 
 
+# Non-party columns the K26 CEC file (see the official dummy expb.csv)
+# carries between כשרים and the first list symbol: external / double-
+# envelope tallies, not lists. They must never reach party consumers.
+NON_PARTY_COLUMNS = ("חיצוניות", "חיצוניים")
+
+
+def _num(value):
+    try:
+        return float(value or 0)
+    except (TypeError, ValueError):
+        return 0.0
+
+
 def normalize(source, dest):
-    """Copy a CEC CSV, or a {columns, rows} JSON file, to ballot26.csv."""
+    """Write a CEC snapshot to ballot26.csv in the historical shape.
+
+    Accepts a CEC CSV (utf-8-sig or cp1255, as the K26 dummy is) or a
+    {columns, rows} JSON file. Two K26 shape fixes happen here, at the
+    single seam: the חיצוניות/חיצוניים tally columns are dropped (they
+    are not party lists), and roster rows with no voters and no valid
+    votes yet are dropped -- the dummy ships all 12,018 boxes, and a
+    roster-prefilled live file must rebuild from counted boxes only.
+    Returns the number of counted ballots written.
+    """
+    import csv
+    import io
+
     raw = Path(source).read_bytes()
     try:
         text = raw.decode("utf-8-sig")
@@ -133,20 +158,23 @@ def normalize(source, dest):
         # The CEC published K21–K24 in ISO-8859-8; cp1255 decodes that Hebrew too.
         text = raw.decode("cp1255")
     if text.lstrip().startswith("{"):
-        import csv
-        import io
-
         data = json.loads(text)
-        buffer = io.StringIO()
-        writer = csv.writer(buffer, lineterminator="\n")
-        writer.writerow(data["columns"])
-        writer.writerows(data["rows"])
-        dest.write_text(buffer.getvalue(), encoding="utf-8-sig")
-        return len(data["rows"])
-    if "קלפי" not in text.splitlines()[0] and "מספר קלפי" not in text.splitlines()[0]:
+        columns = [str(c) for c in data["columns"]]
+        rows = [dict(zip(columns, row)) for row in data["rows"]]
+    else:
+        reader = csv.DictReader(io.StringIO(text))
+        columns = list(reader.fieldnames or [])
+        rows = list(reader)
+    if not any(c in columns for c in ("קלפי", "מספר קלפי")):
         raise SystemExit("snapshot is neither a CEC CSV nor a columns/rows JSON file")
-    dest.write_bytes(raw if raw.startswith(b"\xef\xbb\xbf") else b"\xef\xbb\xbf" + text.encode("utf-8"))
-    return max(0, sum(1 for line in text.splitlines() if line.strip()) - 1)
+    keep = [c for c in columns if c not in NON_PARTY_COLUMNS]
+    counted = [r for r in rows if _num(r.get("מצביעים")) > 0 or _num(r.get("כשרים")) > 0]
+    buffer = io.StringIO()
+    writer = csv.DictWriter(buffer, fieldnames=keep, lineterminator="\n", extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(counted)
+    dest.write_text(buffer.getvalue(), encoding="utf-8-sig")
+    return len(counted)
 
 
 def ci_milestone(ballots, roster, final, previous):

@@ -24,9 +24,16 @@ export async function pollTurnout(env = process.env, now = new Date(), fetchImpl
   const url = env.K26_TURNOUT_URL;
   if (!url) return { ok: true, action: "skip", reason: "K26_TURNOUT_URL unset" };
 
+  // Optional Basic auth for the CEC turnout map's data file
+  // (mapvotes.bechirot.gov.il). Credentials come from env only and are
+  // sent only to the operator-configured URL above.
+  const headers = {};
+  if (env.K26_TURNOUT_AUTH) {
+    headers.Authorization = `Basic ${Buffer.from(env.K26_TURNOUT_AUTH).toString("base64")}`;
+  }
   let response;
   try {
-    response = await fetchImpl(url, { redirect: "follow" });
+    response = await fetchImpl(url, { redirect: "follow", headers });
   } catch (error) {
     return { ok: false, action: "reject", reason: "fetch failed", detail: String(error) };
   }
