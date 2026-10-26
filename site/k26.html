@@ -368,18 +368,13 @@
             </div>
         </section>
 
-        <nav class="preview-switch" id="preview-switch" hidden aria-label="Election-night preview switcher">
+        <nav class="preview-switch" id="preview-switch" hidden aria-label="Page mode switcher">
             <span class="preview-switch-label" id="preview-switch-label"></span>
+            <a class="pane-btn" id="mode-turnout-pill" href="?turnout=1"></a>
             <a class="pane-btn" data-preview="partial12" href="?preview=partial12"></a>
             <a class="pane-btn" data-preview="partial17" href="?preview=partial17"></a>
             <a class="pane-btn" data-preview="partial" href="?preview=partial"></a>
             <a class="pane-btn" data-preview="" href="k26.html"></a>
-        </nav>
-
-        <nav class="preview-switch" id="td-switch" hidden aria-label="Day view / count view switcher">
-            <span class="preview-switch-label" id="td-switch-label"></span>
-            <a class="pane-btn" id="td-switch-day" href="?turnout=1"></a>
-            <a class="pane-btn" id="td-switch-count" href="?turnout=0"></a>
         </nav>
 
         <div class="td-timestamp" id="td-timestamp" hidden role="status"></div>
@@ -452,7 +447,7 @@
             <section class="pane geomap-pane" id="pane-geomap">
                 <div class="pane-head">
                     <div><h3 data-i18n="k26_geomap_pane">מפה גיאוגרפית</h3><div class="pane-note" data-i18n="k26_geomap_note"></div></div>
-                    <div class="pane-actions"><button class="pane-btn" id="twins-toggle" hidden></button><!-- twins mode kept in code, switcher hidden: not useful in the CC (remove hidden to restore) --><a class="pane-btn" id="turnout-day-toggle" href="?turnout=1"></a><a class="full-view-cta" id="geomap-full-cta" href="geomap.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
+                    <div class="pane-actions"><button class="pane-btn" id="twins-toggle" hidden></button><!-- twins mode kept in code, switcher hidden: not useful in the CC (remove hidden to restore) --><a class="full-view-cta" id="geomap-full-cta" href="geomap.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
                 </div>
                 <div class="pane-note" id="twins-status" style="margin-bottom:.5rem"></div>
                 <div class="pane-note" id="geomap-partial-note" style="margin-bottom:.5rem;color:#f59e0b" hidden></div>
@@ -583,28 +578,36 @@
     // Preview switcher: visible only inside a ?preview= mode, so the three
     // simulated moments of election night (and the way back to the regular
     // page) are one click apart. Never shown on the live page itself.
+    // One mutually-exclusive mode switcher: election-day turnout OR a
+    // count stage (12% / 17% / 45% simulated previews, or the full
+    // count). Never two toggles — combined states were a bug farm.
     function initPreviewSwitch() {
         const el = document.getElementById('preview-switch');
         if (!el) return;
-        // Shown while the site is in simulated mode (regular page included,
-        // so the previews are reachable from it) and inside any preview.
-        // Hidden once real results arrive (partial/official) — simulated
-        // previews have no place on the live election-night page.
-        const show = PREVIEW_PARTIAL || (K26STATUS && K26STATUS.kind === 'simulated');
+        const kind = K26STATUS && K26STATUS.kind;
+        const live = !PREVIEW_PARTIAL && (kind === 'partial' || kind === 'official');
+        // Simulated contexts offer the preview stages; live contexts
+        // offer just day-vs-count. Hidden only before anything exists.
+        const show = TURNOUT_ACTIVE || PREVIEW_PARTIAL || kind === 'simulated' || kind === 'turnout' || live;
         el.hidden = !show;
         if (!show) return;
-        document.getElementById('preview-switch-label').textContent = en() ? 'Election-night preview (simulated):' : 'תצוגה מקדימה של ליל הבחירות (סימולציה):';
+        document.getElementById('preview-switch-label').textContent = en() ? 'Mode:' : 'מצב:';
+        const day = document.getElementById('mode-turnout-pill');
+        day.textContent = en() ? '🗳 Election day — turnout' : '🗳 יום הבחירות — אחוזי הצבעה';
+        day.setAttribute('href', location.pathname + '?turnout=1');
+        day.classList.toggle('gold', TURNOUT_ACTIVE);
         const labels = {
-            '': en() ? 'Full count' : 'ספירה מלאה',
+            '': live ? (en() ? 'Count centre — results' : 'מרכז הספירה — תוצאות') : (en() ? 'Full count' : 'ספירה מלאה'),
             partial12: en() ? '12% counted' : '12% נספרו',
             partial17: en() ? '17% counted' : '17% נספרו',
             partial: en() ? '45% counted' : '45% נספרו',
         };
-        const current = PREVIEW_PARTIAL ? PREVIEW_MODE : '';
+        const current = TURNOUT_ACTIVE ? null : (PREVIEW_PARTIAL ? PREVIEW_MODE : '');
         el.querySelectorAll('a[data-preview]').forEach(a => {
             const mode = a.dataset.preview;
+            a.hidden = live && mode !== '';  // live: only the count pill remains
             a.textContent = labels[mode] || mode;
-            if (!mode) a.setAttribute('href', location.pathname);
+            if (!mode) a.setAttribute('href', live ? (location.pathname + '?turnout=0') : location.pathname);
             a.classList.toggle('gold', mode === current);
         });
     }
@@ -2124,33 +2127,8 @@
             sliderEl.addEventListener('input', () => applyTdSnapshot(Number(sliderEl.value)));
         }
         const pane = document.getElementById('pane-turnout-day');
-        const toggle = document.getElementById('turnout-day-toggle');
         const td = DATA && DATA.turnoutDay;
-        const withTurnout = v => { const u = new URL(location.href); u.searchParams.set('turnout', v); return u.pathname + u.search; };
-        if (toggle) {
-            toggle.textContent = TURNOUT_ACTIVE ? (en() ? '← Back to full command centre' : '← חזרה למרכז המידע המלא') : (en() ? 'Election-day turnout view' : 'תצוגת אחוזי הצבעה ליום הבחירות');
-            // ?turnout=0 is explicit: without it, a kind="turnout" status
-            // would simply re-activate this view on the plain URL.
-            toggle.setAttribute('href', withTurnout(TURNOUT_ACTIVE ? '0' : '1'));
-            if (!td && !TURNOUT_ACTIVE) toggle.hidden = true;
-        }
-        // Prominent day/count switcher under the hero: visible whenever
-        // turnout data exists or the day/count is actually running.
-        const tdSwitch = document.getElementById('td-switch');
-        if (tdSwitch) {
-            const showSwitch = !!td || K26STATUS.kind === 'turnout' || K26STATUS.kind === 'partial' || K26STATUS.kind === 'official';
-            tdSwitch.hidden = !showSwitch;
-            if (showSwitch) {
-                document.getElementById('td-switch-label').textContent = en() ? 'View:' : 'תצוגה:';
-                const day = document.getElementById('td-switch-day'), count = document.getElementById('td-switch-count');
-                day.textContent = en() ? '🗳 Election day — turnout' : '🗳 יום הבחירות — אחוזי הצבעה';
-                count.textContent = en() ? 'Count centre — results' : 'מרכז הספירה — תוצאות';
-                day.setAttribute('href', withTurnout('1'));
-                count.setAttribute('href', withTurnout('0'));
-                day.classList.toggle('gold', TURNOUT_ACTIVE);
-                count.classList.toggle('gold', !TURNOUT_ACTIVE);
-            }
-        }
+        initPreviewSwitch();
         document.querySelectorAll('.geomap-mode.td-mode').forEach(b => {
             // The election-day layers stay in the selector during the
             // count stage too (as extra layers over the result map),
