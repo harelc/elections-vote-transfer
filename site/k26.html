@@ -89,6 +89,7 @@
         body.td-on .gemara { grid-template-columns:minmax(0,1150px); justify-content:center; }
         body.td-on .g-side { display:none; }
         body.td-on #pane-votes, body.td-on #pane-dhondt-mini, body.td-on #pane-nowcast,
+        body.td-on #geomap-full-cta { display:none; }
         body.td-on #pane-stage, body.td-on #pane-twelveknessets, body.td-on #pane-turnout,
         body.td-on #pane-suspects, body.td-on #pane-bellwether, body.td-on #factoid-bar { display:none !important; }
         .td-timestamp { max-width:1150px; margin:0 auto 0.2rem; padding:0.55rem 1rem; text-align:center; font-size:0.95rem; font-weight:700; color:#ffd75e; background:rgba(240,180,41,.1); border:1px solid rgba(240,180,41,.45); border-radius:10px; }
@@ -415,7 +416,7 @@
             <section class="pane geomap-pane" id="pane-geomap">
                 <div class="pane-head">
                     <div><h3 data-i18n="k26_geomap_pane">מפה גיאוגרפית</h3><div class="pane-note" data-i18n="k26_geomap_note"></div></div>
-                    <div class="pane-actions"><button class="pane-btn" id="twins-toggle"></button><a class="pane-btn" id="turnout-day-toggle" href="?turnout=1"></a><a class="full-view-cta" href="geomap.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
+                    <div class="pane-actions"><button class="pane-btn" id="twins-toggle"></button><a class="pane-btn" id="turnout-day-toggle" href="?turnout=1"></a><a class="full-view-cta" id="geomap-full-cta" href="geomap.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
                 </div>
                 <div class="pane-note" id="twins-status" style="margin-bottom:.5rem"></div>
                 <div class="pane-note" id="geomap-partial-note" style="margin-bottom:.5rem;color:#f59e0b" hidden></div>
@@ -1194,7 +1195,7 @@
         return multiStopColor(TD_PALETTE, (value - scale.lo) / (scale.hi - scale.lo));
     }
     function stationGeoColor(station) {
-        if (geoMode === 'td_turnout') return tdAdaptiveColor(station.t || 0, 6);
+        if (geoMode === 'td_turnout') return tdAdaptiveColor(station.td ? station.td.snapT : null, 6);
         if (geoMode === 'td_pace') return tdAdaptiveColor(station.td ? station.td.pace : null, 8);
         if (geoMode === 'turnout') return turnoutColor(station.t || 0);
         if (geoMode === 'socioeconomic') {
@@ -1217,12 +1218,12 @@
         // the way geomap.html colours its cluster icons.
         if (geoMode === 'td_pace') {
             let v = 0, k = 0;
-            clusterStations.forEach(it => { v += it.station.v || 0; if (it.station.td && it.station.td.k25v) k += it.station.td.k25v; });
+            clusterStations.forEach(it => { const td = it.station.td; v += td ? (td.snapV || 0) : (it.station.v || 0); if (td && td.k25v) k += td.k25v; });
             return tdAdaptiveColor(k ? v / k : null, 8);
         }
         if (geoMode === 'td_turnout') {
             let v = 0, e = 0;
-            clusterStations.forEach(it => { v += it.station.v || 0; e += it.station.e || 0; });
+            clusterStations.forEach(it => { const td = it.station.td; v += td ? (td.snapV || 0) : 0; e += td ? (td.snapE || 0) : 0; });
             return tdAdaptiveColor(e ? v / e * 100 : 0, 6);
         }
         if (geoMode === 'turnout') {
@@ -1325,7 +1326,7 @@
         return TD_MATCH[td.match] || (td.matched ? TD_MATCH.id : TD_MATCH.none);
     }
     function stationCardHTML(station, pinned) {
-        if (station.td) {
+        if (station.td && (TURNOUT_ACTIVE || geoMode === 'td_turnout' || geoMode === 'td_pace')) {
             const td = station.td;
             const mi = tdMatchInfo(td);
             const isTwin = !!td.matched;
@@ -1339,15 +1340,15 @@
             <div class="station-popup-title">${en() ? i18n.settlementName(station.n) : station.n}</div>
             <div class="station-popup-ballot">${i18n.t('ballot')} ${station.b}</div>
             <div class="station-popup-stats">
-                <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span><span class="station-popup-stat-value">${fmt(station.e || 0)}</span>
-                <span class="station-popup-stat-label">${i18n.t('voted')}:</span><span class="station-popup-stat-value">${fmt(station.v || 0)}</span>
-                <span class="station-popup-stat-label">${i18n.t('turnout')}:</span><span class="station-popup-stat-value">${(station.t || 0).toFixed(1)}%</span>
+                <span class="station-popup-stat-label">${i18n.t('eligible_voters')}:</span><span class="station-popup-stat-value">${fmt(td.snapE ?? station.e ?? 0)}</span>
+                <span class="station-popup-stat-label">${i18n.t('voted')}:</span><span class="station-popup-stat-value">${fmt(td.snapV ?? station.v ?? 0)}</span>
+                <span class="station-popup-stat-label">${i18n.t('turnout')}:</span><span class="station-popup-stat-value">${(td.snapT ?? station.t ?? 0).toFixed(1)}%</span>
                 <span class="station-popup-stat-label">${en() ? 'K25 match' : 'התאמה ל־25'}:</span><span class="station-popup-stat-value">${en() ? mi.en : mi.he}${twinRef ? ` (${twinRef})` : ''}${td.match === 'coord' && td.matchM != null ? ` · ${fmt(td.matchM)} ${en() ? 'm between pins' : 'מ׳ בין הסיכות'}` : ''}${td.match === 'neighbor' && td.neighborN ? ` · ${fmt(td.neighborN)} ${en() ? 'ballots' : 'קלפיות'}${td.matchM != null ? `, ${en() ? 'nearest' : 'הקרובה'} ${fmt(td.matchM)} ${en() ? 'm' : 'מ׳'}` : ''}` : ''}</span>
                 ${td.k25t != null ? `<span class="station-popup-stat-label">${baseTurnoutLabel}:</span><span class="station-popup-stat-value">${td.k25t.toFixed(1)}%</span>` : ''}
                 ${td.pace != null ? `<span class="station-popup-stat-label">${en() ? 'K25 turnout recovery (ratio)' : 'שחזור שיעור ההצבעה של 25 (יחס)'}:</span><span class="station-popup-stat-value">×${td.pace.toFixed(2)}</span>` : ''}
                 ${td.winner ? `<span class="station-popup-stat-label">${baseWinnerLabel}:</span><span class="station-popup-stat-value">${td.winner}</span>` : ''}
             </div>
-            <div class="station-popup-location">${en() ? mi.den : mi.dhe}. ${en() ? 'Election-day turnout only — no result for this ballot yet.' : 'אחוז הצבעה של יום הבחירות בלבד — עדיין אין תוצאה לקלפי זו.'}</div>
+            <div class="station-popup-location">${en() ? mi.den : mi.dhe}. ${TURNOUT_ACTIVE ? (en() ? 'Election-day turnout only — no result for this ballot yet.' : 'אחוז הצבעה של יום הבחירות בלבד — עדיין אין תוצאה לקלפי זו.') : (en() ? 'Election-day turnout snapshot — switch the colour mode for the final result.' : 'אחוז הצבעה מיום הבחירות — החליפו מצב צבע לתוצאה הסופית.')}</div>
         </div>`;
         }
         const sorted = Object.entries(station.p || {}).sort((a, b) => b[1] - a[1]);
@@ -1434,10 +1435,15 @@
         // Election-day turnout view: the ONLY layer is turnout so far.
         // Stations come from turnout_day_26.json (fields per meta.station_fields),
         // already carrying roster coordinates; no K26 result is shown.
+        const tdOf = a => ({ k25t: a[7], pace: a[8], winner: a[9], bloc: a[10], population: a[11], district: a[12], socio: a[13], matched: a[14], match: a[15], k25name: a[16], k25ballot: a[17], matchM: a[18], neighborN: a[19],
+            snapE: a[4], snapV: a[5], snapT: a[6], k25v: a[8] ? Math.round(a[5] / a[8]) : null });
+        const tdByKey = new Map(((DATA.turnoutDay && DATA.turnoutDay.stations) || []).map(a => [`${a[0]}|${a[1]}`, a]));
         const geoSource = (TURNOUT_ACTIVE && DATA.turnoutDay && DATA.turnoutDay.stations)
-            ? DATA.turnoutDay.stations.map(a => ({ n: a[0], b: a[1], _lat: a[2], _lng: a[3], e: a[4], v: a[5], t: a[6], p: {},
-                td: { k25t: a[7], pace: a[8], winner: a[9], bloc: a[10], population: a[11], district: a[12], socio: a[13], matched: a[14], match: a[15], k25name: a[16], k25ballot: a[17], matchM: a[18], neighborN: a[19], k25v: a[8] ? Math.round(a[5] / a[8]) : null } }))
-            : DATA.tsne.stations;
+            ? DATA.turnoutDay.stations.map(a => ({ n: a[0], b: a[1], _lat: a[2], _lng: a[3], e: a[4], v: a[5], t: a[6], p: {}, td: tdOf(a) }))
+            // Count stage: result stations, each carrying its election-day
+            // turnout record (if any) so the td layers can colour by the
+            // snapshot instead of the final result.
+            : DATA.tsne.stations.map(st => { const a = tdByKey.get(`${st.n}|${st.b}`); return a ? { ...st, td: tdOf(a) } : st; });
         geoSource.forEach(station => {
             const settlement = station.n, ballot = station.b, key = `${settlement}|${ballot}`;
             if (uncountedSet && uncountedSet.has(key)) return;
@@ -1485,7 +1491,8 @@
             onClusterEnter: (clusterStations, lng, lat) => {
                 clearTimeout(geoTipTimer);
                 let voters = 0, eligible = 0; const votes = {};
-                clusterStations.forEach(it => { const st = it.station; voters += st.v || 0; eligible += st.e || 0; Object.entries(st.p || {}).forEach(([name, pct]) => { votes[name] = (votes[name] || 0) + (st.v || 0) * pct / 100; }); });
+                const tdMode = geoMode === 'td_turnout' || geoMode === 'td_pace';
+                clusterStations.forEach(it => { const st = it.station; voters += tdMode && st.td ? (st.td.snapV || 0) : (st.v || 0); eligible += tdMode && st.td ? (st.td.snapE || 0) : (st.e || 0); Object.entries(st.p || {}).forEach(([name, pct]) => { votes[name] = (votes[name] || 0) + (st.v || 0) * pct / 100; }); });
                 const top = Object.entries(votes).sort((a, b) => b[1] - a[1]).slice(0, 5);
                 const total = top.reduce((a, [, v]) => a + v, 0) || 1;
                 const rows = top.map(([name, v]) => { const p = DATA.tsne.parties.find(pp => pp.name === name); return `<div class="cluster-tooltip-party"><span class="cluster-tooltip-party-name"><span class="cluster-tooltip-party-dot" style="background:${p ? p.color : '#6b7280'}"></span>${displayName(name)}</span><span class="cluster-tooltip-party-pct">${(v / total * 100).toFixed(1)}%</span></div>`; }).join('');
@@ -1930,8 +1937,13 @@
             }
         }
         document.querySelectorAll('.geomap-mode.td-mode').forEach(b => {
-            b.hidden = !TURNOUT_ACTIVE;
-            b.textContent = b.dataset.gmode === 'td_turnout' ? (en() ? 'Turnout so far' : 'אחוז הצבעה עד כה') : (en() ? 'K25 turnout recovery (ratio)' : 'שחזור שיעור ההצבעה של 25 (יחס)');
+            // The election-day layers stay in the selector during the
+            // count stage too (as extra layers over the result map),
+            // whenever a turnout snapshot exists.
+            b.hidden = !TURNOUT_ACTIVE && !td;
+            b.textContent = b.dataset.gmode === 'td_turnout'
+                ? (TURNOUT_ACTIVE ? (en() ? 'Turnout so far' : 'אחוז הצבעה עד כה') : (en() ? 'Election-day turnout' : 'אחוז הצבעה ביום הבחירות'))
+                : (en() ? 'K25 turnout recovery (ratio)' : 'שחזור שיעור ההצבעה של 25 (יחס)');
         });
         document.querySelectorAll('.geomap-mode:not(.td-mode)').forEach(b => { b.hidden = TURNOUT_ACTIVE; });
         const partySel = document.getElementById('geomap-party'); if (partySel && TURNOUT_ACTIVE) partySel.hidden = true;
