@@ -2187,15 +2187,19 @@
                 tsEl.textContent = en() ? 'Turnout data: no timestamp on this snapshot' : 'נתוני אחוזי הצבעה: אין חותמת זמן בקובץ זה';
             }
         }
+        // Previous snapshot = the one before the SELECTED snapshot.
+        // The history fallback is only for legacy files with a single
+        // (latest) snapshot; using it at snapshot 0 would subtract a
+        // later hour from the first one.
         const prev = tdSnapIdx > 0 && snaps[tdSnapIdx - 1] ? snaps[tdSnapIdx - 1].national
-            : ((td.history || []).length > 1 ? td.history[td.history.length - 2].national : null);
+            : (snaps.length <= 1 && (td.history || []).length > 1 ? td.history[td.history.length - 2].national : null);
         document.getElementById('td-stats').innerHTML = [
             [(n.turnout || 0).toFixed(1) + '%', en() ? 'National turnout so far' : 'אחוז הצבעה ארצי עד כה'],
             [fmt(n.voters || 0), en() ? 'Voters so far' : 'הצביעו עד כה'],
             [n.pace != null ? '×' + n.pace.toFixed(2) : '–', en() ? 'K25 turnout recovery (ratio, not a turnout)' : 'שחזור שיעור ההצבעה של 25 (יחס, לא אחוז הצבעה)'],
             [n.k25_turnout != null ? n.k25_turnout.toFixed(1) + '%' : '–', en() ? 'K25 final turnout, same ballots' : 'הצבעה סופית ב־25, אותן קלפיות'],
             [fmt(n.remaining_voters || 0), en() ? 'Eligible still to vote' : 'בעלי זכות שטרם הצביעו'],
-            [prev ? ((n.turnout - prev.turnout) >= 0 ? '+' : '') + (n.turnout - prev.turnout).toFixed(1) + ' pts' : '–', en() ? 'Since previous update' : 'מהעדכון הקודם'],
+            [prev ? ((n.turnout - prev.turnout) >= 0 ? '+' : '') + (n.turnout - prev.turnout).toFixed(1) + (en() ? ' pts' : ' נק׳') : '–', en() ? 'Since previous update' : 'מהעדכון הקודם'],
         ].map(([v, l]) => `<div class="td-stat"><b>${v}</b><span>${l}</span></div>`).join('');
         document.getElementById('td-tabs').innerHTML = TD_DIMS.map(([id, enL, heL]) => `<button class="pane-btn ${id === tdDim ? 'gold' : ''}" data-td-dim="${id}">${en() ? enL : heL}</button>`).join('');
         pane.querySelectorAll('[data-td-dim]').forEach(b => b.addEventListener('click', () => { tdDim = b.dataset.tdDim; renderTurnoutDay(); }));
