@@ -1946,6 +1946,13 @@
                 : (en() ? 'K25 turnout recovery (ratio)' : 'שחזור שיעור ההצבעה של 25 (יחס)');
         });
         document.querySelectorAll('.geomap-mode:not(.td-mode)').forEach(b => { b.hidden = TURNOUT_ACTIVE; });
+        // Count stage with a turnout snapshot: the generic 'turnout'
+        // pill (final/counted turnout) duplicates the election-day
+        // turnout layer, so only the election-day one stays.
+        if (!TURNOUT_ACTIVE && td) {
+            const generic = document.querySelector('.geomap-mode[data-gmode="turnout"]');
+            if (generic) generic.hidden = true;
+        }
         const partySel = document.getElementById('geomap-party'); if (partySel && TURNOUT_ACTIVE) partySel.hidden = true;
         const twinsBtn = document.getElementById('twins-toggle'); if (twinsBtn && TURNOUT_ACTIVE) twinsBtn.hidden = true;
         if (!pane) return;
