@@ -1182,9 +1182,10 @@
         return interpolateColor('#fbbf24', '#10b981', Math.max(0, Math.min(1, (p - 0.6) / 0.35)));
     }
     // Election-day layers use FIXED bands, identical at every
-    // snapshot so colours are comparable across the day (and with the
-    // geomap page): turnout uses the same 40% red -> 65% yellow ->
-    // 90% green scale as geomap.html; the K25 recovery ratio uses the
+    // snapshot so colours are comparable across the day. Turnout runs
+    // 10% red -> 50% yellow -> 90% green: a during-the-day layer
+    // starts near zero, so the geomap page's 40% floor would paint
+    // the whole morning one red. The K25 recovery ratio uses the
     // purple -> teal palette over a fixed 0-1.2 domain.
     const TD_PALETTE = ['#7b2d8b', '#d73027', '#fc8d2e', '#f7d038', '#7fc24a', '#0f9b8e'];
     const TD_PACE_MAX = 1.2;
@@ -1193,7 +1194,11 @@
         const i = Math.min(palette.length - 2, Math.floor(f));
         return interpolateColor(palette[i], palette[i + 1], f - i);
     }
-    function tdTurnoutColor(v) { return v == null ? '#374151' : turnoutColor(v); }
+    function tdTurnoutColor(v) {
+        if (v == null) return '#374151';
+        if (v < 50) return interpolateColor('#ef4444', '#fbbf24', Math.max(0, Math.min(1, (v - 10) / 40)));
+        return interpolateColor('#fbbf24', '#10b981', Math.max(0, Math.min(1, (v - 50) / 40)));
+    }
     function tdPaceColor(v) { return v == null ? '#374151' : multiStopColor(TD_PALETTE, v / TD_PACE_MAX); }
     function stationGeoColor(station) {
         if (geoMode === 'td_turnout') return tdTurnoutColor(station.td ? station.td.snapT : null);
@@ -1273,12 +1278,12 @@
                 ? (en() ? 'K25 turnout recovery — a ratio, not a turnout: voters so far ÷ twin’s final K25 voters' : 'שחזור שיעור ההצבעה של 25 — יחס, לא אחוז הצבעה: מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25')
                 : (en() ? 'Turnout so far (election day)' : 'אחוז הצבעה עד כה (יום הבחירות)');
             // Fixed bands, low at the bottom -> high at the top:
-            // turnout matches geomap.html (40% red -> 90% green);
+            // turnout 10% red -> 90% green (see tdTurnoutColor);
             // pace is the palette over 0-1.2.
             bar.style.background = isPace
                 ? `linear-gradient(to top, ${TD_PALETTE.join(', ')})`
                 : 'linear-gradient(to top, #ef4444, #fbbf24, #10b981)';
-            mn.textContent = isPace ? '×0.00' : '40%'; mx.textContent = isPace ? '×1.20' : '90%'; return;
+            mn.textContent = isPace ? '×0.00' : '10%'; mx.textContent = isPace ? '×1.20' : '90%'; return;
         }
         if (geoMode === 'turnout') {
             title.textContent = i18n.t('turnout');
