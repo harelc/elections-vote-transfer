@@ -160,6 +160,10 @@
         <section class="card" id="sankey-card" hidden>
             <h3 id="sankey-title"></h3>
             <div class="note" id="sankey-note" style="margin-bottom:.4rem"></div>
+            <div style="display:flex;gap:.4rem;margin-bottom:.45rem">
+                <button class="metric-btn gold" id="sankey-abs-off" style="flex:1"></button>
+                <button class="metric-btn" id="sankey-abs-on" style="flex:1"></button>
+            </div>
             <div id="sankey-el"></div>
         </section>
 
@@ -200,19 +204,21 @@
         const CC_FILE = PREVIEW === 'partial17' ? '../data/command_center_26_p17.json'
             : PREVIEW === 'partial12' ? '../data/command_center_26_p12.json'
             : '../data/command_center_26.json';
-        let status = null, results = [], colors = {}, enNames = {}, cc = null, factIdx = 0, factTimer = null, transferData = null, hemiMode = 'counted';
+        let status = null, results = [], colors = {}, enNames = {}, cc = null, factIdx = 0, factTimer = null, transferData = null, transferAbs = null, sankeyAbsM = false, hemiMode = 'counted';
 
         async function load() {
-            const [st, wiki, transfer] = await Promise.all([
+            const [st, wiki, transfer, transferAbsF] = await Promise.all([
                 fetch('../data/k26_status.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
                 fetch('../data/wiki_official_results.json', F).then(r => r.ok ? r.json() : {}).catch(() => ({})),
                 fetch('../data/transfer_25_to_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('../data/transfer_25_to_26_abstention.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
             ]);
             status = st || { kind: 'simulated' };
             // Election-day turnout phase has its own mobile view.
             if (status.kind === 'turnout' && !PREVIEW) { location.replace('turnout.html'); return; }
             results = wiki['26'] || [];
             transferData = transfer;
+            transferAbs = transferAbsF;
             (transfer && transfer.nodes_to || []).forEach(n => { colors[n.name] = n.color; if (n.info) enNames[n.name] = n.info.name_en || n.name; });
             // The command-center payload also carries geo_all (every
             // ballot box for the map), so fetch it in every mode.
@@ -358,9 +364,24 @@
             const card = document.getElementById('sankey-card');
             const nc = cc && cc.nowcast;
             const projected = status.kind === 'partial' && nc && nc.ready && nc.projection && nc.projection.projected_sankey;
-            const data = projected ? nc.projection.projected_sankey : transferData;
+            const data = projected
+                ? ((sankeyAbsM && nc.projection.projected_sankey_abstention) || nc.projection.projected_sankey)
+                : ((sankeyAbsM && transferAbs) || transferData);
             if (!data || !data.transfers) { card.hidden = true; return; }
             card.hidden = false;
+            const bOff = document.getElementById('sankey-abs-off'), bOn = document.getElementById('sankey-abs-on');
+            if (bOff && bOn) {
+                bOff.textContent = en() ? 'Without non-voters' : 'ללא לא־הצביעו';
+                bOn.textContent = en() ? 'With non-voters' : 'עם לא־הצביעו';
+                bOff.classList.toggle('gold', !sankeyAbsM);
+                bOn.classList.toggle('gold', sankeyAbsM);
+                bOn.disabled = projected ? !nc.projection.projected_sankey_abstention : !transferAbs;
+                if (!bOff.dataset.wired) {
+                    bOff.dataset.wired = '1';
+                    bOff.addEventListener('click', () => { sankeyAbsM = false; renderSankey(); });
+                    bOn.addEventListener('click', () => { sankeyAbsM = true; renderSankey(); });
+                }
+            }
             document.getElementById('sankey-title').textContent = projected
                 ? (en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים')
                 : (en() ? 'Vote flow 25 → 26' : 'נדידת קולות 25 ← 26');

@@ -688,7 +688,7 @@ def nowcast(status, sectors, target_share=None, force=False):
                 return shares_of(map25_by_name[row["k26_name"]].get("proportions") or {}, from_names), None
             return nat25, None
 
-        pred_boxes, pred_weights, pred_src = [], [], []
+        pred_boxes, pred_weights, pred_src, pred_elig = [], [], [], []
         for row in uncounted_rows:
             shares, src = source_shares(row)
             if src is not None:
@@ -702,6 +702,7 @@ def nowcast(status, sectors, target_share=None, force=False):
             pred_boxes.append(shares @ T)
             pred_weights.append(expected)
             pred_src.append(shares)
+            pred_elig.append(elig)
         P = np.array(pred_boxes)          # boxes x parties, shares
         W = np.array(pred_weights)        # expected valid votes per box
         rng = np.random.default_rng(42)
@@ -792,6 +793,68 @@ def nowcast(status, sectors, target_share=None, force=False):
                           for i in range(len(from_names)) for j in range(len(to_names)) if F[i, j] >= 15000],
             "r_squared": round(float(r2), 4),
         }
+        # With-abstention variant: same counted-subset refit on the
+        # abstention design (לא הצביעו pseudo-party both sides), so the
+        # count-phase Sankey can be shown with or without non-voters.
+        projected_sankey_abs = None
+        try:
+            abs_name = "לא הצביעו"
+            analyzer_abs = VoteTransferAnalyzer(method="convex", include_abstention=True)
+            design_a = analyzer_abs.design_matrices("25", "26")
+            Xa, Ya = design_a["X"][row_mask], design_a["Y"][row_mask]
+            rs_a = float(Ya.sum() / Xa.sum()) if Xa.sum() else 1.0
+            Td_a = np.clip(np.array(analyzer_abs.solve_transfer_matrix_convex(
+                Xa, Ya, row_sum=rs_a, zero_cells=design_a["zero_cells"]), dtype=float), 0, None)
+            pred_a = Xa @ Td_a
+            r2_a = 1 - float(((Ya - pred_a) ** 2).sum()) / (float(((Ya - Ya.mean(axis=0)) ** 2).sum()) or 1.0)
+            from_a = list(from_names) + [abs_name]
+            to_a = list(to_names) + [abs_name]
+            Ta = np.zeros((len(from_a), len(to_a)))
+            for i, fn in enumerate(design_a["names_from"]):
+                for j, tn in enumerate(design_a["names_to"]):
+                    if fn in from_a and tn in to_a:
+                        Ta[from_a.index(fn), to_a.index(tn)] = Td_a[i, j]
+            rs = Ta.sum(axis=1, keepdims=True)
+            Ta = np.divide(Ta, rs, out=np.zeros_like(Ta), where=rs > 0)
+            # Abstention origin pool, sized from the counted matched
+            # boxes (K25 eligible minus K25 valid, per K25 valid vote).
+            abs_num = abs_den = 0.0
+            for row, s25, s26 in matched:
+                if (s25.get("e") or 0) > 0:
+                    abs_num += (s25.get("e") or 0) - (s25.get("v") or 0)
+                    abs_den += (s25.get("v") or 0)
+            origin_a = np.append(origin_totals, origin_totals.sum() * (abs_num / abs_den if abs_den else 0.4))
+            grow_a = (origin_a @ Ta) / origin_a.sum() if origin_a.sum() else Ta.mean(axis=0)
+            for i in range(len(from_a)):
+                wgt = origin_a[i] / (origin_a[i] + shrink_k) if origin_a[i] > 0 else 0.0
+                Ta[i] = wgt * Ta[i] + (1 - wgt) * grow_a
+            F_a = origin_a[:, None] * Ta
+            counted_elig = sum((st26[k].get("e") or 0) for k in counted_keys)
+            proj_elig = counted_elig + float(sum(pred_elig))
+            targets_a = np.append(proj_totals, max(0.0, proj_elig - float(proj_totals.sum())))
+            col_a = F_a.sum(axis=0)
+            F_a = F_a * np.divide(targets_a, col_a, out=np.zeros_like(col_a), where=col_a > 0)[None, :]
+            transfer_abs_file = load("transfer_25_to_26_abstention.json", {}) or {}
+            abs_from_nodes = {n["name"]: n for n in transfer_abs_file.get("nodes_from", [])}
+            abs_to_nodes = {n["name"]: n for n in transfer_abs_file.get("nodes_to", [])}
+            projected_sankey_abs = {
+                "nodes_from": [{"name": n, "symbol": (abs_from_nodes.get(n) or {}).get("symbol", ""),
+                                # Same basis as the plain projected Sankey
+                                # (published-file node votes; party origins
+                                # identical, abs = full-roster non-voters) so
+                                # toggling views does not rescale party nodes.
+                                "votes": int((abs_from_nodes.get(n) or {}).get("votes", round(float(origin_a[from_a.index(n)])))),
+                                "color": (abs_from_nodes.get(n) or {}).get("color", "#6b7280")} for n in from_a],
+                "nodes_to": [{"name": n, "symbol": (abs_to_nodes.get(n) or {}).get("symbol", ""),
+                              "votes": round(float(targets_a[to_a.index(n)])),
+                              "seats": seats_median.get(n, 0),
+                              "color": (abs_to_nodes.get(n) or {}).get("color", "#6b7280")} for n in to_a],
+                "transfers": [{"source": from_a[i], "target": to_a[j], "votes": round(float(F_a[i, j]))}
+                              for i in range(len(from_a)) for j in range(len(to_a)) if F_a[i, j] >= 15000],
+                "r_squared": round(float(r2_a), 4),
+            }
+        except Exception as error:
+            print(f"projected_sankey_abstention skipped ({error})")
         projection = {
             "sims": SIMS, "alpha": alpha, "turnout_adj": round(turnout_adj, 3),
             "uncounted_ballots": len(uncounted_rows),
@@ -806,6 +869,7 @@ def nowcast(status, sectors, target_share=None, force=False):
                           "p90": int(np.percentile(_bloc_arr, 90))}
                       for b, ps in BLOCS.items()},
             "projected_sankey": projected_sankey,
+            "projected_sankey_abstention": projected_sankey_abs,
         }
 
     return {

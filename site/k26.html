@@ -499,6 +499,10 @@
                 </div>
                 <div class="stage-panel" id="panel-sankey">
                     <div class="pane-note"><span data-i18n="k26_sankey_note"></span> · <span id="sankey-r2"></span></div>
+                    <div class="td-tabs" id="sankey-abs-toggle" style="margin:.35rem 0">
+                        <button class="pane-btn gold" id="sankey-abs-off"></button>
+                        <button class="pane-btn" id="sankey-abs-on"></button>
+                    </div>
                     <button class="explainer-cta" id="sankey-explainer-open" data-i18n="k26_sankey_explainer">📘 איך מחשבים את מעברי הקולות? להסבר המונפש</button>
                     <div id="sankey-mini"></div>
                 </div>
@@ -808,10 +812,11 @@
         // no-store: on election night these JSONs are recommitted every few
         // minutes; a cached copy would freeze the command center mid-count.
         const F = { cache: 'no-store' };
-        const [wiki, map, transfer, tsne, suspects, mks, coords, cc, turnoutDay, liveStatus, histTurnout] = await Promise.all([
+        const [wiki, map, transfer, transferAbs, tsne, suspects, mks, coords, cc, turnoutDay, liveStatus, histTurnout] = await Promise.all([
             fetch('data/wiki_official_results.json', F).then(r => r.json()),
             fetch('data/map_26.json', F).then(r => r.json()),
             fetch('data/transfer_25_to_26.json', F).then(r => r.json()),
+            fetch('data/transfer_25_to_26_abstention.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch('data/tsne_26.json', F).then(r => r.json()),
             fetch('data/suspects_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch('data/k26_mks.json', F).then(r => r.ok ? r.json() : { parties: {} }).catch(() => ({ parties: {} })),
@@ -826,10 +831,13 @@
         if (TURNOUT_ACTIVE) { document.body.classList.add('td-on'); geoMode = 'td_turnout'; }
         const enNames = {}, enLeaders = {};
         (transfer.nodes_to || []).forEach(n => { if (n.info) { enNames[n.name] = n.info.name_en || n.name; enLeaders[n.name] = n.info.leader_en || ''; } });
-        DATA = { wiki, map, transfer, tsne, suspects, cc, turnoutDay, histTurnout, twinsMode: false, mks: (mks && mks.parties) || {}, coords: coords || { stations: {} }, enNames, enLeaders,
+        DATA = { wiki, map, transfer, transferAbs, tsne, suspects, cc, turnoutDay, histTurnout, twinsMode: false, mks: (mks && mks.parties) || {}, coords: coords || { stations: {} }, enNames, enLeaders,
                  parties: map.parties, results: wiki['26'] || [],
                  colorOf: {}, infoOf: {} };
         map.parties.forEach(p => { DATA.colorOf[p.name] = p.color; DATA.infoOf[p.name] = p.info || {}; });
+        const skOff = document.getElementById('sankey-abs-off'), skOn = document.getElementById('sankey-abs-on');
+        if (skOff) skOff.addEventListener('click', () => { sankeyAbs = false; renderSankey(); });
+        if (skOn) skOn.addEventListener('click', () => { sankeyAbs = true; renderSankey(); });
         // Preview: set the partial status BEFORE the first render so the
         // geomap builds its coloured layer from counted ballots only.
         if (PREVIEW_PARTIAL && DATA.cc && DATA.cc.nowcast) {
@@ -1198,9 +1206,21 @@
     // transfers inside the nowcast; the standalone transfer page is
     // sankey.html). Mirrors sankey.js: all transfers in the data, gradient
     // links, columns normalised to fill the height, X flipped in RTL.
+    let sankeyAbs = false, ncAbs = false;
     function renderSankey(transferData, elId, height) {
         transferData = transferData || DATA.transfer;
         elId = elId || 'sankey-mini'; height = height || 1060;
+        if (elId === 'sankey-mini') {
+            if (sankeyAbs && DATA.transferAbs) transferData = DATA.transferAbs;
+            const bOff = document.getElementById('sankey-abs-off'), bOn = document.getElementById('sankey-abs-on');
+            if (bOff && bOn) {
+                bOff.textContent = en() ? 'Without non-voters' : 'ללא לא־הצביעו';
+                bOn.textContent = en() ? 'With non-voters' : 'עם לא־הצביעו';
+                bOff.classList.toggle('gold', !sankeyAbs);
+                bOn.classList.toggle('gold', sankeyAbs);
+                bOn.disabled = !DATA.transferAbs;
+            }
+        }
         if (elId === 'sankey-mini') { const r2el = document.getElementById('sankey-r2'); if (r2el) r2el.textContent = 'R² = ' + ((transferData.stats && transferData.stats.r_squared) ?? transferData.r_squared ?? ''); }
         const nodes = [
             ...transferData.nodes_from.map((n, i) => ({ ...n, id: 'from_' + i, side: 'from' })),
@@ -2161,7 +2181,7 @@
             // Predicted vote transfers live together with the seat nowcast,
             // not as a separate "Sankey" stage.
             if (P.projected_sankey) {
-                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey">${i18n.t('k26_sankey_explainer')}</button></div>
+                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey">${i18n.t('k26_sankey_explainer')}</button><span class="td-tabs" style="margin:0"><button class="pane-btn ${!ncAbs ? 'gold' : ''}" data-ncabs="0">${en() ? 'Without non-voters' : 'ללא לא־הצביעו'}</button><button class="pane-btn ${ncAbs ? 'gold' : ''}" data-ncabs="1" ${P.projected_sankey_abstention ? '' : 'disabled'}>${en() ? 'With non-voters' : 'עם לא־הצביעו'}</button></span></div>
                 <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.'}</div>
                 <div id="nc-flows-diagram"></div></div>`;
             }
@@ -2171,6 +2191,12 @@
         const ncExplBtn = document.getElementById('nowcast-explainer-open');
         if (ncExplBtn) ncExplBtn.addEventListener('click', () => openExplainer('nowcast'));
         content.querySelectorAll('[data-explainer]').forEach(b => b.addEventListener('click', () => openExplainer(b.dataset.explainer)));
+        content.querySelectorAll('[data-ncabs]').forEach(b => b.addEventListener('click', () => {
+            ncAbs = b.dataset.ncabs === '1';
+            content.querySelectorAll('[data-ncabs]').forEach(x => x.classList.toggle('gold', (x.dataset.ncabs === '1') === ncAbs));
+            const fl = document.getElementById('nc-flows-diagram'); if (fl) fl.innerHTML = '';
+            renderNcFlows();
+        }));
         renderNcFlows();
         // The hemicycle selector in the votes pane depends on the partial
         // status + this projection, both of which can land after the
@@ -2190,7 +2216,7 @@
             // Re-render when the container width changed since the last
             // draw (mount moves side -> stage, window resizes): a stale
             // fixed-width svg otherwise stays squeezed or stretched.
-            if (!svg || Math.abs((+svg.getAttribute('width') || 0) - w) > 4) renderSankey(nc.projection.projected_sankey, 'nc-flows-diagram', 780);
+            if (!svg || Math.abs((+svg.getAttribute('width') || 0) - w) > 4) renderSankey((ncAbs && nc.projection.projected_sankey_abstention) || nc.projection.projected_sankey, 'nc-flows-diagram', 780);
         } else if (!flowsEl.querySelector('svg')) {
             // Too narrow right now (e.g. still in the hidden side mount):
             // leave a note but do not burn it in — activation/resize
