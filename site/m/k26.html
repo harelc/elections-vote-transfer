@@ -151,7 +151,7 @@
             ]);
             status = st || { kind: 'simulated' };
             // Election-day turnout phase has its own mobile view.
-            if (status.kind === 'turnout' && !PREVIEW) { location.replace('../k26.html?turnout=1'); return; }
+            if (status.kind === 'turnout' && !PREVIEW) { location.replace('turnout.html'); return; }
             results = wiki['26'] || [];
             transferData = transfer;
             (transfer && transfer.nodes_to || []).forEach(n => { colors[n.name] = n.color; if (n.info) enNames[n.name] = n.info.name_en || n.name; });

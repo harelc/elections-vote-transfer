@@ -279,7 +279,7 @@
         // card self-expires after 27 Oct 2026 instead of lingering.
         const isElectionDay = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' }) === '2026-10-27';
         const cards = [
-            ...(i18n.SHOW_E26 && isElectionDay ? [{ i18n_title: 'card_turnout_title', i18n_desc: 'card_turnout_desc', href: '../k26.html?turnout=1', featured: true }] : []),
+            ...(i18n.SHOW_E26 && isElectionDay ? [{ i18n_title: 'card_turnout_title', i18n_desc: 'card_turnout_desc', href: 'turnout.html', featured: true }] : []),
             { icon: '📚', i18n_title: 'nav_primer',    i18n_desc: 'card_primer_desc',    href: '../primer.html' },
             { icon: '🗺️', i18n_title: 'nav_geomap',    i18n_desc: 'card_geomap_desc',    href: 'geomap.html' },
             { icon: '🔵', i18n_title: 'nav_tsne',      i18n_desc: 'card_tsne_desc',      href: 'tsne.html' },
