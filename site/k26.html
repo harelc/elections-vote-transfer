@@ -92,7 +92,13 @@
         .stage-main { min-height:820px; }
         .g-center { display:flex; flex-direction:column; gap:1rem; min-width:0; }
         .geomap-pane .mini-map { height:800px; }
-        .geomap-modes { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin-bottom:.5rem; }
+        /* Layer selector: a 4-wide grid, so the (up to) eight visible
+           items always land in exactly two rows, at any pane width. */
+        .geomap-modes { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:.35rem; align-items:stretch; margin-bottom:.5rem; }
+        .geomap-modes [hidden] { display:none !important; }
+        .geomap-modes .geomap-mode { white-space:normal; line-height:1.25; text-align:center; font-size:.72rem; padding:.3rem .35rem; }
+        .geomap-modes .geomap-party-select { min-width:0; width:100%; font-size:.76rem; text-overflow:ellipsis; }
+        .geomap-modes .geo-help { align-self:center; }
         .geomap-party-select { background:#1a1f2b; color:var(--text-primary); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:.32rem .5rem; font:inherit; font-size:.82rem; direction:inherit; text-align:start; }
         /* "?" help for the voting-pattern (t-SNE embed) layer: hover or
            keyboard-focus reveals what the colours mean. */
@@ -138,6 +144,7 @@
         .td-stat span { font-size:.72rem; color:var(--text-muted); }
         .td-tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem; }
         .td-scale-row { display:flex; align-items:center; gap:.4rem; margin:.1rem 0 .3rem; }
+        .td-scale-row[hidden] { display:none; }
         .td-slider-wrap { margin:.35rem 0 .55rem; width:100%; direction:ltr; } /* time axes run left→right even on the RTL page */
         .td-slider-row { display:flex; align-items:center; justify-content:space-between; gap:.6rem; }
         .td-slider-wrap input[type=range] { width:100%; accent-color:#f0b429; cursor:pointer; margin:.15rem 0 0; }
@@ -1379,7 +1386,9 @@
     function updateTdScaleToggle() {
         const row = document.getElementById('td-scale-row');
         if (!row) return;
-        const show = TURNOUT_ACTIVE || geoMode === 'td_turnout' || geoMode === 'td_pace';
+        // Only while a turnout layer is actually selected — the
+        // display:flex above would otherwise defeat the hidden attr.
+        const show = geoMode === 'td_turnout' || geoMode === 'td_pace';
         row.hidden = !show;
         if (!show) return;
         document.getElementById('td-scale-label').textContent = en() ? 'Colour scale:' : 'סולם צבעים:';
@@ -2159,7 +2168,7 @@
         const wrap = document.getElementById('td-slider-wrap');
         if (!wrap) return;
         const snaps = tdSnapshots();
-        const show = snaps.length > 1 && (TURNOUT_ACTIVE || geoMode === 'td_turnout' || geoMode === 'td_pace');
+        const show = snaps.length > 1 && (geoMode === 'td_turnout' || geoMode === 'td_pace');
         wrap.hidden = !show;
         if (!show) return;
         if (tdSnapIdx == null || tdSnapIdx >= snaps.length) tdSnapIdx = snaps.length - 1;
