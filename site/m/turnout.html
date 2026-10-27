@@ -348,8 +348,8 @@
             document.getElementById('lbl-remaining').textContent = en() ? 'eligible who have not voted' : 'בעלי זכות שטרם הצביעו';
             document.getElementById('lbl-ballots').textContent = en() ? 'ballot boxes' : 'קלפיות';
             document.getElementById('nat-note').textContent = en()
-                ? `K25 final turnout was ${n.k25_turnout}%. "Recovery" (pace) compares voters so far with the K25 twin ballot's final voters.`
-                : `בבחירות 25 ההצבעה הסופית הייתה ${n.k25_turnout}%. ״שחזור״ משווה את המצביעים עד כה למצביעים הסופיים בקלפי התאומה מ־25.`;
+                ? `K25 final turnout was ${n.k25_turnout}%. "Recovery" (pace) is the turnout so far divided by the K25 twin ballot's final turnout.`
+                : `בבחירות 25 ההצבעה הסופית הייתה ${n.k25_turnout}%. ״שחזור״ הוא שיעור ההצבעה עד כה מחולק בשיעור ההצבעה הסופי של הקלפי התאומה מ־25.`;
 
             document.getElementById('map-title').textContent = en() ? 'Ballot map' : 'מפה לפי קלפי';
             document.getElementById('metric-turnout').textContent = en() ? 'Turnout so far' : 'אחוז הצבעה עד כה';
@@ -638,13 +638,13 @@
             let wv = 0, we = 0;
             items.forEach(it => { if (it.station.voters == null) return; wv += it.station.voters; we += it.station.eligible || 0; });
             const byPace = metric === 'pace';
-            // Weighted pace needs the K25-final denominator; approximate
-            // with voters-weighted pace of the member ballots.
+            // Cluster pace = aggregate turnout-rate ratio: turnout now
+            // / K25 final turnout (eligible-weighted twin rates).
             let avg = null;
             if (byPace) {
-                let sv = 0, sw = 0;
-                items.forEach(it => { if (it.station.pace != null) { sv += it.station.pace * (it.station.voters || 0); sw += it.station.voters || 0; } });
-                avg = sw ? sv / sw : null;
+                let sk = 0;
+                items.forEach(it => { if (it.station.voters != null && it.station.k25t) sk += it.station.k25t * (it.station.eligible || 0); });
+                avg = sk ? 100 * wv / sk : null;
             } else avg = we ? 100 * wv / we : null;
             const col = tdColor(avg, byPace);
             const info = avg == null ? '' : (byPace ? '×' + avg.toFixed(2) : Math.round(avg) + '%');
@@ -664,10 +664,9 @@
             const piles = new Map();
             (td.stations || []).forEach((a, i) => {
                 const v = voters ? voters[i] : a[5];
-                const k25final = a[8] ? a[5] / a[8] : null;
                 const t = (v == null || !a[4]) ? null : 100 * v / a[4];
-                const p = (v == null || !k25final) ? null : v / k25final;
-                const d = { name: a[0], ballot: a[1], turnout: t, pace: p, voters: v, eligible: a[4], winner25: a[9] || '', k25Ballot: a[17] || '', upd: a[20] };
+                const p = (t == null || !a[7]) ? null : t / a[7];
+                const d = { name: a[0], ballot: a[1], turnout: t, pace: p, voters: v, eligible: a[4], k25t: a[7], winner25: a[9] || '', k25Ballot: a[17] || '', upd: a[20] };
                 const rec = { lng: a[3], lat: a[2], origLng: a[3], origLat: a[2], color: tdColor(byPace ? p : t, byPace), radius: 5, station: d };
                 items.push(rec);
                 const key = a[2].toFixed(5) + ',' + a[3].toFixed(5);

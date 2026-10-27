@@ -1508,9 +1508,11 @@
         // Non-winner modes: one representative colour per cluster, computed
         // the way geomap.html colours its cluster icons.
         if (geoMode === 'td_pace') {
+            // Turnout-rate ratio, aggregated: turnout now / K25 final
+            // turnout (eligible-weighted twin rates).
             let v = 0, k = 0;
-            clusterStations.forEach(it => { const td = it.station.td; if (!td || td.snapV == null) return; v += td.snapV; if (td.k25v) k += td.k25v; });
-            return tdColor(k ? v / k : null, true);
+            clusterStations.forEach(it => { const td = it.station.td; if (!td || td.snapV == null) return; v += td.snapV; if (td.k25t) k += td.k25t * (td.snapE || 0); });
+            return tdColor(k ? 100 * v / k : null, true);
         }
         if (geoMode === 'td_turnout') {
             let v = 0, e = 0;
@@ -1558,8 +1560,8 @@
         }
         if (geoMode === 'td_pace') {
             let v = 0, k = 0;
-            clusterStations.forEach(it => { const td = it.station.td; if (!td || td.snapV == null) return; v += td.snapV; if (td.k25v) k += td.k25v; });
-            return k ? '×' + (v / k).toFixed(2) : '';
+            clusterStations.forEach(it => { const td = it.station.td; if (!td || td.snapV == null) return; v += td.snapV; if (td.k25t) k += td.k25t * (td.snapE || 0); });
+            return k ? '×' + (100 * v / k).toFixed(2) : '';
         }
         if (geoMode === 'party' && geoPartyName) {
             let num = 0, den = 0;
@@ -1767,7 +1769,7 @@
         // Stations come from turnout_day_26.json (fields per meta.station_fields),
         // already carrying roster coordinates; no K26 result is shown.
         const tdOf = a => ({ k25t: a[7], pace: a[8], winner: a[9], bloc: a[10], population: a[11], district: a[12], socio: a[13], matched: a[14], match: a[15], k25name: a[16], k25ballot: a[17], matchM: a[18], neighborN: a[19], upd: a[20],
-            snapE: a[4], snapV: a[5], snapT: a[6], k25base: a[8] ? a[5] / a[8] : null, k25v: a[8] ? Math.round(a[5] / a[8]) : null });
+            snapE: a[4], snapV: a[5], snapT: a[6] });
         const tdByKey = new Map(((DATA.turnoutDay && DATA.turnoutDay.stations) || []).map(a => [`${a[0]}|${a[1]}`, a]));
         tdSnapStationIdx = new Map(((DATA.turnoutDay && DATA.turnoutDay.stations) || []).map((a, i) => [`${a[0]}|${a[1]}`, i]));
         const geoSource = (TURNOUT_ACTIVE && DATA.turnoutDay && DATA.turnoutDay.stations)
@@ -2308,7 +2310,7 @@
             const v = i == null ? null : voters[i];
             td.snapV = v;
             td.snapT = v != null && td.snapE ? 100 * v / td.snapE : null;
-            td.pace = v != null && td.k25base ? v / td.k25base : null;
+            td.pace = td.snapT != null && td.k25t ? td.snapT / td.k25t : null;
         });
         if (geoLayer && geoItems.length) {
             geoItems.forEach(it => { it.color = stationGeoColor(it.station); });
