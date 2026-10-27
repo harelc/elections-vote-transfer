@@ -290,15 +290,18 @@
         .factoid-bar .f-text { font-size:0.92rem; color:var(--text-primary); line-height:1.45; }
         .factoid-bar .f-src { font-size:0.7rem; color:var(--text-muted); white-space:nowrap; margin-inline-start:auto; }
         /* Twelve Knessets */
-        .tk-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(215px,1fr)); gap:0.7rem; }
-        .tk-card { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px; padding:0.65rem 0.7rem; }
-        .tk-card h4 { font-size:0.9rem; color:var(--text-primary); }
-        .tk-meta { font-size:0.7rem; color:var(--text-muted); margin:0.15rem 0 0.45rem; line-height:1.5; }
+        .tk-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(165px,1fr)); gap:0.5rem; }
+        .tk-card { background:var(--bg-secondary); border:1px solid var(--border-color); border-radius:10px; padding:0.5rem 0.55rem; }
+        .tk-card h4 { font-size:0.82rem; color:var(--text-primary); }
+        .tk-meta { font-size:0.66rem; color:var(--text-muted); margin:0.1rem 0 0.3rem; line-height:1.35; }
         .tk-bar { display:flex; height:14px; border-radius:4px; overflow:hidden; margin-bottom:0.4rem; }
         .tk-bar div { height:100%; }
-        .tk-top { font-size:0.74rem; color:var(--text-secondary); line-height:1.6; }
+        .tk-top { font-size:0.68rem; color:var(--text-secondary); line-height:1.45; }
         .tk-top b { color:var(--text-primary); }
-        .tk-blocs { font-size:0.72rem; color:var(--text-muted); margin-top:0.3rem; }
+        .tk-blocs { font-size:0.66rem; color:var(--text-muted); margin-top:0.2rem; }
+        /* Geomap in the end margin (swapped with the turnout pane):
+           a narrower, portrait-friendly column. */
+        .g-side .geomap-pane .mini-map { height:min(72vh,680px); }
         .hemi-toggle { display:flex; gap:.4rem; flex-wrap:wrap; margin-bottom:.55rem; }
         .hemi-toggle[hidden] { display:none; }
         /* Nowcast */
@@ -758,6 +761,22 @@
         if (PREVIEW_PARTIAL && DATA.cc && DATA.cc.nowcast) {
             const nc = DATA.cc.nowcast;
             K26STATUS = { kind: 'partial', ballots: nc.counted_ballots, ballots_total: nc.roster_ballots, as_of: new Date().toISOString(), source_he: '', source_en: '' };
+        }
+        // Count-stage layout: the geomap lives in the end margin and
+        // the turnout pane takes its centre-column place under the
+        // stage (beneath the nowcast when it is on stage). The
+        // election-day view keeps its own side-by-side layout.
+        if (!TURNOUT_ACTIVE) {
+            const geoPane = document.getElementById('pane-geomap');
+            const turnPane = document.getElementById('pane-turnout');
+            if (geoPane && turnPane) {
+                const geoHome = document.createElement('div'), turnHome = document.createElement('div');
+                geoPane.parentNode.insertBefore(geoHome, geoPane);
+                turnPane.parentNode.insertBefore(turnHome, turnPane);
+                turnHome.parentNode.insertBefore(geoPane, turnHome);
+                geoHome.parentNode.insertBefore(turnPane, geoHome);
+                geoHome.remove(); turnHome.remove();
+            }
         }
         renderAll();
         if (PREVIEW_PARTIAL && DATA.cc && DATA.cc.nowcast) {
