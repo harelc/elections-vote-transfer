@@ -291,7 +291,13 @@
             row.innerHTML = snaps().map((x, i) => `<button class="snap-chip ${i === cur ? 'gold' : ''}" data-snap="${i}">${hhmm(x.as_of)}</button>`).join('');
             row.querySelectorAll('[data-snap]').forEach(b => b.onclick = () => { snapIdx = +b.dataset.snap; renderSnap(); paintMap(); });
             const active = row.querySelector('.gold');
-            if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
+            // Centre the chip horizontally WITHOUT scrollIntoView —
+            // that also scrolls the page vertically back to the top
+            // whenever renderSnap() runs (e.g. colour-scale toggle).
+            if (active) {
+                const rr = row.getBoundingClientRect(), ar = active.getBoundingClientRect();
+                row.scrollLeft += (ar.left + ar.width / 2) - (rr.left + rr.width / 2);
+            }
 
             const n = s.national;
             const natOnly = document.getElementById('nat-only-note');
@@ -318,13 +324,34 @@
             document.getElementById('metric-pace').textContent = en() ? 'K25 recovery' : 'שחזור מ־25';
             document.getElementById('metric-turnout').classList.toggle('gold', metric === 'turnout');
             document.getElementById('metric-pace').classList.toggle('gold', metric === 'pace');
+            updateMetricUI();
+            document.getElementById('map-note').textContent = en() ? 'Tap a dot for that ballot box.' : 'הקשה על נקודה מציגה את הקלפי.';
+
+            renderGroups();
+            renderSettlements();
+            renderHist();
+            renderDist();
+        }
+
+        // Metric/scale toggle wiring + legend. Kept separate from
+        // renderSnap(): the toggles must NOT re-render the page —
+        // rebuilding the cards above the map makes some mobile
+        // browsers lose scroll anchoring and jump to the top.
+        function updateMetricUI() {
+            document.getElementById('metric-turnout').classList.toggle('gold', metric === 'turnout');
+            document.getElementById('metric-pace').classList.toggle('gold', metric === 'pace');
             const fxB = document.getElementById('scale-fixed'), adB = document.getElementById('scale-adaptive');
             fxB.textContent = en() ? 'Fixed scale' : 'סולם קבוע';
             adB.textContent = en() ? 'Adaptive scale' : 'סולם מותאם';
             fxB.classList.toggle('gold', scaleMode === 'fixed');
             adB.classList.toggle('gold', scaleMode === 'adaptive');
-            fxB.onclick = () => { if (scaleMode !== 'fixed') { scaleMode = 'fixed'; renderSnap(); paintMap(); } };
-            adB.onclick = () => { if (scaleMode !== 'adaptive') { scaleMode = 'adaptive'; renderSnap(); paintMap(); } };
+            const keepScroll = fn => () => {
+                const y = window.scrollY;
+                fn();
+                requestAnimationFrame(() => { if (window.scrollY !== y) window.scrollTo(0, y); });
+            };
+            fxB.onclick = keepScroll(() => { if (scaleMode !== 'fixed') { scaleMode = 'fixed'; updateMetricUI(); paintMap(); renderGroups(); } });
+            adB.onclick = keepScroll(() => { if (scaleMode !== 'adaptive') { scaleMode = 'adaptive'; updateMetricUI(); paintMap(); renderGroups(); } });
             const band = scaleMode === 'adaptive' ? adaptiveBand(metric === 'pace') : null;
             document.getElementById('legend-lo').textContent = band
                 ? (metric === 'pace' ? '×' + band.lo.toFixed(2) : Math.round(band.lo) + '%')
@@ -335,12 +362,6 @@
             document.getElementById('legend-grad').style.background = (metric === 'pace' || scaleMode === 'adaptive')
                 ? `linear-gradient(to left, ${TD_PALETTE.join(', ')})`
                 : 'linear-gradient(to left, #ef4444, #fbbf24 50%, #10b981)';
-            document.getElementById('map-note').textContent = en() ? 'Tap a dot for that ballot box.' : 'הקשה על נקודה מציגה את הקלפי.';
-
-            renderGroups();
-            renderSettlements();
-            renderHist();
-            renderDist();
         }
 
         // Per-ballot turnout histogram + why it trails the national
@@ -407,22 +428,25 @@
             const today = snaps().map(s => {
                 const hm = hhmm(s.as_of).split(':'); return { t: (+hm[0]) + (+hm[1]) / 60, v: (s.national || {}).turnout };
             }).filter(p => p.v != null && p.t >= 10);
-            const W = 720, H = 300, L = 46, R = 706, T = 12, B = 262;
+            const W = 720, H = 330, L = 52, R = 700, T = 16, B = 288;
             const X = t => L + (t - 10) / 12 * (R - L), Y = v => T + (85 - v) / 85 * (B - T);
             const path = pts => pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
             let g = '';
-            [0, 25, 50, 75].forEach(v => { g += `<line x1="${L}" y1="${Y(v)}" x2="${R}" y2="${Y(v)}" stroke="rgba(255,255,255,.08)"/><text x="${L - 5}" y="${Y(v) + 3}" fill="#8b93a5" font-size="11" text-anchor="end">${v}%</text>`; });
-            hours.forEach(h => { g += `<text x="${X(h)}" y="${B + 17}" fill="#8b93a5" font-size="11" text-anchor="middle">${String(h).padStart(2, '0')}:00</text>`; });
+            [0, 25, 50, 75].forEach(v => { g += `<line x1="${L}" y1="${Y(v)}" x2="${R}" y2="${Y(v)}" stroke="rgba(255,255,255,.08)"/><text x="${L - 6}" y="${Y(v) + 5}" fill="#aeb8cc" font-size="15" text-anchor="end">${v}%</text>`; });
+            hours.forEach(h => { g += `<text x="${X(h)}" y="${B + 22}" fill="#aeb8cc" font-size="15" text-anchor="middle">${String(h).padStart(2, '0')}:00</text>`; });
             const env = hours.map((h, i) => [Math.min(...els.map(e => e.values[i])), Math.max(...els.map(e => e.values[i]))]);
-            g += `<path d="${path(env.map((e, i) => [X(hours[i]), Y(e[1])]))} ${env.map((e, i) => [X(hours[hours.length - 1 - i]), Y(env[hours.length - 1 - i][0])]).map(p => `L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} Z" fill="rgba(160,175,200,.10)"/>`;
-            els.forEach(e => { g += `<path d="${path(e.values.map((v, i) => [X(hours[i]), Y(v)]))}" fill="none" stroke="rgba(170,182,205,.30)" stroke-width="1"/>`; });
+            g += `<path d="${path(env.map((e, i) => [X(hours[i]), Y(e[1])]))} ${env.map((e, i) => [X(hours[hours.length - 1 - i]), Y(env[hours.length - 1 - i][0])]).map(p => `L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} Z" fill="rgba(160,175,200,.13)"/>`;
             const k25 = els.find(e => e.knesset === 25);
-            if (k25) g += `<path d="${path(k25.values.map((v, i) => [X(hours[i]), Y(v)]))}" fill="none" stroke="#dbe4ee" stroke-width="2.4"/>`;
+            if (k25) {
+                g += `<path d="${path(k25.values.map((v, i) => [X(hours[i]), Y(v)]))}" fill="none" stroke="#dbe4ee" stroke-width="3.5"/>`;
+                const kv = k25.values[k25.values.length - 1];
+                g += `<text x="${R - 4}" y="${Y(kv) - 10}" fill="#dbe4ee" font-size="17" font-weight="700" text-anchor="end">${en() ? 'K25' : 'כנסת 25'} ${kv.toFixed(1)}%</text>`;
+            }
             if (today.length) {
-                g += `<path d="${path(today.map(p => [X(p.t), Y(p.v)]))}" fill="none" stroke="#f0b429" stroke-width="4" stroke-linejoin="round"/>`;
-                today.forEach(p => { g += `<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="4" fill="#f0b429"/>`; });
+                g += `<path d="${path(today.map(p => [X(p.t), Y(p.v)]))}" fill="none" stroke="#f0b429" stroke-width="5" stroke-linejoin="round"/>`;
+                today.forEach(p => { g += `<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="5.5" fill="#f0b429" stroke="#0b0e14" stroke-width="1.5"/>`; });
                 const last = today[today.length - 1];
-                g += `<text x="${Math.min(X(last.t) + 8, R - 70)}" y="${Math.max(Y(last.v) - 9, 13)}" fill="#ffd75e" font-size="15" font-weight="700">${en() ? 'Today' : 'היום'} ${last.v.toFixed(1)}%</text>`;
+                g += `<text x="${Math.min(X(last.t) + 10, R - 110)}" y="${Math.max(Y(last.v) - 12, 18)}" fill="#ffd75e" font-size="19" font-weight="800">${en() ? 'Today' : 'היום'} ${last.v.toFixed(1)}%</text>`;
             }
             document.getElementById('hist-title').textContent = en() ? 'Today vs history: turnout by hour' : 'היום מול ההיסטוריה: הצבעה לפי שעה';
             document.getElementById('hist-chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;direction:ltr">${g}</svg>`;
@@ -575,8 +599,13 @@
                 onStationClick: (item) => stationSheet(item.station)
             });
             layer.setStations(mapItems());
-            document.getElementById('metric-turnout').onclick = () => { metric = 'turnout'; renderSnap(); paintMap(); };
-            document.getElementById('metric-pace').onclick = () => { metric = 'pace'; renderSnap(); paintMap(); };
+            const keepScroll = fn => () => {
+                const y = window.scrollY;
+                fn();
+                requestAnimationFrame(() => { if (window.scrollY !== y) window.scrollTo(0, y); });
+            };
+            document.getElementById('metric-turnout').onclick = keepScroll(() => { metric = 'turnout'; updateMetricUI(); paintMap(); renderGroups(); });
+            document.getElementById('metric-pace').onclick = keepScroll(() => { metric = 'pace'; updateMetricUI(); paintMap(); renderGroups(); });
         }
 
         document.addEventListener('langchange', () => { render(); });
