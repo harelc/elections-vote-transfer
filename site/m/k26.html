@@ -15,6 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
     <script src="../i18n.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
@@ -63,6 +64,8 @@
         .hemi-toggle button.gold { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
         #sankey-el svg { width: 100%; height: auto; display: block; }
         .gold-btn { display: flex; justify-content: center; align-items: center; width: 100%; padding: 0.85rem 1rem; border-radius: 999px; background: linear-gradient(135deg, #ffd75e, #f0b429); color: #1a1408 !important; font-weight: 800; font-size: 0.95rem; text-decoration: none; border: 1px solid #ffe08a; }
+        #cc-map { height: 46vh; min-height: 280px; border-radius: 10px; overflow: hidden; }
+        .maplibregl-map { background: var(--bg); }
         .factoid { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
         .factoid b { color: var(--accent); }
     </style>
@@ -95,6 +98,12 @@
             <div class="hemi-wrap" id="hemi-wrap"></div>
             <div id="party-rows"></div>
             <div class="bloc-line" id="bloc-line"></div>
+        </section>
+
+        <section class="card" id="map-card" hidden>
+            <h3 id="map-title"></h3>
+            <div id="cc-map"></div>
+            <div class="note" id="map-note" style="margin-top:.4rem"></div>
         </section>
 
         <section class="card" id="nowcast-card" hidden>
@@ -214,6 +223,7 @@
                     <span></span><span class="st">${p.seats || ''}</span>
                 </div>`).join('');
             document.getElementById('bloc-line').textContent = '';
+            renderMap();
             renderNowcast();
             renderFactoid();
             document.getElementById('desktop-link').textContent = en() ? 'Full command centre (desktop) ↗' : 'למרכז הבקרה המלא (מחשב) ↗';
@@ -350,6 +360,68 @@
                 .text(d => name(d.name));
         }
 
+        // Counted-ballot map (partial count only): counted dots coloured
+        // by the ballot's winning party, uncounted boxes faint gray.
+        // Geo rows come from command_center_26.json (geo_counted /
+        // geo_uncounted), so no heavy map_26.json fetch on mobile.
+        let ccMap = null, ccMapReady = false;
+        function mapFeatures() {
+            const nc = (cc && cc.nowcast) || {};
+            const feats = [];
+            (nc.geo_counted || []).forEach(a => feats.push({
+                type: 'Feature', geometry: { type: 'Point', coordinates: [a[3], a[2]] },
+                properties: { c: colors[a[4]] || '#999', name: a[0], ballot: a[1], winner: a[4], pct: a[5], counted: 1 }
+            }));
+            (nc.geo_uncounted || []).forEach(a => feats.push({
+                type: 'Feature', geometry: { type: 'Point', coordinates: [a[3], a[2]] },
+                properties: { c: '#4b5563', name: a[0], ballot: a[1], winner: '', pct: null, counted: 0 }
+            }));
+            return { type: 'FeatureCollection', features: feats };
+        }
+        function renderMap() {
+            const card = document.getElementById('map-card');
+            const nc = cc && cc.nowcast;
+            if (!nc || status.kind !== 'partial' || !(nc.geo_counted || []).length) { card.hidden = true; return; }
+            card.hidden = false;
+            document.getElementById('map-title').textContent = en() ? 'Counted ballots map' : 'מפת הקלפיות שנספרו';
+            document.getElementById('map-note').textContent = en()
+                ? 'Coloured by the winning party in each counted box; gray = not counted yet. Tap a dot for details.'
+                : 'צבע לפי המפלגה המנצחת בכל קלפי שנספרה; אפור = טרם נספרה. הקשה על נקודה לפרטים.';
+            if (!ccMap) {
+                ccMap = createMap('cc-map', {
+                    center: [34.9, 31.4], zoom: 7.4, minZoom: 6.5, maxZoom: 16,
+                    basemap: 'dark_matter', zoomPosition: 'bottom-right'
+                });
+                ccMap.on('load', () => {
+                    ccMap.addSource('boxes', { type: 'geojson', data: mapFeatures() });
+                    ccMap.addLayer({
+                        id: 'boxes', type: 'circle', source: 'boxes',
+                        paint: {
+                            'circle-color': ['get', 'c'],
+                            'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 2.2, 11, 4.5, 14, 7],
+                            'circle-opacity': ['case', ['==', ['get', 'counted'], 1], 0.92, 0.45],
+                            'circle-stroke-width': 0
+                        }
+                    });
+                    ccMapReady = true;
+                    ccMap.on('click', 'boxes', e => {
+                        const p = e.features[0].properties;
+                        new maplibregl.Popup({ closeButton: true, maxWidth: '250px' })
+                            .setLngLat(e.lngLat)
+                            .setHTML(`<b>${p.name}</b> · ${en() ? 'ballot' : 'קלפי'} ${p.ballot}<br>` + (p.counted
+                                ? `${en() ? 'Winner' : 'מנצחת'}: <b>${name(p.winner)}</b> · ${p.pct}%`
+                                : (en() ? 'Not counted yet' : 'טרם נספרה')))
+                            .addTo(ccMap);
+                    });
+                    ccMap.on('mouseenter', 'boxes', () => ccMap.getCanvas().style.cursor = 'pointer');
+                    ccMap.on('mouseleave', 'boxes', () => ccMap.getCanvas().style.cursor = '');
+                });
+            } else if (ccMapReady) {
+                ccMap.getSource('boxes').setData(mapFeatures());
+                ccMap.resize();
+            }
+        }
+
         function renderNowcast() {
             const card = document.getElementById('nowcast-card');
             const nc = cc && cc.nowcast;
@@ -403,6 +475,8 @@
         setInterval(() => load().catch(() => {}), 90000);
     })();
     </script>
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="../basemap.js"></script>
     <script src="../webinar-modal.js"></script>
 </body>
 </html>

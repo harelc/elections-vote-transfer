@@ -498,6 +498,7 @@ def nowcast(status, sectors, target_share=None, force=False):
     # Uncounted ballot locations, for the geomap's faint gray dots during a
     # partial count (compact [name, ballot, lat, lng] rows).
     geo_uncounted = []
+    geo_counted = []
     try:
         stations_coord = (load("station_coordinates.json", {}) or {}).get("stations", {})
         map26_for_coords = load("map_26.json", {}) or {}
@@ -517,6 +518,29 @@ def nowcast(status, sectors, target_share=None, force=False):
             else:
                 continue
             geo_uncounted.append([normalize_name(row["k26_name"]), b, round(lat, 5), round(lng, 5)])
+        # Counted ballot locations + winning party, for the mobile map
+        # (compact [name, ballot, lat, lng, winner, winner_pct] rows).
+        for row in counted_rows:
+            b = str(row["k26_ballot"])
+            if b.endswith(".0"):
+                b = b[:-2]
+            st = st26.get(f"{row['k26_name']}|{row['k26_ballot']}")
+            if st is None:
+                continue
+            props = st.get("p") or {}
+            if not props:
+                continue
+            winner = max(props, key=props.get)
+            cd = (stations_coord.get(f"{normalize_name(row['k26_name'])}|{b}")
+                  or stations_coord.get(f"{row['k26_name']}|{b}"))
+            if cd and cd.get("lat") is not None:
+                lat, lng = cd["lat"], cd["lng"]
+            elif normalize_name(row["k26_name"]) in settle_coords:
+                lat, lng = settle_coords[normalize_name(row["k26_name"])]
+            else:
+                continue
+            geo_counted.append([normalize_name(row["k26_name"]), b, round(lat, 5), round(lng, 5),
+                                winner, round(float(props[winner]), 1)])
     except Exception as error:
         print(f"geo_uncounted skipped ({error})")
 
@@ -788,7 +812,7 @@ def nowcast(status, sectors, target_share=None, force=False):
         "mode": mode, "estimator": estimator,
         "rehearsal_target": target_share,
         "counted_ballots": len(counted_rows), "roster_ballots": len(roster),
-        "geo_uncounted": geo_uncounted,
+        "geo_uncounted": geo_uncounted, "geo_counted": geo_counted,
         "matched_ballots": len(matched), "r_squared": round(float(r2), 4),
         "counted_k25_share": round(counted_share, 3), "composition_tvd": round(comp_tvd, 3),
         "sector_coverage": sector_rows,
