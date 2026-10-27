@@ -16,9 +16,12 @@ people have voted so far, where, and how that compares with the K25 twin
 ballot. Group analyses therefore answer "who is turning out so far?"
 in K25 terms: by the twin's winning party, bloc, stronghold (>=30% for a
 party), sector / form / district / socioeconomic cluster, and the twin's
-own K25 turnout band. `pace` everywhere is voters-so-far divided by the
-twin group's final K25 voters: 0.62 means the group has already cast
-62% as many ballots as it cast in all of K25 (on matched ballots).
+own K25 turnout band. `pace` everywhere is a ratio of turnout RATES:
+turnout so far divided by the twin's final K25 turnout: 0.62 means the
+group has already recovered 62% of its K25 turnout rate. (A ratio of
+vote counts would also reward electorate growth between elections —
+a ballot whose eligible roll grew can pass its entire K25 vote count
+while its turnout rate is still well below K25's final.)
 
 Snapshot format (CEC shape, CSV or a {columns, rows} JSON like the
 results snapshots refresh_k26.py accepts). Recognised columns, Hebrew
@@ -329,8 +332,8 @@ def finish(a):
         "ballots": a["ballots"], "eligible": round(a["eligible"]), "voters": round(a["voters"]),
         "turnout": round(100 * a["voters"] / elig, 1) if elig else 0.0,
         "k25_turnout": round(100 * a["k25_voters"] / k25e, 1) if k25e else None,
-        # pace: share of the group's final K25 voters already cast today
-        "pace": round(a["voters"] / a["k25_voters"], 3) if a["k25_voters"] else None,
+        # pace: turnout-rate ratio — today's turnout / final K25 turnout
+        "pace": round((a["voters"] / elig) / (a["k25_voters"] / k25e), 3) if elig and k25e and a["k25_voters"] else None,
     }
 
 
@@ -594,7 +597,7 @@ def main():
                          round(elig), round(voters) if voters is not None else None,
                          round(100 * voters / elig, 1) if voters is not None else None,
                          round(k25_turnout, 1) if k25_turnout is not None else None,
-                         round(voters / k25_voters, 3) if (voters is not None and k25_voters) else None,
+                         round((voters / elig) / (k25_turnout / 100), 3) if (voters is not None and elig and k25_turnout) else None,
                          winner, dims["k25_bloc"], dims["population"], dims["district"], soc,
                          1 if twin is not None else 0,
                          match_kind,
@@ -620,10 +623,8 @@ def main():
                 nat["turnout"] = round(float(cec["percent"]), 1) if cec.get("percent") is not None \
                     else round(100 * nat["voters"] / nat["eligible"], 1)
                 nat["remaining_voters"] = nat["eligible"] - nat["voters"]
-                k25_all = sum(float(s.get("voters") or 0) for s in by_settle25.values())
-                denom = max(total["k25_voters"], k25_all)
-                if denom:
-                    nat["pace"] = round(nat["voters"] / denom, 3)
+                if nat.get("k25_turnout"):
+                    nat["pace"] = round(nat["turnout"] / nat["k25_turnout"], 3)
                 nat["national_source"] = "cec_total"
         except Exception:
             pass
