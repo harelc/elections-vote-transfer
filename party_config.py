@@ -1494,6 +1494,27 @@ PARTY_OVERRIDES = {
         'logo': 'images/logos/k26_haredi_public.png',
     },
     ('26', 'ק'): {'name': 'תקומה', 'description': 'תקומה. אות ק.'},
+    # Remaining K26 lists, harvested 2026-10-27 from the CEC turnout
+    # map catalog (mapvotes elections.json): official name + colour
+    # per symbol, so a real results CSV with all 37 columns displays
+    # proper names instead of raw symbols.
+    ('26', 'בד'): {'name': 'ביחד נצליח', 'color': '#C90661', 'description': 'ביחד נצליח. אותיות בד.'},
+    ('26', 'בי'): {'name': 'צומת בית ישראל', 'color': '#08C26B', 'description': 'צומת בית ישראל. אותיות בי.'},
+    ('26', 'בקר'): {'name': 'אורות השחר', 'color': '#1591DC', 'description': 'אורות השחר. אותיות בקר.'},
+    ('26', 'ה'): {'name': 'גן עדן', 'color': '#D10056', 'description': 'גן עדן. אות ה.'},
+    ('26', 'זץ'): {'name': 'ברית עולם', 'color': '#2D0000', 'description': 'ברית עולם. אותיות זץ.'},
+    ('26', 'יק'): {'name': 'גה"ת', 'color': '#FFC0DE', 'description': 'גה"ת. אותיות יק.'},
+    ('26', 'נף'): {'name': 'שמע', 'color': '#C9CAAC', 'description': 'שמע. אותיות נף.'},
+    ('26', 'נץ'): {'name': 'ביטחון אישי', 'color': '#FF84BA', 'description': 'ביטחון אישי. אותיות נץ.'},
+    ('26', 'נקי'): {'name': 'התיקון לשיטת הבחירות והממשל', 'color': '#DEC384', 'description': 'התיקון לשיטת הבחירות והממשל. אותיות נקי.'},
+    ('26', 'נר'): {'name': 'צבע שחור', 'color': '#4B5694', 'description': 'צבע שחור. אותיות נר.'},
+    ('26', 'צבי'): {'name': 'תנועת אחי', 'color': '#2F39A9', 'description': 'תנועת אחי. אותיות צבי.'},
+    ('26', 'צדק'): {'name': 'שרשר', 'color': '#C4E2F5', 'description': 'שרשר. אותיות צדק.'},
+    ('26', 'צף'): {'name': 'הפיראטים', 'color': '#8B639B', 'description': 'הפיראטים. אותיות צף.'},
+    ('26', 'קה'): {'name': 'קול הנשים', 'color': '#70FFD2', 'description': 'קול הנשים. אותיות קה.'},
+    ('26', 'קך'): {'name': 'סדר-חדש', 'color': '#F2A900', 'description': 'סדר-חדש. אותיות קך.'},
+    ('26', 'קץ'): {'name': 'משפט צדק', 'color': '#FFEDB9', 'description': 'משפט צדק. אותיות קץ.'},
+    ('26', 'רץ'): {'name': 'הקהל', 'color': '#AEEA94', 'description': 'הקהל. אותיות רץ.'},
 
     # ===== SMALL PARTY OVERRIDES (symbols reused across elections) =====
 
