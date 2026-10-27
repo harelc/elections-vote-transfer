@@ -66,6 +66,24 @@
         .gold-btn { display: flex; justify-content: center; align-items: center; width: 100%; padding: 0.85rem 1rem; border-radius: 999px; background: linear-gradient(135deg, #ffd75e, #f0b429); color: #1a1408 !important; font-weight: 800; font-size: 0.95rem; text-decoration: none; border: 1px solid #ffe08a; }
         #cc-map { height: 46vh; min-height: 280px; border-radius: 10px; overflow: hidden; }
         .maplibregl-map { background: var(--bg); }
+        /* Mode switcher (mirrors the desktop CC view switcher) */
+        .mode-switch { display: flex; gap: 0.35rem; align-items: center; overflow-x: auto; scrollbar-width: none; margin-bottom: 0.8rem; }
+        .mode-switch::-webkit-scrollbar { display: none; }
+        .mode-switch[hidden] { display: none; }
+        .mode-switch .ms-label { flex: none; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); }
+        .mode-switch a { flex: none; font-size: 0.78rem; font-weight: 600; text-decoration: none; border: 1px solid var(--border); background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 999px; padding: 0.34rem 0.7rem; }
+        .mode-switch a.gold { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+        /* Cluster icons + sheet rows: same treatment as m/geomap.html */
+        .custom-cluster { background: none !important; border: none !important; }
+        .custom-cluster .cluster-inner { width: 100%; height: 100%; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; font-weight: 600; border: 2px solid rgba(255,255,255,0.3); box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+        .cluster-count { font-size: 0.8rem; line-height: 1; text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9); }
+        .cluster-info { font-size: 0.6rem; opacity: 0.85; line-height: 1; text-shadow: 0 0 4px rgba(0,0,0,0.8), 0 0 2px rgba(0,0,0,0.9); }
+        .cluster-colocated .cluster-inner { border-style: dashed; border-color: rgba(255,255,255,0.6); }
+        .sheet-ballot-row { display: flex; align-items: center; gap: 8px; padding: 8px; border-radius: 8px; background: var(--bg-tertiary); cursor: pointer; margin-bottom: 6px; font-size: 0.85rem; color: var(--text-primary); }
+        .sheet-ballot-row .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .sheet-ballot-row .pct { margin-inline-start: auto; color: var(--text-muted); font-size: 0.75rem; }
+        .sheet-title { font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+        .sheet-sub { font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; }
         .factoid { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
         .factoid b { color: var(--accent); }
     </style>
@@ -80,6 +98,15 @@
         <div class="prov sim" id="prov" role="status">
             <span id="prov-icon">⚠</span>
             <div><b id="prov-title">…</b><div class="sub" id="prov-sub"></div></div>
+        </div>
+
+        <div class="mode-switch" id="mode-switch" hidden>
+            <span class="ms-label" id="ms-label"></span>
+            <a href="turnout.html" id="ms-day"></a>
+            <a data-mode="partial12">12%</a>
+            <a data-mode="partial17">17%</a>
+            <a data-mode="partial">45%</a>
+            <a data-mode="" id="ms-full"></a>
         </div>
 
         <section class="card" id="count-card" hidden>
@@ -124,6 +151,12 @@
         </section>
 
         <a class="gold-btn" href="../k26.html?desktop=1" id="desktop-link"></a>
+    </div>
+
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="bottom-sheet" id="bottom-sheet">
+        <div class="sheet-handle"></div>
+        <div id="sheet-content"></div>
     </div>
 
     <!-- Bottom Tabs -->
@@ -180,20 +213,42 @@
             const kind = status.kind || 'simulated';
             const sim = kind === 'simulated';
             const partial = kind === 'partial';
+            // ?preview=* rehearses the election-night layout on simulated
+            // data — it must never wear the real-results banner.
+            const rehearsal = !!PREVIEW && partial;
+            const fake = sim || rehearsal;
             // Provenance
             const prov = document.getElementById('prov');
-            prov.className = 'prov ' + (sim ? 'sim' : partial ? 'partial' : 'real');
-            document.getElementById('prov-icon').textContent = sim ? '⚠' : '●';
-            document.getElementById('prov-title').textContent = sim
-                ? (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת')
-                : partial
-                    ? (en() ? '● REAL RESULTS — partial CEC count in progress' : '● תוצאות אמת — ספירת ועדת הבחירות בעיצומה')
-                    : (en() ? '● OFFICIAL RESULTS — Central Elections Committee' : '● תוצאות רשמיות — ועדת הבחירות המרכזית');
-            document.getElementById('prov-sub').textContent = sim
-                ? (en() ? 'Knesset 26 has not happened on this page yet: a polling-calibrated simulation, replaced automatically when the CEC publishes real data.' : 'הבחירות לכנסת ה־26 טרם נערכו כאן: סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.')
-                : partial
-                    ? (en() ? 'Real ballot boxes counted so far. Figures change as the count proceeds.' : 'קלפיות אמיתיות שנספרו עד כה. הנתונים משתנים ככל שהספירה מתקדמת.')
-                    : (en() ? 'Final official K26 results as published by the CEC.' : 'תוצאות סופיות רשמיות של כנסת 26 כפי שפרסמה ועדת הבחירות.');
+            prov.className = 'prov ' + (fake ? 'sim' : partial ? 'partial' : 'real');
+            document.getElementById('prov-icon').textContent = fake ? '⚠' : '●';
+            document.getElementById('prov-title').textContent = rehearsal
+                ? (en() ? '⚠ REHEARSAL PREVIEW — simulated data, not real results' : '⚠ תצוגת חזרה — נתונים מדומים, לא תוצאות אמת')
+                : sim
+                    ? (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת')
+                    : partial
+                        ? (en() ? '● REAL RESULTS — partial CEC count in progress' : '● תוצאות אמת — ספירת ועדת הבחירות בעיצומה')
+                        : (en() ? '● OFFICIAL RESULTS — Central Elections Committee' : '● תוצאות רשמיות — ועדת הבחירות המרכזית');
+            document.getElementById('prov-sub').textContent = rehearsal
+                ? (en() ? 'A rehearsal of the count-night layout on the simulated scenario (about ' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% counted in the simulation). Nothing here is real.' : 'חזרה על תצוגת ליל הספירה מתוך התרחיש המדומה (כ־' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% נספרו בסימולציה). שום דבר כאן אינו אמיתי.')
+                : sim
+                    ? (en() ? 'Knesset 26 has not happened on this page yet: a polling-calibrated simulation, replaced automatically when the CEC publishes real data.' : 'הבחירות לכנסת ה־26 טרם נערכו כאן: סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.')
+                    : partial
+                        ? (en() ? 'Real ballot boxes counted so far. Figures change as the count proceeds.' : 'קלפיות אמיתיות שנספרו עד כה. הנתונים משתנים ככל שהספירה מתקדמת.')
+                        : (en() ? 'Final official K26 results as published by the CEC.' : 'תוצאות סופיות רשמיות של כנסת 26 כפי שפרסמה ועדת הבחירות.');
+            // Mode switcher: only while the count is simulated/rehearsed
+            // (on a real partial/official night there is one live mode).
+            const ms = document.getElementById('mode-switch');
+            if (sim || PREVIEW) {
+                ms.hidden = false;
+                document.getElementById('ms-label').textContent = en() ? 'Mode:' : 'מצב:';
+                document.getElementById('ms-day').textContent = en() ? '🗳 Election day' : '🗳 יום הבחירות';
+                document.getElementById('ms-full').textContent = en() ? 'Full count' : 'ספירה מלאה';
+                ms.querySelectorAll('[data-mode]').forEach(a => {
+                    a.classList.toggle('gold', (a.dataset.mode || '') === PREVIEW);
+                    a.href = 'k26.html' + (a.dataset.mode ? '?preview=' + a.dataset.mode : '');
+                });
+                document.getElementById('ms-full').classList.toggle('gold', !PREVIEW);
+            } else ms.hidden = true;
             // Count progress
             const cc1 = document.getElementById('count-card');
             if ((partial || kind === 'official') && status.ballots_total) {
@@ -364,19 +419,71 @@
         // by the ballot's winning party, uncounted boxes faint gray.
         // Geo rows come from command_center_26.json (geo_counted /
         // geo_uncounted), so no heavy map_26.json fetch on mobile.
-        let ccMap = null, ccMapReady = false;
-        function mapFeatures() {
+        // Interaction mirrors m/geomap.html: StationClusterLayer with
+        // finger-sized tap targets, cluster zoom, bottom sheets.
+        let ccMap = null, ccLayer = null;
+        function showSheet(html) {
+            document.getElementById('sheet-content').innerHTML = html;
+            document.getElementById('sheet-backdrop').classList.add('visible');
+            document.getElementById('bottom-sheet').classList.add('visible');
+        }
+        function hideSheet() {
+            document.getElementById('sheet-backdrop').classList.remove('visible');
+            document.getElementById('bottom-sheet').classList.remove('visible');
+        }
+        document.getElementById('sheet-backdrop').onclick = hideSheet;
+        function stationSheet(d) {
+            showSheet(`<div class="sheet-title">${i18n.settlementName ? i18n.settlementName(d.name) : d.name}</div>
+                <div class="sheet-sub">${en() ? 'Ballot' : 'קלפי'} ${d.ballot}<br>` + (d.counted
+                    ? `${en() ? 'Winner' : 'מנצחת'}: <b style="color:${colors[d.winner] || '#999'}">${name(d.winner)}</b> · ${d.pct}%`
+                    : (en() ? 'Not counted yet' : 'טרם נספרה')) + `</div>`);
+        }
+        function clusterIcon(items) {
+            const count = items.length;
+            const wins = {};
+            items.forEach(it => { if (it.station.counted) wins[it.station.winner] = (wins[it.station.winner] || 0) + 1; });
+            const top = Object.entries(wins).sort((a, b) => b[1] - a[1])[0];
+            let bg = '#4b5563', info = '';
+            if (top) {
+                const share = Math.round(100 * top[1] / count);
+                info = share + '%';
+                const topSlices = Object.entries(wins).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                let angle = 0; const stops = [];
+                topSlices.forEach(([p, n]) => { const pct = n / count * 100; stops.push(`${colors[p] || '#999'} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`); angle += pct; });
+                if (angle < 99.5) stops.push(`#4b5563 ${angle.toFixed(1)}% 100%`);
+                bg = `conic-gradient(${stops.join(', ')})`;
+            }
+            const first = items[0];
+            const colocated = items.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
+            const size = (count > 500 ? 80 : count > 200 ? 70 : count > 100 ? 60 : count > 30 ? 50 : 40) * (colocated ? 0.85 : 1);
+            return {
+                html: `<div class="cluster-inner" style="background:${bg}"><div class="cluster-count">${count}</div><div class="cluster-info">${info}</div></div>`,
+                className: 'custom-cluster' + (colocated ? ' cluster-colocated' : ''), size: Math.round(size)
+            };
+        }
+        function mapItems() {
             const nc = (cc && cc.nowcast) || {};
-            const feats = [];
-            (nc.geo_counted || []).forEach(a => feats.push({
-                type: 'Feature', geometry: { type: 'Point', coordinates: [a[3], a[2]] },
-                properties: { c: colors[a[4]] || '#999', name: a[0], ballot: a[1], winner: a[4], pct: a[5], counted: 1 }
-            }));
-            (nc.geo_uncounted || []).forEach(a => feats.push({
-                type: 'Feature', geometry: { type: 'Point', coordinates: [a[3], a[2]] },
-                properties: { c: '#4b5563', name: a[0], ballot: a[1], winner: '', pct: null, counted: 0 }
-            }));
-            return { type: 'FeatureCollection', features: feats };
+            const items = [];
+            const piles = new Map();
+            const push = (a, d) => {
+                const rec = { lng: a[3], lat: a[2], origLng: a[3], origLat: a[2], color: d.counted ? (colors[d.winner] || '#999') : '#4b5563', radius: d.counted ? 5 : 4, station: d };
+                items.push(rec);
+                const key = a[2].toFixed(5) + ',' + a[3].toFixed(5);
+                if (!piles.has(key)) piles.set(key, []);
+                piles.get(key).push(rec);
+            };
+            (nc.geo_counted || []).forEach(a => push(a, { name: a[0], ballot: a[1], winner: a[4], pct: a[5], counted: 1 }));
+            (nc.geo_uncounted || []).forEach(a => push(a, { name: a[0], ballot: a[1], winner: '', pct: null, counted: 0 }));
+            // Spread colocated piles so each box stays tappable
+            piles.forEach(group => {
+                if (group.length < 2) return;
+                group.forEach((rec, i) => {
+                    const angle = (2 * Math.PI * i) / group.length;
+                    rec.lat += Math.sin(angle) * 0.00012;
+                    rec.lng += Math.cos(angle) * 0.00012;
+                });
+            });
+            return items;
         }
         function renderMap() {
             const card = document.getElementById('map-card');
@@ -385,41 +492,30 @@
             card.hidden = false;
             document.getElementById('map-title').textContent = en() ? 'Counted ballots map' : 'מפת הקלפיות שנספרו';
             document.getElementById('map-note').textContent = en()
-                ? 'Coloured by the winning party in each counted box; gray = not counted yet. Tap a dot for details.'
-                : 'צבע לפי המפלגה המנצחת בכל קלפי שנספרה; אפור = טרם נספרה. הקשה על נקודה לפרטים.';
+                ? 'Coloured by the winning party in each counted box; gray = not counted yet. Tap a dot or cluster.'
+                : 'צבע לפי המפלגה המנצחת בכל קלפי שנספרה; אפור = טרם נספרה. הקשה על נקודה או מקבץ לפרטים.';
             if (!ccMap) {
                 ccMap = createMap('cc-map', {
                     center: [34.9, 31.4], zoom: 7.4, minZoom: 6.5, maxZoom: 16,
                     basemap: 'dark_matter', zoomPosition: 'bottom-right'
                 });
-                ccMap.on('load', () => {
-                    ccMap.addSource('boxes', { type: 'geojson', data: mapFeatures() });
-                    ccMap.addLayer({
-                        id: 'boxes', type: 'circle', source: 'boxes',
-                        paint: {
-                            'circle-color': ['get', 'c'],
-                            'circle-radius': ['interpolate', ['linear'], ['zoom'], 7, 2.2, 11, 4.5, 14, 7],
-                            'circle-opacity': ['case', ['==', ['get', 'counted'], 1], 0.92, 0.45],
-                            'circle-stroke-width': 0
-                        }
-                    });
-                    ccMapReady = true;
-                    ccMap.on('click', 'boxes', e => {
-                        const p = e.features[0].properties;
-                        new maplibregl.Popup({ closeButton: true, maxWidth: '250px' })
-                            .setLngLat(e.lngLat)
-                            .setHTML(`<b>${p.name}</b> · ${en() ? 'ballot' : 'קלפי'} ${p.ballot}<br>` + (p.counted
-                                ? `${en() ? 'Winner' : 'מנצחת'}: <b>${name(p.winner)}</b> · ${p.pct}%`
-                                : (en() ? 'Not counted yet' : 'טרם נספרה')))
-                            .addTo(ccMap);
-                    });
-                    ccMap.on('mouseenter', 'boxes', () => ccMap.getCanvas().style.cursor = 'pointer');
-                    ccMap.on('mouseleave', 'boxes', () => ccMap.getCanvas().style.cursor = '');
+                ccLayer = new StationClusterLayer(ccMap, {
+                    clusterHTML: (stations) => clusterIcon(stations),
+                    onClusterClick: (stations, lng, lat, clusterId) => {
+                        const first = stations[0];
+                        const colocated = stations.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
+                        if (colocated) {
+                            showSheet(`<div class="sheet-title">${i18n.settlementName ? i18n.settlementName(first.station.name) : first.station.name}</div>
+                                <div class="sheet-sub" style="margin-bottom:8px">${stations.length} ${en() ? 'ballot boxes at this venue — tap one:' : 'קלפיות באותו מקום — הקשה על אחת:'}</div>` +
+                                stations.map((it, i) => `<div class="sheet-ballot-row" data-row="${i}"><span class="dot" style="background:${it.color}"></span>${en() ? 'Ballot' : 'קלפי'} ${it.station.ballot}<span class="pct">${it.station.counted ? name(it.station.winner) + ' · ' + it.station.pct + '%' : (en() ? 'not counted' : 'טרם נספרה')}</span></div>`).join(''));
+                            document.querySelectorAll('#sheet-content [data-row]').forEach(row => row.onclick = () => stationSheet(stations[+row.dataset.row].station));
+                        } else ccLayer.zoomCluster(clusterId, lng, lat);
+                    },
+                    onStationClick: (item) => stationSheet(item.station)
                 });
-            } else if (ccMapReady) {
-                ccMap.getSource('boxes').setData(mapFeatures());
-                ccMap.resize();
             }
+            ccLayer.setStations(mapItems());
+            ccMap.resize();
         }
 
         function renderNowcast() {
@@ -477,6 +573,7 @@
     </script>
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
     <script src="../basemap.js"></script>
+    <script src="../station-clusters.js"></script>
     <script src="../webinar-modal.js"></script>
 </body>
 </html>

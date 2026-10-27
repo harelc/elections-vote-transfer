@@ -138,6 +138,7 @@
         tab_tsne:              { he: 'פיזור', en: 'Cluster' },
         tab_scatter:           { he: 'השוואה', en: 'Compare' },
         tab_dhondt:            { he: 'מנדטים', en: 'Seats' },
+        tab_k26:               { he: 'מרכז בקרה', en: 'Command centre' },
 
         /* ── Sankey page ── */
         from_election:         { he: 'מבחירות', en: 'From election' },
@@ -1025,6 +1026,23 @@
         }, 3000);
     }
 
+    /** Command-centre pill at the start of every mobile tab bar. */
+    function injectMobileTabCC() {
+        if (!SHOW_E26) return;
+        document.querySelectorAll('.tab-bar').forEach(bar => {
+            if (bar.querySelector('.tab-cc')) return;
+            const a = document.createElement('a');
+            a.className = 'tab-cc';
+            a.href = 'k26.html';
+            a.innerHTML = '<span class="tab-icon">🎛️</span><span data-i18n="tab_k26">' + t('tab_k26') + '</span>';
+            bar.insertBefore(a, bar.firstChild);
+            // RTL tab bars can open scrolled to the far end; start at
+            // the beginning (the command-centre pill) instead.
+            bar.scrollLeft = 0;
+            requestAnimationFrame(() => { bar.scrollLeft = 0; });
+        });
+    }
+
     /** Inject the Buy Me a Coffee button. */
     function renderBMC() {
         if (document.querySelector('.bmc-button')) return;
@@ -1293,6 +1311,11 @@
                 font-weight: 500;
             }
             #e26-modal button:hover { background: #ea580c; }
+            /* Phones carry their own provenance banners — the floating
+               pill only crowds the top bar there. */
+            @media (max-width: 760px) {
+                #e26-widget { display: none !important; }
+            }
         `;
         document.head.appendChild(css);
 
@@ -1499,10 +1522,11 @@
 
     // Run init as early as possible
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); });
+        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); injectMobileTabCC(); });
     } else {
         init();
         setupE26Widget();
+        injectMobileTabCC();
     }
 
     /* ── Public API ── */

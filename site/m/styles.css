@@ -148,6 +148,18 @@ html, body {
     color: var(--on-accent);
 }
 
+.tab-bar a.tab-cc {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+    /* Pinned at the start edge: always visible, no scrolling to it. */
+    position: sticky;
+    inset-inline-start: 0;
+    z-index: 1;
+    box-shadow: 0 0 10px rgba(0,0,0,0.45);
+}
+
 .tab-bar a:active:not(.active) {
     background: var(--bg-hover);
 }
