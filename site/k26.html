@@ -110,13 +110,13 @@
         /* Vertical legend overlaid on the map itself: low at the bottom,
            high at the top, whatever the page direction. */
         .geomap-legend { position:absolute; top:10px; inset-inline-end:10px; z-index:6; pointer-events:none;
-            display:flex; flex-direction:column; align-items:center; gap:.3rem;
-            background:rgba(13,16,22,.78); border:1px solid rgba(255,255,255,.12); border-radius:8px;
-            padding:.45rem .4rem; backdrop-filter:blur(3px); }
+            display:flex; flex-direction:column; align-items:center; gap:.2rem;
+            background:rgba(13,16,22,.78); border:1px solid rgba(255,255,255,.12); border-radius:7px;
+            padding:.32rem .3rem; backdrop-filter:blur(3px); }
         .geomap-legend[hidden] { display:none; }
-        .geomap-legend-title { font-size:.68rem; line-height:1.3; color:var(--text-primary); max-width:126px; text-align:center; }
-        .geomap-legend-bar { width:12px; height:180px; border-radius:6px; }
-        .geomap-legend-val { font-size:.7rem; color:var(--text-muted); direction:ltr; }
+        .geomap-legend-title { font-size:.6rem; line-height:1.25; color:var(--text-primary); max-width:92px; text-align:center; }
+        .geomap-legend-bar { width:9px; height:108px; border-radius:5px; }
+        .geomap-legend-val { font-size:.62rem; color:var(--text-muted); direction:ltr; }
         /* Election-day turnout view (?turnout=1 / status kind=turnout):
            pre-results, so every result-bearing pane is hidden and the
            geomap carries only the turnout layers. */
@@ -1529,7 +1529,7 @@
                 mn.textContent = scale ? pct(scale.lo) : ''; mx.textContent = scale ? pct(scale.hi) : ''; return;
             }
             title.textContent = isPace
-                ? (en() ? 'K25 turnout recovery — a ratio, not a turnout: voters so far ÷ twin’s final K25 voters' : 'שחזור שיעור ההצבעה של 25 — יחס, לא אחוז הצבעה: מצביעים עד כה ÷ מצביעי הקלפי התאומה הסופיים ב־25')
+                ? (en() ? 'K25 turnout recovery (ratio)' : 'שחזור הצבעה מ־25 (יחס)')
                 : (en() ? 'Turnout so far (election day)' : 'אחוז הצבעה עד כה (יום הבחירות)');
             // Fixed bands, low at the bottom -> high at the top:
             // turnout 0% red -> 90% green (see tdTurnoutColor);
