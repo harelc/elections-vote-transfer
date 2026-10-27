@@ -1771,7 +1771,20 @@
         document.getElementById('geomap-tooltip').addEventListener('mouseenter', () => clearTimeout(geoTipTimer));
         document.getElementById('geomap-tooltip').addEventListener('mouseleave', scheduleHideGeoTooltip);
         geoLayer.setStations(items);
-        document.querySelectorAll('.geomap-mode').forEach(b => b.addEventListener('click', () => { geoMode = b.dataset.gmode; applyGeoMode(); }));
+        document.querySelectorAll('.geomap-mode').forEach(b => b.addEventListener('click', () => {
+            geoMode = b.dataset.gmode;
+            // Flipping the map layer between turnout and recovery also
+            // flips what the turnout pane's bars rank & paint by, so
+            // the two never tell different stories. (The pane's own
+            // metric toggle can still override it afterwards.)
+            if (geoMode === 'td_turnout' || geoMode === 'td_pace') {
+                tdMetric = geoMode === 'td_pace' ? 'pace' : 'turnout';
+                applyGeoMode();
+                if (TURNOUT_ACTIVE) renderTurnoutDay();
+                return;
+            }
+            applyGeoMode();
+        }));
         const partySel = document.getElementById('geomap-party');
         if (partySel) partySel.addEventListener('change', () => { geoPartyName = partySel.value; geoMode = 'party'; applyGeoMode(); });
         applyGeoMode();
