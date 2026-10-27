@@ -84,6 +84,23 @@
             text-align: start;
         }
         .m-card:active { border-color: var(--accent); }
+        /* Election-day turnout card: gold-framed, like the desktop
+           dashboard's featured command-centre card. */
+        .m-card-featured {
+            border: 2px solid var(--accent);
+            background: linear-gradient(160deg, rgba(240,180,41,.16), var(--bg-card) 60%);
+            box-shadow: 0 8px 24px rgba(240,180,41,.18);
+        }
+        .m-card-badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #1a1408;
+            font-size: 0.68rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.14rem 0.55rem;
+            margin-bottom: 0.3rem;
+        }
         .m-card-text { min-width: 0; }
         .m-card-title {
             font-size: 0.95rem;
@@ -258,7 +275,11 @@
         document.getElementById('info-btn').onclick = showInfo;
         document.getElementById('info-backdrop').onclick = hideInfo;
 
+        // Election day only (Asia/Jerusalem date): the live-turnout
+        // card self-expires after 27 Oct 2026 instead of lingering.
+        const isElectionDay = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Jerusalem' }) === '2026-10-27';
         const cards = [
+            ...(i18n.SHOW_E26 && isElectionDay ? [{ i18n_title: 'card_turnout_title', i18n_desc: 'card_turnout_desc', href: '../k26.html?turnout=1', featured: true }] : []),
             { icon: '📚', i18n_title: 'nav_primer',    i18n_desc: 'card_primer_desc',    href: '../primer.html' },
             { icon: '🗺️', i18n_title: 'nav_geomap',    i18n_desc: 'card_geomap_desc',    href: 'geomap.html' },
             { icon: '🔵', i18n_title: 'nav_tsne',      i18n_desc: 'card_tsne_desc',      href: 'tsne.html' },
@@ -278,13 +299,14 @@
         const container = document.getElementById('cards');
         cards.forEach(c => {
             const a = document.createElement('a');
-            a.className = 'm-card';
+            a.className = 'm-card' + (c.featured ? ' m-card-featured' : '');
             // K26 is on by default everywhere; only the opt-out travels in the URL
             a.href = c.href.indexOf('animation.html') !== -1 && !i18n.SHOW_E26
                 ? c.href + (c.href.includes('?') ? '&' : '?') + 'e26=0'
                 : c.href;
             a.innerHTML =
                 '<div class="m-card-text">' +
+                (c.featured ? '<span class="m-card-badge" data-i18n="card_k26_badge">' + i18n.t('card_k26_badge') + '</span>' : '') +
                 '<div class="m-card-title" data-i18n="' + c.i18n_title + '">' + i18n.t(c.i18n_title) + '</div>' +
                 '<div class="m-card-desc" data-i18n="' + c.i18n_desc + '">' + i18n.t(c.i18n_desc) + '</div>' +
                 '</div>';
