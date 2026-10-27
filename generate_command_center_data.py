@@ -822,6 +822,45 @@ def nowcast(status, sectors, target_share=None, force=False):
     }
 
 
+def geo_all():
+    """Every K26 ballot box with what the mobile map/sheet needs:
+    [name, ballot, lat, lng, winner_idx, winner_pct, voters, eligible,
+     turnout, venue, socio_cluster, tsne_x, tsne_y, [[party_idx, pct]...top7]]
+    Party indices refer to the returned parties list. Built from tsne_26
+    (in a real partial count: counted boxes only) + station coordinates."""
+    tsne26 = load("tsne_26.json", {}) or {}
+    parties = [{"name": p["name"], "color": p.get("color", "#666")}
+               for p in tsne26.get("parties", [])]
+    pidx = {p["name"]: i for i, p in enumerate(parties)}
+    coords = (load("station_coordinates.json", {}) or {}).get("stations", {})
+    socio = load("station_socioeconomic.json", {}) or {}
+    map26 = load("map_26.json", {}) or {}
+    settle_coords = {normalize_name(s["name"]): (s["lat"], s["lng"])
+                     for s in map26.get("settlements", []) if s.get("lat") is not None}
+    rows = []
+    for s in tsne26.get("stations", []):
+        n, b = s["n"], str(s["b"])
+        keys = [f"{n}|{b}"] + ([f"{n}|{b}.0"] if "." not in b else [])
+        cd = next((coords[k] for k in keys if k in coords), None)
+        if cd and cd.get("lat") is not None:
+            lat, lng = cd["lat"], cd["lng"]
+        elif normalize_name(n) in settle_coords:
+            lat, lng = settle_coords[normalize_name(n)]
+        else:
+            continue
+        props = sorted((s.get("p") or {}).items(), key=lambda kv: -kv[1])
+        top = [[pidx[name], round(float(pct), 1)] for name, pct in props[:7]
+               if name in pidx and pct > 0]
+        if not top:
+            continue
+        se = next((socio[k] for k in keys if k in socio), None)
+        rows.append([n, b, round(lat, 5), round(lng, 5), top[0][0], top[0][1],
+                     s.get("v", 0), s.get("e", 0), s.get("t", 0), s.get("l", ""),
+                     (se or {}).get("cluster"), round(s.get("x", 0), 2),
+                     round(s.get("y", 0), 2), top])
+    return {"parties": parties, "rows": rows}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--target-share", type=float, default=None,
@@ -850,6 +889,7 @@ def main():
         "factoids": factoids(map25, map26, sectors, wiki.get("26", []), names_en, party_en),
         "bellwether": bellwether(names_en),
         "nowcast": nowcast(status, sectors, args.target_share),
+        "geo_all": geo_all(),
     }
     path = SITE_DATA / args.out
     path.write_text(json.dumps(out, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")

@@ -65,6 +65,14 @@
         #sankey-el svg { width: 100%; height: auto; display: block; }
         .gold-btn { display: flex; justify-content: center; align-items: center; width: 100%; padding: 0.85rem 1rem; border-radius: 999px; background: linear-gradient(135deg, #ffd75e, #f0b429); color: #1a1408 !important; font-weight: 800; font-size: 0.95rem; text-decoration: none; border: 1px solid #ffe08a; }
         #cc-map { height: 46vh; min-height: 280px; border-radius: 10px; overflow: hidden; }
+        .geo-modes { display: flex; gap: 0.35rem; overflow-x: auto; scrollbar-width: none; margin-bottom: 0.5rem; }
+        .geo-modes::-webkit-scrollbar { display: none; }
+        .geo-modes button { flex: none; font-family: inherit; font-size: 0.78rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 999px; padding: 0.36rem 0.7rem; }
+        .geo-modes button.gold { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+        .geo-party-select { width: 100%; font-family: inherit; font-size: 0.85rem; font-weight: 600; background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 8px; padding: 0.45rem 0.5rem; margin-bottom: 0.5rem; }
+        .geo-party-select[hidden] { display: none; }
+        .legend { display: flex; align-items: center; gap: 0.45rem; margin-top: 0.5rem; font-size: 0.7rem; color: var(--text-muted); }
+        .legend .grad { flex: 1; height: 9px; border-radius: 999px; background: rgba(255,255,255,.08); }
         .maplibregl-map { background: var(--bg); }
         /* Mode switcher (mirrors the desktop CC view switcher) */
         .mode-switch { display: flex; gap: 0.35rem; align-items: center; overflow-x: auto; scrollbar-width: none; margin-bottom: 0.8rem; }
@@ -129,7 +137,16 @@
 
         <section class="card" id="map-card" hidden>
             <h3 id="map-title"></h3>
+            <div class="geo-modes" id="geo-modes">
+                <button data-gmode="winner"></button>
+                <button data-gmode="party"></button>
+                <button data-gmode="turnout"></button>
+                <button data-gmode="socio"></button>
+                <button data-gmode="embed"></button>
+            </div>
+            <select class="geo-party-select" id="geo-party" hidden></select>
             <div id="cc-map"></div>
+            <div class="legend" id="geo-legend"><span id="legend-lo"></span><div class="grad" id="legend-grad"></div><span id="legend-hi"></span></div>
             <div class="note" id="map-note" style="margin-top:.4rem"></div>
         </section>
 
@@ -197,12 +214,12 @@
             results = wiki['26'] || [];
             transferData = transfer;
             (transfer && transfer.nodes_to || []).forEach(n => { colors[n.name] = n.color; if (n.info) enNames[n.name] = n.info.name_en || n.name; });
-            if (status.kind === 'partial' || PREVIEW) {
-                cc = await fetch(CC_FILE, F).then(r => r.ok ? r.json() : null).catch(() => null);
-                if (PREVIEW && cc && cc.nowcast) {
-                    const nc = cc.nowcast;
-                    status = { kind: 'partial', ballots: nc.counted_ballots, ballots_total: nc.roster_ballots, as_of: new Date().toISOString() };
-                }
+            // The command-center payload also carries geo_all (every
+            // ballot box for the map), so fetch it in every mode.
+            cc = await fetch(CC_FILE, F).then(r => r.ok ? r.json() : null).catch(() => null);
+            if (PREVIEW && cc && cc.nowcast) {
+                const nc = cc.nowcast;
+                status = { kind: 'partial', ballots: nc.counted_ballots, ballots_total: nc.roster_ballots, as_of: new Date().toISOString() };
             }
             render();
         }
@@ -415,13 +432,68 @@
                 .text(d => name(d.name));
         }
 
-        // Counted-ballot map (partial count only): counted dots coloured
-        // by the ballot's winning party, uncounted boxes faint gray.
-        // Geo rows come from command_center_26.json (geo_counted /
-        // geo_uncounted), so no heavy map_26.json fetch on mobile.
+        // Ballot map in every mode, from geo_all in the command-center
+        // payload (no heavy tsne/coordinates fetch). Layers mirror the
+        // mobile geomap: winner / party support / turnout / socio-
+        // economic cluster / voting-pattern embed. During a partial
+        // count, uncounted boxes stay faint gray in every layer.
         // Interaction mirrors m/geomap.html: StationClusterLayer with
         // finger-sized tap targets, cluster zoom, bottom sheets.
-        let ccMap = null, ccLayer = null;
+        let ccMap = null, ccLayer = null, geoMode = 'winner', geoPartyIdx = 0, embedRange = null;
+        const SOCIO_COLORS = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
+        function hexRgb(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+        function interpHex(c1, c2, t) {
+            const a = hexRgb(c1), b = hexRgb(c2);
+            return `rgb(${Math.round(a[0] + (b[0] - a[0]) * t)},${Math.round(a[1] + (b[1] - a[1]) * t)},${Math.round(a[2] + (b[2] - a[2]) * t)})`;
+        }
+        function lighten(color, f) {
+            const [r, g, b] = hexRgb(color);
+            return `rgb(${Math.round(r + (255 - r) * f)},${Math.round(g + (255 - g) * f)},${Math.round(b + (255 - b) * f)})`;
+        }
+        function turnoutCol(t) {
+            if (t < 65) return interpHex('#ef4444', '#fbbf24', Math.max(0, Math.min(1, (t - 40) / 25)));
+            return interpHex('#fbbf24', '#10b981', Math.max(0, Math.min(1, (t - 65) / 25)));
+        }
+        function embedRGB(nx, ny) {
+            const dx = nx - 0.5, dy = ny - 0.5;
+            const r = Math.min(1, Math.hypot(dx, dy) * Math.SQRT2);
+            let h = Math.atan2(dy, dx) / (Math.PI * 2); if (h < 0) h += 1;
+            const s = 0.92 * r, v = 0.96;
+            const i = Math.floor(h * 6), f = h * 6 - i;
+            const p = v * (1 - s), q = v * (1 - f * s), t2 = v * (1 - (1 - f) * s);
+            return [[v, t2, p], [q, v, p], [p, v, t2], [p, q, v], [t2, p, v], [v, p, q]][i % 6].map(c => Math.round(c * 255));
+        }
+        function embedCol(d) {
+            if (!embedRange || d.x == null) return '#6b7280';
+            const { minX, maxX, minY, maxY } = embedRange;
+            return `rgb(${embedRGB((d.x - minX) / (maxX - minX), (d.y - minY) / (maxY - minY)).join(',')})`;
+        }
+        function partyPct(d, idx) {
+            const hit = (d.top || []).find(([i]) => i === idx);
+            return hit ? hit[1] : 0;
+        }
+        let partyScaleCache = {};
+        function partyScale(idx) {
+            if (partyScaleCache[idx]) return partyScaleCache[idx];
+            const vals = geoRows().map(a => { const h = (a[13] || []).find(([i]) => i === idx); return h ? h[1] : 0; }).sort((a, b) => a - b);
+            const p95 = vals.length ? vals[Math.floor(vals.length * 0.95)] : 50;
+            partyScaleCache[idx] = Math.max(10, p95);
+            return partyScaleCache[idx];
+        }
+        function geoParties() { return (cc && cc.geo_all && cc.geo_all.parties) || []; }
+        function geoRows() { return (cc && cc.geo_all && cc.geo_all.rows) || []; }
+        function stationColor(d) {
+            if (!d.counted) return '#4b5563';
+            const parties = geoParties();
+            if (geoMode === 'turnout') return turnoutCol(d.t || 0);
+            if (geoMode === 'socio') return d.cluster ? SOCIO_COLORS[Math.min(10, Math.max(1, d.cluster)) - 1] : '#374151';
+            if (geoMode === 'embed') return embedCol(d);
+            if (geoMode === 'party') {
+                const col = (parties[geoPartyIdx] || {}).color || '#999';
+                return interpHex(lighten(col, 0.85), col, Math.min(partyPct(d, geoPartyIdx) / partyScale(geoPartyIdx), 1));
+            }
+            return (parties[d.winnerIdx] || {}).color || '#999';
+        }
         function showSheet(html) {
             document.getElementById('sheet-content').innerHTML = html;
             document.getElementById('sheet-backdrop').classList.add('visible');
@@ -432,27 +504,75 @@
             document.getElementById('bottom-sheet').classList.remove('visible');
         }
         document.getElementById('sheet-backdrop').onclick = hideSheet;
+        // Same fuller card as m/geomap.html's station sheet.
         function stationSheet(d) {
-            showSheet(`<div class="sheet-title">${i18n.settlementName ? i18n.settlementName(d.name) : d.name}</div>
-                <div class="sheet-sub">${en() ? 'Ballot' : 'קלפי'} ${d.ballot}<br>` + (d.counted
-                    ? `${en() ? 'Winner' : 'מנצחת'}: <b style="color:${colors[d.winner] || '#999'}">${name(d.winner)}</b> · ${d.pct}%`
-                    : (en() ? 'Not counted yet' : 'טרם נספרה')) + `</div>`);
+            const parties = geoParties();
+            if (!d.counted) {
+                showSheet(`<div class="sheet-title">${i18n.settlementName(d.name)}</div>
+                    <div class="sheet-sub">${en() ? 'Ballot' : 'קלפי'} ${d.ballot}<br>${en() ? 'Not counted yet' : 'טרם נספרה'}</div>`);
+                return;
+            }
+            const partyHtml = (d.top || []).map(([idx, pct]) => {
+                const p = parties[idx] || {};
+                return `<div class="party-row">
+                    <span class="party-dot" style="background:${p.color || '#939aab'}"></span>
+                    <span class="party-name">${i18n.partyName(p.name || '')}</span>
+                    <span class="party-pct">${Math.round(pct)}%</span>
+                    <div class="party-bar"><div class="party-bar-fill" style="width:${pct}%;background:${p.color || '#939aab'}"></div></div>
+                </div>`;
+            }).join('');
+            showSheet(`
+                <div style="font-weight:600;font-size:1rem;margin-bottom:2px;">${i18n.settlementName(d.name)}</div>
+                <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">
+                    ${en() ? 'Ballot' : 'קלפי'} ${d.ballot}${d.venue ? ' · ' + d.venue : ''}${d.cluster ? ' · ' + (en() ? 'socioeconomic cluster' : 'אשכול חברתי־כלכלי') + ' ' + d.cluster : ''}
+                </div>
+                <div class="stat-grid">
+                    <span class="label">${en() ? 'Eligible' : 'בעלי זכות'}</span><span class="value">${fmt(d.e)}</span>
+                    <span class="label">${en() ? 'Voted' : 'הצביעו'}</span><span class="value">${fmt(d.v)}</span>
+                    <span class="label">${en() ? 'Turnout' : 'אחוז הצבעה'}</span><span class="value">${d.t}%</span>
+                </div>
+                ${partyHtml}
+                <div style="margin-top:10px;">
+                    <a href="settlement.html?name=${encodeURIComponent(d.name)}" style="color:#f0b429;text-decoration:none;font-size:0.85em;">${en() ? 'Settlement profile' : 'לפרופיל היישוב'} &rarr;</a>
+                </div>`);
         }
         function clusterIcon(items) {
             const count = items.length;
-            const wins = {};
-            items.forEach(it => { if (it.station.counted) wins[it.station.winner] = (wins[it.station.winner] || 0) + 1; });
-            const top = Object.entries(wins).sort((a, b) => b[1] - a[1])[0];
+            const countedItems = items.filter(it => it.station.counted);
             let bg = '#4b5563', info = '';
-            if (top) {
-                const share = Math.round(100 * top[1] / count);
-                info = share + '%';
-                const topSlices = Object.entries(wins).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            const parties = geoParties();
+            if (countedItems.length && geoMode === 'winner') {
+                const wins = {};
+                countedItems.forEach(it => wins[it.station.winnerIdx] = (wins[it.station.winnerIdx] || 0) + 1);
+                const sorted = Object.entries(wins).sort((a, b) => b[1] - a[1]);
+                info = Math.round(100 * sorted[0][1] / count) + '%';
                 let angle = 0; const stops = [];
-                topSlices.forEach(([p, n]) => { const pct = n / count * 100; stops.push(`${colors[p] || '#999'} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`); angle += pct; });
+                sorted.slice(0, 5).forEach(([idx, n]) => { const pct = n / count * 100; stops.push(`${(parties[idx] || {}).color || '#999'} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`); angle += pct; });
                 if (angle < 99.5) stops.push(`#4b5563 ${angle.toFixed(1)}% 100%`);
                 bg = `conic-gradient(${stops.join(', ')})`;
+            } else if (countedItems.length && geoMode === 'turnout') {
+                let sv = 0, se = 0;
+                countedItems.forEach(it => { sv += it.station.v || 0; se += it.station.e || 0; });
+                const avg = se ? Math.round(100 * sv / se) : 0;
+                bg = turnoutCol(avg); info = avg + '%';
+            } else if (countedItems.length && geoMode === 'party') {
+                let sv = 0, sw = 0;
+                countedItems.forEach(it => { sv += partyPct(it.station, geoPartyIdx) * (it.station.v || 0); sw += it.station.v || 0; });
+                const avg = sw ? sv / sw : 0;
+                const col = (parties[geoPartyIdx] || {}).color || '#999';
+                bg = interpHex(lighten(col, 0.85), col, Math.min(avg / partyScale(geoPartyIdx), 1));
+                info = Math.round(avg) + '%';
+            } else if (countedItems.length && geoMode === 'socio') {
+                const counts = {};
+                countedItems.forEach(it => { if (it.station.cluster) counts[it.station.cluster] = (counts[it.station.cluster] || 0) + 1; });
+                const dom = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+                if (dom) { bg = SOCIO_COLORS[Math.min(10, Math.max(1, +dom[0])) - 1]; info = dom[0]; }
+            } else if (countedItems.length && geoMode === 'embed') {
+                let sx = 0, sy = 0;
+                countedItems.forEach(it => { sx += it.station.x || 0; sy += it.station.y || 0; });
+                bg = embedCol({ x: sx / countedItems.length, y: sy / countedItems.length });
             }
+            if (bg.startsWith('rgb')) bg = bg.replace('rgb', 'rgba').replace(')', ',0.85)');
             const first = items[0];
             const colocated = items.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
             const size = (count > 500 ? 80 : count > 200 ? 70 : count > 100 ? 60 : count > 30 ? 50 : 40) * (colocated ? 0.85 : 1);
@@ -463,17 +583,31 @@
         }
         function mapItems() {
             const nc = (cc && cc.nowcast) || {};
+            const partial = status.kind === 'partial';
+            const countedKeys = new Set((nc.geo_counted || []).map(a => a[0] + '|' + a[1]));
             const items = [];
             const piles = new Map();
-            const push = (a, d) => {
-                const rec = { lng: a[3], lat: a[2], origLng: a[3], origLat: a[2], color: d.counted ? (colors[d.winner] || '#999') : '#4b5563', radius: d.counted ? 5 : 4, station: d };
+            const seen = new Set();
+            const push = (lat, lng, d) => {
+                const rec = { lng, lat, origLng: lng, origLat: lat, color: stationColor(d), radius: d.counted ? 5 : 4, station: d };
                 items.push(rec);
-                const key = a[2].toFixed(5) + ',' + a[3].toFixed(5);
+                const key = lat.toFixed(5) + ',' + lng.toFixed(5);
                 if (!piles.has(key)) piles.set(key, []);
                 piles.get(key).push(rec);
             };
-            (nc.geo_counted || []).forEach(a => push(a, { name: a[0], ballot: a[1], winner: a[4], pct: a[5], counted: 1 }));
-            (nc.geo_uncounted || []).forEach(a => push(a, { name: a[0], ballot: a[1], winner: '', pct: null, counted: 0 }));
+            geoRows().forEach(a => {
+                const counted = !partial || countedKeys.has(a[0] + '|' + a[1]);
+                seen.add(a[0] + '|' + a[1]);
+                push(a[2], a[3], {
+                    name: a[0], ballot: a[1], winnerIdx: a[4], winnerPct: a[5],
+                    v: a[6], e: a[7], t: a[8], venue: a[9] || '', cluster: a[10],
+                    x: a[11], y: a[12], top: a[13] || [], counted: counted ? 1 : 0
+                });
+            });
+            if (partial) (nc.geo_uncounted || []).forEach(a => {
+                if (seen.has(a[0] + '|' + a[1])) return;
+                push(a[2], a[3], { name: a[0], ballot: a[1], counted: 0, top: [] });
+            });
             // Spread colocated piles so each box stays tappable
             piles.forEach(group => {
                 if (group.length < 2) return;
@@ -485,15 +619,36 @@
             });
             return items;
         }
+        function paintMap() { if (ccLayer) ccLayer.setStations(mapItems()); }
         function renderMap() {
             const card = document.getElementById('map-card');
-            const nc = cc && cc.nowcast;
-            if (!nc || status.kind !== 'partial' || !(nc.geo_counted || []).length) { card.hidden = true; return; }
+            if (!geoRows().length) { card.hidden = true; return; }
             card.hidden = false;
-            document.getElementById('map-title').textContent = en() ? 'Counted ballots map' : 'מפת הקלפיות שנספרו';
-            document.getElementById('map-note').textContent = en()
-                ? 'Coloured by the winning party in each counted box; gray = not counted yet. Tap a dot or cluster.'
-                : 'צבע לפי המפלגה המנצחת בכל קלפי שנספרה; אפור = טרם נספרה. הקשה על נקודה או מקבץ לפרטים.';
+            const partial = status.kind === 'partial';
+            document.getElementById('map-title').textContent = partial
+                ? (en() ? 'Counted ballots map' : 'מפת הקלפיות שנספרו')
+                : (en() ? 'Ballot map — results' : 'מפת קלפיות — תוצאות');
+            const labels = { winner: en() ? 'Winner' : 'מנצחת', party: en() ? 'Party support' : 'תמיכת מפלגה', turnout: en() ? 'Turnout' : 'אחוז הצבעה', socio: en() ? 'Socioeconomic' : 'חברתי־כלכלי', embed: en() ? 'Voting pattern' : 'דפוס הצבעה' };
+            document.querySelectorAll('#geo-modes [data-gmode]').forEach(b => {
+                b.textContent = labels[b.dataset.gmode];
+                b.classList.toggle('gold', b.dataset.gmode === geoMode);
+                b.onclick = () => { geoMode = b.dataset.gmode; renderMap(); };
+            });
+            const sel = document.getElementById('geo-party');
+            sel.hidden = geoMode !== 'party';
+            if (geoMode === 'party') {
+                sel.innerHTML = geoParties().map((p, i) => `<option value="${i}" ${i === geoPartyIdx ? 'selected' : ''}>${name(p.name)}</option>`).join('');
+                sel.onchange = () => { geoPartyIdx = +sel.value; paintMap(); renderLegend(); };
+            }
+            renderLegend();
+            document.getElementById('map-note').textContent = (partial
+                ? (en() ? 'Gray = not counted yet. ' : 'אפור = טרם נספרה. ') : '')
+                + (en() ? 'Tap a dot or cluster for ballot details.' : 'הקשה על נקודה או מקבץ לפרטי הקלפי.');
+            if (!embedRange) {
+                let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+                geoRows().forEach(a => { minX = Math.min(minX, a[11]); maxX = Math.max(maxX, a[11]); minY = Math.min(minY, a[12]); maxY = Math.max(maxY, a[12]); });
+                embedRange = { minX, maxX, minY, maxY };
+            }
             if (!ccMap) {
                 ccMap = createMap('cc-map', {
                     center: [34.9, 31.4], zoom: 7.4, minZoom: 6.5, maxZoom: 16,
@@ -505,17 +660,38 @@
                         const first = stations[0];
                         const colocated = stations.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
                         if (colocated) {
-                            showSheet(`<div class="sheet-title">${i18n.settlementName ? i18n.settlementName(first.station.name) : first.station.name}</div>
+                            const parties = geoParties();
+                            showSheet(`<div class="sheet-title">${i18n.settlementName(first.station.name)}</div>
                                 <div class="sheet-sub" style="margin-bottom:8px">${stations.length} ${en() ? 'ballot boxes at this venue — tap one:' : 'קלפיות באותו מקום — הקשה על אחת:'}</div>` +
-                                stations.map((it, i) => `<div class="sheet-ballot-row" data-row="${i}"><span class="dot" style="background:${it.color}"></span>${en() ? 'Ballot' : 'קלפי'} ${it.station.ballot}<span class="pct">${it.station.counted ? name(it.station.winner) + ' · ' + it.station.pct + '%' : (en() ? 'not counted' : 'טרם נספרה')}</span></div>`).join(''));
+                                stations.map((it, i) => `<div class="sheet-ballot-row" data-row="${i}"><span class="dot" style="background:${it.color}"></span>${en() ? 'Ballot' : 'קלפי'} ${it.station.ballot}<span class="pct">${it.station.counted ? i18n.partyName((parties[it.station.winnerIdx] || {}).name || '') + ' · ' + it.station.winnerPct + '%' : (en() ? 'not counted' : 'טרם נספרה')}</span></div>`).join(''));
                             document.querySelectorAll('#sheet-content [data-row]').forEach(row => row.onclick = () => stationSheet(stations[+row.dataset.row].station));
                         } else ccLayer.zoomCluster(clusterId, lng, lat);
                     },
                     onStationClick: (item) => stationSheet(item.station)
                 });
             }
-            ccLayer.setStations(mapItems());
+            paintMap();
             ccMap.resize();
+        }
+        function renderLegend() {
+            const grad = document.getElementById('legend-grad');
+            const lo = document.getElementById('legend-lo');
+            const hi = document.getElementById('legend-hi');
+            const parties = geoParties();
+            if (geoMode === 'turnout') {
+                grad.style.background = 'linear-gradient(to left, #ef4444, #fbbf24 55%, #10b981)';
+                lo.textContent = '40%'; hi.textContent = '90%';
+            } else if (geoMode === 'party') {
+                const col = (parties[geoPartyIdx] || {}).color || '#999';
+                grad.style.background = `linear-gradient(to left, ${col}, ${lighten(col, 0.85)})`;
+                lo.textContent = Math.round(partyScale(geoPartyIdx)) + '%'; hi.textContent = '0%';
+            } else if (geoMode === 'socio') {
+                grad.style.background = `linear-gradient(to left, ${SOCIO_COLORS.join(', ')})`;
+                lo.textContent = '10'; hi.textContent = '1';
+            } else {
+                grad.style.background = 'rgba(255,255,255,.08)';
+                lo.textContent = ''; hi.textContent = '';
+            }
         }
 
         function renderNowcast() {
