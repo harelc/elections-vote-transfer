@@ -139,6 +139,29 @@
         .view-card:hover {
             border-color: var(--accent-primary);
         }
+        /* Featured card (the K26 command centre on election day):
+           spans the grid's first row, gold-framed and glowing. */
+        .view-card-featured {
+            grid-column: 1 / -1;
+            border: 2px solid var(--accent-primary);
+            background: linear-gradient(160deg, rgba(240,180,41,.16), var(--bg-card) 55%);
+            box-shadow: 0 0 0 1px rgba(240,180,41,.35), 0 10px 30px rgba(240,180,41,.16);
+            padding: 1.5rem 1.6rem 1.3rem;
+        }
+        .view-card-featured:hover {
+            box-shadow: 0 0 0 1px rgba(240,180,41,.55), 0 12px 36px rgba(240,180,41,.25);
+        }
+        .view-card-badge {
+            align-self: flex-start;
+            background: var(--accent-primary);
+            color: #1a1408;
+            font-size: 0.78rem;
+            font-weight: 700;
+            border-radius: 999px;
+            padding: 0.22rem 0.7rem;
+        }
+        .view-card-featured .view-card-title { font-size: 1.5rem; }
+        .view-card-featured .view-card-desc { font-size: 0.98rem; max-width: 640px; }
         .view-card-icon {
             font-size: 1.8rem;
             line-height: 1;
@@ -362,7 +385,7 @@
 
         // View cards
         const cards = [
-            ...(i18n.SHOW_E26 ? [{ icon: '🎛️', i18n_title: 'nav_k26', i18n_desc: 'card_k26_desc', href: 'k26.html' }] : []),
+            ...(i18n.SHOW_E26 ? [{ icon: '🎛️', i18n_title: 'nav_k26', i18n_desc: 'card_k26_desc', href: 'k26.html', featured: true }] : []),
             { icon: '📚', i18n_title: 'nav_primer',    i18n_desc: 'card_primer_desc',    href: 'primer.html' },
             { icon: '🗺️', i18n_title: 'nav_geomap',    i18n_desc: 'card_geomap_desc',    href: 'geomap.html' },
             { icon: '🔵', i18n_title: 'nav_tsne',      i18n_desc: 'card_tsne_desc',      href: 'tsne.html' },
@@ -383,12 +406,13 @@
         const arrowHe = '←', arrowEn = '→';
         cards.forEach(c => {
             const a = document.createElement('a');
-            a.className = 'view-card';
+            a.className = 'view-card' + (c.featured ? ' view-card-featured' : '');
             // K26 is on by default everywhere; only the opt-out travels in the URL
             a.href = c.href.indexOf('animation.html') !== -1 && !i18n.SHOW_E26
                 ? c.href + (c.href.includes('?') ? '&' : '?') + 'e26=0'
                 : c.href;
             a.innerHTML =
+                (c.featured ? '<span class="view-card-badge" data-i18n="card_k26_badge">' + i18n.t('card_k26_badge') + '</span>' : '') +
                 '<span class="view-card-title" data-i18n="' + c.i18n_title + '">' + i18n.t(c.i18n_title) + '</span>' +
                 '<span class="view-card-desc" data-i18n="' + c.i18n_desc + '">' + i18n.t(c.i18n_desc) + '</span>' +
                 '<span class="view-card-arrow">' + (i18n.isRTL() ? arrowHe : arrowEn) + '</span>';

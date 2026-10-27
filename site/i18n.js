@@ -55,6 +55,7 @@
         nav_animation:         { he: '▶ אנימציה', en: '▶ Animation' },
         nav_k26:               { he: '🎛️ מרכז מידע כנסת 26', en: '🎛️ K26 Information Center' },
         card_k26_desc:         { he: 'כל כנסת 26 במסך אחד: קולות מוחלטים, מנדטים, נדידת קולות 25←26, מפה וקלפיות', en: 'All of Knesset 26 on one screen: absolute votes, seats, 25→26 vote flow, map and ballots' },
+        card_k26_badge:        { he: '🗳️ יום הבחירות — מרכז הבקרה החי', en: '🗳️ Election day — the live command centre' },
         k26_title:             { he: 'מרכז המידע — כנסת 26', en: 'Information Center — Knesset 26' },
         k26_subtitle:          { he: 'קולות מוחלטים, חלוקת מנדטים וכל התצוגות של כנסת 26 במסך אחד', en: 'Absolute votes, seat distribution and every Knesset 26 view on one screen' },
         k26_simulated:         { he: 'תרחיש מדומה — לא תוצאות אמת', en: 'Simulated scenario — not real results' },
