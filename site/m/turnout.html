@@ -143,6 +143,15 @@
             <div class="note" id="map-note" style="margin-top:.4rem"></div>
         </section>
 
+        <section class="card" id="towns-card" hidden>
+            <h3 id="towns-title"></h3>
+            <div class="set-sub" id="towns-high-title"></div>
+            <div id="towns-high"></div>
+            <div class="set-sub" id="towns-low-title"></div>
+            <div id="towns-low"></div>
+            <div class="note" id="towns-note"></div>
+        </section>
+
         <section class="card">
             <h3 id="groups-title"></h3>
             <select class="dim-select" id="dim-select"></select>
@@ -346,6 +355,7 @@
 
             renderGroups();
             renderSettlements();
+            renderTowns();
             renderHist();
             renderDist();
         }
@@ -557,6 +567,39 @@
             document.getElementById('set-high').innerHTML = (st.highest_turnout || []).slice(0, 8).map(x => row(x)).join('');
             document.getElementById('set-low').innerHTML = (st.lowest_turnout || []).slice(0, 8).map(x => row(x)).join('');
             document.getElementById('set-rem').innerHTML = (st.most_remaining || []).slice(0, 8).map(x => row(x, 'rem')).join('');
+        }
+
+        // Big towns only (>25k eligible), aggregated live from the
+        // stations — the all-settlement lists above are dominated by
+        // 1-2k-eligible villages.
+        function bigTownRows() {
+            const s = snap();
+            const voters = (s && s.voters) || null;
+            const agg = new Map();
+            (td.stations || []).forEach((a, i) => {
+                const v = voters ? voters[i] : a[5];
+                if (v == null || !a[4]) return;
+                const r = agg.get(a[0]) || { name: a[0], eligible: 0, voters: 0 };
+                r.eligible += a[4]; r.voters += v; agg.set(a[0], r);
+            });
+            return [...agg.values()].filter(r => r.eligible > 25000)
+                .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible }))
+                .sort((a, b) => b.turnout - a.turnout);
+        }
+        function renderTowns() {
+            const card = document.getElementById('towns-card');
+            const rows = td ? bigTownRows() : [];
+            if (!rows.length) { card.hidden = true; return; }
+            document.getElementById('towns-title').textContent = en() ? 'Large towns (over 25,000 eligible)' : 'יישובים גדולים (מעל 25 אלף בעלי זכות)';
+            document.getElementById('towns-high-title').textContent = en() ? 'Highest turnout' : 'ההצבעה הגבוהה ביותר';
+            document.getElementById('towns-low-title').textContent = en() ? 'Lowest turnout' : 'ההצבעה הנמוכה ביותר';
+            const row = x => `<div class="set-row"><span class="nm">${i18n.settlementName ? i18n.settlementName(x.name) : x.name}</span><span class="vl">${x.turnout.toFixed(1)}% <small>${fmt(x.voters)} / ${fmt(x.eligible)}</small></span></div>`;
+            document.getElementById('towns-high').innerHTML = rows.slice(0, 8).map(row).join('');
+            document.getElementById('towns-low').innerHTML = rows.slice(-8).reverse().map(row).join('');
+            document.getElementById('towns-note').textContent = en()
+                ? `${rows.length} towns over 25,000 eligible, from the CEC per-ballot layer.`
+                : `${rows.length} יישובים מעל 25 אלף בעלי זכות, לפי שכבת הקלפיות של ועדת הבחירות.`;
+            card.hidden = false;
         }
 
         // Map interaction mirrors m/geomap.html: StationClusterLayer

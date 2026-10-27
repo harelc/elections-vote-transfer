@@ -2618,8 +2618,24 @@
               <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)} · ${r.share_of_voters != null ? r.share_of_voters.toFixed(1) + (en() ? '% of voters' : '% מהמצביעים') : ''}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
         const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
+        // Big towns only (>25k eligible), aggregated live from the
+        // stations — the all-settlement lists are dominated by small
+        // villages.
+        const townAgg = new Map();
+        (td.stations || []).forEach((a, i) => {
+            const v = snap && snap.voters ? snap.voters[i] : a[5];
+            if (v == null || !a[4]) return;
+            const r = townAgg.get(a[0]) || { name: a[0], eligible: 0, voters: 0 };
+            r.eligible += a[4]; r.voters += v; townAgg.set(a[0], r);
+        });
+        const towns = [...townAgg.values()].filter(r => r.eligible > 25000)
+            .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible }))
+            .sort((a, b) => b.turnout - a.turnout);
+        const townVal = r => `${(r.turnout || 0).toFixed(1)}% · ${fmt(r.eligible)}`;
         const S = (detailSnap && detailSnap.settlements) || td.settlements || {};
         document.getElementById('td-settles').innerHTML =
+            settleBlock(en() ? 'Highest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הגבוהה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns.slice(0, 8), townVal) +
+            settleBlock(en() ? 'Lowest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הנמוכה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns.slice(-8).reverse(), townVal) +
             settleBlock(en() ? 'Highest turnout settlements' : 'היישובים עם ההצבעה הגבוהה ביותר', S.highest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Lowest turnout settlements' : 'היישובים עם ההצבעה הנמוכה ביותר', S.lowest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Highest recovery of their K25 turnout (ratio ×, not a turnout)' : 'הכי גבוהים בשחזור שיעור ההצבעה של 25 (יחס ×, לא אחוז הצבעה)', S.fastest_pace, r => r.pace != null ? '×' + r.pace.toFixed(2) : '–') +
