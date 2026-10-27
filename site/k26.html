@@ -2434,7 +2434,7 @@
             const drawLabels = (nodes, pos, x, align, extraOf) => {
                 const items = nodes.map(n => ({ n, p: pos.get(n.name) })).filter(it => it.p)
                     .map(it => ({ ...it, cy: it.p.y0 + it.p.h / 2 })).sort((a, b) => a.cy - b.cy);
-                const gapAfter = it => it.p.h >= 36 ? 34 : 17;
+                const gapAfter = () => 18;
                 const ys = [];
                 items.forEach((it, i) => {
                     let y = Math.max(top + 10, Math.min(bot - 4, it.cy + 5));
@@ -2454,10 +2454,6 @@
                     }
                     ctx.textAlign = align; ctx.fillStyle = ink; ctx.font = '600 17px Heebo, Arial';
                     ctx.fillText(displayName(it.n.name), x, y);
-                    if (it.p.h >= 36) {
-                        ctx.fillStyle = mut; ctx.font = '400 14px Heebo, Arial';
-                        ctx.fillText(extraOf(it.n), x, y + 16);
-                    }
                 });
             };
             drawLabels(sk.nodes_from, pf, fromX + nodeW + 8, 'left', n => fmtS(n.votes || 0));
