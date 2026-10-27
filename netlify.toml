@@ -11,6 +11,15 @@ publish = "site"
 [functions."k26-poll"]
 included_files = ["k26_control.json"]
 
+# Reliable 5-minute trigger for the GitHub count refresh: GitHub's
+# own cron lagged >15 min without a single run on election night, so
+# this only dispatches k26-refresh.yml (the runner downloads and
+# rebuilds; dispatches no-op when the snapshot is unchanged).
+# Gated by k26_control.json auto + the poll window (through 31 Oct).
+[functions."k26-dispatch"]
+schedule = "*/5 * * * *"
+included_files = ["k26_control.json"]
+
 # Election-day turnout poller: every 2 minutes inside the daytime
 # turnout window (07:00-22:00 on 27 Oct 2026, gated by k26_control.json);
 # dispatch stays off while turnout_auto is false.
