@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — מרכז הספירה כנסת 26">
+    <meta property="og:description" content="תוצאות כנסת 26 בנייד: מנדטים, קולות, התקדמות הספירה ותחזית לסוף הספירה">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+    <title>מרכז הספירה כנסת 26 - קולות נודדים</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="../i18n.css">
+    <script src="../i18n.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"></script>
+    <style>
+        html, body { overflow: auto; height: auto; min-height: 100%; }
+        .page-content { padding: 52px 0.7rem calc(60px + var(--safe-bottom)); max-width: 560px; margin: 0 auto; }
+        .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 0.9rem 1rem; margin-bottom: 0.8rem; }
+        .card h3 { font-size: 1rem; color: var(--text-primary); margin-bottom: 0.35rem; }
+        .note { font-size: 0.78rem; color: var(--text-muted); line-height: 1.45; }
+        /* Provenance: simulated vs real, unmissable like the desktop CC */
+        .prov { border: 2px solid; border-radius: 12px; padding: 0.7rem 0.9rem; margin-bottom: 0.8rem; display: flex; gap: 0.6rem; align-items: center; }
+        .prov.sim { border-color: #ef4444; color: #fecaca; background: repeating-linear-gradient(45deg, rgba(239,68,68,.16) 0 16px, rgba(239,68,68,.07) 16px 32px); }
+        .prov.real { border-color: #22c55e; color: #bbf7d0; background: rgba(34,197,94,.1); }
+        .prov.partial { border-color: #f59e0b; color: #fde68a; background: rgba(245,158,11,.1); }
+        .prov b { font-size: 0.98rem; }
+        .prov .sub { font-size: 0.76rem; opacity: 0.88; line-height: 1.4; }
+        /* Count progress */
+        .count-big { font-size: 2rem; font-weight: 800; color: var(--text-primary); line-height: 1.1; }
+        .count-bar { height: 10px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; margin: 0.5rem 0 0.35rem; }
+        .count-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .official .count-bar i { background: linear-gradient(90deg, #16a34a, #4ade80); }
+        /* Stacked seat bar */
+        .seatbar { display: flex; height: 16px; border-radius: 8px; overflow: hidden; margin: 0.4rem 0 0.7rem; background: rgba(255,255,255,.06); }
+        .seatbar i { display: block; height: 100%; }
+        /* Party rows */
+        .prow { display: grid; grid-template-columns: 10px minmax(0,1fr) auto auto; gap: 0.55rem; align-items: center; padding: 0.42rem 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+        .prow:last-child { border-bottom: none; }
+        .prow .sw { width: 10px; height: 10px; border-radius: 3px; }
+        .prow .nm { min-width: 0; }
+        .prow .nm b { display: block; font-size: 0.9rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .prow .nm span { font-size: 0.72rem; color: var(--text-muted); }
+        .prow .fc { text-align: center; }
+        .prow .fc b { display: block; font-size: 1.25rem; color: #22d3ee; line-height: 1.1; }
+        .prow .fc span { font-size: 0.66rem; color: var(--text-muted); }
+        .prow .st { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); min-width: 2ch; text-align: end; }
+        .prow.below { opacity: 0.55; }
+        .bloc-line { font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.5rem; line-height: 1.7; }
+        .bloc-line b { color: var(--text-primary); }
+        /* Hemicycle */
+        .hemi-wrap svg { width: 100%; height: auto; display: block; }
+        .hemi-legend { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; justify-content: center; margin-top: 0.35rem; font-size: 0.74rem; color: var(--text-secondary); }
+        .hemi-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-inline-end: 4px; }
+        .hemi-toggle { display: flex; gap: 0.4rem; margin-bottom: 0.4rem; }
+        .hemi-toggle[hidden] { display: none; }
+        .hemi-toggle button { font-family: inherit; font-size: 0.76rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg-tertiary); color: var(--text-secondary); border-radius: 999px; padding: 0.3rem 0.7rem; }
+        .hemi-toggle button.gold { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+        #sankey-el svg { width: 100%; height: auto; display: block; }
+        .gold-btn { display: flex; justify-content: center; align-items: center; width: 100%; padding: 0.85rem 1rem; border-radius: 999px; background: linear-gradient(135deg, #ffd75e, #f0b429); color: #1a1408 !important; font-weight: 800; font-size: 0.95rem; text-decoration: none; border: 1px solid #ffe08a; }
+        .factoid { font-size: 0.85rem; color: var(--text-secondary); line-height: 1.55; }
+        .factoid b { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <a href="index.html" class="home-link">🏠</a>
+        <span class="title"><span data-i18n="site_title">קולות נודדים</span> · <span data-i18n="nav_k26">מרכז מידע כנסת 26</span></span>
+    </div>
+
+    <div class="page-content">
+        <div class="prov sim" id="prov" role="status">
+            <span id="prov-icon">⚠</span>
+            <div><b id="prov-title">…</b><div class="sub" id="prov-sub"></div></div>
+        </div>
+
+        <section class="card" id="count-card" hidden>
+            <h3 id="count-title"></h3>
+            <div class="count-big"><span id="count-pct">–</span></div>
+            <div class="count-bar"><i id="count-fill" style="width:0%"></i></div>
+            <div class="note" id="count-meta"></div>
+        </section>
+
+        <section class="card">
+            <h3 id="seats-title"></h3>
+            <div class="hemi-toggle" id="hemi-toggle" hidden>
+                <button data-hemi="counted"></button>
+                <button data-hemi="forecast"></button>
+            </div>
+            <div class="hemi-wrap" id="hemi-wrap"></div>
+            <div id="party-rows"></div>
+            <div class="bloc-line" id="bloc-line"></div>
+        </section>
+
+        <section class="card" id="nowcast-card" hidden>
+            <h3 id="nc-title"></h3>
+            <div class="note" id="nc-gate" style="margin-bottom:.4rem"></div>
+            <div id="nc-rows"></div>
+            <div class="bloc-line" id="nc-blocs"></div>
+        </section>
+
+        <section class="card" id="sankey-card" hidden>
+            <h3 id="sankey-title"></h3>
+            <div class="note" id="sankey-note" style="margin-bottom:.4rem"></div>
+            <div id="sankey-el"></div>
+        </section>
+
+        <section class="card" id="factoid-card" hidden>
+            <div class="factoid" id="factoid"></div>
+        </section>
+
+        <a class="gold-btn" href="../k26.html?desktop=1" id="desktop-link"></a>
+    </div>
+
+    <!-- Bottom Tabs -->
+    <nav class="tab-bar">
+        <a href="geomap.html"><span class="tab-icon">🗺️</span><span data-i18n="tab_map">מפה</span></a>
+        <a href="tsne.html"><span class="tab-icon">🔵</span><span data-i18n="tab_tsne">פיזור</span></a>
+        <a href="sankey.html"><span class="tab-icon">🔀</span><span data-i18n="tab_sankey">נדידה</span></a>
+        <a href="scatter.html"><span class="tab-icon">📈</span><span data-i18n="tab_scatter">השוואה</span></a>
+        <a href="dhondt.html"><span class="tab-icon">🏛️</span><span data-i18n="tab_dhondt">מנדטים</span></a>
+        <a href="regional.html"><span class="tab-icon">🧩</span><span data-i18n="tab_regional">אזורי</span></a>
+        <a href="methodology.html"><span class="tab-icon">📐</span><span data-i18n="nav_methodology">מתודולוגיה</span></a>
+        <a href="mcp.html"><span class="tab-icon">💬</span><span data-i18n="nav_mcp">שאל את הנתונים</span></a>
+        <a href="discussions.html"><span class="tab-icon">💬</span><span data-i18n="nav_discussions">דיונים</span></a>
+    </nav>
+
+    <script>i18n.injectLangToggle('.top-bar'); i18n.renderMobileBMC();</script>
+    <script>
+    (function () {
+        'use strict';
+        const en = () => i18n.getLang() === 'en';
+        const fmt = n => i18n.fmtNum(Math.round(n || 0));
+        const F = { cache: 'no-store' };
+        const PREVIEW = new URLSearchParams(location.search).get('preview') || '';
+        const CC_FILE = PREVIEW === 'partial17' ? '../data/command_center_26_p17.json'
+            : PREVIEW === 'partial12' ? '../data/command_center_26_p12.json'
+            : '../data/command_center_26.json';
+        let status = null, results = [], colors = {}, enNames = {}, cc = null, factIdx = 0, factTimer = null, transferData = null, hemiMode = 'counted';
+
+        async function load() {
+            const [st, wiki, transfer] = await Promise.all([
+                fetch('../data/k26_status.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('../data/wiki_official_results.json', F).then(r => r.ok ? r.json() : {}).catch(() => ({})),
+                fetch('../data/transfer_25_to_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
+            ]);
+            status = st || { kind: 'simulated' };
+            // Election-day turnout phase has its own mobile view.
+            if (status.kind === 'turnout' && !PREVIEW) { location.replace('../k26.html?turnout=1'); return; }
+            results = wiki['26'] || [];
+            transferData = transfer;
+            (transfer && transfer.nodes_to || []).forEach(n => { colors[n.name] = n.color; if (n.info) enNames[n.name] = n.info.name_en || n.name; });
+            if (status.kind === 'partial' || PREVIEW) {
+                cc = await fetch(CC_FILE, F).then(r => r.ok ? r.json() : null).catch(() => null);
+                if (PREVIEW && cc && cc.nowcast) {
+                    const nc = cc.nowcast;
+                    status = { kind: 'partial', ballots: nc.counted_ballots, ballots_total: nc.roster_ballots, as_of: new Date().toISOString() };
+                }
+            }
+            render();
+        }
+
+        function name(n) { return en() ? (enNames[n] || n) : n; }
+
+        function render() {
+            const kind = status.kind || 'simulated';
+            const sim = kind === 'simulated';
+            const partial = kind === 'partial';
+            // Provenance
+            const prov = document.getElementById('prov');
+            prov.className = 'prov ' + (sim ? 'sim' : partial ? 'partial' : 'real');
+            document.getElementById('prov-icon').textContent = sim ? '⚠' : '●';
+            document.getElementById('prov-title').textContent = sim
+                ? (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת')
+                : partial
+                    ? (en() ? '● REAL RESULTS — partial CEC count in progress' : '● תוצאות אמת — ספירת ועדת הבחירות בעיצומה')
+                    : (en() ? '● OFFICIAL RESULTS — Central Elections Committee' : '● תוצאות רשמיות — ועדת הבחירות המרכזית');
+            document.getElementById('prov-sub').textContent = sim
+                ? (en() ? 'Knesset 26 has not happened on this page yet: a polling-calibrated simulation, replaced automatically when the CEC publishes real data.' : 'הבחירות לכנסת ה־26 טרם נערכו כאן: סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.')
+                : partial
+                    ? (en() ? 'Real ballot boxes counted so far. Figures change as the count proceeds.' : 'קלפיות אמיתיות שנספרו עד כה. הנתונים משתנים ככל שהספירה מתקדמת.')
+                    : (en() ? 'Final official K26 results as published by the CEC.' : 'תוצאות סופיות רשמיות של כנסת 26 כפי שפרסמה ועדת הבחירות.');
+            // Count progress
+            const cc1 = document.getElementById('count-card');
+            if ((partial || kind === 'official') && status.ballots_total) {
+                cc1.hidden = false;
+                cc1.className = 'card' + (kind === 'official' ? ' official' : '');
+                const pct = 100 * (status.ballots || 0) / status.ballots_total;
+                document.getElementById('count-title').textContent = kind === 'official'
+                    ? (en() ? 'Count complete' : 'הספירה הסתיימה') : (en() ? 'Counting in progress' : 'הספירה בעיצומה');
+                document.getElementById('count-pct').textContent = pct.toFixed(1) + '%';
+                document.getElementById('count-fill').style.width = pct.toFixed(1) + '%';
+                const upd = status.as_of ? new Date(status.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' }) : '';
+                document.getElementById('count-meta').textContent =
+                    `${fmt(status.ballots)} / ${fmt(status.ballots_total)} ${en() ? 'ballot boxes' : 'קלפיות'}` +
+                    (partial ? ` · ${fmt(status.ballots_total - (status.ballots || 0))} ${en() ? 'remaining' : 'נותרו'}` : '') +
+                    (upd ? ` · ${en() ? 'updated' : 'עודכן'} ${upd}` : '');
+            } else cc1.hidden = true;
+            // Seats
+            document.getElementById('seats-title').textContent = partial
+                ? (en() ? 'Seats — counted so far' : 'מנדטים — לפי הספירה החלקית')
+                : (en() ? 'Seats' : 'מנדטים');
+            const totalVotes = results.reduce((a, p) => a + (p.votes || 0), 0);
+            renderHemi();
+            document.getElementById('party-rows').innerHTML = results.map(p => `
+                <div class="prow${p.seats ? '' : ' below'}">
+                    <span class="sw" style="background:${colors[p.name] || '#666'}"></span>
+                    <span class="nm"><b>${name(p.name)}</b><span>${fmt(p.votes)} ${en() ? 'votes' : 'קולות'} · ${totalVotes ? (100 * p.votes / totalVotes).toFixed(1) : '0.0'}%</span></span>
+                    <span></span><span class="st">${p.seats || ''}</span>
+                </div>`).join('');
+            document.getElementById('bloc-line').textContent = '';
+            renderNowcast();
+            renderFactoid();
+            document.getElementById('desktop-link').textContent = en() ? 'Full command centre (desktop) ↗' : 'למרכז הבקרה המלא (מחשב) ↗';
+        }
+
+        // Hemicycle: same geometry as the desktop CC (6 arc rows,
+        // party wedges ordered left-wing -> right-wing), no MK names.
+        const ARC_ORDER = ['הרשימה המשותפת','רע״ם','הדמוקרטים','ישר','ביחד','ישראל ביתנו','המילואימניקים והכלכלית','הליכוד','ציונות הדתית','הציונות הדתית','עוצמה יהודית','עמך ישראל','יהדות התורה','ש״ס'];
+        function seatMap() {
+            const m = {};
+            if (hemiMode === 'forecast' && cc && cc.nowcast && cc.nowcast.projection) {
+                cc.nowcast.projection.parties.forEach(p => m[p.name] = p.proj_seats ?? Math.round(p.median) ?? 0);
+            } else results.forEach(p => m[p.name] = p.seats || 0);
+            return m;
+        }
+        function renderHemi() {
+            const wrapEl = document.getElementById('hemi-wrap');
+            const sm = seatMap();
+            const passing = results.filter(p => (sm[p.name] || 0) > 0)
+                .map(p => ({ ...p, seats: sm[p.name] }))
+                .sort((a, b) => { const ia = ARC_ORDER.indexOf(a.name), ib = ARC_ORDER.indexOf(b.name); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+            const toggle = document.getElementById('hemi-toggle');
+            const canForecast = status.kind === 'partial' && cc && cc.nowcast && cc.nowcast.ready && cc.nowcast.projection;
+            toggle.hidden = !canForecast;
+            if (canForecast) {
+                toggle.querySelector('[data-hemi="counted"]').textContent = en() ? 'Counted' : 'לפי הספירה';
+                toggle.querySelector('[data-hemi="forecast"]').textContent = en() ? 'Forecast' : 'לפי התחזית';
+                toggle.querySelectorAll('button').forEach(b => {
+                    b.classList.toggle('gold', b.dataset.hemi === hemiMode);
+                    b.onclick = () => { hemiMode = b.dataset.hemi; render(); };
+                });
+            } else hemiMode = 'counted';
+            const ROWS = 6, cx = 360, cy = 312, r0 = 96, gap = 38, total = passing.reduce((a, p) => a + p.seats, 0) || 120;
+            const radii = Array.from({ length: ROWS }, (_, i) => r0 + i * gap);
+            const raw = radii.map(r => r / radii.reduce((a, b) => a + b, 0) * total);
+            const counts = raw.map(Math.floor);
+            let rem = total - counts.reduce((a, b) => a + b, 0);
+            raw.map((v, i) => [v - counts[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (rem-- > 0) counts[i]++; });
+            const pos = [];
+            radii.forEach((r, i) => { for (let k = 0; k < counts[i]; k++) { const a = Math.PI - (counts[i] === 1 ? 0.5 : k / (counts[i] - 1)) * Math.PI; pos.push({ a, r }); } });
+            pos.sort((x, y) => y.a - x.a);
+            let seatIdx = 0;
+            const circles = passing.map(p => {
+                const chunk = pos.slice(seatIdx, seatIdx + p.seats);
+                seatIdx += p.seats;
+                return chunk.map(({ a, r }) => {
+                    const x = (cx + r * Math.cos(a)).toFixed(1), y = (cy - r * Math.sin(a)).toFixed(1);
+                    return `<circle cx="${x}" cy="${y}" r="13" fill="${colors[p.name] || '#666'}" stroke="rgba(0,0,0,.35)" stroke-width="0.7"><title>${name(p.name)} · ${p.seats}</title></circle>`;
+                }).join('');
+            }).join('');
+            const legend = passing.map(p => `<span><span class="dot" style="background:${colors[p.name] || '#666'}"></span>${name(p.name)} <b>${p.seats}</b></span>`).join('');
+            wrapEl.innerHTML = `<svg viewBox="0 0 720 348" role="img">${circles}<text x="${cx}" y="${cy - 30}" text-anchor="middle" fill="var(--text-primary)" font-size="52" font-weight="800">${total}</text><text x="${cx}" y="${cy - 4}" text-anchor="middle" fill="var(--text-muted)" font-size="15">61 = ${en() ? 'majority' : 'רוב'}</text></svg><div class="hemi-legend">${legend}</div>`;
+            renderSankey();
+        }
+
+        // Compact Sankey (port of the desktop renderer, no tooltips):
+        // while counting it shows the nowcast's predicted transfers,
+        // otherwise the analysed 25 -> 26 flow.
+        function renderSankey() {
+            const card = document.getElementById('sankey-card');
+            const nc = cc && cc.nowcast;
+            const projected = status.kind === 'partial' && nc && nc.ready && nc.projection && nc.projection.projected_sankey;
+            const data = projected ? nc.projection.projected_sankey : transferData;
+            if (!data || !data.transfers) { card.hidden = true; return; }
+            card.hidden = false;
+            document.getElementById('sankey-title').textContent = projected
+                ? (en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים')
+                : (en() ? 'Vote flow 25 → 26' : 'נדידת קולות 25 ← 26');
+            const r2 = (data.stats && data.stats.r_squared) ?? data.r_squared;
+            document.getElementById('sankey-note').textContent = projected
+                ? (en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.')
+                : (en() ? 'National estimate from matched ballots, not a count of people' : 'אומדן לאומי מהקלפיות המוצלבות, לא ספירת אנשים') + (r2 != null ? ` · R² = ${Number(r2).toFixed(2)}` : '');
+            const el = document.getElementById('sankey-el');
+            el.innerHTML = '';
+            const W = el.clientWidth || 340, H = 560;
+            const margin = { top: 10, right: 66, bottom: 10, left: 66 };
+            const innerW = W - margin.left - margin.right, innerH = H - margin.top - margin.bottom;
+            const nodes = [
+                ...data.nodes_from.map((n, i) => ({ ...n, id: 'from_' + i, side: 'from' })),
+                ...data.nodes_to.map((n, i) => ({ ...n, id: 'to_' + i, side: 'to' })),
+            ];
+            const byNameSide = {}; nodes.forEach((n, i) => { byNameSide[n.name + '_' + n.side] = i; });
+            const links = data.transfers.map(tr => {
+                const s = byNameSide[tr.source + '_from'], tg = byNameSide[tr.target + '_to'];
+                return (s === undefined || tg === undefined) ? null : { source: nodes[s].id, target: nodes[tg].id, value: tr.votes };
+            }).filter(l => l && l.value > 0);
+            const linked = new Set(); links.forEach(l => { linked.add(l.source); linked.add(l.target); });
+            const svg = d3.select(el).append('svg').attr('width', W).attr('height', H);
+            const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+            const gen = d3.sankey().nodeId(d => d.id).nodeWidth(14).nodePadding(10).nodeAlign(d3.sankeyJustify).extent([[0, 0], [innerW, innerH]]);
+            const graph = gen({ nodes: nodes.filter(n => linked.has(n.id)).map(d => ({ ...d })), links: links.map(d => ({ ...d })) });
+            if (i18n.isRTL()) graph.nodes.forEach(n => { const x0 = innerW - n.x1; n.x1 = innerW - n.x0; n.x0 = x0; });
+            ['from', 'to'].forEach(side => {
+                const col = graph.nodes.filter(n => n.side === side).sort((a, b) => (b.votes || 0) - (a.votes || 0));
+                const totalVotes = d3.sum(col, n => n.votes || 1), pad = 8, avail = innerH - (col.length - 1) * pad;
+                let y = 0;
+                col.forEach(n => { const h = Math.max(2, ((n.votes || 1) / totalVotes) * avail); n.y0 = y; n.y1 = y + h; y += h + pad; });
+            });
+            graph.nodes.forEach(node => {
+                const nodeH = node.y1 - node.y0;
+                if (node.sourceLinks && node.sourceLinks.length) {
+                    const tot = d3.sum(node.sourceLinks, l => l.value);
+                    node.sourceLinks.sort((a, b) => ((a.target.y0 + a.target.y1) / 2) - ((b.target.y0 + b.target.y1) / 2));
+                    let sy = node.y0;
+                    node.sourceLinks.forEach(l => { l.width = Math.max(0.5, tot > 0 ? (l.value / tot) * nodeH : 0); l.y0 = sy + l.width / 2; sy += l.width; });
+                }
+                if (node.targetLinks && node.targetLinks.length) {
+                    const tot = d3.sum(node.targetLinks, l => l.value);
+                    node.targetLinks.sort((a, b) => ((a.source.y0 + a.source.y1) / 2) - ((b.source.y0 + b.source.y1) / 2));
+                    let ty = node.y0;
+                    node.targetLinks.forEach(l => { l.width = Math.max(0.5, tot > 0 ? (l.value / tot) * nodeH : 0); l.y1 = ty + l.width / 2; ty += l.width; });
+                }
+            });
+            const defs = svg.append('defs');
+            graph.links.forEach((l, i) => {
+                const grad = defs.append('linearGradient').attr('id', 'mk-lg-' + i).attr('gradientUnits', 'userSpaceOnUse')
+                    .attr('x1', l.source.x1).attr('y1', 0).attr('x2', l.target.x0).attr('y2', 0);
+                grad.append('stop').attr('offset', '0%').attr('stop-color', l.source.color || '#6b7280');
+                grad.append('stop').attr('offset', '100%').attr('stop-color', l.target.color || '#6b7280');
+            });
+            g.append('g').selectAll('path').data(graph.links).join('path')
+                .attr('d', d3.sankeyLinkHorizontal()).attr('fill', 'none')
+                .attr('stroke', (d, i) => `url(#mk-lg-${i})`).style('stroke-opacity', .4)
+                .attr('stroke-width', d => Math.max(1, d.width));
+            g.append('g').selectAll('rect').data(graph.nodes).join('rect')
+                .attr('x', d => d.x0).attr('y', d => d.y0).attr('width', d => d.x1 - d.x0).attr('height', d => Math.max(1, d.y1 - d.y0))
+                .attr('fill', d => d.color || '#666').attr('stroke', 'rgba(0,0,0,.3)');
+            const rtl = i18n.isRTL();
+            g.append('g').selectAll('text').data(graph.nodes).join('text')
+                .attr('x', d => rtl ? (d.side === 'from' ? d.x1 + 5 : d.x0 - 5) : (d.side === 'from' ? d.x0 - 5 : d.x1 + 5))
+                .attr('y', d => (d.y0 + d.y1) / 2)
+                .attr('text-anchor', d => rtl ? (d.side === 'from' ? 'start' : 'end') : (d.side === 'from' ? 'end' : 'start'))
+                .attr('dy', '0.35em').attr('fill', 'var(--text-secondary)').attr('font-size', '10px')
+                .text(d => name(d.name));
+        }
+
+        function renderNowcast() {
+            const card = document.getElementById('nowcast-card');
+            const nc = cc && cc.nowcast;
+            if (!nc || status.kind !== 'partial') { card.hidden = true; return; }
+            card.hidden = false;
+            document.getElementById('nc-title').textContent = en() ? 'Nowcast — forecast for the final count' : 'תחזית — לסוף הספירה';
+            const gate = document.getElementById('nc-gate');
+            const rowsEl = document.getElementById('nc-rows');
+            const blocsEl = document.getElementById('nc-blocs');
+            if (!nc.ready || !nc.projection) {
+                gate.textContent = en() ? '⏳ Too early for a forecast — not enough counted ballots yet.' : '⏳ עדיין מוקדם מדי לתחזית — עוד לא נספרו מספיק קלפיות.';
+                rowsEl.innerHTML = ''; blocsEl.textContent = ''; return;
+            }
+            gate.textContent = en()
+                ? `From the ${fmt(nc.counted_ballots)} boxes counted so far and the national transfer model.`
+                : `לפי ${fmt(nc.counted_ballots)} הקלפיות שנספרו ומודל המעבר הארצי.`;
+            const P = nc.projection;
+            const byName = {};
+            results.forEach(p => byName[p.name] = p);
+            rowsEl.innerHTML = P.parties.filter(p => (p.proj_seats ?? p.median) > 0 || p.seats_now > 0).map(p => `
+                <div class="prow${(p.proj_seats ?? 0) ? '' : ' below'}">
+                    <span class="sw" style="background:${colors[p.name] || '#666'}"></span>
+                    <span class="nm"><b>${name(p.name)}</b><span>${en() ? 'counted' : 'נספרו'} ${p.seats_now} · ${p.p10}–${p.p90}</span></span>
+                    <span class="fc"><b>${p.proj_seats ?? Math.round(p.median)}</b><span>${en() ? 'forecast' : 'תחזית'}</span></span>
+                    <span class="st">${p.seats_now || ''}</span>
+                </div>`).join('');
+            const blocName = { right: en() ? 'Right–Haredi' : 'ימין–חרדים', center: en() ? 'Centre–left' : 'מרכז–שמאל', arab: en() ? 'Arab parties' : 'מפלגות ערביות' };
+            blocsEl.innerHTML = Object.entries(P.blocs || {}).map(([k, v]) =>
+                `${blocName[k] || k} <b>${v.proj_seats ?? Math.round(v.median)}</b>`).join(' · ');
+        }
+
+        function renderFactoid() {
+            const card = document.getElementById('factoid-card');
+            const facts = (cc && cc.factoids) || [];
+            if (!facts.length) { card.hidden = true; return; }
+            card.hidden = false;
+            const show = () => {
+                const f = facts[factIdx % facts.length];
+                document.getElementById('factoid').innerHTML = `<b>${en() ? 'Did you know?' : 'הידעת?'}</b> ${en() ? (f.en || f.he) : f.he}`;
+                factIdx++;
+            };
+            show();
+            if (!factTimer) factTimer = setInterval(show, 7000);
+        }
+
+        window.addEventListener('langchange', () => { factIdx = 0; render(); });
+        load().catch(() => {
+            document.getElementById('prov-title').textContent = en() ? 'Error loading data' : 'שגיאה בטעינת הנתונים';
+        });
+        // The count moves: refresh every 90 seconds while the page is open.
+        setInterval(() => load().catch(() => {}), 90000);
+    })();
+    </script>
+    <script src="../webinar-modal.js"></script>
+</body>
+</html>

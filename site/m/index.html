@@ -313,6 +313,23 @@
             container.appendChild(a);
         });
 
+        // While a real count is under way (or finished), a live-count
+        // card joins the top of the dashboard, next to / instead of
+        // the election-day turnout card.
+        fetch('../data/k26_status.json', { cache: 'no-store' }).then(r => r.ok ? r.json() : null).then(st => {
+            if (!st || (st.kind !== 'partial' && st.kind !== 'official')) return;
+            const a = document.createElement('a');
+            a.className = 'm-card m-card-featured';
+            a.href = 'k26.html';
+            a.innerHTML =
+                '<div class="m-card-text">' +
+                '<span class="m-card-badge" data-i18n="card_count_badge">' + i18n.t('card_count_badge') + '</span>' +
+                '<div class="m-card-title" data-i18n="card_count_title">' + i18n.t('card_count_title') + '</div>' +
+                '<div class="m-card-desc" data-i18n="card_count_desc">' + i18n.t('card_count_desc') + '</div>' +
+                '</div>';
+            container.prepend(a);
+        }).catch(() => {});
+
         // Animate a number from 0 to target with rolling digits
         function animateNumber(el, target, duration) {
             if (!el || !target) return;
