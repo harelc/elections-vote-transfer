@@ -94,6 +94,13 @@
         .geomap-pane .mini-map { height:800px; }
         .geomap-modes { display:flex; flex-wrap:wrap; gap:.4rem; align-items:center; margin-bottom:.5rem; }
         .geomap-party-select { background:#1a1f2b; color:var(--text-primary); border:1px solid rgba(255,255,255,.14); border-radius:6px; padding:.32rem .5rem; font:inherit; font-size:.82rem; direction:inherit; text-align:start; }
+        /* "?" help for the voting-pattern (t-SNE embed) layer: hover or
+           keyboard-focus reveals what the colours mean. */
+        .geo-help { position:relative; display:inline-flex; margin-inline-start:-0.15rem; }
+        .geo-help-btn { width:21px; height:21px; padding:0; border-radius:50%; border:1px solid rgba(255,255,255,.22); background:var(--bg-tertiary); color:var(--text-muted); font:inherit; font-size:.75rem; font-weight:700; line-height:1; cursor:help; }
+        .geo-help-btn:hover, .geo-help-btn:focus-visible { color:var(--text-primary); border-color:var(--accent-primary); outline:none; }
+        .geo-help-tip { position:absolute; bottom:calc(100% + 8px); inset-inline-start:0; width:230px; padding:.55rem .65rem; border:1px solid var(--border-color); border-radius:8px; background:var(--bg-secondary); color:var(--text-secondary); font-size:.75rem; line-height:1.45; text-align:start; box-shadow:var(--shadow-lg); opacity:0; visibility:hidden; transform:translateY(3px); transition:opacity .15s, transform .15s, visibility .15s; z-index:40; pointer-events:none; }
+        .geo-help:hover .geo-help-tip, .geo-help:focus-within .geo-help-tip { opacity:1; visibility:visible; transform:none; }
         /* Vertical legend overlaid on the map itself: low at the bottom,
            high at the top, whatever the page direction. */
         .geomap-legend { position:absolute; top:10px; inset-inline-end:10px; z-index:6; pointer-events:none;
@@ -468,10 +475,11 @@
                 <div class="geomap-modes" id="geomap-modes" role="group" aria-label="color mode">
                     <button class="pane-btn geomap-mode gold" data-gmode="winner" data-i18n="winner">מפלגה מנצחת</button>
                     <button class="pane-btn geomap-mode" data-gmode="party" data-i18n="party_support">תמיכה במפלגה</button>
-                    <select id="geomap-party" class="geomap-party-select" hidden></select>
+                    <select id="geomap-party" class="geomap-party-select"></select>
                     <button class="pane-btn geomap-mode" data-gmode="turnout" data-i18n="turnout">שיעור הצבעה</button>
                     <button class="pane-btn geomap-mode" data-gmode="socioeconomic" data-i18n="socioeconomic">אשכול חברתי-כלכלי</button>
                     <button class="pane-btn geomap-mode" data-gmode="embed" data-i18n="embed_color">דפוס הצבעה</button>
+                    <span class="geo-help" id="embed-help-wrap"><button type="button" class="geo-help-btn" id="embed-help" aria-label="Voting pattern — what is this?">?</button><span class="geo-help-tip" role="tooltip" data-i18n="embed_note">הצבע הוא המיקום בהטלת t-SNE. צבע דומה הוא דפוס הצבעה דומה.</span></span>
                     <button class="pane-btn geomap-mode td-mode" data-gmode="td_turnout" hidden></button>
                     <button class="pane-btn geomap-mode td-mode" data-gmode="td_pace" hidden></button>
                 </div>
@@ -1515,9 +1523,11 @@
     }
     function applyGeoMode() {
         document.querySelectorAll('.geomap-mode').forEach(b => b.classList.toggle('gold', b.dataset.gmode === geoMode));
-        const sel = document.getElementById('geomap-party');
-        if (sel) sel.hidden = geoMode !== 'party';
-        if (geoMode === 'party') populateGeoParties();
+        // The party selector stays visible next to its pill in every
+        // mode; picking a party there switches to the party layer.
+        populateGeoParties();
+        const helpBtn = document.getElementById('embed-help');
+        if (helpBtn) helpBtn.setAttribute('aria-label', en() ? 'Voting pattern — what is this?' : 'דפוס הצבעה — מה זה?');
         if (geoMode === 'socioeconomic') ensureSocioData();
         updateTdSlider();
         updateTdScaleToggle();
@@ -1727,7 +1737,7 @@
         geoLayer.setStations(items);
         document.querySelectorAll('.geomap-mode').forEach(b => b.addEventListener('click', () => { geoMode = b.dataset.gmode; applyGeoMode(); }));
         const partySel = document.getElementById('geomap-party');
-        if (partySel) partySel.addEventListener('change', () => { geoPartyName = partySel.value; applyGeoMode(); });
+        if (partySel) partySel.addEventListener('change', () => { geoPartyName = partySel.value; geoMode = 'party'; applyGeoMode(); });
         applyGeoMode();
         updateUncountedGeo();
     }
@@ -2216,6 +2226,7 @@
             if (generic) generic.hidden = true;
         }
         const partySel = document.getElementById('geomap-party'); if (partySel && TURNOUT_ACTIVE) partySel.hidden = true;
+        const embedHelp = document.getElementById('embed-help-wrap'); if (embedHelp) embedHelp.hidden = TURNOUT_ACTIVE;
         const twinsBtn = document.getElementById('twins-toggle'); if (twinsBtn && TURNOUT_ACTIVE) twinsBtn.hidden = true;
         updateTdSlider();
         if (!pane) return;
