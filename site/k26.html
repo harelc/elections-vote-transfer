@@ -407,7 +407,7 @@
                 <section class="pane side-pane" id="pane-votes">
                     <div class="pane-head">
                         <div><h3 data-i18n="k26_votes_seats">קולות ומנדטים</h3><div class="pane-note" data-i18n="k26_threshold">אחוז חסימה 3.25%</div></div>
-                        <div class="pane-actions"><a class="full-view-cta votes-full-cta" href="dhondt.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
+                        <div class="pane-actions"><button class="pane-btn gold" id="dhondt-open" data-i18n="k26_dhondt_pane">מחשבון מנדטים</button><a class="full-view-cta votes-full-cta" href="dhondt.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
                     </div>
                     <div class="hemi-toggle" id="hemi-toggle" hidden>
                         <button class="pane-btn" data-hemi="partial"></button>
@@ -434,7 +434,6 @@
                     <button class="pane-btn gold stage-tab" data-stage="sankey" data-i18n="k26_sankey_pane">נדידת קולות 25 ← 26</button>
                     <!-- Ballot-distribution (t-SNE) stage pill hidden 2026-10-24; panel + renderTsne() kept — remove `hidden` to bring it back -->
                     <button class="pane-btn stage-tab" data-stage="tsne" data-i18n="k26_tsne_pane" hidden>התפלגות קלפיות</button>
-                    <button class="pane-btn stage-tab" data-stage="dhondt" data-i18n="k26_dhondt_pane">מחשבון מנדטים</button>
                     <a class="full-view-cta" id="stage-full-link" href="sankey.html" data-i18n="k26_open_full" style="margin-inline-start:auto">לתצוגה המלאה ↗</a>
                 </div>
                 <div class="stage-panel" id="panel-nowcast" hidden>
@@ -2315,6 +2314,7 @@
         if (DATA) DATA._userStage = true;
         activateStage(btn.dataset.stage);
     }));
+    document.getElementById('dhondt-open').addEventListener('click', openDhondtModal);
     document.getElementById('dhondt-modal-close').addEventListener('click', closeDhondtModal);
     document.getElementById('dhondt-modal').addEventListener('click', (e) => { if (e.target.id === 'dhondt-modal') closeDhondtModal(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeDhondtModal(); });
