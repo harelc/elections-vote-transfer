@@ -1799,11 +1799,18 @@
         }
         if (!geoMap || !window.whenMapReady) return;
         whenMapReady(geoMap, () => {
-            const pts = partial && !tdLayer ? (nc.geo_uncounted || []) : [];
+            // Read the mode NOW, not at call time: this callback can run
+            // after the style loads, by which point the user may already
+            // have switched layers — a stale winner-mode call queued
+            // before a td-mode call would otherwise resurrect the gray
+            // uncounted rings on top of the turnout layer.
+            const tdNow = geoMode === 'td_turnout' || geoMode === 'td_pace';
+            const pts = partial && !tdNow ? (nc.geo_uncounted || []) : [];
             upsertGeoJSON(geoMap, 'uncounted', { type: 'FeatureCollection', features: pts.map(a => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [a[3], a[2]] }, properties: {} })) });
             if (!geoMap.getLayer('uncounted-dots')) {
                 geoMap.addLayer({ id: 'uncounted-dots', type: 'circle', source: 'uncounted', paint: { 'circle-radius': 4, 'circle-color': '#9aa3af', 'circle-opacity': 0.38, 'circle-stroke-color': '#111827', 'circle-stroke-width': 0.5 } });
             }
+            geoMap.setLayoutProperty('uncounted-dots', 'visibility', pts.length ? 'visible' : 'none');
         });
     }
     function renderGeomap() {
