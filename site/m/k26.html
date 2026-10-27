@@ -536,6 +536,12 @@
                     <a href="settlement.html?name=${encodeURIComponent(d.name)}" style="color:#f0b429;text-decoration:none;font-size:0.85em;">${en() ? 'Settlement profile' : 'לפרופיל היישוב'} &rarr;</a>
                 </div>`);
         }
+        function withAlpha(c, a) {
+            if (!c) return c;
+            if (c[0] === '#') { const n = parseInt(c.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+            const m = c.match(/rgba?\(([^)]+)\)/);
+            return m ? `rgba(${m[1].split(',').slice(0, 3).join(',')},${a})` : c;
+        }
         function clusterIcon(items) {
             const count = items.length;
             const countedItems = items.filter(it => it.station.counted);
@@ -547,8 +553,8 @@
                 const sorted = Object.entries(wins).sort((a, b) => b[1] - a[1]);
                 info = Math.round(100 * sorted[0][1] / count) + '%';
                 let angle = 0; const stops = [];
-                sorted.slice(0, 5).forEach(([idx, n]) => { const pct = n / count * 100; stops.push(`${(parties[idx] || {}).color || '#999'} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`); angle += pct; });
-                if (angle < 99.5) stops.push(`#4b5563 ${angle.toFixed(1)}% 100%`);
+                sorted.slice(0, 5).forEach(([idx, n]) => { const pct = n / count * 100; stops.push(`${withAlpha((parties[idx] || {}).color || '#999', 0.8)} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`); angle += pct; });
+                if (angle < 99.5) stops.push(`${withAlpha('#4b5563', 0.8)} ${angle.toFixed(1)}% 100%`);
                 bg = `conic-gradient(${stops.join(', ')})`;
             } else if (countedItems.length && geoMode === 'turnout') {
                 let sv = 0, se = 0;
@@ -572,7 +578,7 @@
                 countedItems.forEach(it => { sx += it.station.x || 0; sy += it.station.y || 0; });
                 bg = embedCol({ x: sx / countedItems.length, y: sy / countedItems.length });
             }
-            if (bg.startsWith('rgb')) bg = bg.replace('rgb', 'rgba').replace(')', ',0.85)');
+            bg = withAlpha(bg, 0.75);
             const first = items[0];
             const colocated = items.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
             const size = (count > 500 ? 80 : count > 200 ? 70 : count > 100 ? 60 : count > 30 ? 50 : 40) * (colocated ? 0.85 : 1);

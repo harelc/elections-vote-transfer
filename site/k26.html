@@ -1498,6 +1498,12 @@
         const party = winner ? DATA.tsne.parties.find(p => p.name === winner[0]) : null;
         return party ? party.color : '#374151';
     }
+    function withAlpha(c, a) {
+        if (!c) return c;
+        if (c[0] === '#') { const n = parseInt(c.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+        const m = c.match(/rgba?\(([^)]+)\)/);
+        return m ? `rgba(${m[1].split(',').slice(0, 3).join(',')},${a})` : c;
+    }
     function geoClusterColor(clusterStations) {
         // Non-winner modes: one representative colour per cluster, computed
         // the way geomap.html colours its cluster icons.
@@ -1797,7 +1803,7 @@
                 const size0 = count0 > 500 ? 88 : count0 > 200 ? 76 : count0 > 100 ? 64 : count0 > 30 ? 54 : 44;
                 if (geoMode !== 'winner') {
                     const avgLabel = geoClusterLabel(clusterStations);
-                    return { html: `<div class="cluster-inner" style="background:${geoClusterColor(clusterStations)}"><div class="cluster-count">${count0}</div>${avgLabel ? `<div class="cluster-info">${avgLabel}</div>` : ''}</div>`, className: 'custom-cluster', size: size0 };
+                    return { html: `<div class="cluster-inner" style="background:${withAlpha(geoClusterColor(clusterStations), 0.75)}"><div class="cluster-count">${count0}</div>${avgLabel ? `<div class="cluster-info">${avgLabel}</div>` : ''}</div>`, className: 'custom-cluster', size: size0 };
                 }
                 const counts = {};
                 clusterStations.forEach(it => { const w = Object.entries(it.station.p || {}).sort((a,b)=>b[1]-a[1])[0]; if (w) counts[w[0]] = (counts[w[0]]||0)+1; });
@@ -1807,10 +1813,10 @@
                     let other = 0;
                     if (slices.length > 5) { other = slices.slice(5).reduce((s,e)=>s+e[1],0); slices = slices.slice(0,5); }
                     let ang = 0; const stops = [];
-                    slices.forEach(([name, n]) => { const p = DATA.tsne.parties.find(pp=>pp.name===name); const pct = n/clusterStations.length*100; stops.push(`${p?p.color:'#6b7280'} ${ang.toFixed(1)}% ${(ang+pct).toFixed(1)}%`); ang += pct; });
-                    if (other) stops.push(`#4b5563 ${ang.toFixed(1)}% 100%`);
+                    slices.forEach(([name, n]) => { const p = DATA.tsne.parties.find(pp=>pp.name===name); const pct = n/clusterStations.length*100; stops.push(`${withAlpha(p?p.color:'#6b7280', 0.8)} ${ang.toFixed(1)}% ${(ang+pct).toFixed(1)}%`); ang += pct; });
+                    if (other) stops.push(`${withAlpha('#4b5563', 0.8)} ${ang.toFixed(1)}% 100%`);
                     bg = `conic-gradient(${stops.join(', ')})`;
-                } else if (slices.length === 1) { const p = DATA.tsne.parties.find(pp=>pp.name===slices[0][0]); bg = p ? p.color : bg; }
+                } else if (slices.length === 1) { const p = DATA.tsne.parties.find(pp=>pp.name===slices[0][0]); bg = withAlpha(p ? p.color : bg, 0.8); }
                 const count = clusterStations.length;
                 const size = count > 500 ? 88 : count > 200 ? 76 : count > 100 ? 64 : count > 30 ? 54 : 44;
                 return { html: `<div class="cluster-inner" style="background:${bg}"><div class="cluster-count">${count}</div></div>`, className: 'custom-cluster', size };

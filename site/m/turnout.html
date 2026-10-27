@@ -235,6 +235,12 @@
             if (hi - lo < minSpan) { const mid = (lo + hi) / 2; lo = mid - minSpan / 2; hi = mid + minSpan / 2; }
             return scaleBandCache[key] = { lo, hi };
         }
+        function withAlpha(c, a) {
+            if (!c) return c;
+            if (c[0] === '#') { const n = parseInt(c.slice(1), 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; }
+            const m = c.match(/rgba?\(([^)]+)\)/);
+            return m ? `rgba(${m[1].split(',').slice(0, 3).join(',')},${a})` : c;
+        }
         function tdColor(v, isPace) {
             if (v == null || !isFinite(v)) return '#374151';
             if (scaleMode === 'adaptive') {
@@ -646,7 +652,7 @@
             const colocated = items.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
             const size = (count > 500 ? 80 : count > 200 ? 70 : count > 100 ? 60 : count > 30 ? 50 : 40) * (colocated ? 0.85 : 1);
             return {
-                html: `<div class="cluster-inner" style="background:${col.replace('rgb', 'rgba').replace(')', ',0.85)')}"><div class="cluster-count">${count}</div><div class="cluster-info">${info}</div></div>`,
+                html: `<div class="cluster-inner" style="background:${withAlpha(col, 0.75)}"><div class="cluster-count">${count}</div><div class="cluster-info">${info}</div></div>`,
                 className: 'custom-cluster' + (colocated ? ' cluster-colocated' : ''), size: Math.round(size)
             };
         }
