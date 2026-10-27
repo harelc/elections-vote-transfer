@@ -79,6 +79,7 @@
         k26_sankey_pane:       { he: 'נדידת קולות 25 ← 26', en: 'Vote flow 25 → 26' },
         k26_sankey_note:       { he: 'אומדן לאומי מהקלפיות המוצלבות, לא ספירת אנשים', en: 'National estimate from matched ballots, not a count of people' },
         k26_sankey_explainer:  { he: '📘 איך מחשבים את מעברי הקולות? להסבר המונפש', en: '📘 How are vote transfers calculated? Animated explainer' },
+        k26_nowcast_explainer: { he: '📘 איך עובדת התחזית? להסבר המונפש', en: '📘 How does the nowcast work? Animated explainer' },
         k26_suspects_pane:     { he: 'הקלפיות החשודות ביותר', en: 'Most suspicious ballots' },
         k26_suspects_note:     { he: 'הכי רחוקות מצפי מעבר הקולות של הקלפי התאומה ב־25. אי־התאמה אינה ראיה לזיוף', en: 'Farthest from their K25 twin’s expected transfer. A mismatch is not evidence of fraud' },
         k26_suspects_src:      { he: 'מקור לחיזוי: קלפי {b} ב{s}', en: 'Prediction source: ballot {b} in {s}' },

@@ -222,6 +222,13 @@
         #nc-flows-diagram svg { width:100%; height:auto; display:block; }
         .explainer-cta { display:inline-flex; align-items:center; margin:0.45rem 0 0.35rem; padding:0.5rem 0.9rem; border:1px solid var(--accent-primary); border-radius:999px; background:rgba(240,180,41,.1); color:var(--accent-primary); font-size:0.88rem; font-weight:700; text-decoration:none; }
         .explainer-cta:hover { background:rgba(240,180,41,.2); color:var(--accent-secondary); }
+        button.explainer-cta { font-family:inherit; cursor:pointer; }
+        /* Explainer slideshows (sankey / nowcast) open as floating
+           modals over the command centre, same shell as D'Hondt. */
+        .explainer-modal { position:fixed; inset:0; z-index:10030; background:rgba(5,8,14,.72); display:flex; align-items:flex-start; justify-content:center; padding:3vh 2vw; }
+        .explainer-modal[hidden] { display:none; }
+        .explainer-modal-card { background:var(--bg-card); border:1px solid var(--border-color); border-radius:14px; width:min(1060px,96vw); max-height:94vh; overflow:auto; padding:1rem 1.1rem; box-shadow:0 24px 70px rgba(0,0,0,.55); }
+        .explainer-frame { width:100%; height:min(76vh,780px); border:0; border-radius:10px; display:block; background:#16181d; }
         .err { color:var(--error); font-size:0.85rem; }
         .threshold-input { width:64px; background:var(--bg-tertiary); border:1px solid var(--border-color); border-radius:6px; color:var(--text-primary); font-family:inherit; padding:.3rem .4rem; }
         .th-controls { display:flex; gap:0.4rem; align-items:center; margin-bottom:0.7rem; flex-wrap:wrap; }
@@ -458,6 +465,7 @@
                 </div>
                 <div class="stage-panel" id="panel-sankey">
                     <div class="pane-note"><span data-i18n="k26_sankey_note"></span> · <span id="sankey-r2"></span></div>
+                    <button class="explainer-cta" id="sankey-explainer-open" data-i18n="k26_sankey_explainer">📘 איך מחשבים את מעברי הקולות? להסבר המונפש</button>
                     <div id="sankey-mini"></div>
                 </div>
                 <div class="stage-panel" id="panel-tsne" hidden style="position:relative">
@@ -579,6 +587,18 @@
                     </div>
                 </div>
                 <iframe class="dhondt-frame" id="dhondt-frame" title="מחשבון מנדטים" data-src="dhondt.html?embed=1" loading="lazy"></iframe>
+            </div>
+        </div>
+
+        <div class="explainer-modal" id="explainer-modal" hidden role="dialog" aria-modal="true" aria-label="Explainer">
+            <div class="explainer-modal-card">
+                <div class="dhondt-modal-head">
+                    <div><h3 id="explainer-modal-title"></h3></div>
+                    <div class="dhondt-modal-actions">
+                        <button class="pane-btn" id="explainer-modal-close" aria-label="Close">✕</button>
+                    </div>
+                </div>
+                <iframe class="explainer-frame" id="explainer-frame" title="Explainer" loading="lazy"></iframe>
             </div>
         </div>
 
@@ -2057,7 +2077,9 @@
             }
         }
         if (!partial) body += `<div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap"><a class="pane-btn gold" href="?preview=partial12" style="text-decoration:none">${en() ? '▶ Preview: 12% counted' : '▶ תצוגה מקדימה: 12% נספרו'}</a><a class="pane-btn" href="?preview=partial17" style="text-decoration:none">${en() ? '▶ Preview: 17% counted' : '▶ תצוגה מקדימה: 17% נספרו'}</a><a class="pane-btn" href="?preview=partial" style="text-decoration:none">${en() ? '▶ Preview: 45% counted' : '▶ תצוגה מקדימה: 45% נספרו'}</a></div>`;
-        content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div></div>` + body;
+        content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div><div class="pane-actions"><button class="pane-btn" id="nowcast-explainer-open">${i18n.t('k26_nowcast_explainer')}</button></div></div>` + body;
+        const ncExplBtn = document.getElementById('nowcast-explainer-open');
+        if (ncExplBtn) ncExplBtn.addEventListener('click', () => openExplainer('nowcast'));
         renderNcFlows();
         // The hemicycle selector in the votes pane depends on the partial
         // status + this projection, both of which can land after the
@@ -2334,6 +2356,24 @@
         m.hidden = false;
         renderDhondt();
     }
+    // Explainer slideshows in a floating modal (iframe; the pages
+    // post back a close message on their last chapter in embed mode).
+    const EXPLAINERS = {
+        sankey:  { src: 'sankey-explainer.html?embed=1',  he: 'איך משערכים נדידת קולות?', en: 'How are vote transfers estimated?' },
+        nowcast: { src: 'nowcast-explainer.html?embed=1', he: 'איך עובדת תחזית הקלפיות שטרם נספרו?', en: 'How does the nowcast of the uncounted ballots work?' },
+    };
+    function openExplainer(kind) {
+        const ex = EXPLAINERS[kind]; if (!ex) return;
+        const m = document.getElementById('explainer-modal');
+        document.getElementById('explainer-modal-title').textContent = en() ? ex.en : ex.he;
+        const frame = document.getElementById('explainer-frame');
+        if (frame.getAttribute('src') !== ex.src) frame.src = ex.src;
+        m.hidden = false;
+    }
+    function closeExplainerModal() {
+        const m = document.getElementById('explainer-modal');
+        if (m) m.hidden = true;
+    }
     function closeDhondtModal() {
         const m = document.getElementById('dhondt-modal');
         if (m) m.hidden = true;
@@ -2357,6 +2397,11 @@
         if (DATA) DATA._userStage = true;
         activateStage(btn.dataset.stage);
     }));
+    document.getElementById('sankey-explainer-open').addEventListener('click', () => openExplainer('sankey'));
+    document.getElementById('explainer-modal-close').addEventListener('click', closeExplainerModal);
+    document.getElementById('explainer-modal').addEventListener('click', (e) => { if (e.target.id === 'explainer-modal') closeExplainerModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeExplainerModal(); });
+    window.addEventListener('message', (e) => { if (e.origin === location.origin && e.data && e.data.type === 'kolot-close-explainer') closeExplainerModal(); });
     document.getElementById('dhondt-open').addEventListener('click', openDhondtModal);
     document.getElementById('dhondt-modal-close').addEventListener('click', closeDhondtModal);
     document.getElementById('dhondt-modal').addEventListener('click', (e) => { if (e.target.id === 'dhondt-modal') closeDhondtModal(); });

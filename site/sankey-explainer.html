@@ -149,6 +149,10 @@
 
         let DATA = null;
         let chapter = 0;
+        // Embedded in the command centre's explainer modal: no home
+        // link, and the last chapter closes the modal (message to the
+        // parent) instead of navigating away.
+        const EMBED = new URLSearchParams(location.search).has('embed');
         const stepsEl = document.getElementById('steps');
         const titleEl = document.getElementById('caption-title');
         const subEl = document.getElementById('caption-sub');
@@ -820,8 +824,9 @@
 
             // CTA button as HTML
             const btn = document.createElement('a');
-            btn.href = 'sankey.html';
-            btn.textContent = '🔀 לתרשים האינטראקטיבי ←';
+            btn.href = EMBED ? '#' : 'sankey.html';
+            btn.textContent = EMBED ? '✕ סגירה וחזרה למרכז הבקרה' : '🔀 לתרשים האינטראקטיבי ←';
+            if (EMBED) btn.addEventListener('click', (e) => { e.preventDefault(); window.parent.postMessage({ type: 'kolot-close-explainer' }, location.origin); });
             btn.style.cssText = 'display:inline-block;padding:0.75rem 1.5rem;background:var(--accent);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:1rem;margin-top:0.5rem;';
             visEl.appendChild(btn);
         }
@@ -856,6 +861,7 @@
         }
         function next() {
             if (chapter < chapters.length - 1) { chapter++; render(); }
+            else if (EMBED) { window.parent.postMessage({ type: 'kolot-close-explainer' }, location.origin); }
             else { window.location.href = 'sankey.html'; }
         }
         function prev() { if (chapter > 0) { chapter--; render(); } }
@@ -882,6 +888,7 @@
         prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prev(); });
 
         async function boot() {
+            if (EMBED) { const h = document.querySelector('.home-link'); if (h) h.style.display = 'none'; }
             try { DATA = await fetch('data/sankey_primer.json').then(r => r.json()); }
             catch (e) { document.body.innerHTML = '<div style="padding:2rem;color:#f87171">שגיאה בטעינת הנתונים.</div>'; return; }
             buildSteps();

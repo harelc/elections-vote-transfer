@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="קולות נודדים — איך עובדת תחזית הקלפיות שטרם נספרו">
+    <meta property="og:description" content="הסבר חזותי על תחזית ליל הבחירות: קלפיות תאומות, מטריצת מעבר, סימולציות ושער האמון">
+    <meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="קולות נודדים — לאן עברו הקולות בין בחירות לכנסת">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    <title>איך עובדת תחזית הקלפיות שטרם נספרו</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg: #16181d;
+            --bg2: #1e212a;
+            --bg3: #272b36;
+            --text: #f3f5f8;
+            --text2: #c8ceda;
+            --text3: #939aab;
+            --accent: #f0b429;
+            --likud: #2563eb;
+            --ya: #06b6d4;
+            --rz: #92400e;
+            --nu: #7c3aed;
+            --shas: #1e3a8a;
+            --abstain: #939aab;
+            --border: #3a4050;
+            --green: #22c55e;
+            --red: #ef4444;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Heebo', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .stage {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 1.25rem 4rem;
+            cursor: pointer;
+        }
+        .caption { max-width: 920px; margin: 0 auto; padding: 1rem 0 0.5rem; text-align: center; pointer-events: none; }
+        .caption-title { font-size: clamp(1.25rem, 3vw, 2rem); font-weight: 700; margin-bottom: 0.4rem; }
+        .caption-sub { font-size: clamp(0.85rem, 1.4vw, 1rem); color: var(--text2); line-height: 1.55; max-width: 780px; margin: 0 auto; }
+        .caption-sub b { color: var(--text); font-weight: 600; }
+        .caption-sub .num { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; }
+        .caption-sub .math { font-family: 'Cambria Math', 'STIX', 'Times New Roman', serif; font-style: italic; color: var(--text); }
+
+        .vis {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            margin-top: 0.5rem;
+            gap: 0.5rem;
+        }
+        .vis svg {
+            max-width: 100%;
+            max-height: 100%;
+            overflow: visible;
+        }
+
+        .step-indicator {
+            position: fixed; bottom: 1.6rem; left: 0; right: 0;
+            display: flex; justify-content: center; gap: 0.45rem; z-index: 30; pointer-events: none;
+        }
+        .step-dot {
+            width: 9px; height: 9px; border-radius: 50%; background: var(--border); transition: all 0.3s;
+        }
+        .step-dot.done { background: var(--text3); }
+        .step-dot.active { background: var(--accent); transform: scale(1.4); box-shadow: 0 0 12px var(--accent); }
+
+        .click-hint {
+            position: fixed; bottom: 0.4rem; left: 0; right: 0;
+            text-align: center; font-size: 0.7rem; color: var(--text3);
+            pointer-events: none; z-index: 30;
+        }
+
+        .nav-arrows { position: fixed; top: 1rem; inset-inline-start: 1rem; display: flex; gap: 0.5rem; z-index: 30; }
+        .nav-btn {
+            background: var(--bg2); border: 1px solid var(--border); color: var(--text2);
+            width: 32px; height: 32px; border-radius: 6px; cursor: pointer; font-size: 1.1rem;
+            display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+        }
+        .nav-btn:hover { color: var(--text); border-color: var(--text3); }
+        .nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+        .home-link {
+            position: fixed; top: 1rem; inset-inline-end: 1rem; background: var(--bg2);
+            border: 1px solid var(--border); color: var(--text2);
+            padding: 0.4rem 0.85rem; border-radius: 6px; text-decoration: none;
+            font-size: 0.85rem; z-index: 30;
+        }
+        .home-link:hover { color: var(--text); border-color: var(--text3); }
+
+        @media (max-width: 640px) {
+            .stage { padding: 0.6rem 0.6rem 4rem; }
+            .caption { padding-top: 2.6rem; }
+            .home-link { font-size: 0.75rem; padding: 0.3rem 0.6rem; }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">🏠 דף הבית</a>
+
+    <div class="nav-arrows">
+        <button class="nav-btn" id="prev-btn" title="הקודם">‹</button>
+        <button class="nav-btn" id="next-btn" title="הבא">›</button>
+    </div>
+
+    <div class="stage" id="stage">
+        <div class="caption">
+            <div class="caption-title" id="caption-title"></div>
+            <div class="caption-sub" id="caption-sub"></div>
+        </div>
+        <div class="vis" id="vis"></div>
+    </div>
+
+    <div class="step-indicator" id="steps"></div>
+    <div class="click-hint">לחצו, החליקו או הקישו מקש להמשך · ← הקודם · → הבא</div>
+
+    <script>
+    (function () {
+        'use strict';
+
+        let chapter = 0;
+        // Embedded in the command centre's explainer modal: no home
+        // link, and the last chapter closes the modal (message to the
+        // parent) instead of navigating away.
+        const EMBED = new URLSearchParams(location.search).has('embed');
+        const stepsEl = document.getElementById('steps');
+        const titleEl = document.getElementById('caption-title');
+        const subEl = document.getElementById('caption-sub');
+        const visEl = document.getElementById('vis');
+        const stage = document.getElementById('stage');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+
+        const fmt = (n) => new Intl.NumberFormat('he-IL').format(Math.round(n));
+        function clearVis() { visEl.innerHTML = ''; }
+        function makeSvg(w, h) {
+            return d3.select(visEl).append('svg')
+                .attr('viewBox', `0 0 ${w} ${h}`)
+                .attr('preserveAspectRatio', 'xMidYMid meet')
+                .style('width', '100%')
+                .style('height', '100%')
+                .style('max-height', 'calc(100vh - 240px)');
+        }
+        function closeEmbed() { window.parent.postMessage({ type: 'kolot-close-explainer' }, location.origin); }
+
+        const COLS = ['var(--likud)', 'var(--ya)', 'var(--rz)', 'var(--nu)'];
+        const NAMES = ['מפלגה א', 'מפלגה ב', 'מפלגה ג', 'מפלגה ד'];
+
+        // One horizontal stacked bar (shares sum to 1), animated in.
+        function stackBar(svg, x, y, w, h, shares, delay) {
+            let cx = x;
+            shares.forEach((s, i) => {
+                const bw = s * w;
+                svg.append('rect')
+                    .attr('x', cx).attr('y', y).attr('width', 0).attr('height', h)
+                    .attr('fill', COLS[i]).attr('opacity', 0.9)
+                    .transition().delay(delay + i * 120).duration(400)
+                    .attr('width', Math.max(0, bw - 1));
+                cx += bw;
+            });
+        }
+
+        // ===== Chapters =====
+        const chapters = [
+            { title: 'ליל הבחירות, 22:40: רק חלק מהקלפיות נספרו',
+              sub: () => `התוצאות זורמות בהדרגה, והקלפיות שנספרו ראשונות <b>אינן מדגם מייצג</b>: ערים חרדיות, למשל, נספרות לאט; קלפיות קטנות מהר. אם נסתכל רק על מה שנספר — נקבל תמונה מוטה. השאלה: מה אפשר לומר כבר עכשיו על התוצאה הסופית, ובאיזו מידת ביטחון?`,
+              draw: drawIntro },
+            { title: 'לכל קלפי שלא נספרה יש תאומה בכנסת הקודמת',
+              sub: () => `קלפי שלא נספרה בכנסת 26 כמעט תמיד התקיימה גם בכנסת 25 — <b>אותו יישוב, אותו מספר קלפי</b> (או אותו מקום־קלפי, או הסיכה הקרובה ביותר). מהתאומה אנחנו יודעים בדיוק איך הקלפי הזו הצביעה בפעם הקודמת, וכמה בוחרים יש בה.`,
+              draw: drawTwin },
+            { title: 'מהקלפיות שנספרו לומדים את מטריצת המעבר',
+              sub: () => `הקלפיות שכבר נספרו בשתי הכנסות מאפשרות לאמוד מחדש את <b>מטריצת המעבר T</b> של 25←26 — בדיוק אותו פותר קמור של הסבר הסנקי, אבל רק על תת־הקבוצה שנספרה. השורות של T אומרות: לאן הלכו מצביעי כל מפלגה ב־25, לפי מה שכבר רואים בשטח.`,
+              draw: drawMatrix },
+            { title: 'חיזוי קלפי אחת: התאומה × שורת המעבר',
+              sub: () => `עבור קלפי שלא נספרה, לוקחים את התפלגות ה־25 של התאומה ומפעילים עליה את T: מצביעי א׳ ב־25 מתפצלים לפי שורת א׳, מצביעי ב׳ לפי שורת ב׳, וכן הלאה. התוצאה היא <b>התפלגות חזויה</b> לקלפי — לא ניחוש חופשי, אלא אותה התנהגות שנמדדה בקלפיות דומות שכבר נספרו.`,
+              draw: drawPredict },
+            { title: 'סוכמים הכול: נספרות כמות שהן + חזויות',
+              sub: () => `התמונה הארצית החזויה היא סכום פשוט: הקלפיות שנספרו נכנסות <b>כמות שהן</b>, והקלפיות שלא נספרו נכנסות לפי החיזוי. מתוך הסכום מפעילים את חלוקת המנדטים (באדר־עופר, עם הסכמי עודפים) — ומקבלים תחזית מנדטים לסוף הספירה.`,
+              draw: drawAggregate },
+            { title: 'כמה התחזית יציבה? אלפי השלמות מדומות',
+              sub: () => `תחזית אחת היא רק נקודה. לכן מריצים <b>אלפי סימולציות</b>: בכל אחת ״משלימים״ את הקלפיות החסרות עם רעש ריאליסטי — פיזור דיריכלה בעוצמה שנמדדה במעבר 24→25, בתוספת רעידת־אומדן שקטנה ככל שחלק הספירה גדל. התפלגות המנדטים על פני ההשלמות היא התשובה: הפס הצבעוני בכל שורה הוא בדיוק ההתפלגות הזו.`,
+              draw: drawUncertainty },
+            { title: 'שער האמון: מתחת לסף — אין תחזית',
+              sub: () => `תחזית מוקדמת מדי גרועה מאי־תחזית. לכן התחזית נפתחת רק כשחמישה תנאים מתקיימים יחד — מספיק קלפיות מוצלבות, מספיק מהקולות כבר נספרו, התאמה טובה של המודל (R²), והרכב נספר שלא סטה מדי מהארץ. מתחת לשער תראו ״מוקדם מדי״ — לא מספר. הספים כוילו מראש על ספירות מדומות שבהן התשובה ידועה.`,
+              draw: drawGate },
+        ];
+
+        // ===== Renderers (numbers are illustrative) =====
+
+        function drawIntro() {
+            const W = 760, H = 360;
+            const svg = makeSvg(W, H);
+            const cols = 14, rows = 5, gx = 92, gy = 42, r = 11;
+            const x0 = (W - (cols - 1) * gx / 2 * 2) / 2, y0 = 52;
+            // Deterministic pseudo-random counted set (~45%), clustered
+            // so the bias story reads: the right-hand "cities" count late.
+            let seed = 7;
+            const rnd = () => { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; };
+            for (let ri = 0; ri < rows; ri++) {
+                for (let ci = 0; ci < cols; ci++) {
+                    const counted = rnd() < (ci < 8 ? 0.62 : 0.22);
+                    svg.append('circle')
+                        .attr('cx', 70 + ci * 46).attr('cy', y0 + ri * 46)
+                        .attr('r', 0)
+                        .attr('fill', counted ? COLS[(ri + ci) % 4] : 'none')
+                        .attr('stroke', counted ? 'none' : 'var(--text3)')
+                        .attr('stroke-dasharray', counted ? '' : '3 3')
+                        .attr('opacity', counted ? 0.9 : 0.6)
+                        .transition().delay(150 + (ri * cols + ci) * 14).duration(300)
+                        .attr('r', r);
+                }
+            }
+            svg.append('circle').attr('cx', 590).attr('cy', 310).attr('r', 9).attr('fill', COLS[0]);
+            svg.append('text').attr('x', 572).attr('y', 315).attr('fill', 'var(--text2)').attr('font-size', '0.85rem').text('נספרה — התוצאה ידועה');
+            svg.append('circle').attr('cx', 590).attr('cy', 340).attr('r', 9).attr('fill', 'none').attr('stroke', 'var(--text3)').attr('stroke-dasharray', '3 3');
+            svg.append('text').attr('x', 572).attr('y', 345).attr('fill', 'var(--text2)').attr('font-size', '0.85rem').text('טרם נספרה — זו השאלה');
+            svg.append('text').attr('x', 120).attr('y', 315).attr('fill', 'var(--accent)').attr('font-size', '1rem').attr('font-weight', 700).text('~45% נספרו (להמחשה)');
+        }
+
+        function drawTwin() {
+            const W = 760, H = 340;
+            const svg = makeSvg(W, H);
+            function card(x, title, counted) {
+                svg.append('rect').attr('x', x).attr('y', 90).attr('width', 250).attr('height', 130)
+                    .attr('rx', 10).attr('fill', 'var(--bg2)').attr('stroke', counted ? 'var(--green)' : 'var(--border)').attr('stroke-width', 1.5);
+                svg.append('text').attr('x', x + 125).attr('y', 122).attr('text-anchor', 'middle')
+                    .attr('fill', 'var(--text)').attr('font-size', '0.95rem').attr('font-weight', 700).text(title);
+            }
+            // RTL: reading starts at the right — the uncounted K26 box.
+            card(430, 'קלפי 14 · כנסת 26 — טרם נספרה', false);
+            svg.append('text').attr('x', 555).attr('y', 175).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text3)').attr('font-size', '2.2rem').attr('font-weight', 700).text('?');
+            svg.append('text').attr('x', 555).attr('y', 250).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text2)').attr('font-size', '0.8rem').text('812 בעלי זכות בחירה — ידוע מהמרשם');
+            card(80, 'קלפי 14 · כנסת 25 — התאומה', true);
+            stackBar(svg, 100, 140, 210, 26, [0.55, 0.3, 0.1, 0.05], 300);
+            svg.append('text').attr('x', 205).attr('y', 192).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text2)').attr('font-size', '0.8rem').text('א׳ 55% · ב׳ 30% · ג׳ 10% · ד׳ 5% · הצביעו 640');
+            // Arrow from the K26 box back to its twin
+            svg.append('line').attr('x1', 430).attr('x2', 338).attr('y1', 155).attr('y2', 155)
+                .attr('stroke', 'var(--accent)').attr('stroke-width', 2.5)
+                .style('opacity', 0).transition().delay(600).duration(400).style('opacity', 1);
+            svg.append('text').attr('x', 384).attr('y', 140).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--accent)').attr('font-size', '0.85rem').attr('font-weight', 700)
+                .style('opacity', 0).transition().delay(800).duration(400).style('opacity', 1)
+                .text('אותו יישוב + מספר');
+            svg.append('text').attr('x', W / 2).attr('y', 292).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text3)').attr('font-size', '0.8rem')
+                .text('אין תאומה מדויקת? נופלים לאותו מקום־קלפי, ואז לסיכה הקרובה ביותר — ומסמנים איך הותאמה.');
+        }
+
+        function drawMatrix() {
+            const W = 760, H = 370, pad = { l: 120, r: 30, t: 66, b: 40 };
+            const svg = makeSvg(W, H);
+            const T = [
+                [0.80, 0.10, 0.06, 0.04],
+                [0.08, 0.78, 0.09, 0.05],
+                [0.05, 0.12, 0.76, 0.07],
+                [0.10, 0.08, 0.10, 0.72],
+            ];
+            const n = 4, cellW = (W - pad.l - pad.r) / n, cellH = (H - pad.t - pad.b) / n;
+            const opacity = d3.scaleLinear().domain([0, 1]).range([0.12, 1]);
+            NAMES.forEach((nm, ci) => {
+                svg.append('text').attr('x', pad.l + ci * cellW + cellW / 2).attr('y', pad.t - 14)
+                    .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '0.75rem').text(nm + ' ב־26');
+            });
+            NAMES.forEach((s, ri) => {
+                svg.append('text').attr('x', pad.l - 8).attr('y', pad.t + ri * cellH + cellH / 2 + 4)
+                    .attr('text-anchor', 'start').attr('fill', 'var(--text2)').attr('font-size', '0.78rem').text(s + ' ב־25');
+                NAMES.forEach((d, ci) => {
+                    const v = T[ri][ci];
+                    const x = pad.l + ci * cellW + 2, y = pad.t + ri * cellH + 2;
+                    svg.append('rect').attr('x', x).attr('y', y).attr('width', cellW - 4).attr('height', cellH - 4)
+                        .attr('fill', COLS[ri]).attr('stroke', 'var(--border)').attr('stroke-width', 0.5)
+                        .attr('opacity', 0).transition().delay(200 + (ri * n + ci) * 70).duration(350)
+                        .attr('opacity', opacity(v));
+                    svg.append('text').attr('x', x + (cellW - 4) / 2).attr('y', y + (cellH - 4) / 2 + 5)
+                        .attr('text-anchor', 'middle').attr('fill', v > 0.3 ? '#fff' : 'var(--text)')
+                        .attr('font-size', '0.88rem').attr('font-weight', 600).text(Math.round(v * 100) + '%')
+                        .style('opacity', 0).transition().delay(450 + (ri * n + ci) * 70).duration(300).style('opacity', 1);
+                });
+            });
+            svg.append('text').attr('x', W / 2).attr('y', H - 8).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text3)').attr('font-size', '0.78rem')
+                .text('נאמדה רק מהקלפיות שנספרו בשתי הכנסות — ומתעדכנת בכל גל תוצאות.');
+        }
+
+        function drawPredict() {
+            const W = 760, H = 350;
+            const svg = makeSvg(W, H);
+            svg.append('text').attr('x', 430).attr('y', 36).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('התאומה ב־25:');
+            stackBar(svg, 190, 48, 480, 30, [0.55, 0.3, 0.1, 0.05], 200);
+            // The dominant source's transfer row, spelled out
+            svg.append('text').attr('x', W / 2).attr('y', 128).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text2)').attr('font-size', '0.85rem')
+                .text('שורת א׳ ב־T:  80% נשארים בא׳ · 10% לב׳ · 6% לג׳ · 4% לד׳  —  וכך לכל מפלגת מקור');
+            svg.append('text').attr('x', W / 2).attr('y', 168).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--accent)').attr('font-size', '1.6rem').attr('font-weight', 700).text('↓ × T');
+            svg.append('text').attr('x', 430).attr('y', 196).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('החיזוי ל־26:');
+            // 0.55*[.80,.10,.06,.04] + 0.30*[.08,.78,.09,.05] + 0.10*[.05,.12,.76,.07] + 0.05*[.10,.08,.10,.72]
+            stackBar(svg, 190, 208, 480, 30, [0.474, 0.305, 0.136, 0.085], 700);
+            svg.append('text').attr('x', 430).attr('y', 272).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text2)').attr('font-size', '0.82rem')
+                .text('א׳ 47% · ב׳ 31% · ג׳ 14% · ד׳ 9%  —  ומספר המצביעים הצפוי: מבעלי הזכות ומדפוס ההצבעה של התאומה');
+            svg.append('text').attr('x', W / 2).attr('y', 316).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text3)').attr('font-size', '0.78rem')
+                .text('כך לכל קלפי שלא נספרה: חיזוי אחד, מבוסס על התאומה שלה בלבד.');
+        }
+
+        function drawAggregate() {
+            const W = 760, H = 350;
+            const svg = makeSvg(W, H);
+            svg.append('text').attr('x', 452).attr('y', 36).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('נספרו בפועל (45%):');
+            stackBar(svg, 235, 48, 435, 28, [0.5, 0.28, 0.13, 0.09], 200);
+            svg.append('text').attr('x', 452).attr('y', 88).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('חזויות (55%):');
+            const g = svg.append('g').attr('opacity', 0.55);
+            let cx = 235;
+            [0.42, 0.33, 0.15, 0.1].forEach((s, i) => {
+                const bw = s * 435;
+                g.append('rect').attr('x', cx).attr('y', 98).attr('width', Math.max(0, bw - 1)).attr('height', 28)
+                    .attr('fill', COLS[i]).attr('stroke', 'var(--text)').attr('stroke-dasharray', '4 3');
+                cx += bw;
+            });
+            svg.append('text').attr('x', W / 2).attr('y', 168).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--accent)').attr('font-size', '1.4rem').attr('font-weight', 700).text('↓  סכום  ↓');
+            svg.append('text').attr('x', 452).attr('y', 188).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('התמונה המלאה:');
+            stackBar(svg, 235, 198, 435, 28, [0.456, 0.308, 0.141, 0.095], 800);
+            const seats = [['א׳', 55], ['ב׳', 37], ['ג׳', 17], ['ד׳', 11]];
+            seats.forEach(([nm, s], i) => {
+                svg.append('rect').attr('x', 600 - i * 118).attr('y', 262).attr('width', 104).attr('height', 40)
+                    .attr('rx', 8).attr('fill', COLS[i]).attr('opacity', 0)
+                    .transition().delay(1300 + i * 200).duration(400).attr('opacity', 0.9);
+                svg.append('text').attr('x', 648 - i * 118).attr('y', 288).attr('text-anchor', 'middle')
+                    .attr('fill', '#fff').attr('font-size', '0.9rem').attr('font-weight', 700)
+                    .text(nm + ' · ' + s)
+                    .style('opacity', 0).transition().delay(1400 + i * 200).duration(300).style('opacity', 1);
+            });
+            svg.append('text').attr('x', W / 2).attr('y', 334).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text3)').attr('font-size', '0.78rem').text('באדר־עופר על הסכום — לא על הממוצע של שתי העמודות.');
+        }
+
+        function drawUncertainty() {
+            const W = 760, H = 360;
+            const svg = makeSvg(W, H);
+            const rows = [
+                { name: 'מפלגה א׳', color: 'var(--likud)', mean: 21.4, sd: 1.5, fc: 21, now: 19 },
+                { name: 'מפלגה ב׳', color: 'var(--ya)', mean: 15.8, sd: 1.1, fc: 16, now: 14 },
+                { name: 'מפלגה ג׳', color: 'var(--nu)', mean: 8.6, sd: 0.8, fc: 9, now: 10 },
+            ];
+            const xs = d3.scaleLinear().domain([0, 30]).range([150, 690]);
+            rows.forEach((r, ri) => {
+                const y = 60 + ri * 92;
+                svg.append('text').attr('x', 706).attr('y', y + 5).attr('text-anchor', 'start')
+                    .attr('fill', 'var(--text)').attr('font-size', '0.88rem').attr('font-weight', 600).text(r.name);
+                svg.append('rect').attr('x', xs(0)).attr('y', y + 16).attr('width', xs(30) - xs(0)).attr('height', 18)
+                    .attr('rx', 9).attr('fill', 'var(--bg3)');
+                // Density: stacked thin slices of a normal bell
+                for (let s = 0; s <= 30; s += 0.25) {
+                    const d = Math.exp(-((s - r.mean) ** 2) / (2 * r.sd * r.sd));
+                    if (d < 0.02) continue;
+                    svg.append('rect').attr('x', xs(s)).attr('y', y + 16).attr('width', xs(s + 0.25) - xs(s) + 0.5).attr('height', 18)
+                        .attr('fill', r.color).attr('opacity', 0)
+                        .transition().delay(300 + ri * 350 + Math.abs(s - r.mean) * 60).duration(300)
+                        .attr('opacity', (d * 0.95).toFixed(2));
+                }
+                const tick = (v, color, label, dy) => {
+                    svg.append('line').attr('x1', xs(v)).attr('x2', xs(v)).attr('y1', y + 12).attr('y2', y + 38)
+                        .attr('stroke', color).attr('stroke-width', 2.5);
+                    svg.append('text').attr('x', xs(v)).attr('y', y + 52 + dy).attr('text-anchor', 'middle')
+                        .attr('fill', color).attr('font-size', '0.7rem').text(label);
+                };
+                tick(r.fc, '#22d3ee', 'תחזית ' + r.fc, -44);
+                tick(r.mean, '#f59e0b', 'ממוצע ' + r.mean.toFixed(1), 2);
+                tick(r.now, '#ffffff', 'נספר ' + r.now, 16);
+                [0, 10, 20, 30].forEach(v => {
+                    svg.append('text').attr('x', xs(v)).attr('y', y + 84).attr('text-anchor', 'middle')
+                        .attr('fill', 'var(--text3)').attr('font-size', '0.65rem').text(v);
+                });
+            });
+            svg.append('text').attr('x', W / 2).attr('y', 348).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--text3)').attr('font-size', '0.78rem')
+                .text('רוויות הפס = שיעור ההשלמות שהסתיימו במספר המנדטים הזה. פס רחב = אי־ודאות גדולה.');
+        }
+
+        function drawGate() {
+            const W = 760, H = 372;
+            const svg = makeSvg(W, H);
+            const checks = [
+                ['קלפיות מוצלבות עם כנסת 25', 'לפחות 1,000', true],
+                ['חלק הקולות של 25 שכבר נספר', 'לפחות 12%', true],
+                ['התאמת מודל המעבר לקלפיות שנספרו (R²)', 'לפחות 0.75', true],
+                ['סטיית הרכב הנספר מההרכב הארצי', 'לכל היותר 18%', true],
+                ['קולות־מקור לכל מפלגה גדולה', 'לפחות 8,000', false],
+            ];
+            checks.forEach(([label, need, ok], i) => {
+                const y = 36 + i * 44;
+                svg.append('rect').attr('x', 90).attr('y', y).attr('width', 580).attr('height', 36)
+                    .attr('rx', 8).attr('fill', 'var(--bg2)').attr('stroke', ok ? 'var(--green)' : 'var(--red)').attr('stroke-width', 1)
+                    .attr('opacity', 0).transition().delay(200 + i * 180).duration(300).attr('opacity', 1);
+                svg.append('text').attr('x', 648).attr('y', y + 23).attr('text-anchor', 'start')
+                    .attr('fill', 'var(--text)').attr('font-size', '0.85rem').text((ok ? '✅ ' : '⏳ ') + label)
+                    .style('opacity', 0).transition().delay(300 + i * 180).duration(300).style('opacity', 1);
+                svg.append('text').attr('x', 112).attr('y', y + 23).attr('text-anchor', 'end')
+                    .attr('fill', 'var(--text3)').attr('font-size', '0.78rem').text(need)
+                    .style('opacity', 0).transition().delay(300 + i * 180).duration(300).style('opacity', 1);
+            });
+            svg.append('text').attr('x', W / 2).attr('y', 292).attr('text-anchor', 'middle')
+                .attr('fill', 'var(--red)').attr('font-size', '0.95rem').attr('font-weight', 700)
+                .text('אחד חסר? הפאנל מציג ״⏳ מוקדם מדי״ — בלי מספרים.')
+                .style('opacity', 0).transition().delay(1300).duration(400).style('opacity', 1);
+            // CTA back to the command centre
+            const btn = document.createElement('a');
+            btn.href = EMBED ? '#' : 'k26.html';
+            btn.textContent = EMBED ? '✕ סגירה וחזרה למרכז הבקרה' : '🗳 למרכז הבקרה של כנסת 26 ←';
+            btn.style.cssText = 'display:inline-block;padding:0.75rem 1.5rem;background:var(--accent);color:#1a1408;border-radius:10px;text-decoration:none;font-weight:600;font-size:1rem;margin-top:0.5rem;';
+            if (EMBED) btn.addEventListener('click', (e) => { e.preventDefault(); closeEmbed(); });
+            visEl.appendChild(btn);
+        }
+
+        // ===== Navigation =====
+        function buildSteps() {
+            stepsEl.innerHTML = '';
+            chapters.forEach((c, i) => {
+                const d = document.createElement('div');
+                d.className = 'step-dot';
+                d.onclick = (e) => { e.stopPropagation(); goTo(i); };
+                d.style.pointerEvents = 'auto';
+                stepsEl.appendChild(d);
+            });
+        }
+        function updateSteps() {
+            stepsEl.querySelectorAll('.step-dot').forEach((d, i) => {
+                d.className = 'step-dot' + (i === chapter ? ' active' : (i < chapter ? ' done' : ''));
+            });
+            prevBtn.disabled = chapter === 0;
+            nextBtn.title = chapter === chapters.length - 1 ? 'סיום' : 'הבא';
+            nextBtn.textContent = chapter === chapters.length - 1 ? (EMBED ? '✕' : '🏠') : '›';
+        }
+        function render() {
+            const ch = chapters[chapter];
+            titleEl.innerHTML = ch.title;
+            subEl.innerHTML = ch.sub();
+            clearVis();
+            updateSteps();
+            if (ch.draw) ch.draw();
+        }
+        function next() {
+            if (chapter < chapters.length - 1) { chapter++; render(); }
+            else if (EMBED) { closeEmbed(); }
+            else { window.location.href = 'k26.html'; }
+        }
+        function prev() { if (chapter > 0) { chapter--; render(); } }
+        function goTo(i) { chapter = i; render(); }
+
+        stage.addEventListener('click', (e) => {
+            if (e.target.closest('a')) return;
+            next();
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === ' ' || e.key === 'Enter') next();
+            else if (e.key === 'ArrowRight') prev();
+            else if (e.key === 'Escape') goTo(0);
+        });
+        let touchStartX = null;
+        stage.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
+        stage.addEventListener('touchend', (e) => {
+            if (touchStartX == null) return;
+            const dx = e.changedTouches[0].clientX - touchStartX;
+            if (Math.abs(dx) > 50) (dx < 0 ? next : prev)();
+            touchStartX = null;
+        });
+        nextBtn.addEventListener('click', (e) => { e.stopPropagation(); next(); });
+        prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prev(); });
+
+        if (EMBED) { const h = document.querySelector('.home-link'); if (h) h.style.display = 'none'; }
+        buildSteps();
+        render();
+    })();
+    </script>
+</body>
+</html>
