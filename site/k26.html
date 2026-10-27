@@ -2617,7 +2617,7 @@
               <div class="td-bar"><i style="width:${Math.min(100, width).toFixed(1)}%;background:${col}"></i></div>
               <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)} · ${r.share_of_voters != null ? r.share_of_voters.toFixed(1) + (en() ? '% of voters' : '% מהמצביעים') : ''}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
-        const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
+        const settleBlock = (title, list, val, n) => `<div><h4>${title}</h4>${(list || []).slice(0, n || 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
         // Big towns only (>25k eligible), aggregated live from the
         // stations — the all-settlement lists are dominated by small
         // villages.
@@ -2634,11 +2634,11 @@
         const towns = [...townAgg.values()].filter(r => r.eligible > 25000)
             .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible, updAvg: r.updN ? hhmmOf(r.updSum / r.updN) : null }))
             .sort((a, b) => b.turnout - a.turnout);
-        const townVal = r => `${(r.turnout || 0).toFixed(1)}% · ${fmt(r.eligible)}${r.updAvg ? ` <small>(${en() ? 'ballots updated on avg' : 'עדכון קלפיות בממוצע'} ${r.updAvg})</small>` : ''}`;
+        const townVal = r => `${(r.turnout || 0).toFixed(1)}%${r.updAvg ? ` <small>(${en() ? 'ballots updated on avg' : 'עדכון קלפיות בממוצע'} ${r.updAvg})</small>` : ''}`;
         const S = (detailSnap && detailSnap.settlements) || td.settlements || {};
         document.getElementById('td-settles').innerHTML =
-            settleBlock(en() ? 'Highest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הגבוהה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns.slice(0, 8), townVal) +
-            settleBlock(en() ? 'Lowest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הנמוכה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns.slice(-8).reverse(), townVal) +
+            settleBlock(en() ? 'Highest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הגבוהה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns, townVal, 25) +
+            settleBlock(en() ? 'Lowest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הנמוכה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns.slice().reverse(), townVal, 25) +
             settleBlock(en() ? 'Highest turnout settlements' : 'היישובים עם ההצבעה הגבוהה ביותר', S.highest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Lowest turnout settlements' : 'היישובים עם ההצבעה הנמוכה ביותר', S.lowest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Highest recovery of their K25 turnout (ratio ×, not a turnout)' : 'הכי גבוהים בשחזור שיעור ההצבעה של 25 (יחס ×, לא אחוז הצבעה)', S.fastest_pace, r => r.pace != null ? '×' + r.pace.toFixed(2) : '–') +

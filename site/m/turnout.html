@@ -596,9 +596,9 @@
             document.getElementById('towns-title').textContent = en() ? 'Large towns (over 25,000 eligible)' : 'יישובים גדולים (מעל 25 אלף בעלי זכות)';
             document.getElementById('towns-high-title').textContent = en() ? 'Highest turnout' : 'ההצבעה הגבוהה ביותר';
             document.getElementById('towns-low-title').textContent = en() ? 'Lowest turnout' : 'ההצבעה הנמוכה ביותר';
-            const row = x => `<div class="set-row"><span class="nm">${i18n.settlementName ? i18n.settlementName(x.name) : x.name}</span><span class="vl">${x.turnout.toFixed(1)}% <small>${fmt(x.voters)} / ${fmt(x.eligible)}${x.updAvg ? ` · ${en() ? 'ballots updated on avg' : 'עדכון קלפיות בממוצע'} ${x.updAvg}` : ''}</small></span></div>`;
-            document.getElementById('towns-high').innerHTML = rows.slice(0, 8).map(row).join('');
-            document.getElementById('towns-low').innerHTML = rows.slice(-8).reverse().map(row).join('');
+            const row = x => `<div class="set-row"><span class="nm">${i18n.settlementName ? i18n.settlementName(x.name) : x.name}</span><span class="vl">${x.turnout.toFixed(1)}% <small>${fmt(x.voters)}${x.updAvg ? ` · ${en() ? 'ballots updated on avg' : 'עדכון קלפיות בממוצע'} ${x.updAvg}` : ''}</small></span></div>`;
+            document.getElementById('towns-high').innerHTML = rows.slice(0, 25).map(row).join('');
+            document.getElementById('towns-low').innerHTML = rows.slice(-25).reverse().map(row).join('');
             document.getElementById('towns-note').textContent = en()
                 ? `${rows.length} towns over 25,000 eligible, from the CEC per-ballot layer.`
                 : `${rows.length} יישובים מעל 25 אלף בעלי זכות, לפי שכבת הקלפיות של ועדת הבחירות.`;
