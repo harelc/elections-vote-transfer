@@ -419,24 +419,34 @@
                 ? `Median ballot <b>${f1(med)}</b> · mean <b>${f1(mean)}</b> · weighted mean <b>${f1(wMean)}</b> · middle 50%: ${f1(q(0.25))}–${f1(q(0.75))} · only <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> of ballots are above the national figure.`
                 : `קלפי חציונית <b>${f1(med)}</b> · ממוצע <b>${f1(mean)}</b> · ממוצע משוקלל <b>${f1(wMean)}</b> · 50% האמצעיים: ${f1(q(0.25))}–${f1(q(0.75))} · רק <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> מהקלפיות מעל הנתון הארצי.`;
             const lag = (natT != null && wMean != null) ? natT - wMean : null;
-            // Vintage profile: per-ballot last-updated hour in the feed.
-            const updHours = {};
+            // Vintage profile: per-ballot last-updated stamp, 15-min bins.
+            const BINM = 15, updBins = {};
+            let updMin = null, updMax = null;
             (td.stations || []).forEach(a => {
                 if (!a[20]) return;
-                const h = parseInt(String(a[20]).slice(0, 2), 10);
-                if (isFinite(h)) updHours[h] = (updHours[h] || 0) + 1;
+                const p = String(a[20]).split(':');
+                const mins = (+p[0]) * 60 + (+p[1] || 0);
+                if (!isFinite(mins)) return;
+                const b = Math.floor(mins / BINM) * BINM;
+                updBins[b] = (updBins[b] || 0) + 1;
+                updMin = updMin == null ? b : Math.min(updMin, b);
+                updMax = updMax == null ? b : Math.max(updMax, b);
             });
-            const updKeys = Object.keys(updHours).map(Number).sort((a, b) => a - b);
-            document.getElementById('dist-vintage-title').innerHTML = updKeys.length
-                ? `<b>${en() ? 'When the feed last updated each ballot' : 'מתי עודכנה כל קלפי בהזנה לאחרונה'}</b>` : '';
+            document.getElementById('dist-vintage-title').innerHTML = updMin != null
+                ? `<b>${en() ? 'When the feed last updated each ballot (15-min bins)' : 'מתי עודכנה כל קלפי בהזנה לאחרונה (מקטעים של 15 דקות)'}</b>` : '';
             document.getElementById('dist-vintage').innerHTML = (() => {
-                if (!updKeys.length) return '';
-                const vmax = Math.max(...updKeys.map(h => updHours[h]));
-                const bw = (R - L) / Math.max(1, updKeys.length);
+                if (updMin == null) return '';
+                const keys = [];
+                for (let b = updMin; b <= updMax; b += BINM) keys.push(b);
+                const vmax = Math.max(...keys.map(b => updBins[b] || 0));
+                const bw = (R - L) / keys.length;
                 let bars = '';
-                updKeys.forEach((h, i) => {
-                    const bh = updHours[h] / vmax * 54;
-                    bars += `<rect x="${(L + i * bw + 2).toFixed(1)}" y="${(68 - bh).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="${bh.toFixed(1)}" rx="2" fill="rgba(240,180,41,.65)"/><text x="${(L + i * bw + bw / 2).toFixed(1)}" y="84" fill="#8b93a5" font-size="11" text-anchor="middle">${String(h).padStart(2, '0')}:00</text><text x="${(L + i * bw + bw / 2).toFixed(1)}" y="${(61 - bh).toFixed(1)}" fill="#c8ceda" font-size="10" text-anchor="middle">${updHours[h].toLocaleString()}</text>`;
+                keys.forEach((b, i) => {
+                    const c = updBins[b] || 0;
+                    if (!c) return;
+                    const bh = c / vmax * 54;
+                    const hhmm = `${String(Math.floor(b / 60)).padStart(2, '0')}:${String(b % 60).padStart(2, '0')}`;
+                    bars += `<rect x="${(L + i * bw + 2).toFixed(1)}" y="${(68 - bh).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="${bh.toFixed(1)}" rx="2" fill="rgba(240,180,41,.65)"/><text x="${(L + i * bw + bw / 2).toFixed(1)}" y="84" fill="#8b93a5" font-size="11" text-anchor="middle">${hhmm}</text><text x="${(L + i * bw + bw / 2).toFixed(1)}" y="${(61 - bh).toFixed(1)}" fill="#c8ceda" font-size="10" text-anchor="middle">${c.toLocaleString()}</text>`;
                 });
                 return `<svg viewBox="0 0 ${W} 92" style="width:100%;height:auto;display:block;direction:ltr">${bars}</svg>`;
             })();
@@ -492,8 +502,14 @@
                 const at = els.map(e => histAtHour(e.values, hours, last.t)).sort((a, b) => a - b);
                 const med = at[Math.floor(at.length / 2)], k25v = k25 ? histAtHour(k25.values, hours, last.t) : null;
                 const higher = at.filter(v => v > last.v).length;
-                note = en() ? `At this hour in past elections: median ${med.toFixed(1)}%${k25v != null ? `, K25 ${k25v.toFixed(1)}% (today ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} pts)` : ''}. Only ${higher} of ${at.length} past elections were higher.`
-                    : `בשעה זו בבחירות קודמות: חציון ${med.toFixed(1)}%${k25v != null ? `, כנסת 25: ${k25v.toFixed(1)}% (היום ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} נק׳)` : ''}. רק ${higher} מתוך ${at.length} הבחירות הקודמות היו גבוהות יותר.`;
+                const lh = els.filter(e => histAtHour(e.values, hours, last.t) > last.v)
+                    .sort((a, b) => (b.year || 0) - (a.year || 0))[0] || null;
+                const lhTxt = lh
+                    ? (en() ? ` The last election higher at this hour was K${lh.knesset} (${lh.year}), at ${histAtHour(lh.values, hours, last.t).toFixed(1)}%.`
+                        : ` הפעם האחרונה שבה נרשם בשעה זו שיעור גבוה יותר הייתה כנסת ${lh.knesset} (${lh.year}) — ${histAtHour(lh.values, hours, last.t).toFixed(1)}%.`)
+                    : (en() ? ' No past election was higher at this hour — a record for this hour.' : ' אף בחירות קודמות לא היו גבוהות יותר בשעה זו — שיא לשעה זו.');
+                note = en() ? `At this hour in past elections: median ${med.toFixed(1)}%${k25v != null ? `, K25 ${k25v.toFixed(1)}% (today ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} pts)` : ''}. Only ${higher} of ${at.length} past elections were higher.${lhTxt}`
+                    : `בשעה זו בבחירות קודמות: חציון ${med.toFixed(1)}%${k25v != null ? `, כנסת 25: ${k25v.toFixed(1)}% (היום ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} נק׳)` : ''}. רק ${higher} מתוך ${at.length} הבחירות הקודמות היו גבוהות יותר.${lhTxt}`;
             } else if (k25) {
                 note = en() ? `Hourly history starts at 10:00 — K25 stood at ${k25.values[0].toFixed(1)}% then.` : `ההיסטוריה השעתית מתחילה ב־10:00 — בכנסת 25 עמדה אז על ${k25.values[0].toFixed(1)}%.`;
             }
