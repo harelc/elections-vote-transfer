@@ -14,7 +14,7 @@ ingests one such snapshot and joins every K26 roster ballot to:
 The output carries no K26 result information at all -- only how many
 people have voted so far, where, and how that compares with the K25 twin
 ballot. Group analyses therefore answer "who is turning out so far?"
-in K25 terms: by the twin's winning party, bloc, stronghold (>=40% for a
+in K25 terms: by the twin's winning party, bloc, stronghold (>=30% for a
 party), sector / form / district / socioeconomic cluster, and the twin's
 own K25 turnout band. `pace` everywhere is voters-so-far divided by the
 twin group's final K25 voters: 0.62 means the group has already cast
@@ -90,7 +90,7 @@ FORM_LABELS = {
 }
 OTHER_LABEL = ("אחר / לא מסווג", "Other / unclassified")
 UNKNOWN_LABEL = ("לא ידוע", "Unknown")
-STRONGHOLD_MIN = 40.0  # K25 party share (%) in the twin for "stronghold"
+STRONGHOLD_MIN = 30.0  # K25 party share (%) in the twin for "stronghold"
 MIN_GROUP_ELIGIBLE = 3000
 
 
