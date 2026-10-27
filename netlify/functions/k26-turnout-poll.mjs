@@ -124,7 +124,11 @@ async function githubState(env, fetchImpl) {
     runs += body.total_count || 0;
   }
   return {
-    acceptedSha256: (turnout && turnout.meta && turnout.meta.source_sha256) || null,
+    // turnout_day_26.json is >1MB, over the Contents API limit, so
+    // its body comes back empty and the sha there is unreadable.
+    // k26_status.json is tiny and refresh_turnout_day.py stamps the
+    // same source sha into it — prefer that, fall back to the big file.
+    acceptedSha256: (status && status.sha256) || (turnout && turnout.meta && turnout.meta.source_sha256) || null,
     statusKind: status && status.kind,
     runs,
   };

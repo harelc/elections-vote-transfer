@@ -389,13 +389,15 @@ def main():
         # with the historical hourly table.
         if args.as_of:
             try:
+                from datetime import datetime, timezone, timedelta
                 raw = json.loads(Path(args.snapshot[-1]).read_text(encoding="utf-8"))
                 upd = (raw.get("total") or {}).get("updated") if isinstance(raw, dict) else None
                 if upd and ":" in str(upd):
                     hh = int(str(upd).split(":")[0]) - 1
-                    if hh >= 7:
-                        base = str(args.as_of)
-                        args.as_of = f"{base[:10]}T{hh:02d}:00:00{base[19:] or '+02:00'}"
+                    if hh >= 0:
+                        dt = datetime.fromisoformat(str(args.as_of).replace("Z", "+00:00"))
+                        il = timezone(timedelta(hours=2))
+                        args.as_of = dt.astimezone(il).replace(hour=hh, minute=0, second=0, microsecond=0).isoformat()
             except Exception:
                 pass
 
@@ -450,16 +452,25 @@ def main():
             if srec is not None and srec.get("rate") is not None and roster_elig:
                 rec = {"eligible": roster_elig, "voters": roster_elig * srec["rate"],
                        "settlement_level": True}
-        if rec is None:
-            unmatched += 1
-            continue
-        elig = rec["eligible"] or float(row["k26_eligible"] or 0)
-        if not elig:
-            unmatched += 1
-            continue
-        voters = float(rec["voters"])
-        if rec.get("settlement_level"):
-            settlement_level += 1
+        reported = rec is not None
+        if not reported:
+            # On the roster but absent from the CEC map feed (its
+            # kalpi layer only carries geometry-joined ballots —
+            # ~3.8k boxes, e.g. Lavon). Keep the station as a no-data
+            # point so the map shows it exists; aggregates skip it.
+            elig = float(row["k26_eligible"] or 0)
+            if not elig:
+                unmatched += 1
+                continue
+            voters = None
+        else:
+            elig = rec["eligible"] or float(row["k26_eligible"] or 0)
+            if not elig:
+                unmatched += 1
+                continue
+            voters = float(rec["voters"])
+            if rec.get("settlement_level"):
+                settlement_level += 1
 
         try:
             lat = float(row["k26_lat"]) if row.get("k26_lat") else None
@@ -530,7 +541,8 @@ def main():
         if soc is None and name in by_settle25:
             soc = by_settle25[name].get("cluster")
 
-        add(total, elig, voters, k25_voters, k25_elig)
+        if reported:
+            add(total, elig, voters, k25_voters, k25_elig)
         dims = {
             "k25_winner": winner or "other",
             "k25_bloc": BLOC_OF.get(winner or "", "other"),
@@ -544,12 +556,13 @@ def main():
                                  "65-75" if k25_turnout is not None and k25_turnout < 75 else
                                  "75+" if k25_turnout is not None else "unknown"),
         }
-        for dim, gid in dims.items():
-            add(groups[dim][gid], elig, voters, k25_voters, k25_elig)
-        for party, pct in props.items():
-            if pct >= STRONGHOLD_MIN:
-                add(groups["stronghold"][party], elig, voters, k25_voters, k25_elig)
-        add(settle_agg[name], elig, voters, k25_voters, k25_elig)
+        if reported:
+            for dim, gid in dims.items():
+                add(groups[dim][gid], elig, voters, k25_voters, k25_elig)
+            for party, pct in props.items():
+                if pct >= STRONGHOLD_MIN:
+                    add(groups["stronghold"][party], elig, voters, k25_voters, k25_elig)
+            add(settle_agg[name], elig, voters, k25_voters, k25_elig)
         settle_meta[name] = {"district": sec.get("district"), "population": sec.get("population")}
 
         # fields: see meta.station_fields in the output document
@@ -561,9 +574,10 @@ def main():
             except ValueError:
                 match_m = None
         stations.append([name, ballot, round(lat, 5) if lat else None, round(lng, 5) if lng else None,
-                         round(elig), round(voters), round(100 * voters / elig, 1),
+                         round(elig), round(voters) if voters is not None else None,
+                         round(100 * voters / elig, 1) if voters is not None else None,
                          round(k25_turnout, 1) if k25_turnout is not None else None,
-                         round(voters / k25_voters, 3) if k25_voters else None,
+                         round(voters / k25_voters, 3) if (voters is not None and k25_voters) else None,
                          winner, dims["k25_bloc"], dims["population"], dims["district"], soc,
                          1 if twin is not None else 0,
                          match_kind,
@@ -601,7 +615,7 @@ def main():
         "matched_ballots": sum(1 for s in stations if s[14]),
         "settlement_level_ballots": settlement_level,
         "match_kinds": dict(match_counts),
-        "reported_ballots": len(stations), "roster_ballots": len(roster), "unmatched_rows": unmatched,
+        "reported_ballots": sum(1 for s in stations if s[5] is not None), "roster_ballots": len(roster), "unmatched_rows": unmatched,
         "eligible_coverage": round(total["eligible"] / sum(float(r["k26_eligible"] or 0) for r in roster), 3)
         if roster else 0.0,
     })
@@ -663,9 +677,13 @@ def main():
     # to *this* run's station order; carried snapshots are re-aligned
     # by key) plus its group aggregates, so k26.html can scrub the day.
     cur_keys = [f"{s[0]}|{s[1]}" for s in stations]
+    # Carried snapshots align to the PREVIOUS file's station order
+    # (its top-level stations), not this run's — the station set can
+    # grow between runs (e.g. unreported ballots added as no-data).
+    prev_keys = [f"{s[0]}|{s[1]}" for s in (prev or {}).get("stations", [])]
     snapshots = []
     for snap in prev_snapshots:
-        by_key = dict(zip(snap.get("_keys") or cur_keys, snap.get("voters", [])))
+        by_key = dict(zip(snap.get("_keys") or prev_keys or cur_keys, snap.get("voters", [])))
         aligned = {"as_of": snap.get("as_of"), "national": snap.get("national"),
                    "groups": snap.get("groups"), "settlements": snap.get("settlements"),
                    "voters": [by_key.get(k) for k in cur_keys]}
@@ -691,6 +709,22 @@ def main():
                              "groups": zeroed(groups_out), "settlements": zeroed(settlements_out),
                              "voters": [0] * len(stations)})
     snapshots = snapshots[:1] + snapshots[1:][-15:] if snapshots and snapshots[0].get("baseline") else snapshots[-16:]
+    # Dedupe by instant (the same data hour can arrive with different
+    # tz strings, e.g. +00:00 vs +02:00) — last writer wins, sorted.
+    def _instant(s):
+        try:
+            from datetime import datetime
+            return datetime.fromisoformat(str(s.get("as_of")).replace("Z", "+00:00")).timestamp()
+        except Exception:
+            return None
+    by_instant = {}
+    for s in snapshots:
+        by_instant[_instant(s) if _instant(s) is not None else s.get("as_of")] = s
+    snapshots = [by_instant[k] for k in sorted(by_instant, key=lambda k: (k is None, k))]
+    # History mirrors the deduped snapshots exactly (older runs could
+    # leave entries stamped with generation times that are not data
+    # hours and would never match a snapshot).
+    history = [{"as_of": s.get("as_of"), "national": s.get("national")} for s in snapshots][-12:]
 
     out = {
         "meta": {"kind": kind, "as_of": args.as_of, "source_sha256": args.sha256,
