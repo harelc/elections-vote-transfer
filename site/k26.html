@@ -2539,7 +2539,7 @@
                     : (en() ? `${Math.floor(mins / 60)}h ${mins % 60}m ago` : `לפני ${Math.floor(mins / 60)} שע׳ ו־${mins % 60} דק׳`);
                 const published = (K26STATUS && K26STATUS.kind === 'turnout' && K26STATUS.as_of)
                     ? new Date(K26STATUS.as_of).toLocaleTimeString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit' }) : null;
-                tsEl.innerHTML = `${en() ? 'Turnout data as of' : 'נתוני אחוזי ההצבעה נכונים ל'} ${full} <span class="td-ts-age">(${age}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal, simulated — not real data' : ' · חזרה (סימולציה) — לא נתוני אמת') : ''})</span>${published ? `<br><span class="td-ts-age">${en() ? 'Published on this site at' : 'עודכן באתר ב־'}${published}</span>` : ''};
+                tsEl.innerHTML = `${en() ? 'Turnout data as of' : 'נתוני אחוזי ההצבעה נכונים ל'} ${full} <span class="td-ts-age">(${age}${meta.kind === 'rehearsal' ? (en() ? ' · rehearsal, simulated — not real data' : ' · חזרה (סימולציה) — לא נתוני אמת') : ''})</span>${published ? `<br><span class="td-ts-age">${en() ? 'Published on this site at' : 'עודכן באתר ב־'}${published}</span>` : ''}`;
             } else {
                 tsEl.textContent = en() ? 'Turnout data: no timestamp on this snapshot' : 'נתוני אחוזי הצבעה: אין חותמת זמן בקובץ זה';
             }
