@@ -556,9 +556,31 @@ def main():
 
     total_voters = total["voters"] or 1
     nat = finish(total)
+    # The CEC kalpi feed's own "total" block is the official national
+    # headline — and it does NOT equal the sum of its per-ballot
+    # features (the map layer carries only geometry-joined ballots,
+    # and its counts lag the headline). Trust it for the national
+    # figures; per-ballot rows remain the map/group source.
+    if not args.rehearsal:
+        try:
+            raw = json.loads(Path(args.snapshot[-1]).read_text(encoding="utf-8"))
+            cec = raw.get("total") if isinstance(raw, dict) else None
+            if cec and cec.get("מצביעים") is not None and cec.get("בזב"):
+                nat["voters"] = round(float(cec["מצביעים"]))
+                nat["eligible"] = round(float(cec["בזב"]))
+                nat["turnout"] = round(float(cec["percent"]), 1) if cec.get("percent") is not None \
+                    else round(100 * nat["voters"] / nat["eligible"], 1)
+                nat["remaining_voters"] = nat["eligible"] - nat["voters"]
+                k25_all = sum(float(s.get("voters") or 0) for s in by_settle25.values())
+                denom = max(total["k25_voters"], k25_all)
+                if denom:
+                    nat["pace"] = round(nat["voters"] / denom, 3)
+                nat["national_source"] = "cec_total"
+        except Exception:
+            pass
     nat.update({
         "delta_vs_k25_final_pp": round(nat["turnout"] - nat["k25_turnout"], 1) if nat["k25_turnout"] is not None else None,
-        "remaining_voters": round(total["eligible"] - total["voters"]),
+        "remaining_voters": round(nat["eligible"] - nat["voters"]),
         "matched_ballots": sum(1 for s in stations if s[14]),
         "settlement_level_ballots": settlement_level,
         "match_kinds": dict(match_counts),
