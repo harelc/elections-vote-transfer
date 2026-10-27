@@ -406,9 +406,11 @@
                 ? `Median ballot <b>${f1(med)}</b> · mean <b>${f1(mean)}</b> · weighted mean <b>${f1(wMean)}</b> · middle 50%: ${f1(q(0.25))}–${f1(q(0.75))} · only <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> of ballots are above the national figure.`
                 : `קלפי חציונית <b>${f1(med)}</b> · ממוצע <b>${f1(mean)}</b> · ממוצע משוקלל <b>${f1(wMean)}</b> · 50% האמצעיים: ${f1(q(0.25))}–${f1(q(0.75))} · רק <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> מהקלפיות מעל הנתון הארצי.`;
             const lag = (natT != null && wMean != null) ? natT - wMean : null;
-            document.getElementById('dist-note').textContent = en()
+            const bv = (s && s.national || {}).ballot_vintage;
+            document.getElementById('dist-note').textContent = (en()
                 ? `Why the map trails the headline: the CEC feed's national total (${natT != null ? natT.toFixed(1) : '–'}%) is the official hourly release, while its per-ballot layer is an earlier vintage (weighted mean ${f1(wMean)}, a ${lag != null ? lag.toFixed(1) : '–'}-point gap). The national figure rules for the country; the ballot layer catches up in later exports.`
-                : `למה המפה מפגרת אחרי הכותרת: הנתון הארצי בהזנת ועדת הבחירות (${natT != null ? natT.toFixed(1) : '–'}%) הוא הפרסום השעתי הרשמי, ואילו שכבת הקלפיות היא מגרסה מוקדמת יותר (ממוצע משוקלל ${f1(wMean)}, פער של ${lag != null ? lag.toFixed(1) : '–'} נקודות). הנתון הארצי קובע לגבי המדינה; שכבת הקלפיות מתעדכנת בייצואים הבאים.`;
+                : `למה המפה מפגרת אחרי הכותרת: הנתון הארצי בהזנת ועדת הבחירות (${natT != null ? natT.toFixed(1) : '–'}%) הוא הפרסום השעתי הרשמי, ואילו שכבת הקלפיות היא מגרסה מוקדמת יותר (ממוצע משוקלל ${f1(wMean)}, פער של ${lag != null ? lag.toFixed(1) : '–'} נקודות). הנתון הארצי קובע לגבי המדינה; שכבת הקלפיות מתעדכנת בייצואים הבאים.`)
+                + (bv ? (en() ? ` Half the ballots were last updated by ${bv.median_updated}; only ${bv.share_at_data_hour}% at the data hour itself.` : ` חצי מהקלפיות עודכנו לאחרונה עד ${bv.median_updated}; רק ${bv.share_at_data_hour}% עודכנו בשעת הנתון עצמה.`) : '');
             card.hidden = false;
         }
 

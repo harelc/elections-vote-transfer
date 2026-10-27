@@ -249,6 +249,8 @@ def snapshot_records(path):
                 continue
             ballot = norm_ballot(get["ballot"])
             rec = {"eligible": elig, "voters": voters}
+            if row.get("updated"):
+                rec["updated"] = str(row["updated"]).strip()
             if code:
                 by_code[(code, ballot)] = rec
             if name:
@@ -331,10 +333,10 @@ def finish(a):
     }
 
 
-def group_rows(groups, labels, total_voters):
+def group_rows(groups, labels, total_voters, min_eligible=MIN_GROUP_ELIGIBLE):
     rows = []
     for gid, a in groups.items():
-        if a["eligible"] < MIN_GROUP_ELIGIBLE:
+        if a["eligible"] < min_eligible:
             continue
         r = finish(a)
         he, en_ = labels(gid) if callable(labels) else labels.get(gid, (str(gid), str(gid)))
@@ -432,6 +434,7 @@ def main():
         return sorted(out, key=lambda x: x[0])
 
     stations, unmatched, settlement_level = [], 0, 0
+    ballot_updates = []  # per-ballot "updated" HH:MM from the feed, as minutes
     match_counts = defaultdict(int)
     groups = {k: defaultdict(agg) for k in
               ("k25_winner", "k25_bloc", "stronghold", "population", "form", "district", "socio", "k25_turnout_band")}
@@ -543,6 +546,12 @@ def main():
 
         if reported:
             add(total, elig, voters, k25_voters, k25_elig)
+            upd = rec.get("updated") or ""
+            if len(upd) >= 5 and upd[2] == ":":
+                try:
+                    ballot_updates.append(int(upd[:2]) * 60 + int(upd[3:5]))
+                except ValueError:
+                    pass
         dims = {
             "k25_winner": winner or "other",
             "k25_bloc": BLOC_OF.get(winner or "", "other"),
@@ -619,6 +628,19 @@ def main():
         "eligible_coverage": round(total["eligible"] / sum(float(r["k26_eligible"] or 0) for r in roster), 3)
         if roster else 0.0,
     })
+    if ballot_updates:
+        su = sorted(ballot_updates)
+        med = su[len(su) // 2]
+        try:
+            data_hour = int(str(args.as_of)[11:13])
+        except Exception:
+            data_hour = None
+        nat["ballot_vintage"] = {
+            "median_updated": f"{med // 60:02d}:{med % 60:02d}",
+            "share_at_data_hour": round(100 * sum(1 for u in su if data_hour is not None and u >= data_hour * 60) / len(su), 1)
+            if data_hour is not None else None,
+            "ballots": len(su),
+        }
 
     def settle_rows(key, reverse, limit=12, min_eligible=800):
         rows = []
@@ -658,7 +680,11 @@ def main():
     groups_out = {
             "k25_winner": group_rows(groups["k25_winner"], lambda g: OTHER_LABEL if g == "other" else (g, g), total_voters),
             "k25_bloc": group_rows(groups["k25_bloc"], lambda g: BLOC_LABELS.get(g, (g, g)), total_voters),
-            "stronghold": group_rows(groups["stronghold"], lambda g: (g, g), total_voters),
+            # Stronghold groups are party-defined and can be small
+            # (Labor's >=30% ballots total only ~2.6k eligible among
+            # reported boxes) — the generic 3k floor would silently
+            # drop whole parties, so use a token floor here.
+            "stronghold": group_rows(groups["stronghold"], lambda g: (g, g), total_voters, min_eligible=500),
             "population": group_rows(groups["population"], lambda g: POP_LABELS.get(g, (g, g)), total_voters),
             "form": group_rows(groups["form"], lambda g: FORM_LABELS.get(g, (g, g)), total_voters),
             "district": group_rows(groups["district"], lambda g: UNKNOWN_LABEL if g == "unknown" else (g, g), total_voters),

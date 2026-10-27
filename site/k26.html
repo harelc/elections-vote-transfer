@@ -2434,7 +2434,9 @@
             <div class="td-stats" style="margin:.4rem 0">${stats}</div>
             <div class="hist-note">${en()
                 ? `Why does the map look lower than the national headline? The CEC feed publishes two layers that are not the same vintage: the national total (${natT != null ? natT.toFixed(1) : '–'}%) is the official hourly release, while the per-ballot layer trails it — its weighted mean here is ${fmt1(wMean)}, a gap of ${lag != null ? lag.toFixed(1) : '–'} points. The national figure is authoritative for the country; the ballot layer catches up in later exports, and everything per-ballot on this page (map, groups, rankings) is drawn from it.`
-                : `למה המפה נראית נמוכה מהכותרת הארצית? הזנת ועדת הבחירות מפרסמת שתי שכבות שאינן מאותו זמן: הנתון הארצי (${natT != null ? natT.toFixed(1) : '–'}%) הוא הפרסום השעתי הרשמי, ואילו שכבת הקלפיות מפגרת אחריו — הממוצע המשוקלל שלה כאן הוא ${fmt1(wMean)}, פער של ${lag != null ? lag.toFixed(1) : '–'} נקודות. הנתון הארצי הוא הקובע לגבי המדינה; שכבת הקלפיות מתעדכנת בייצואים הבאים, וכל הניתוח לפי קלפי בעמוד הזה (מפה, קבוצות, דירוגים) נבנה ממנה.`}</div>`;
+                : `למה המפה נראית נמוכה מהכותרת הארצית? הזנת ועדת הבחירות מפרסמת שתי שכבות שאינן מאותו זמן: הנתון הארצי (${natT != null ? natT.toFixed(1) : '–'}%) הוא הפרסום השעתי הרשמי, ואילו שכבת הקלפיות מפגרת אחריו — הממוצע המשוקלל שלה כאן הוא ${fmt1(wMean)}, פער של ${lag != null ? lag.toFixed(1) : '–'} נקודות. הנתון הארצי הוא הקובע לגבי המדינה; שכבת הקלפיות מתעדכנת בייצואים הבאים, וכל הניתוח לפי קלפי בעמוד הזה (מפה, קבוצות, דירוגים) נבנה ממנה.`}${nat.ballot_vintage ? (en()
+                ? ` Each ballot carries its own "updated" stamp: half of them were last updated by ${nat.ballot_vintage.median_updated}, and only ${nat.ballot_vintage.share_at_data_hour}% were updated at the data hour itself.`
+                : ` לכל קלפי בהזנה חותמת ״עודכן״ משלה: חצי מהקלפיות עודכנו לאחרונה עד ${nat.ballot_vintage.median_updated}, ורק ${nat.ballot_vintage.share_at_data_hour}% עודכנו בשעת הנתון עצמה.`) : ''}</div>`;
         box.hidden = false;
     }
     // Group histograms can be ranked + painted (bar length) by the
