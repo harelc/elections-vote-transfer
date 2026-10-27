@@ -7,7 +7,7 @@ publish = "site"
 # Dispatch stays off while auto is false. K26_AUTO=0 stops it even after that file is set true.
 # K26_POLL=0 stops fetching before the window ends.
 [functions."k26-poll"]
-schedule = "*/10 * * * *"
+schedule = "*/5 * * * *"
 included_files = ["k26_control.json"]
 
 # Election-day turnout poller: every 2 minutes inside the daytime
