@@ -418,14 +418,14 @@
             const mean = vals.reduce((x, v) => x + v, 0) / vals.length;
             const wMean = wElig ? 100 * wSum / wElig : null;
             const above = natT != null ? vals.filter(v => v > natT).length : 0;
-            const BIN = 2, MAXB = 40, bins = new Array(MAXB / BIN).fill(0);
+            const BIN = 2, MAXB = Math.min(100, Math.max(50, Math.ceil((vals[vals.length - 1] || 50) / 10) * 10)), bins = new Array(MAXB / BIN).fill(0);
             vals.forEach(v => { bins[Math.min(bins.length - 1, Math.floor(v / BIN))]++; });
             const maxBin = Math.max(...bins);
             const W = 720, H = 250, L = 46, R = 706, T = 16, B = 206;
             const X = v => L + v / MAXB * (R - L), Y = c => B - c / maxBin * (B - T);
             let g = '';
             bins.forEach((c, i) => { const h = B - Y(c); if (h > 0) g += `<rect x="${(X(i * BIN) + 1).toFixed(1)}" y="${Y(c).toFixed(1)}" width="${(X(BIN) - X(0) - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="rgba(150,170,205,.55)"/>`; });
-            [0, 10, 20, 30, 40].forEach(v => { g += `<text x="${X(v)}" y="${B + 17}" fill="#8b93a5" font-size="11" text-anchor="middle">${v}%</text>`; });
+            for (let v = 0; v <= MAXB; v += 20) { g += `<text x="${X(v)}" y="${B + 17}" fill="#8b93a5" font-size="11" text-anchor="middle">${v}%</text>`; }
             if (natT != null && natT <= MAXB) {
                 g += `<line x1="${X(natT)}" y1="${T - 4}" x2="${X(natT)}" y2="${B}" stroke="#f0b429" stroke-width="3"/>`;
                 g += `<text x="${Math.min(X(natT) + 7, R - 140)}" y="${T + 9}" fill="#ffd75e" font-size="14" font-weight="700">${en() ? 'National' : 'ארצי'} ${natT.toFixed(1)}%</text>`;

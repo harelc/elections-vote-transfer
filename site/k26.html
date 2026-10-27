@@ -2423,7 +2423,7 @@
         const wMean = wElig ? 100 * wSum / wElig : null;
         const natT = nat.turnout;
         const above = natT != null ? vals.filter(v => v > natT).length : 0;
-        const BIN = 2, MAXB = 40, bins = new Array(MAXB / BIN).fill(0);
+        const BIN = 2, MAXB = Math.min(100, Math.max(50, Math.ceil((vals[vals.length - 1] || 50) / 10) * 10)), bins = new Array(MAXB / BIN).fill(0);
         vals.forEach(v => { bins[Math.min(bins.length - 1, Math.floor(v / BIN))]++; });
         const maxBin = Math.max(...bins);
         const W = 720, H = 240, L = 44, R = 706, T = 14, B = 196;
@@ -2433,7 +2433,7 @@
             const h = B - Y(c);
             if (h > 0) g += `<rect x="${(X(i * BIN) + 1).toFixed(1)}" y="${Y(c).toFixed(1)}" width="${(X(BIN) - X(0) - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="rgba(150,170,205,.55)"/>`;
         });
-        [0, 10, 20, 30, 40].forEach(v => { g += `<text x="${X(v)}" y="${B + 16}" fill="#8b93a5" font-size="10" text-anchor="middle">${v}%</text>`; });
+        for (let v = 0; v <= MAXB; v += 20) { g += `<text x="${X(v)}" y="${B + 16}" fill="#8b93a5" font-size="10" text-anchor="middle">${v}%</text>`; }
         g += `<text x="${L - 5}" y="${Y(maxBin) + 3}" fill="#8b93a5" font-size="10" text-anchor="end">${maxBin}</text>`;
         if (natT != null && natT <= MAXB) {
             g += `<line x1="${X(natT)}" y1="${T - 4}" x2="${X(natT)}" y2="${B}" stroke="#f0b429" stroke-width="2.5"/>`;
