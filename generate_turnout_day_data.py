@@ -47,6 +47,7 @@ import hashlib
 import io
 import math
 import json
+import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -683,6 +684,33 @@ def main():
                                    "_keys": [f"{s[0]}|{s[1]}" for s in prev.get("stations", [])]}]
         except Exception:
             history, prev_snapshots, prev = [], [], None
+    # Stale-feed guard + announced-figure matching (live CEC only).
+    # The CEC CDN has served freshly-generated files carrying an older
+    # release's data (a 16:07 file with the 12:00 figures), for which
+    # generated-1h invents a checkpoint (15:00) that never happened.
+    # Two rules keep the time axis honest:
+    #  1. If the national turnout matches an existing snapshot's (e.g.
+    #     an announced figure first published national-only), this file
+    #     IS that hour's full release — stamp it with that hour.
+    #  2. Otherwise, if its voter total is below the best existing
+    #     snapshot's, it is old data in a fresh wrapper: refuse to
+    #     publish (non-zero exit; refresh_turnout_day.py check=True
+    #     turns that into a failed, unpublished workflow run).
+    if kind == "live" and prev and not args.rehearsal:
+        prev_snaps = prev.get("snapshots") or []
+        matched_asof = None
+        for s in prev_snaps:
+            pn = (s.get("national") or {}).get("turnout")
+            if pn is not None and nat.get("turnout") is not None and abs(pn - nat["turnout"]) < 0.06:
+                matched_asof = s.get("as_of")
+                break
+        if matched_asof:
+            args.as_of = matched_asof
+        else:
+            max_prev = max([((s.get("national") or {}).get("voters") or 0) for s in prev_snaps] or [0])
+            if max_prev and (nat.get("voters") or 0) < 0.999 * max_prev:
+                print(f"STALE FEED REFUSED: new national voters {nat.get('voters')} < existing {max_prev}; not publishing.")
+                sys.exit(3)
     history = (history + [{"as_of": args.as_of, "national": nat}])[-12:]
 
     groups_out = {
@@ -721,6 +749,11 @@ def main():
         aligned = {"as_of": snap.get("as_of"), "national": snap.get("national"),
                    "groups": snap.get("groups"), "settlements": snap.get("settlements"),
                    "voters": [by_key.get(k) for k in cur_keys]}
+        # Announced-figure snapshots stay flagged national-only until a
+        # genuine feed release replaces them at the same hour; dropping
+        # the flag would present the previous layer's ballots as theirs.
+        if snap.get("national_only"):
+            aligned["national_only"] = True
         snapshots.append(aligned)
     snapshots.append({"as_of": args.as_of, "national": nat, "groups": groups_out,
                       "settlements": settlements_out, "voters": [s[5] for s in stations]})
