@@ -317,7 +317,11 @@
                 const age = mins < 60 ? (en() ? `${mins} min ago` : `לפני ${mins} דק׳`) : (en() ? `${Math.floor(mins / 60)}h ${mins % 60}m ago` : `לפני ${Math.floor(mins / 60)} שע׳ ו־${mins % 60} דק׳`);
                 const pub = (status && status.kind === 'turnout' && status.as_of)
                     ? new Date(status.as_of).toLocaleTimeString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit' }) : null;
-                return `${en() ? 'National turnout figures last updated at' : 'נתוני אחוזי ההצבעה הארציים עודכנו ב'}${full} (${age})${pub ? `<br>${en() ? 'Per-ballot data, as received from the Central Elections Committee, last updated at ' : 'נתוני הקלפיות הבודדים כפי שמתקבלים מוועדת הבחירות עודכנו לאחרונה ב־'}${pub}` : ''}`;
+                const updMins = (td.stations || []).map(a => a[20]).filter(Boolean)
+                    .map(u => { const p = String(u).split(':'); return (+p[0]) * 60 + (+p[1] || 0); }).filter(isFinite);
+                const updAvg = updMins.length
+                    ? (() => { const m = Math.round(updMins.reduce((s, v) => s + v, 0) / updMins.length); return `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(m % 60).padStart(2, '0')}`; })() : null;
+                return `${en() ? 'National turnout figures last updated at' : 'נתוני אחוזי ההצבעה הארציים עודכנו ב'}${full} (${age})${pub ? `<br>${en() ? 'Per-ballot data, as received from the Central Elections Committee, last updated at ' : 'נתוני הקלפיות הבודדים כפי שמתקבלים מוועדת הבחירות עודכנו לאחרונה ב־'}${pub}${updAvg ? (en() ? `, reflecting a mean per-ballot update time of ${updAvg}` : `, ומשקפים זמן עדכון ממוצע ברמת הקלפי של ${updAvg}`) : ''}` : ''}`;
             })();
             document.getElementById('nat-fill').style.width = Math.min(100, n.turnout || 0) + '%';
             document.getElementById('nat-voters').textContent = fmt(n.voters);
