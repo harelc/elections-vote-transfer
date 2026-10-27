@@ -119,6 +119,7 @@ jobs:
           # (pulls Chrome) outside the repo and let download_expb.js
           # drive it. NODE_PATH lets the repo script resolve the module.
           npm install --prefix /tmp/expb-dl puppeteer@25
+          /tmp/expb-dl/node_modules/.bin/puppeteer browsers install chrome
           NODE_PATH=/tmp/expb-dl/node_modules node download_expb.js data/k26_inbox/snapshot.bin
 
       - name: Inspect the snapshot
