@@ -222,7 +222,7 @@
                 for (let ci = 0; ci < cols; ci++) {
                     const counted = rnd() < (ci < 8 ? 0.62 : 0.22);
                     svg.append('circle')
-                        .attr('cx', 70 + ci * 46).attr('cy', y0 + ri * 46)
+                        .attr('cx', 81 + ci * 46).attr('cy', y0 + ri * 46)
                         .attr('r', 0)
                         .attr('fill', counted ? COLS[(ri + ci) % 4] : 'none')
                         .attr('stroke', counted ? 'none' : 'var(--text3)')
@@ -310,20 +310,20 @@
         function drawPredict() {
             const W = 760, H = 350;
             const svg = makeSvg(W, H);
-            svg.append('text').attr('x', 430).attr('y', 36).attr('text-anchor', 'middle')
+            svg.append('text').attr('x', 380).attr('y', 36).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('התאומה ב־25:');
-            stackBar(svg, 190, 48, 480, 30, [0.55, 0.3, 0.1, 0.05], 200);
+            stackBar(svg, 140, 48, 480, 30, [0.55, 0.3, 0.1, 0.05], 200);
             // The dominant source's transfer row, spelled out
             svg.append('text').attr('x', W / 2).attr('y', 128).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text2)').attr('font-size', '0.85rem')
                 .text('שורת א׳ ב־T:  80% נשארים בא׳ · 10% לב׳ · 6% לג׳ · 4% לד׳  —  וכך לכל מפלגת מקור');
             svg.append('text').attr('x', W / 2).attr('y', 168).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--accent)').attr('font-size', '1.6rem').attr('font-weight', 700).text('↓ × T');
-            svg.append('text').attr('x', 430).attr('y', 196).attr('text-anchor', 'middle')
+            svg.append('text').attr('x', 380).attr('y', 196).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('החיזוי ל־26:');
             // 0.55*[.80,.10,.06,.04] + 0.30*[.08,.78,.09,.05] + 0.10*[.05,.12,.76,.07] + 0.05*[.10,.08,.10,.72]
-            stackBar(svg, 190, 208, 480, 30, [0.474, 0.305, 0.136, 0.085], 700);
-            svg.append('text').attr('x', 430).attr('y', 272).attr('text-anchor', 'middle')
+            stackBar(svg, 140, 208, 480, 30, [0.474, 0.305, 0.136, 0.085], 700);
+            svg.append('text').attr('x', 380).attr('y', 272).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text2)').attr('font-size', '0.82rem')
                 .text('א׳ 47% · ב׳ 31% · ג׳ 14% · ד׳ 9%  —  ומספר המצביעים הצפוי: מבעלי הזכות ומדפוס ההצבעה של התאומה');
             svg.append('text').attr('x', W / 2).attr('y', 316).attr('text-anchor', 'middle')
@@ -334,13 +334,13 @@
         function drawAggregate() {
             const W = 760, H = 350;
             const svg = makeSvg(W, H);
-            svg.append('text').attr('x', 452).attr('y', 36).attr('text-anchor', 'middle')
+            svg.append('text').attr('x', 380).attr('y', 36).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('נספרו בפועל (45%):');
-            stackBar(svg, 235, 48, 435, 28, [0.5, 0.28, 0.13, 0.09], 200);
-            svg.append('text').attr('x', 452).attr('y', 88).attr('text-anchor', 'middle')
+            stackBar(svg, 162, 48, 435, 28, [0.5, 0.28, 0.13, 0.09], 200);
+            svg.append('text').attr('x', 380).attr('y', 88).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('חזויות (55%):');
             const g = svg.append('g').attr('opacity', 0.55);
-            let cx = 235;
+            let cx = 162;
             [0.42, 0.33, 0.15, 0.1].forEach((s, i) => {
                 const bw = s * 435;
                 g.append('rect').attr('x', cx).attr('y', 98).attr('width', Math.max(0, bw - 1)).attr('height', 28)
@@ -349,15 +349,15 @@
             });
             svg.append('text').attr('x', W / 2).attr('y', 168).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--accent)').attr('font-size', '1.4rem').attr('font-weight', 700).text('↓  סכום  ↓');
-            svg.append('text').attr('x', 452).attr('y', 188).attr('text-anchor', 'middle')
+            svg.append('text').attr('x', 380).attr('y', 188).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text)').attr('font-size', '0.9rem').attr('font-weight', 600).text('התמונה המלאה:');
-            stackBar(svg, 235, 198, 435, 28, [0.456, 0.308, 0.141, 0.095], 800);
+            stackBar(svg, 162, 198, 435, 28, [0.456, 0.308, 0.141, 0.095], 800);
             const seats = [['א׳', 55], ['ב׳', 37], ['ג׳', 17], ['ד׳', 11]];
             seats.forEach(([nm, s], i) => {
-                svg.append('rect').attr('x', 600 - i * 118).attr('y', 262).attr('width', 104).attr('height', 40)
+                svg.append('rect').attr('x', 505 - i * 118).attr('y', 262).attr('width', 104).attr('height', 40)
                     .attr('rx', 8).attr('fill', COLS[i]).attr('opacity', 0)
                     .transition().delay(1300 + i * 200).duration(400).attr('opacity', 0.9);
-                svg.append('text').attr('x', 648 - i * 118).attr('y', 288).attr('text-anchor', 'middle')
+                svg.append('text').attr('x', 557 - i * 118).attr('y', 288).attr('text-anchor', 'middle')
                     .attr('fill', '#fff').attr('font-size', '0.9rem').attr('font-weight', 700)
                     .text(nm + ' · ' + s)
                     .style('opacity', 0).transition().delay(1400 + i * 200).duration(300).style('opacity', 1);
@@ -374,10 +374,10 @@
                 { name: 'מפלגה ב׳', color: 'var(--ya)', mean: 15.8, sd: 1.1, fc: 16, now: 14 },
                 { name: 'מפלגה ג׳', color: 'var(--nu)', mean: 8.6, sd: 0.8, fc: 9, now: 10 },
             ];
-            const xs = d3.scaleLinear().domain([0, 30]).range([150, 690]);
+            const xs = d3.scaleLinear().domain([0, 30]).range([70, 690]);
             rows.forEach((r, ri) => {
                 const y = 60 + ri * 92;
-                svg.append('text').attr('x', 706).attr('y', y + 5).attr('text-anchor', 'start')
+                svg.append('text').attr('x', 690).attr('y', y + 5).attr('text-anchor', 'start')
                     .attr('fill', 'var(--text)').attr('font-size', '0.88rem').attr('font-weight', 600).text(r.name);
                 svg.append('rect').attr('x', xs(0)).attr('y', y + 16).attr('width', xs(30) - xs(0)).attr('height', 18)
                     .attr('rx', 9).attr('fill', 'var(--bg3)');

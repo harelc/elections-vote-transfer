@@ -2071,15 +2071,16 @@
             // Predicted vote transfers live together with the seat nowcast,
             // not as a separate "Sankey" stage.
             if (P.projected_sankey) {
-                body += `<div style="margin-top:1rem"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4>
+                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey" style="margin:0">${i18n.t('k26_sankey_explainer')}</button></div>
                 <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.'}</div>
                 <div id="nc-flows-diagram"></div></div>`;
             }
         }
         if (!partial) body += `<div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap"><a class="pane-btn gold" href="?preview=partial12" style="text-decoration:none">${en() ? '▶ Preview: 12% counted' : '▶ תצוגה מקדימה: 12% נספרו'}</a><a class="pane-btn" href="?preview=partial17" style="text-decoration:none">${en() ? '▶ Preview: 17% counted' : '▶ תצוגה מקדימה: 17% נספרו'}</a><a class="pane-btn" href="?preview=partial" style="text-decoration:none">${en() ? '▶ Preview: 45% counted' : '▶ תצוגה מקדימה: 45% נספרו'}</a></div>`;
-        content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div><div class="pane-actions"><button class="pane-btn" id="nowcast-explainer-open">${i18n.t('k26_nowcast_explainer')}</button></div></div>` + body;
+        content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div><div class="pane-actions"><button class="explainer-cta" id="nowcast-explainer-open" style="margin:0">${i18n.t('k26_nowcast_explainer')}</button></div></div>` + body;
         const ncExplBtn = document.getElementById('nowcast-explainer-open');
         if (ncExplBtn) ncExplBtn.addEventListener('click', () => openExplainer('nowcast'));
+        content.querySelectorAll('[data-explainer]').forEach(b => b.addEventListener('click', () => openExplainer(b.dataset.explainer)));
         renderNcFlows();
         // The hemicycle selector in the votes pane depends on the partial
         // status + this projection, both of which can land after the
