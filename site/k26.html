@@ -371,16 +371,16 @@
         .nc-miss-row .nc-track i { display:block; height:100%; background:#f59e0b; }
         .nc-seat-row { display:grid; grid-template-columns:86px 1fr 34px 46px 34px; gap:0.5rem; align-items:center; font-size:0.76rem; padding:0.22rem 0; color:var(--text-secondary); }
         .nc-table-head { display:grid; grid-template-columns:86px 1fr 34px 46px 34px; gap:0.5rem; align-items:end; font-size:.64rem; color:var(--text-muted); border-bottom:1px solid rgba(255,255,255,.12); padding-bottom:.3rem; margin-bottom:.15rem; }
-        .nc-table-head .nc-th-forecast { color:#22d3ee; font-weight:700; }
+        .nc-table-head .nc-th-forecast { color:#f5b301; font-weight:700; }
         .nc-table-head span:not(:first-child) { text-align:center; }
-        .nc-seat-row .nc-forecast { font-size:1.4rem; font-weight:800; color:#22d3ee; text-align:center; line-height:1; }
+        .nc-seat-row .nc-forecast { font-size:1.4rem; font-weight:800; color:var(--text-primary); text-align:center; line-height:1; }
         .nc-seat-row .nc-num { text-align:center; font-variant-numeric:tabular-nums; }
         .nc-seat-row .nc-pass { display:block; font-size:.64rem; color:#f59e0b; }
         .nc-seat-row .nc-track { height:12px; border-radius:4px; background:rgba(255,255,255,.07); position:relative; }
         .nc-seat-row .nc-densstrip { position:absolute; top:2px; bottom:2px; inset-inline-start:0; inset-inline-end:0; border-radius:4px; }
         .nc-seat-row .nc-tick { position:absolute; top:-3px; width:2px; height:calc(100% + 6px); z-index:3; border-radius:1px; }
         .nc-seat-row .nc-tick-mean { background:#f59e0b; box-shadow:0 0 0 1px rgba(0,0,0,.5); }
-        .nc-seat-row .nc-tick-int { background:#22d3ee; top:-6px; width:3px; height:calc(100% + 12px); box-shadow:0 0 0 1px rgba(0,0,0,.5); }
+        .nc-seat-row .nc-tick-int { background:#9ca3af; top:-6px; width:3px; height:calc(100% + 12px); box-shadow:0 0 0 1px rgba(0,0,0,.5); }
         .nc-seat-row .nc-now { z-index:2; }
         .nc-tick-key { display:inline-block; width:3px; height:11px; border-radius:1px; vertical-align:-1px; margin-inline-end:3px; }
         .nc-stats { display:flex; flex-direction:column; gap:1px; line-height:1.3; min-width:0; }
@@ -400,6 +400,20 @@
         #panel-nowcast .nc-seat-row .nc-forecast { font-size:2.1rem; }
         #panel-nowcast .nc-seat-row .nc-track { height:17px; }
         #panel-nowcast .nc-seat-row .nc-now { height:21px; }
+        .nc-table { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.10); border-radius:14px; padding:.85rem .95rem .65rem; margin-top:.7rem; box-shadow:0 6px 24px rgba(0,0,0,.25); }
+        .nc-model-toggle { display:flex; align-items:center; gap:.6rem; flex-wrap:wrap; margin-bottom:.5rem; }
+        .nc-model-lab { font-weight:800; color:var(--text-primary); font-size:.92rem; }
+        .nc-bloc-chips { display:flex; gap:.5rem; flex-wrap:wrap; margin:.3rem 0 .6rem; }
+        .nc-bloc-chip { flex:1 1 120px; display:flex; align-items:baseline; justify-content:space-between; gap:.5rem; background:rgba(255,255,255,.045); border:1px solid rgba(255,255,255,.10); border-radius:10px; padding:.42rem .65rem; color:var(--text-secondary); font-size:.86rem; }
+        .nc-bloc-chip b { font-size:1.55rem; font-weight:800; color:var(--text-primary); line-height:1; }
+        .nc-table .nc-table-head { grid-template-columns:minmax(128px,180px) 1fr 60px 62px 54px; font-size:.74rem; }
+        .nc-table .nc-seat-row { grid-template-columns:minmax(128px,180px) 1fr 60px 62px 54px; font-size:.95rem; padding:.52rem 0; border-bottom:1px dashed rgba(255,255,255,.07); }
+        .nc-party { display:flex; flex-direction:column; gap:1px; min-width:0; }
+        .nc-pname { font-weight:700; color:var(--text-primary); font-size:1.03rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .nc-name-sub { font-size:.72rem; color:var(--text-muted); font-variant-numeric:tabular-nums; }
+        .nc-table .nc-seat-row .nc-forecast { font-size:2.35rem; font-weight:800; text-align:center; line-height:1; }
+        .nc-table .nc-seat-row .nc-num { font-size:.98rem; text-align:center; color:var(--text-secondary); }
+        .nc-table .nc-seat-row .nc-track { height:20px; }
         #panel-nowcast .nc-miss-row { grid-template-columns:150px 1fr 60px; font-size:0.88rem; }
         #panel-nowcast .nc-gate { font-size:0.95rem; }
     </style>
@@ -1095,7 +1109,7 @@
         // During a partial count the bubble sticks to the partial count
         // itself (counted votes only) — no extrapolated votes: whose last
         // seat is actually at risk right now, on real counted numbers.
-        const proj = (DATA.cc && DATA.cc.nowcast && DATA.cc.nowcast.ready && DATA.cc.nowcast.projection) || null;
+        const proj = (DATA.cc && DATA.cc.nowcast && DATA.cc.nowcast.ready && ncProj()) || null;
         if (K26STATUS.kind === 'partial' && proj) {
             votes = {};
             proj.parties.forEach(p => votes[p.name] = p.counted_votes);
@@ -1157,7 +1171,7 @@
         // the partial count (allocation of the counted votes alone) vs the
         // national forecast (allocated projected final votes). Outside a
         // partial count it simply shows the results.
-        const proj = (DATA.cc && DATA.cc.nowcast && DATA.cc.nowcast.ready && DATA.cc.nowcast.projection) || null;
+        const proj = (DATA.cc && DATA.cc.nowcast && DATA.cc.nowcast.ready && ncProj()) || null;
         const showHemiToggle = K26STATUS.kind === 'partial' && !!proj;
         if (!DATA.hemiMode) DATA.hemiMode = 'forecast';
         const toggle = document.getElementById('hemi-toggle');
@@ -1206,7 +1220,11 @@
     // transfers inside the nowcast; the standalone transfer page is
     // sankey.html). Mirrors sankey.js: all transfers in the data, gradient
     // links, columns normalised to fill the height, X flipped in RTL.
-    let sankeyAbs = false, ncAbs = false;
+    let sankeyAbs = false, ncModel = 'abs';
+    // The nowcast is computed both ways (with / without non-voters as a
+    // source); this picks the live variant. projection = abstention
+    // model, projection_plain = party-only model.
+    function ncProj(nc) { nc = nc || (DATA.cc && DATA.cc.nowcast); if (!nc) return null; return (ncModel === 'plain' && nc.projection_plain) || nc.projection || null; }
     function renderSankey(transferData, elId, height) {
         transferData = transferData || DATA.transfer;
         elId = elId || 'sankey-mini'; height = height || 1060;
@@ -1335,7 +1353,13 @@
     let geoTipTimer = null;
 
     // ---- Geomap colour modes, ported from geomap.html (same scales) ----
-    let geoMode = 'winner', geoPartyName = null, geoItems = [];
+    let geoMode = 'winner', geoPartyName = null, geoItems = [], geoTdItems = [];
+    // During a partial count the election-day turnout layers colour
+    // the FULL roster (every ballot has a daytime turnout record),
+    // while the result layers colour counted ballots only.
+    function activeGeoItems() {
+        return ((geoMode === 'td_turnout' || geoMode === 'td_pace') && K26STATUS.kind === 'partial' && geoTdItems.length) ? geoTdItems : geoItems;
+    }
     let socioByStation = null, socioBySettlement = null, socioLoading = null, embedRangeCache = null;
     const SOCIO_COLORS = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
     const geoNormalize = n => n ? n.replace(/[-–\s]+/g, '').replace(/יי/g, 'י') : n;
@@ -1483,10 +1507,7 @@
                 tdColorMode = b.dataset.tdScale;
                 updateTdScaleToggle();
                 updateGeoLegend();
-                if (geoLayer && geoItems.length) {
-                    geoItems.forEach(it => { it.color = stationGeoColor(it.station); });
-                    geoLayer.setStations(geoItems);
-                }
+                applyGeoMode();
                 // The turnout pane's group bars paint with tdColor too —
                 // repaint them under the newly selected scale.
                 if (TURNOUT_ACTIVE) renderTurnoutDay();
@@ -1656,10 +1677,12 @@
         updateTdSlider();
         updateTdScaleToggle();
         updateGeoLegend();
-        if (geoLayer && geoItems.length) {
-            geoItems.forEach(it => { it.color = stationGeoColor(it.station); });
-            geoLayer.setStations(geoItems);
+        if (geoLayer) {
+            const active = activeGeoItems();
+            active.forEach(it => { it.color = stationGeoColor(it.station); });
+            geoLayer.setStations(active);
         }
+        updateUncountedGeo();
     }
     // How each K26 box was paired with its K25 baseline (crosswalk
     // decision in generate_turnout_day_data.py, from
@@ -1745,15 +1768,20 @@
         const note = document.getElementById('geomap-partial-note');
         const nc = DATA && DATA.cc && DATA.cc.nowcast;
         const partial = K26STATUS.kind === 'partial' && nc;
+        const tdLayer = geoMode === 'td_turnout' || geoMode === 'td_pace';
         if (note) {
             note.hidden = !partial;
-            if (partial) note.textContent = en()
-                ? `Partial count: the coloured stations are the ${fmt(nc.counted_ballots)} counted ballots of ${fmt(nc.roster_ballots)}; ballots not yet counted are faint gray.`
-                : `ספירה חלקית: התחנות הצבעוניות הן ${fmt(nc.counted_ballots)} הקלפיות שנספרו מתוך ${fmt(nc.roster_ballots)}; קלפיות שטרם נספרו באפור חיוור.`;
+            if (partial) note.textContent = tdLayer
+                ? (en()
+                    ? `Election-day turnout layer: all ${fmt((DATA.turnoutDay && DATA.turnoutDay.stations || []).length)} ballots with a daytime record are coloured, counted or not.`
+                    : `שכבת אחוזי ההצבעה של יום הבחירות: כל ${fmt((DATA.turnoutDay && DATA.turnoutDay.stations || []).length)} הקלפיות עם דיווח יום־בחירות צבועות, נספרו או לא.`)
+                : (en()
+                    ? `Partial count: the coloured stations are the ${fmt(nc.counted_ballots)} counted ballots of ${fmt(nc.roster_ballots)}; ballots not yet counted are faint gray.`
+                    : `ספירה חלקית: התחנות הצבעוניות הן ${fmt(nc.counted_ballots)} הקלפיות שנספרו מתוך ${fmt(nc.roster_ballots)}; קלפיות שטרם נספרו באפור חיוור.`);
         }
         if (!geoMap || !window.whenMapReady) return;
         whenMapReady(geoMap, () => {
-            const pts = partial ? (nc.geo_uncounted || []) : [];
+            const pts = partial && !tdLayer ? (nc.geo_uncounted || []) : [];
             upsertGeoJSON(geoMap, 'uncounted', { type: 'FeatureCollection', features: pts.map(a => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [a[3], a[2]] }, properties: {} })) });
             if (!geoMap.getLayer('uncounted-dots')) {
                 geoMap.addLayer({ id: 'uncounted-dots', type: 'circle', source: 'uncounted', paint: { 'circle-radius': 4, 'circle-color': '#9aa3af', 'circle-opacity': 0.38, 'circle-stroke-color': '#111827', 'circle-stroke-width': 0.5 } });
@@ -1817,6 +1845,24 @@
         });
         groups.forEach(group => { if (group.length < 2) return; group.forEach((r, i) => { const a = (i / group.length) * Math.PI * 2; r.lat += Math.sin(a) * 0.00012; r.lng += Math.cos(a) * 0.00012; }); });
         geoItems = items;
+        // Full-roster election-day items for the td layers during the
+        // count (coordinates + turnout record from turnout_day_26.json;
+        // no result attached -- every ballot is present, counted or not).
+        geoTdItems = [];
+        if (!TURNOUT_ACTIVE && DATA.turnoutDay && DATA.turnoutDay.stations) {
+            const tdGroups = new Map(), tdItems = [];
+            DATA.turnoutDay.stations.forEach(a => {
+                if (a[2] == null || a[3] == null) return;
+                const st = { n: a[0], b: a[1], e: a[4], v: a[5], t: a[6], p: {}, td: tdOf(a) };
+                const rec = { lng: a[3], lat: a[2], origLng: a[3], origLat: a[2], color: '#374151',
+                    radius: Math.max(5, Math.min(15, Math.sqrt((a[5] || 0) / 50) * 3)), station: st };
+                const pile = `${a[2].toFixed(5)},${a[3].toFixed(5)}`;
+                if (!tdGroups.has(pile)) tdGroups.set(pile, []);
+                tdGroups.get(pile).push(rec); tdItems.push(rec);
+            });
+            tdGroups.forEach(group => { if (group.length < 2) return; group.forEach((r, i) => { const a2 = (i / group.length) * Math.PI * 2; r.lat += Math.sin(a2) * 0.00012; r.lng += Math.cos(a2) * 0.00012; }); });
+            geoTdItems = tdItems;
+        }
         items.forEach(it => { it.color = stationGeoColor(it.station); });
         geoMap = createMap('geomap-mini', { center: [34.9, 31.5], zoom: 8, minZoom: 7, maxZoom: 18, basemap: 'positron' });
         geoLayer = new StationClusterLayer(geoMap, {
@@ -1856,11 +1902,11 @@
             onClusterLeave: () => scheduleHideGeoTooltip(),
             onStationEnter: (item) => { clearTimeout(geoTipTimer); showGeoTooltip(stationCardHTML(item.station), item.lng, item.lat); },
             onStationLeave: () => scheduleHideGeoTooltip(),
-            onStationClick: (item) => { hideGeoTooltip(); geoLayer.showPopup(item.lng, item.lat, stationCardHTML(item.station)); if (DATA.twinsMode) { DATA._twinsShown = true; document.getElementById('twins-status').innerHTML = twinsHTML(item.station); } }
+            onStationClick: (item) => { hideGeoTooltip(); geoLayer.showPopup(item.lng, item.lat, stationCardHTML(item.station)); if (DATA.twinsMode && geoMode !== 'td_turnout' && geoMode !== 'td_pace') { DATA._twinsShown = true; document.getElementById('twins-status').innerHTML = twinsHTML(item.station); } }
         });
         document.getElementById('geomap-tooltip').addEventListener('mouseenter', () => clearTimeout(geoTipTimer));
         document.getElementById('geomap-tooltip').addEventListener('mouseleave', scheduleHideGeoTooltip);
-        geoLayer.setStations(items);
+        geoLayer.setStations(activeGeoItems());
         document.querySelectorAll('.geomap-mode').forEach(b => b.addEventListener('click', () => {
             geoMode = b.dataset.gmode;
             // Flipping the map layer between turnout and recovery also
@@ -2145,9 +2191,11 @@
             ${checks}
             <div class="pane-note" style="margin:.5rem 0 .2rem">${en() ? 'How much of each group of settlements has been counted:' : 'כמה מכל קבוצת יישובים כבר נספרה:'}</div>
             <div class="nc-missing">${sectorBars}</div></details></div>`;
-        if (nc.ready && nc.projection) {
-            const P = nc.projection;
+        const P = ncProj(nc);
+        if (nc.ready && P) {
             const maxSeat = 30;
+            const totProjVotes = P.parties.reduce((a, p) => a + (p.proj_votes || 0), 0);
+            const modelToggle = `<div class="nc-model-toggle"><span class="nc-model-lab">${en() ? 'Nowcast model' : 'מודל התחזית'}</span><span class="td-tabs" style="margin:0"><button class="pane-btn ${ncModel === 'plain' ? 'gold' : ''}" data-ncmodel="plain" ${nc.projection_plain ? '' : 'disabled'}>${en() ? 'Without non-voters' : 'ללא לא־הצביעו'}</button><button class="pane-btn ${ncModel === 'abs' ? 'gold' : ''}" data-ncmodel="abs">${en() ? 'With non-voters' : 'עם לא־הצביעו'}</button></span><span class="pane-note" style="margin:0">${ncModel === 'abs' ? (en() ? 'K25 non-voters are a source too — each box’s turnout emerges from the transfer matrix.' : 'גם מי שלא הצביעו ב־25 הם מקור — אחוז ההצבעה בכל קלפי נגזר ממטריצת המעבר.') : (en() ? 'Only K25 voters flow; each box’s turnout is scaled by the counted turnout shift.' : 'רק מצביעי 25 זורמים; אחוז ההצבעה בכל קלפי מוכפל בשינוי ההצבעה בקלפיות שנספרו.')}</span></div>`;
             const rows = P.parties.filter(p => p.median > 0 || p.seats_now > 0).map(p => {
                 const now = p.seats_now / maxSeat * 100;
                 // Colour-fade density: a strip along the seat axis whose
@@ -2170,19 +2218,19 @@
                 stops.push(`rgba(${rgb[0]},${rgb[1]},${rgb[2]},0) 100%`);
                 const strip = `<span class="nc-densstrip" style="background:linear-gradient(${i18n.isRTL() ? 'to left' : 'to right'}, ${stops.join(',')})"></span>`;
                 const meanVal = p.mean ?? p.median, intVal = p.proj_seats ?? p.mode ?? Math.round(meanVal);
-                return `<div class="nc-seat-row"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${DATA.colorOf[p.name] || '#666'};margin-inline-end:4px"></span>${displayName(p.name)}${p.p_pass != null && p.p_pass < 0.99 ? `<span class="nc-pass">${en() ? 'threshold' : 'אחוז חסימה'} ${Math.round(p.p_pass * 100)}%</span>` : ''}</span>
-                    <span class="nc-track">${strip}<span class="nc-tick nc-tick-mean" style="inset-inline-start:${(meanVal / maxSeat * 100).toFixed(2)}%"></span><span class="nc-tick nc-tick-int" style="inset-inline-start:${(intVal / maxSeat * 100).toFixed(2)}%"></span><span class="nc-now" style="inset-inline-start:${now}%"></span></span>
-                    <b class="nc-forecast">${intVal}</b><span class="nc-num">${meanVal.toFixed(2)}</span><span class="nc-num">${p.seats_now}</span></div>`;
+                return `<div class="nc-seat-row"><span class="nc-party"><span class="nc-pname"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:${DATA.colorOf[p.name] || '#666'};margin-inline-end:5px"></span>${displayName(p.name)}${p.p_pass != null && p.p_pass < 0.99 ? `<span class="nc-pass">${en() ? 'threshold' : 'אחוז חסימה'} ${Math.round(p.p_pass * 100)}%</span>` : ''}</span><span class="nc-name-sub">${(100 * (p.proj_votes || 0) / Math.max(1, totProjVotes)).toFixed(1)}% · ${fmt(p.proj_votes || 0)} ${en() ? 'votes' : 'קולות'}</span></span>
+                    <span class="nc-track">${strip}<span class="nc-tick nc-tick-mean" style="inset-inline-start:${(meanVal / maxSeat * 100).toFixed(2)}%"></span><span class="nc-tick nc-tick-int" style="inset-inline-start:${(intVal / maxSeat * 100).toFixed(2)}%;background:${DATA.colorOf[p.name] || '#9ca3af'}"></span><span class="nc-now" style="inset-inline-start:${now}%"></span></span>
+                    <b class="nc-forecast" style="color:${DATA.colorOf[p.name] || '#9ca3af'}">${intVal}</b><span class="nc-num">${meanVal.toFixed(2)}</span><span class="nc-num">${p.seats_now}</span></div>`;
             }).join('');
-            const blocs = Object.entries(P.blocs).map(([b, v]) => `${i18n.t('k26_bloc_' + b)} <b>${v.proj_seats ?? Math.round(v.mean ?? v.median)}</b>`).join(' · ');
+            const blocs = `<div class="nc-bloc-chips">${Object.entries(P.blocs).map(([b, v]) => `<span class="nc-bloc-chip"><span>${i18n.t('k26_bloc_' + b)}</span><b>${v.proj_seats ?? Math.round(v.mean ?? v.median)}</b></span>`).join('')}</div>`;
             const tableHead = `<div class="nc-table-head"><span>${en() ? 'Party' : 'מפלגה'}</span><span>${en() ? 'Final-seat distribution' : 'התפלגות מנדטים סופית'}</span><span class="nc-th-forecast">${en() ? 'Forecast for the final count' : 'לפי תחזית לסוף הספירה'}</span><span>${en() ? 'Mean' : 'ממוצע'}</span><span>${en() ? 'Per the partial count' : 'לפי הספירה החלקית'}</span></div>`;
-            body += `<div style="margin-top:.7rem">${tableHead}${rows}<div class="pane-note" style="margin-top:.4rem">${blocs}<br>${fmt(P.uncounted_ballots)} ${en() ? 'uncounted boxes' : 'קלפיות לא ספורות'} · ${fmt(P.expected_uncounted_votes)} ${en() ? 'expected votes' : 'קולות צפויים'} · ${P.sims} ${en() ? 'simulations' : 'סימולציות'} · α=${P.alpha}</div>
-            <div class="pane-note" style="margin-top:.35rem">${en() ? 'Strip saturation = how many simulated completions ended at that seat count. Ticks: ' : 'רווית הפס = כמה מההשלמות המדומות הסתיימו במספר המנדטים הזה. הקווים: '}<span class="nc-tick-key" style="background:#22d3ee"></span>${en() ? 'forecast · ' : 'תחזית · '}<span class="nc-tick-key" style="background:#f59e0b"></span>${en() ? 'mean · ' : 'ממוצע · '}<span class="nc-tick-key" style="background:#fff"></span>${en() ? 'counted so far' : 'נספר עד כה'}</div></div>`;
+            body += `<div class="nc-table">${modelToggle}${blocs}${tableHead}${rows}<div class="pane-note" style="margin-top:.4rem">${fmt(P.uncounted_ballots)} ${en() ? 'uncounted boxes' : 'קלפיות לא ספורות'} · ${fmt(P.expected_uncounted_votes)} ${en() ? 'expected votes' : 'קולות צפויים'} · ${P.sims} ${en() ? 'simulations' : 'סימולציות'} · α=${P.alpha}</div>
+            <div class="pane-note" style="margin-top:.35rem">${en() ? 'Strip saturation = how many simulated completions ended at that seat count. Ticks: ' : 'רווית הפס = כמה מההשלמות המדומות הסתיימו במספר המנדטים הזה. הקווים: '}<span class="nc-tick-key" style="background:linear-gradient(180deg,#2563eb,#eab308,#dc2626)"></span>${en() ? 'forecast (party colour) · ' : 'תחזית (בצבע המפלגה) · '}<span class="nc-tick-key" style="background:#f59e0b"></span>${en() ? 'mean · ' : 'ממוצע · '}<span class="nc-tick-key" style="background:#fff"></span>${en() ? 'counted so far' : 'נספר עד כה'}</div></div>`;
             // Predicted vote transfers live together with the seat nowcast,
             // not as a separate "Sankey" stage.
             if (P.projected_sankey) {
-                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey">${i18n.t('k26_sankey_explainer')}</button><span class="td-tabs" style="margin:0"><button class="pane-btn ${!ncAbs ? 'gold' : ''}" data-ncabs="0">${en() ? 'Without non-voters' : 'ללא לא־הצביעו'}</button><button class="pane-btn ${ncAbs ? 'gold' : ''}" data-ncabs="1" ${P.projected_sankey_abstention ? '' : 'disabled'}>${en() ? 'With non-voters' : 'עם לא־הצביעו'}</button></span></div>
-                <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.'}</div>
+                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey">${i18n.t('k26_sankey_explainer')}</button></div>
+                <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.'} ${ncModel === 'abs' ? (en() ? 'Shown with non-voters (model above).' : 'מוצג עם לא־הצביעו (המודל למעלה).') : (en() ? 'Shown without non-voters (model above).' : 'מוצג ללא לא־הצביעו (המודל למעלה).')}</div>
                 <div id="nc-flows-diagram"></div></div>`;
             }
         }
@@ -2191,11 +2239,9 @@
         const ncExplBtn = document.getElementById('nowcast-explainer-open');
         if (ncExplBtn) ncExplBtn.addEventListener('click', () => openExplainer('nowcast'));
         content.querySelectorAll('[data-explainer]').forEach(b => b.addEventListener('click', () => openExplainer(b.dataset.explainer)));
-        content.querySelectorAll('[data-ncabs]').forEach(b => b.addEventListener('click', () => {
-            ncAbs = b.dataset.ncabs === '1';
-            content.querySelectorAll('[data-ncabs]').forEach(x => x.classList.toggle('gold', (x.dataset.ncabs === '1') === ncAbs));
-            const fl = document.getElementById('nc-flows-diagram'); if (fl) fl.innerHTML = '';
-            renderNcFlows();
+        content.querySelectorAll('[data-ncmodel]').forEach(b => b.addEventListener('click', () => {
+            ncModel = b.dataset.ncmodel;
+            renderNowcast();
         }));
         renderNcFlows();
         // The hemicycle selector in the votes pane depends on the partial
@@ -2209,14 +2255,14 @@
     function renderNcFlows() {
         const flowsEl = document.getElementById('nc-flows-diagram');
         const nc = DATA && DATA.cc && DATA.cc.nowcast;
-        if (!flowsEl || !nc || !nc.ready || !nc.projection || !nc.projection.projected_sankey) return;
+        if (!flowsEl || !nc || !nc.ready || !ncProj(nc)) return;
         const w = flowsEl.clientWidth;
         if (w >= 200) {
             const svg = flowsEl.querySelector('svg');
             // Re-render when the container width changed since the last
             // draw (mount moves side -> stage, window resizes): a stale
             // fixed-width svg otherwise stays squeezed or stretched.
-            if (!svg || Math.abs((+svg.getAttribute('width') || 0) - w) > 4) renderSankey((ncAbs && nc.projection.projected_sankey_abstention) || nc.projection.projected_sankey, 'nc-flows-diagram', 780);
+            if (!svg || Math.abs((+svg.getAttribute('width') || 0) - w) > 4) { const P = ncProj(nc); renderSankey((ncModel === 'abs' && P.projected_sankey_abstention) || P.projected_sankey, 'nc-flows-diagram', 780); }
         } else if (!flowsEl.querySelector('svg')) {
             // Too narrow right now (e.g. still in the hidden side mount):
             // leave a note but do not burn it in — activation/resize
@@ -2329,7 +2375,7 @@
         // snapshot; only the stats/chart follow the selected time.
         if (!Array.isArray(snaps[tdSnapIdx].voters)) { updateTdSlider(); if (TURNOUT_ACTIVE) renderTurnoutDay(); return; }
         const voters = snaps[tdSnapIdx].voters || [];
-        geoItems.forEach(it => {
+        [...geoItems, ...geoTdItems].forEach(it => {
             const st = it.station, td = st.td;
             if (!td) return;
             const i = tdSnapStationIdx.get(`${st.n}|${st.b}`);
@@ -2338,10 +2384,7 @@
             td.snapT = v != null && td.snapE ? 100 * v / td.snapE : null;
             td.pace = td.snapT != null && td.k25t ? td.snapT / td.k25t : null;
         });
-        if (geoLayer && geoItems.length) {
-            geoItems.forEach(it => { it.color = stationGeoColor(it.station); });
-            geoLayer.setStations(geoItems);
-        }
+        applyGeoMode();
         updateTdSlider();
         updateGeoLegend();
         if (TURNOUT_ACTIVE) renderTurnoutDay();
