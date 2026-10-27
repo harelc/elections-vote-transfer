@@ -1500,13 +1500,13 @@
         // the way geomap.html colours its cluster icons.
         if (geoMode === 'td_pace') {
             let v = 0, k = 0;
-            clusterStations.forEach(it => { const td = it.station.td; v += td ? (td.snapV || 0) : (it.station.v || 0); if (td && td.k25v) k += td.k25v; });
+            clusterStations.forEach(it => { const td = it.station.td; if (!td || td.snapV == null) return; v += td.snapV; if (td.k25v) k += td.k25v; });
             return tdColor(k ? v / k : null, true);
         }
         if (geoMode === 'td_turnout') {
             let v = 0, e = 0;
-            clusterStations.forEach(it => { const td = it.station.td; v += td ? (td.snapV || 0) : 0; e += td ? (td.snapE || 0) : 0; });
-            return tdColor(e ? v / e * 100 : 0, false);
+            clusterStations.forEach(it => { const td = it.station.td; if (!td || td.snapV == null) return; v += td.snapV; e += td.snapE || 0; });
+            return tdColor(e ? v / e * 100 : null, false);
         }
         if (geoMode === 'turnout') {
             let v = 0, e = 0;
@@ -1533,6 +1533,31 @@
             return interpolateColor(lightenColor(party.color, 0.85), party.color, Math.min(pct / geoPartyScaleMax(geoPartyName), 1));
         }
         return '#4b5563';
+    }
+    // Average value shown inside non-winner cluster bubbles (the
+    // mobile maps already do this). Weighted the same way the
+    // cluster colour is computed; no scalar for embed/socio modes.
+    function geoClusterLabel(clusterStations) {
+        if (geoMode === 'td_turnout' || geoMode === 'turnout') {
+            let v = 0, e = 0;
+            clusterStations.forEach(it => {
+                const st = it.station, td = st.td;
+                if (geoMode === 'td_turnout') { if (!td || td.snapV == null) return; v += td.snapV; e += td.snapE || 0; }
+                else { v += st.v || 0; e += st.e || 0; }
+            });
+            return e ? (100 * v / e).toFixed(1) + '%' : '';
+        }
+        if (geoMode === 'td_pace') {
+            let v = 0, k = 0;
+            clusterStations.forEach(it => { const td = it.station.td; if (!td || td.snapV == null) return; v += td.snapV; if (td.k25v) k += td.k25v; });
+            return k ? '×' + (v / k).toFixed(2) : '';
+        }
+        if (geoMode === 'party' && geoPartyName) {
+            let num = 0, den = 0;
+            clusterStations.forEach(it => { const v = it.station.v || 0; num += v * ((it.station.p || {})[geoPartyName] || 0); den += v; });
+            return den ? (num / den).toFixed(1) + '%' : '';
+        }
+        return '';
     }
     function populateGeoParties() {
         const sel = document.getElementById('geomap-party');
@@ -1767,7 +1792,8 @@
                 const count0 = clusterStations.length;
                 const size0 = count0 > 500 ? 88 : count0 > 200 ? 76 : count0 > 100 ? 64 : count0 > 30 ? 54 : 44;
                 if (geoMode !== 'winner') {
-                    return { html: `<div class="cluster-inner" style="background:${geoClusterColor(clusterStations)}"><div class="cluster-count">${count0}</div></div>`, className: 'custom-cluster', size: size0 };
+                    const avgLabel = geoClusterLabel(clusterStations);
+                    return { html: `<div class="cluster-inner" style="background:${geoClusterColor(clusterStations)}"><div class="cluster-count">${count0}</div>${avgLabel ? `<div class="cluster-info">${avgLabel}</div>` : ''}</div>`, className: 'custom-cluster', size: size0 };
                 }
                 const counts = {};
                 clusterStations.forEach(it => { const w = Object.entries(it.station.p || {}).sort((a,b)=>b[1]-a[1])[0]; if (w) counts[w[0]] = (counts[w[0]]||0)+1; });
