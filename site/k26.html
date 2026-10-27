@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/index.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')&&!/[?&]turnout=1/.test(location.search)){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/index.html'+(lp?'?lang='+lp:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -127,6 +127,30 @@
         body.td-on .g-center { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:1rem; align-items:start; }
         body.td-on .geomap-pane .mini-map { height:min(82vh,880px); }
         @media (max-width:980px){ body.td-on .g-center { grid-template-columns:1fr; } body.td-on .geomap-pane .mini-map { height:70vh; } }
+        /* Phones: the election-day turnout view is the one CC page a
+           phone UA may open (see the redirect exception at the top),
+           so it gets a real single-column phone layout. */
+        @media (max-width:700px){
+            body.td-on .gemara { padding:.55rem .45rem 1.2rem; gap:.6rem; }
+            body.td-on .k26-hero { padding:.9rem .7rem 0; }
+            body.td-on .prov-banner { margin:.55rem .45rem 0; padding:.65rem .75rem; }
+            body.td-on .prov-title { font-size:1rem; }
+            body.td-on .k26-stats { padding:.6rem .45rem 0; gap:.45rem; grid-template-columns:repeat(2,1fr); }
+            /* Desktop view-switcher collapses to one scrollable row */
+            body.td-on .view-switcher { display:flex; flex-wrap:nowrap; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+            body.td-on .view-switcher::-webkit-scrollbar { display:none; }
+            body.td-on .view-switcher .view-btn { flex:none; white-space:nowrap; }
+            body.td-on .preview-switch { margin:.55rem .45rem 0; }
+            body.td-on .td-timestamp { margin:.45rem .45rem .2rem; padding:.5rem .6rem; font-size:.85rem; }
+            body.td-on .pane { padding:.7rem .6rem; }
+            body.td-on .geomap-pane .mini-map { height:56vh; }
+            body.td-on .td-stats { grid-template-columns:repeat(2,1fr); }
+            body.td-on .td-stat b { font-size:1.1rem; }
+            /* Group rows: label + numbers on one line, bar full-width below */
+            body.td-on .td-row { grid-template-columns:minmax(0,1fr) auto; gap:.3rem .6rem; }
+            body.td-on .td-row .td-bar { grid-column:1 / -1; grid-row:2; }
+            body.td-on .td-row .td-nums { grid-column:2; grid-row:1; }
+        }
         body.td-on .g-side { display:none; }
         body.td-on #pane-votes, body.td-on #pane-dhondt-mini, body.td-on #pane-nowcast,
         body.td-on #geomap-full-cta { display:none; }
