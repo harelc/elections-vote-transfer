@@ -652,7 +652,7 @@
             const colocated = items.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
             const size = (count > 500 ? 80 : count > 200 ? 70 : count > 100 ? 60 : count > 30 ? 50 : 40) * (colocated ? 0.85 : 1);
             return {
-                html: `<div class="cluster-inner" style="background:${withAlpha(col, 0.75)}"><div class="cluster-count">${count}</div><div class="cluster-info">${info}</div></div>`,
+                html: `<div class="cluster-inner" style="background:${withAlpha(col, 0.6)}"><div class="cluster-count">${count}</div><div class="cluster-info">${info}</div></div>`,
                 className: 'custom-cluster' + (colocated ? ' cluster-colocated' : ''), size: Math.round(size)
             };
         }

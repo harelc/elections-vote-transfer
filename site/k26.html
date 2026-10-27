@@ -1805,7 +1805,7 @@
                 const size0 = count0 > 500 ? 88 : count0 > 200 ? 76 : count0 > 100 ? 64 : count0 > 30 ? 54 : 44;
                 if (geoMode !== 'winner') {
                     const avgLabel = geoClusterLabel(clusterStations);
-                    return { html: `<div class="cluster-inner" style="background:${withAlpha(geoClusterColor(clusterStations), 0.75)}"><div class="cluster-count">${count0}</div>${avgLabel ? `<div class="cluster-info">${avgLabel}</div>` : ''}</div>`, className: 'custom-cluster', size: size0 };
+                    return { html: `<div class="cluster-inner" style="background:${withAlpha(geoClusterColor(clusterStations), 0.6)}"><div class="cluster-count">${count0}</div>${avgLabel ? `<div class="cluster-info">${avgLabel}</div>` : ''}</div>`, className: 'custom-cluster', size: size0 };
                 }
                 const counts = {};
                 clusterStations.forEach(it => { const w = Object.entries(it.station.p || {}).sort((a,b)=>b[1]-a[1])[0]; if (w) counts[w[0]] = (counts[w[0]]||0)+1; });
@@ -1815,10 +1815,10 @@
                     let other = 0;
                     if (slices.length > 5) { other = slices.slice(5).reduce((s,e)=>s+e[1],0); slices = slices.slice(0,5); }
                     let ang = 0; const stops = [];
-                    slices.forEach(([name, n]) => { const p = DATA.tsne.parties.find(pp=>pp.name===name); const pct = n/clusterStations.length*100; stops.push(`${withAlpha(p?p.color:'#6b7280', 0.8)} ${ang.toFixed(1)}% ${(ang+pct).toFixed(1)}%`); ang += pct; });
-                    if (other) stops.push(`${withAlpha('#4b5563', 0.8)} ${ang.toFixed(1)}% 100%`);
+                    slices.forEach(([name, n]) => { const p = DATA.tsne.parties.find(pp=>pp.name===name); const pct = n/clusterStations.length*100; stops.push(`${withAlpha(p?p.color:'#6b7280', 0.6)} ${ang.toFixed(1)}% ${(ang+pct).toFixed(1)}%`); ang += pct; });
+                    if (other) stops.push(`${withAlpha('#4b5563', 0.6)} ${ang.toFixed(1)}% 100%`);
                     bg = `conic-gradient(${stops.join(', ')})`;
-                } else if (slices.length === 1) { const p = DATA.tsne.parties.find(pp=>pp.name===slices[0][0]); bg = withAlpha(p ? p.color : bg, 0.8); }
+                } else if (slices.length === 1) { const p = DATA.tsne.parties.find(pp=>pp.name===slices[0][0]); bg = withAlpha(p ? p.color : bg, 0.6); }
                 const count = clusterStations.length;
                 const size = count > 500 ? 88 : count > 200 ? 76 : count > 100 ? 64 : count > 30 ? 54 : 44;
                 return { html: `<div class="cluster-inner" style="background:${bg}"><div class="cluster-count">${count}</div></div>`, className: 'custom-cluster', size };

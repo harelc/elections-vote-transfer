@@ -553,8 +553,8 @@
                 const sorted = Object.entries(wins).sort((a, b) => b[1] - a[1]);
                 info = Math.round(100 * sorted[0][1] / count) + '%';
                 let angle = 0; const stops = [];
-                sorted.slice(0, 5).forEach(([idx, n]) => { const pct = n / count * 100; stops.push(`${withAlpha((parties[idx] || {}).color || '#999', 0.8)} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`); angle += pct; });
-                if (angle < 99.5) stops.push(`${withAlpha('#4b5563', 0.8)} ${angle.toFixed(1)}% 100%`);
+                sorted.slice(0, 5).forEach(([idx, n]) => { const pct = n / count * 100; stops.push(`${withAlpha((parties[idx] || {}).color || '#999', 0.6)} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`); angle += pct; });
+                if (angle < 99.5) stops.push(`${withAlpha('#4b5563', 0.6)} ${angle.toFixed(1)}% 100%`);
                 bg = `conic-gradient(${stops.join(', ')})`;
             } else if (countedItems.length && geoMode === 'turnout') {
                 let sv = 0, se = 0;
@@ -578,7 +578,7 @@
                 countedItems.forEach(it => { sx += it.station.x || 0; sy += it.station.y || 0; });
                 bg = embedCol({ x: sx / countedItems.length, y: sy / countedItems.length });
             }
-            bg = withAlpha(bg, 0.75);
+            bg = withAlpha(bg, 0.6);
             const first = items[0];
             const colocated = items.every(it => Math.abs(it.origLat - first.origLat) < 1e-5 && Math.abs(it.origLng - first.origLng) < 1e-5);
             const size = (count > 500 ? 80 : count > 200 ? 70 : count > 100 ? 60 : count > 30 ? 50 : 40) * (colocated ? 0.85 : 1);
