@@ -223,6 +223,9 @@
         .explainer-cta { display:inline-flex; align-items:center; margin:0.45rem 0 0.35rem; padding:0.5rem 0.9rem; border:1px solid var(--accent-primary); border-radius:999px; background:rgba(240,180,41,.1); color:var(--accent-primary); font-size:0.88rem; font-weight:700; text-decoration:none; }
         .explainer-cta:hover { background:rgba(240,180,41,.2); color:var(--accent-secondary); }
         button.explainer-cta { font-family:inherit; cursor:pointer; }
+        /* Explainer CTAs hug the physical left edge (reading-end in RTL) */
+        #panel-sankey .explainer-cta, #nowcast-content .explainer-cta { display:flex; width:fit-content; margin-right:auto; margin-left:0; }
+        #nowcast-content .explainer-cta { margin-top:0; margin-bottom:0; }
         /* Explainer slideshows (sankey / nowcast) open as floating
            modals over the command centre, same shell as D'Hondt. */
         .explainer-modal { position:fixed; inset:0; z-index:10030; background:rgba(5,8,14,.72); display:flex; align-items:flex-start; justify-content:center; padding:3vh 2vw; }
@@ -2071,13 +2074,13 @@
             // Predicted vote transfers live together with the seat nowcast,
             // not as a separate "Sankey" stage.
             if (P.projected_sankey) {
-                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey" style="margin:0">${i18n.t('k26_sankey_explainer')}</button></div>
+                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey">${i18n.t('k26_sankey_explainer')}</button></div>
                 <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.'}</div>
                 <div id="nc-flows-diagram"></div></div>`;
             }
         }
         if (!partial) body += `<div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap"><a class="pane-btn gold" href="?preview=partial12" style="text-decoration:none">${en() ? '▶ Preview: 12% counted' : '▶ תצוגה מקדימה: 12% נספרו'}</a><a class="pane-btn" href="?preview=partial17" style="text-decoration:none">${en() ? '▶ Preview: 17% counted' : '▶ תצוגה מקדימה: 17% נספרו'}</a><a class="pane-btn" href="?preview=partial" style="text-decoration:none">${en() ? '▶ Preview: 45% counted' : '▶ תצוגה מקדימה: 45% נספרו'}</a></div>`;
-        content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div><div class="pane-actions"><button class="explainer-cta" id="nowcast-explainer-open" style="margin:0">${i18n.t('k26_nowcast_explainer')}</button></div></div>` + body;
+        content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div><div class="pane-actions"><button class="explainer-cta" id="nowcast-explainer-open">${i18n.t('k26_nowcast_explainer')}</button></div></div>` + body;
         const ncExplBtn = document.getElementById('nowcast-explainer-open');
         if (ncExplBtn) ncExplBtn.addEventListener('click', () => openExplainer('nowcast'));
         content.querySelectorAll('[data-explainer]').forEach(b => b.addEventListener('click', () => openExplainer(b.dataset.explainer)));
