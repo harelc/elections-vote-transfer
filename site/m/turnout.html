@@ -585,7 +585,7 @@
                 agg.set(a[0], r);
             });
             const hhmmOf = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
-            return [...agg.values()].filter(r => r.eligible > 25000)
+            return [...agg.values()].filter(r => r.eligible >= 10000)
                 .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible, updAvg: r.updN ? hhmmOf(r.updSum / r.updN) : null }))
                 .sort((a, b) => b.turnout - a.turnout);
         }
@@ -593,15 +593,15 @@
             const card = document.getElementById('towns-card');
             const rows = td ? bigTownRows() : [];
             if (!rows.length) { card.hidden = true; return; }
-            document.getElementById('towns-title').textContent = en() ? 'Large towns (over 25,000 eligible)' : 'יישובים גדולים (מעל 25 אלף בעלי זכות)';
+            document.getElementById('towns-title').textContent = en() ? 'Large towns (10,000+ eligible)' : 'יישובים גדולים (10 אלף בעלי זכות ומעלה)';
             document.getElementById('towns-high-title').textContent = en() ? 'Highest turnout' : 'ההצבעה הגבוהה ביותר';
             document.getElementById('towns-low-title').textContent = en() ? 'Lowest turnout' : 'ההצבעה הנמוכה ביותר';
             const row = x => `<div class="set-row"><span class="nm">${i18n.settlementName ? i18n.settlementName(x.name) : x.name}</span><span class="vl">${x.turnout.toFixed(1)}% <small>${fmt(x.voters)}${x.updAvg ? ` · ${en() ? 'avg update time' : 'שעת עדכון ממוצעת'} ${x.updAvg}` : ''}</small></span></div>`;
             document.getElementById('towns-high').innerHTML = rows.slice(0, 25).map(row).join('');
             document.getElementById('towns-low').innerHTML = rows.slice(-25).reverse().map(row).join('');
             document.getElementById('towns-note').textContent = en()
-                ? `${rows.length} towns over 25,000 eligible, from the CEC per-ballot layer.`
-                : `${rows.length} יישובים מעל 25 אלף בעלי זכות, לפי שכבת הקלפיות של ועדת הבחירות.`;
+                ? `${rows.length} towns with 10,000+ eligible, from the CEC per-ballot layer.`
+                : `${rows.length} יישובים עם 10 אלף בעלי זכות ומעלה, לפי שכבת הקלפיות של ועדת הבחירות.`;
             card.hidden = false;
         }
 

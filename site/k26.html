@@ -2631,14 +2631,14 @@
             townAgg.set(a[0], r);
         });
         const hhmmOf = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
-        const towns = [...townAgg.values()].filter(r => r.eligible > 25000)
+        const towns = [...townAgg.values()].filter(r => r.eligible >= 10000)
             .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible, updAvg: r.updN ? hhmmOf(r.updSum / r.updN) : null }))
             .sort((a, b) => b.turnout - a.turnout);
         const townVal = r => `${(r.turnout || 0).toFixed(1)}%${r.updAvg ? ` <small>(${en() ? 'avg update time' : 'שעת עדכון ממוצעת'} ${r.updAvg})</small>` : ''}`;
         const S = (detailSnap && detailSnap.settlements) || td.settlements || {};
         document.getElementById('td-settles').innerHTML =
-            settleBlock(en() ? 'Highest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הגבוהה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns, townVal, 25) +
-            settleBlock(en() ? 'Lowest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הנמוכה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns.slice().reverse(), townVal, 25) +
+            settleBlock(en() ? 'Highest turnout — large towns (10,000+ eligible)' : 'ההצבעה הגבוהה ביותר — יישובים גדולים (10 אלף בעלי זכות ומעלה)', towns, townVal, 25) +
+            settleBlock(en() ? 'Lowest turnout — large towns (10,000+ eligible)' : 'ההצבעה הנמוכה ביותר — יישובים גדולים (10 אלף בעלי זכות ומעלה)', towns.slice().reverse(), townVal, 25) +
             settleBlock(en() ? 'Highest turnout settlements' : 'היישובים עם ההצבעה הגבוהה ביותר', S.highest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Lowest turnout settlements' : 'היישובים עם ההצבעה הנמוכה ביותר', S.lowest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Highest recovery of their K25 turnout (ratio ×, not a turnout)' : 'הכי גבוהים בשחזור שיעור ההצבעה של 25 (יחס ×, לא אחוז הצבעה)', S.fastest_pace, r => r.pace != null ? '×' + r.pace.toFixed(2) : '–') +
