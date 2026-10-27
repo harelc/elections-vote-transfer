@@ -462,6 +462,7 @@
             <a class="pane-btn" data-preview="partial12" href="?preview=partial12"></a>
             <a class="pane-btn" data-preview="partial17" href="?preview=partial17"></a>
             <a class="pane-btn" data-preview="partial" href="?preview=partial"></a>
+            <a class="pane-btn" data-preview="fullcount" href="?preview=fullcount"></a>
             <a class="pane-btn" data-preview="" href="k26.html"></a>
         </nav>
 
@@ -479,7 +480,7 @@
                 <section class="pane side-pane" id="pane-votes">
                     <div class="pane-head">
                         <div><h3 data-i18n="k26_votes_seats">קולות ומנדטים</h3><div class="pane-note" data-i18n="k26_threshold">אחוז חסימה 3.25%</div></div>
-                        <div class="pane-actions"><button class="pane-btn gold" id="dhondt-open" data-i18n="k26_dhondt_pane">מחשבון מנדטים</button><a class="full-view-cta votes-full-cta" href="dhondt.html" data-i18n="k26_open_full">לתצוגה המלאה ↗</a></div>
+                        <div class="pane-actions"><button class="pane-btn gold" id="dhondt-open" data-i18n="k26_dhondt_pane">מחשבון מנדטים</button></div>
                     </div>
                     <div class="hemi-toggle" id="hemi-toggle" hidden>
                         <button class="pane-btn" data-hemi="partial"></button>
@@ -698,6 +699,10 @@
     // Purely presentational; the default page is unchanged.
     const PREVIEW_MODE = new URLSearchParams(location.search).get('preview');
     const PREVIEW_PARTIAL = ['partial', 'partial17', 'partial12'].includes(PREVIEW_MODE);
+    // ?preview=fullcount — the page exactly as it will look once the
+    // count is complete (official banner, final Sankey stage, no
+    // nowcast), on the simulated full-count data.
+    const PREVIEW_FULLCOUNT = PREVIEW_MODE === 'fullcount';
     // Election-day turnout view: optional pre-results layer. ?turnout=1
     // forces it, ?turnout=0 forces it off; otherwise it activates only
     // when k26_status.json reports kind="turnout" (CEC turnout snapshots
@@ -719,7 +724,7 @@
         const el = document.getElementById('preview-switch');
         if (!el) return;
         const kind = K26STATUS && K26STATUS.kind;
-        const live = !PREVIEW_PARTIAL && (kind === 'partial' || kind === 'official' || kind === 'turnout');
+        const live = !PREVIEW_PARTIAL && !PREVIEW_FULLCOUNT && (kind === 'partial' || kind === 'official' || kind === 'turnout');
         // Simulated contexts offer the preview stages; live contexts
         // offer just day-vs-count. Hidden only before anything exists.
         // While the live election-day view is the mode in effect
@@ -727,7 +732,7 @@
         // phase to switch to — hide the switcher entirely. A forced
         // ?turnout=0 still gets the switcher so there is a way back.
         const dayOnly = TURNOUT_ACTIVE && kind === 'turnout' && !PREVIEW_PARTIAL;
-        const show = !dayOnly && (TURNOUT_ACTIVE || PREVIEW_PARTIAL || kind === 'simulated' || kind === 'turnout' || live);
+        const show = !dayOnly && (TURNOUT_ACTIVE || PREVIEW_PARTIAL || PREVIEW_FULLCOUNT || kind === 'simulated' || kind === 'turnout' || live);
         el.hidden = !show;
         if (!show) return;
         document.getElementById('preview-switch-label').textContent = en() ? 'Mode:' : 'מצב:';
@@ -740,8 +745,9 @@
             partial12: en() ? '12% counted' : '12% נספרו',
             partial17: en() ? '17% counted' : '17% נספרו',
             partial: en() ? '45% counted' : '45% נספרו',
+            fullcount: en() ? 'Full count — preview' : 'ספירה מלאה — תצוגה מקדימה',
         };
-        const current = TURNOUT_ACTIVE ? null : (PREVIEW_PARTIAL ? PREVIEW_MODE : '');
+        const current = TURNOUT_ACTIVE ? null : ((PREVIEW_PARTIAL || PREVIEW_FULLCOUNT) ? PREVIEW_MODE : '');
         el.querySelectorAll('a[data-preview]').forEach(a => {
             const mode = a.dataset.preview;
             a.hidden = live && mode !== '';  // live: only the count pill remains
@@ -765,7 +771,7 @@
             sub = sim
                 ? (en() ? 'A synthetic snapshot built for rehearsal. Real CEC turnout replaces it on election day; every map and table below is simulated until then.' : 'תמונת מצב סינתטית שנבנתה לחזרה. ביום הבחירות יחליפו אותה נתוני האמת של ועדת הבחירות; עד אז כל מפה וטבלה כאן מדומים.')
                 : '';
-        } else if (!PREVIEW_PARTIAL && K26STATUS && (K26STATUS.kind === 'partial' || K26STATUS.kind === 'official')) {
+        } else if (!PREVIEW_PARTIAL && !PREVIEW_FULLCOUNT && K26STATUS && (K26STATUS.kind === 'partial' || K26STATUS.kind === 'official')) {
             const official = K26STATUS.kind === 'official';
             sim = false;
             title = official
@@ -816,8 +822,8 @@
         document.getElementById('count-updated').textContent = updated;
         document.getElementById('count-source').textContent = en() ? (s.source_en || '') : (s.source_he || '');
     }
-    i18n.whenK26Status().then(s => { if (PREVIEW_PARTIAL) return; K26STATUS = s || K26STATUS; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } });
-    window.addEventListener('k26statuschange', e => { if (PREVIEW_PARTIAL) return; if (e.detail) { K26STATUS = e.detail; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } } });
+    i18n.whenK26Status().then(s => { if (PREVIEW_PARTIAL || PREVIEW_FULLCOUNT) return; K26STATUS = s || K26STATUS; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } });
+    window.addEventListener('k26statuschange', e => { if (PREVIEW_PARTIAL || PREVIEW_FULLCOUNT) return; if (e.detail) { K26STATUS = e.detail; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } } });
 
     function partyEn(name) { return (DATA && DATA.enNames[name]) || name; }
     function displayName(name) { return en() ? partyEn(name) : name; }
@@ -840,8 +846,8 @@
             fetch('data/k26_status.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch('data/historical_turnout.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
-        if (liveStatus && !PREVIEW_PARTIAL) K26STATUS = liveStatus;
-        TURNOUT_ACTIVE = !!turnoutDay && (TURNOUT_PARAM === '1' || (TURNOUT_PARAM !== '0' && K26STATUS.kind === 'turnout'));
+        if (liveStatus && !PREVIEW_PARTIAL && !PREVIEW_FULLCOUNT) K26STATUS = liveStatus;
+        TURNOUT_ACTIVE = !!turnoutDay && !PREVIEW_FULLCOUNT && (TURNOUT_PARAM === '1' || (TURNOUT_PARAM !== '0' && K26STATUS.kind === 'turnout'));
         if (TURNOUT_ACTIVE) { document.body.classList.add('td-on'); geoMode = 'td_turnout'; }
         const enNames = {}, enLeaders = {};
         (transfer.nodes_to || []).forEach(n => { if (n.info) { enNames[n.name] = n.info.name_en || n.name; enLeaders[n.name] = n.info.leader_en || ''; } });
@@ -857,6 +863,10 @@
         if (PREVIEW_PARTIAL && DATA.cc && DATA.cc.nowcast) {
             const nc = DATA.cc.nowcast;
             K26STATUS = { kind: 'partial', ballots: nc.counted_ballots, ballots_total: nc.roster_ballots, as_of: new Date().toISOString(), source_he: '', source_en: '' };
+        }
+        if (PREVIEW_FULLCOUNT) {
+            const total = (DATA.cc && DATA.cc.nowcast && DATA.cc.nowcast.roster_ballots) || 12018;
+            K26STATUS = { kind: 'official', ballots: total, ballots_total: total, as_of: new Date().toISOString(), source_he: '', source_en: '' };
         }
         // Count-stage layout: the geomap lives in the end margin and
         // the turnout pane takes its centre-column place under the
@@ -878,6 +888,7 @@
         if (PREVIEW_PARTIAL && DATA.cc && DATA.cc.nowcast) {
             renderCountStatus(); renderNowcast();
         }
+        if (PREVIEW_FULLCOUNT) renderCountStatus();
     }
 
     function renderStats() {
@@ -1220,7 +1231,7 @@
     // transfers inside the nowcast; the standalone transfer page is
     // sankey.html). Mirrors sankey.js: all transfers in the data, gradient
     // links, columns normalised to fill the height, X flipped in RTL.
-    let sankeyAbs = false, ncModel = 'abs';
+    let sankeyAbs = false, ncModel = 'abs', ncFlowsAbs = true;
     // The nowcast is computed both ways (with / without non-voters as a
     // source); this picks the live variant. projection = abstention
     // model, projection_plain = party-only model.
@@ -2139,6 +2150,9 @@
         const pane = document.getElementById('pane-nowcast');
         const nc = DATA.cc && DATA.cc.nowcast;
         if (!nc) { pane.hidden = true; return; }
+        // Site-wide default model (k26_control.json -> payload); the
+        // toggle can still override it locally afterwards.
+        if (!DATA._ncModelInit) { DATA._ncModelInit = true; ncModel = nc.default_model === 'plain' ? 'plain' : 'abs'; ncFlowsAbs = ncModel === 'abs'; }
         const rehearsal = nc.mode === 'rehearsal' && !PREVIEW_PARTIAL;
         // During a partial count the nowcast is the headline: the single
         // content node moves to the central stage and its tab auto-activates
@@ -2229,12 +2243,12 @@
             // Predicted vote transfers live together with the seat nowcast,
             // not as a separate "Sankey" stage.
             if (P.projected_sankey) {
-                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey">${i18n.t('k26_sankey_explainer')}</button></div>
-                <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים.'} ${ncModel === 'abs' ? (en() ? 'Shown with non-voters (model above).' : 'מוצג עם לא־הצביעו (המודל למעלה).') : (en() ? 'Shown without non-voters (model above).' : 'מוצג ללא לא־הצביעו (המודל למעלה).')}</div>
+                body += `<div style="margin-top:1rem"><div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap"><h4 style="color:var(--text-primary);margin-bottom:.25rem">${en() ? 'Predicted vote transfers' : 'מעברי הקולות החזויים'}</h4><button class="explainer-cta" data-explainer="sankey">${i18n.t('k26_sankey_explainer')}</button><span class="td-tabs" style="margin:0"><button class="pane-btn ${!ncFlowsAbs ? 'gold' : ''}" data-ncflows="0">${en() ? 'Without non-voters' : 'ללא לא־הצביעו'}</button><button class="pane-btn ${ncFlowsAbs ? 'gold' : ''}" data-ncflows="1" ${P.projected_sankey_abstention ? '' : 'disabled'}>${en() ? 'With non-voters' : 'עם לא־הצביעו'}</button></span></div>
+                <div class="pane-note">${en() ? 'Counted as-is + predicted rest, by each K25 party’s transfer row. Flows under 15,000 hidden. This display toggle does not change the nowcast model above.' : 'נספרו בפועל + חיזוי ליתר, לפי שורת המעבר של כל מפלגת 25. מעברים מתחת ל־15,000 מוסתרים. מתג התצוגה הזה אינו משנה את מודל התחזית למעלה.'}</div>
                 <div id="nc-flows-diagram"></div></div>`;
             }
         }
-        if (!partial) body += `<div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap"><a class="pane-btn gold" href="?preview=partial12" style="text-decoration:none">${en() ? '▶ Preview: 12% counted' : '▶ תצוגה מקדימה: 12% נספרו'}</a><a class="pane-btn" href="?preview=partial17" style="text-decoration:none">${en() ? '▶ Preview: 17% counted' : '▶ תצוגה מקדימה: 17% נספרו'}</a><a class="pane-btn" href="?preview=partial" style="text-decoration:none">${en() ? '▶ Preview: 45% counted' : '▶ תצוגה מקדימה: 45% נספרו'}</a></div>`;
+        if (!partial) body += `<div style="margin-top:.7rem;display:flex;gap:.5rem;flex-wrap:wrap"><a class="pane-btn gold" href="?preview=partial12" style="text-decoration:none">${en() ? '▶ Preview: 12% counted' : '▶ תצוגה מקדימה: 12% נספרו'}</a><a class="pane-btn" href="?preview=partial17" style="text-decoration:none">${en() ? '▶ Preview: 17% counted' : '▶ תצוגה מקדימה: 17% נספרו'}</a><a class="pane-btn" href="?preview=partial" style="text-decoration:none">${en() ? '▶ Preview: 45% counted' : '▶ תצוגה מקדימה: 45% נספרו'}</a><a class="pane-btn" href="?preview=fullcount" style="text-decoration:none">${en() ? '▶ Preview: full count' : '▶ תצוגה מקדימה: ספירה מלאה'}</a></div>`;
         content.innerHTML = `<div class="pane-head"><div><h3>${title}</h3><div class="pane-note">${note}</div></div><div class="pane-actions"><button class="explainer-cta" id="nowcast-explainer-open">${i18n.t('k26_nowcast_explainer')}</button></div></div>` + body;
         const ncExplBtn = document.getElementById('nowcast-explainer-open');
         if (ncExplBtn) ncExplBtn.addEventListener('click', () => openExplainer('nowcast'));
@@ -2242,6 +2256,12 @@
         content.querySelectorAll('[data-ncmodel]').forEach(b => b.addEventListener('click', () => {
             ncModel = b.dataset.ncmodel;
             renderNowcast();
+        }));
+        content.querySelectorAll('[data-ncflows]').forEach(b => b.addEventListener('click', () => {
+            ncFlowsAbs = b.dataset.ncflows === '1';
+            content.querySelectorAll('[data-ncflows]').forEach(x => x.classList.toggle('gold', (x.dataset.ncflows === '1') === ncFlowsAbs));
+            const fl = document.getElementById('nc-flows-diagram'); if (fl) fl.innerHTML = '';
+            renderNcFlows();
         }));
         renderNcFlows();
         // The hemicycle selector in the votes pane depends on the partial
@@ -2262,7 +2282,7 @@
             // Re-render when the container width changed since the last
             // draw (mount moves side -> stage, window resizes): a stale
             // fixed-width svg otherwise stays squeezed or stretched.
-            if (!svg || Math.abs((+svg.getAttribute('width') || 0) - w) > 4) { const P = ncProj(nc); renderSankey((ncModel === 'abs' && P.projected_sankey_abstention) || P.projected_sankey, 'nc-flows-diagram', 780); }
+            if (!svg || Math.abs((+svg.getAttribute('width') || 0) - w) > 4) { const P = ncProj(nc); renderSankey((ncFlowsAbs && P.projected_sankey_abstention) || P.projected_sankey, 'nc-flows-diagram', 780); }
         } else if (!flowsEl.querySelector('svg')) {
             // Too narrow right now (e.g. still in the hidden side mount):
             // leave a note but do not burn it in — activation/resize

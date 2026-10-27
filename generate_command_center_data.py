@@ -411,6 +411,14 @@ def shares_of(props, names):
     return vec / s if s > 0 else vec
 
 
+def _default_model():
+    try:
+        ctl = json.loads((Path(__file__).parent / "k26_control.json").read_text(encoding="utf-8"))
+        return "plain" if ctl.get("nowcast_model") == "plain" else "abs"
+    except Exception:
+        return "abs"
+
+
 def nowcast(status, sectors, target_share=None, force=False):
     sec = sectors.get("settlements", {})
     tsne25, tsne26 = load("tsne_25.json"), load("tsne_26.json")
@@ -952,6 +960,11 @@ def nowcast(status, sectors, target_share=None, force=False):
         "source_origin_votes": {from_names[i]: round(float(origin_votes[i])) for i in range(len(from_names))},
         "projection": projection,
         "projection_plain": projection_plain,
+        # Site-wide default nowcast model from k26_control.json
+        # ("abs" = with non-voters, "plain" = without). Both variants
+        # are always computed; this only picks which one the page
+        # opens with -- visitors can still flip locally.
+        "default_model": _default_model(),
     }
 
 

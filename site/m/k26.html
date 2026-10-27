@@ -114,6 +114,7 @@
             <a data-mode="partial12">12%</a>
             <a data-mode="partial17">17%</a>
             <a data-mode="partial">45%</a>
+            <a data-mode="fullcount">100%</a>
             <a data-mode="" id="ms-full"></a>
         </div>
 
@@ -236,7 +237,9 @@
             // daytime layer during the count.
             const tdDay = await fetch('../data/turnout_day_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null);
             tdDayM = new Map(((tdDay && tdDay.stations) || []).map(a => [a[0] + '|' + a[1], a]));
-            if (PREVIEW && cc && cc.nowcast) {
+            if (PREVIEW === 'fullcount' && cc && cc.nowcast) {
+                status = { kind: 'official', ballots: cc.nowcast.roster_ballots, ballots_total: cc.nowcast.roster_ballots, as_of: new Date().toISOString() };
+            } else if (PREVIEW && cc && cc.nowcast) {
                 const nc = cc.nowcast;
                 status = { kind: 'partial', ballots: nc.counted_ballots, ballots_total: nc.roster_ballots, as_of: new Date().toISOString() };
             }
@@ -252,13 +255,16 @@
             // ?preview=* rehearses the election-night layout on simulated
             // data — it must never wear the real-results banner.
             const rehearsal = !!PREVIEW && partial;
-            const fake = sim || rehearsal;
+            const fullPreview = PREVIEW === 'fullcount';
+            const fake = sim || rehearsal || fullPreview;
             // Provenance
             const prov = document.getElementById('prov');
             prov.className = 'prov ' + (fake ? 'sim' : partial ? 'partial' : 'real');
             document.getElementById('prov-icon').textContent = fake ? '⚠' : '●';
             document.getElementById('prov-title').textContent = rehearsal
                 ? (en() ? '⚠ REHEARSAL PREVIEW — simulated data, not real results' : '⚠ תצוגת חזרה — נתונים מדומים, לא תוצאות אמת')
+                : fullPreview
+                    ? (en() ? '⚠ FULL-COUNT PREVIEW — simulated data, not real results' : '⚠ תצוגת ספירה מלאה — נתונים מדומים, לא תוצאות אמת')
                 : sim
                     ? (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת')
                     : partial
@@ -266,6 +272,8 @@
                         : (en() ? '● OFFICIAL RESULTS — Central Elections Committee' : '● תוצאות רשמיות — ועדת הבחירות המרכזית');
             document.getElementById('prov-sub').textContent = rehearsal
                 ? (en() ? 'A rehearsal of the count-night layout on the simulated scenario (about ' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% counted in the simulation). Nothing here is real.' : 'חזרה על תצוגת ליל הספירה מתוך התרחיש המדומה (כ־' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% נספרו בסימולציה). שום דבר כאן אינו אמיתי.')
+                : fullPreview
+                    ? (en() ? 'A rehearsal of the completed-count layout on the simulated scenario. Nothing here is real.' : 'חזרה על תצוגת סוף הספירה מתוך התרחיש המדומה. שום דבר כאן אינו אמיתי.')
                 : sim
                     ? (en() ? 'Knesset 26 has not happened on this page yet: a polling-calibrated simulation, replaced automatically when the CEC publishes real data.' : 'הבחירות לכנסת ה־26 טרם נערכו כאן: סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.')
                     : partial
@@ -380,7 +388,7 @@
             const ncP = nc && ncProjM(nc);
             const projected = status.kind === 'partial' && nc && nc.ready && ncP && ncP.projected_sankey;
             const data = projected
-                ? ((ncModelM === 'abs' && ncP.projected_sankey_abstention) || ncP.projected_sankey)
+                ? ((sankeyAbsM && ncP.projected_sankey_abstention) || ncP.projected_sankey)
                 : ((sankeyAbsM && transferAbs) || transferData);
             if (!data || !data.transfers) { card.hidden = true; return; }
             card.hidden = false;
@@ -391,9 +399,6 @@
                 bOff.classList.toggle('gold', !sankeyAbsM);
                 bOn.classList.toggle('gold', sankeyAbsM);
                 bOn.disabled = projected ? !ncP.projected_sankey_abstention : !transferAbs;
-                // While counting, the model toggle in the nowcast card
-                // drives this diagram too -- hide the file toggle.
-                bOff.hidden = bOn.hidden = !!projected;
                 if (!bOff.dataset.wired) {
                     bOff.dataset.wired = '1';
                     bOff.addEventListener('click', () => { sankeyAbsM = false; renderSankey(); });
@@ -753,10 +758,12 @@
             }
         }
 
+        let ncModelInitM = false;
         function renderNowcast() {
             const card = document.getElementById('nowcast-card');
             const nc = cc && cc.nowcast;
             if (!nc || status.kind !== 'partial') { card.hidden = true; return; }
+            if (!ncModelInitM) { ncModelInitM = true; ncModelM = nc.default_model === 'plain' ? 'plain' : 'abs'; sankeyAbsM = ncModelM === 'abs'; }
             card.hidden = false;
             document.getElementById('nc-title').textContent = en() ? 'Nowcast — forecast for the final count' : 'תחזית — לסוף הספירה';
             const gate = document.getElementById('nc-gate');
