@@ -893,12 +893,11 @@
     }
     function seatBarHTML(withHemi, seatCounts) {
         const passing = DATA.results.filter(p=>(seatCounts ? (seatCounts[p.name]||0) : p.seats)>0).map(p=>({ ...p, seats: seatCounts ? (seatCounts[p.name]||0) : p.seats }));
-        const segs = passing.map(p=>`<div title="${displayName(p.name)}: ${p.seats}" style="width:${p.seats/(passing.reduce((a,x)=>a+x.seats,0)||120)*100}%;background:${DATA.colorOf[p.name]||'#666'}"></div>`).join('');
         const blocs = BLOCS.map(b=>{
             const s = DATA.results.filter(p=>b.parties.includes(p.name)).reduce((a,p)=>a+(seatCounts ? (seatCounts[p.name]||0) : p.seats),0);
             return `<span class="bloc-chip">${i18n.t('k26_bloc_'+b.id)}: <b>${s}</b></span>`;
         }).join('');
-        return `<div class="seatbar">${segs}</div>` + (withHemi ? hemicycleSVG(seatCounts) : '') + `<div class="bloc-row">${blocs}</div>`;
+        return (withHemi ? hemicycleSVG(seatCounts) : '') + `<div class="bloc-row">${blocs}</div>`;
     }
 
     // --- Bader-Ofer allocator (mirrors dhondt.html's calculate/simulateSeats,
