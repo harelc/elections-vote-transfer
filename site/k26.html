@@ -733,10 +733,10 @@
             sim = tdMeta.kind !== 'live';
             title = sim
                 ? (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת')
-                : (en() ? '● REAL DATA — live CEC turnout' : '● נתוני אמת — אחוזי הצבעה חיים מוועדת הבחירות');
+                : (en() ? '● Real turnout data, as received from the Central Elections Committee' : '● נתוני אמת של שיעורי ההצבעה כפי שהתקבלו מוועדת הבחירות המרכזית');
             sub = sim
                 ? (en() ? 'A synthetic snapshot built for rehearsal. Real CEC turnout replaces it on election day; every map and table below is simulated until then.' : 'תמונת מצב סינתטית שנבנתה לחזרה. ביום הבחירות יחליפו אותה נתוני האמת של ועדת הבחירות; עד אז כל מפה וטבלה כאן מדומים.')
-                : (en() ? 'Per-ballot turnout as published by the Central Elections Committee during election day. No results yet.' : 'אחוזי הצבעה לפי קלפי כפי שמפרסמת ועדת הבחירות המרכזית במהלך יום הבחירות. עדיין אין תוצאות.');
+                : '';
         } else if (!PREVIEW_PARTIAL && K26STATUS && (K26STATUS.kind === 'partial' || K26STATUS.kind === 'official')) {
             const official = K26STATUS.kind === 'official';
             sim = false;

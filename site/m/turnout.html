@@ -224,10 +224,10 @@
             prov.className = 'prov ' + (real ? 'real' : 'sim');
             document.getElementById('prov-icon').textContent = real ? '🟢' : '⚠';
             document.getElementById('prov-title').textContent = real
-                ? (en() ? 'REAL DATA — not results' : 'נתוני אמת — אלה אינם תוצאות')
+                ? (en() ? 'Real turnout data, as received from the Central Elections Committee' : 'נתוני אמת של שיעורי ההצבעה כפי שהתקבלו מוועדת הבחירות המרכזית')
                 : (en() ? 'SIMULATED SCENARIO — not real data' : 'תרחיש מדומה — אלה אינם נתוני אמת');
             document.getElementById('prov-sub').textContent = real
-                ? (en() ? 'Election-day turnout from the CEC feed. No vote results yet.' : 'אחוזי הצבעה מיום הבחירות ממערכת ועדת הבחירות. עדיין אין תוצאות הצבעה.')
+                ? ''
                 : (en() ? (td && td.meta.note_en || 'Rehearsal: synthetic turnout, before any real feed.') : (td && td.meta.note_he || 'חזרה: אחוזי הצבעה מדומים, לפני נתוני אמת.'));
             document.getElementById('desktop-link').textContent = en() ? 'Full command centre (desktop) ←' : 'למרכז הבקרה המלא (מחשב) ←';
             renderSnap();

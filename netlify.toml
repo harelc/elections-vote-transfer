@@ -10,11 +10,11 @@ publish = "site"
 schedule = "*/10 * * * *"
 included_files = ["k26_control.json"]
 
-# Election-day turnout poller: same cadence, but k26_control.json gates
-# fetching to the daytime turnout window (07:00-22:00 on 27 Oct 2026)
-# and dispatch stays off while turnout_auto is false.
+# Election-day turnout poller: every 2 minutes inside the daytime
+# turnout window (07:00-22:00 on 27 Oct 2026, gated by k26_control.json);
+# dispatch stays off while turnout_auto is false.
 [functions."k26-turnout-poll"]
-schedule = "*/10 * * * *"
+schedule = "*/2 * * * *"
 included_files = ["k26_control.json"]
 
 [[headers]]
