@@ -2434,7 +2434,7 @@
             [natT != null ? `${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)` : '–', en() ? 'Ballots above the national figure' : 'קלפיות מעל הנתון הארצי'],
         ].map(([v, l]) => `<div class="td-stat"><b>${v}</b><span>${l}</span></div>`).join('');
         const lag = (natT != null && wMean != null) ? natT - wMean : null;
-        box.innerHTML = `<h4>${en() ? 'How turnout is spread across ballot boxes' : 'איך מתפלגת ההצבעה בין הקלפיות'}</h4>
+        box.innerHTML = `<h4>${en() ? 'How turnout is spread across ballot boxes' : 'התפלגות שיעורי ההצבעה בין הקלפיות'}</h4>
             <svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>
             <div class="td-stats" style="margin:.4rem 0">${stats}</div>
             <div class="hist-note">${en()

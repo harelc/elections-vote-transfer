@@ -399,7 +399,7 @@
             }
             const med = q(0.5);
             g += `<line x1="${X(med)}" y1="${T - 4}" x2="${X(med)}" y2="${B}" stroke="#dbe4ee" stroke-width="1.5" stroke-dasharray="4 3"/>`;
-            document.getElementById('dist-title').textContent = en() ? 'Turnout spread across ballot boxes' : 'התפלגות ההצבעה בין הקלפיות';
+            document.getElementById('dist-title').textContent = en() ? 'Turnout spread across ballot boxes' : 'התפלגות שיעורי ההצבעה בין הקלפיות';
             document.getElementById('dist-chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;direction:ltr">${g}</svg>`;
             const f1 = v => v == null ? '–' : v.toFixed(1) + '%';
             document.getElementById('dist-stats').innerHTML = en()
