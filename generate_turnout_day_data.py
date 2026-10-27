@@ -383,23 +383,30 @@ def main():
         by_code, by_name, settle_by_code, settle_by_name = rehearsal_records(args.target_turnout)
     else:
         by_code, by_name, settle_by_code, settle_by_name = snapshot_records(args.snapshot[-1])
-        # The CEC feed is generated continuously, but its national
-        # figure is an hourly release with a ~1h lag (the 10:00 figure
-        # is published ~11:00). Stamp the snapshot with the DATA hour —
-        # the feed total's "updated" HH:MM minus one hour, floored —
-        # not the generation time, so graphs and comparisons line up
-        # with the historical hourly table.
+        # The CEC feed's national figure is an hourly release with a
+        # ~1h lag. Stamp the snapshot with the DATA hour so graphs and
+        # comparisons line up with the historical hourly table. The
+        # reliable signal is the file's own "generated" stamp minus
+        # one hour, floored (11:41 gen -> 10:00 figure; 13:09 gen ->
+        # 12:00 figure). The total's "updated" HH:MM is NOT usable:
+        # it read 11:09 for the 10:00 release but 12:49 for the 12:00
+        # one, so updated-1h would stamp the second release 11:00.
         if args.as_of:
             try:
                 from datetime import datetime, timezone, timedelta
                 raw = json.loads(Path(args.snapshot[-1]).read_text(encoding="utf-8"))
-                upd = (raw.get("total") or {}).get("updated") if isinstance(raw, dict) else None
-                if upd and ":" in str(upd):
-                    hh = int(str(upd).split(":")[0]) - 1
-                    if hh >= 0:
-                        dt = datetime.fromisoformat(str(args.as_of).replace("Z", "+00:00"))
-                        il = timezone(timedelta(hours=2))
-                        args.as_of = dt.astimezone(il).replace(hour=hh, minute=0, second=0, microsecond=0).isoformat()
+                gen = raw.get("generated") if isinstance(raw, dict) else None
+                il = timezone(timedelta(hours=2))
+                dt = None
+                if gen:
+                    dt = datetime.fromisoformat(str(gen).replace("Z", "+00:00")).astimezone(il) - timedelta(hours=1)
+                else:
+                    upd = (raw.get("total") or {}).get("updated")
+                    if upd and ":" in str(upd):
+                        base = datetime.fromisoformat(str(args.as_of).replace("Z", "+00:00")).astimezone(il)
+                        dt = base.replace(hour=max(0, int(str(upd).split(":")[0]) - 1))
+                if dt is not None:
+                    args.as_of = dt.replace(minute=0, second=0, microsecond=0).isoformat()
             except Exception:
                 pass
 
