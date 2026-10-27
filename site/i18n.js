@@ -1520,13 +1520,25 @@
         });
     }
 
+    // First-party traffic beacon (netlify/functions/hit.mjs): one
+    // pageview per load; uniques are counted server-side from
+    // daily-salted IP hashes. Fire-and-forget, never blocks the page.
+    function sendHit() {
+        try {
+            if (!navigator.sendBeacon) return;
+            const body = JSON.stringify({ p: location.pathname });
+            navigator.sendBeacon('/.netlify/functions/hit', new Blob([body], { type: 'application/json' }));
+        } catch (e) { /* analytics must never break the page */ }
+    }
+
     // Run init as early as possible
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); injectMobileTabCC(); });
+        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); injectMobileTabCC(); sendHit(); });
     } else {
         init();
         setupE26Widget();
         injectMobileTabCC();
+        sendHit();
     }
 
     /* ── Public API ── */
