@@ -592,7 +592,8 @@ def main():
                          match_kind,
                          row["k25_name"] if twin is not None else None,
                          norm_ballot(row["k25_ballot"]) if twin is not None else None,
-                         match_m, neighbour_n])
+                         match_m, neighbour_n,
+                         (rec.get("updated") if reported else None)])
 
     total_voters = total["voters"] or 1
     nat = finish(total)
@@ -760,7 +761,7 @@ def main():
                  if kind == "live" else "Rehearsal (simulated): synthetic election-day turnout, before any results.",
                  "station_fields": ["name", "ballot", "lat", "lng", "eligible", "voters", "turnout",
                                     "k25_turnout", "pace", "k25_winner", "bloc", "population", "district", "socio", "matched",
-                                    "match", "k25_name", "k25_ballot", "match_m", "neighbor_n"]},
+                                    "match", "k25_name", "k25_ballot", "match_m", "neighbor_n", "feed_updated"]},
         "national": nat,
         "history": history,
         "snapshots": snapshots,

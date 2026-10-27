@@ -100,6 +100,7 @@
             <h3 id="nat-title"></h3>
             <div class="snap-row" id="snap-row"></div>
             <div class="td-big"><span id="nat-turnout">–</span> <small id="nat-asof"></small></div>
+            <div class="note" id="nat-updated" style="color:#ffd75e"></div>
             <div class="td-bar-track"><i id="nat-fill" style="width:0%"></i></div>
             <div class="td-stats">
                 <div class="td-stat"><b id="nat-voters">–</b><span id="lbl-voters"></span></div>
@@ -122,6 +123,8 @@
             <h3 id="dist-title"></h3>
             <div id="dist-chart"></div>
             <div class="note" id="dist-stats"></div>
+            <div class="note" id="dist-vintage-title" style="margin-top:.5rem"></div>
+            <div id="dist-vintage"></div>
             <div class="note" id="dist-note" style="margin-top:.35rem"></div>
         </section>
 
@@ -306,6 +309,16 @@
             document.getElementById('nat-title').textContent = en() ? 'National turnout' : 'הצבעה ארצית';
             document.getElementById('nat-turnout').textContent = (n.turnout ?? 0).toFixed(1) + '%';
             document.getElementById('nat-asof').textContent = (en() ? 'as of ' : 'נכון ל־') + hhmm(s.as_of);
+            document.getElementById('nat-updated').textContent = (() => {
+                if (!s.as_of) return '';
+                const when = new Date(s.as_of);
+                const full = when.toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
+                const mins = Math.max(0, Math.round((Date.now() - when.getTime()) / 60000));
+                const age = mins < 60 ? (en() ? `${mins} min ago` : `לפני ${mins} דק׳`) : (en() ? `${Math.floor(mins / 60)}h ${mins % 60}m ago` : `לפני ${Math.floor(mins / 60)} שע׳ ו־${mins % 60} דק׳`);
+                const pub = (status && status.kind === 'turnout' && status.as_of)
+                    ? new Date(status.as_of).toLocaleTimeString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit' }) : null;
+                return `${en() ? 'Turnout data as of' : 'נתוני אחוזי ההצבעה נכונים ל'} ${full} (${age})${pub ? (en() ? ` · published on this site at ${pub}` : ` · עודכן באתר ב־${pub}`) : ''}`;
+            })();
             document.getElementById('nat-fill').style.width = Math.min(100, n.turnout || 0) + '%';
             document.getElementById('nat-voters').textContent = fmt(n.voters);
             document.getElementById('nat-pace').textContent = '×' + (n.pace ?? 0).toFixed(2);
@@ -406,6 +419,27 @@
                 ? `Median ballot <b>${f1(med)}</b> · mean <b>${f1(mean)}</b> · weighted mean <b>${f1(wMean)}</b> · middle 50%: ${f1(q(0.25))}–${f1(q(0.75))} · only <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> of ballots are above the national figure.`
                 : `קלפי חציונית <b>${f1(med)}</b> · ממוצע <b>${f1(mean)}</b> · ממוצע משוקלל <b>${f1(wMean)}</b> · 50% האמצעיים: ${f1(q(0.25))}–${f1(q(0.75))} · רק <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> מהקלפיות מעל הנתון הארצי.`;
             const lag = (natT != null && wMean != null) ? natT - wMean : null;
+            // Vintage profile: per-ballot last-updated hour in the feed.
+            const updHours = {};
+            (td.stations || []).forEach(a => {
+                if (!a[20]) return;
+                const h = parseInt(String(a[20]).slice(0, 2), 10);
+                if (isFinite(h)) updHours[h] = (updHours[h] || 0) + 1;
+            });
+            const updKeys = Object.keys(updHours).map(Number).sort((a, b) => a - b);
+            document.getElementById('dist-vintage-title').innerHTML = updKeys.length
+                ? `<b>${en() ? 'When the feed last updated each ballot' : 'מתי עודכנה כל קלפי בהזנה לאחרונה'}</b>` : '';
+            document.getElementById('dist-vintage').innerHTML = (() => {
+                if (!updKeys.length) return '';
+                const vmax = Math.max(...updKeys.map(h => updHours[h]));
+                const bw = (R - L) / Math.max(1, updKeys.length);
+                let bars = '';
+                updKeys.forEach((h, i) => {
+                    const bh = updHours[h] / vmax * 54;
+                    bars += `<rect x="${(L + i * bw + 2).toFixed(1)}" y="${(68 - bh).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="${bh.toFixed(1)}" rx="2" fill="rgba(240,180,41,.65)"/><text x="${(L + i * bw + bw / 2).toFixed(1)}" y="84" fill="#8b93a5" font-size="11" text-anchor="middle">${String(h).padStart(2, '0')}:00</text><text x="${(L + i * bw + bw / 2).toFixed(1)}" y="${(61 - bh).toFixed(1)}" fill="#c8ceda" font-size="10" text-anchor="middle">${updHours[h].toLocaleString()}</text>`;
+                });
+                return `<svg viewBox="0 0 ${W} 92" style="width:100%;height:auto;display:block;direction:ltr">${bars}</svg>`;
+            })();
             const bv = (s && s.national || {}).ballot_vintage;
             document.getElementById('dist-note').textContent = (en()
                 ? `Why the map trails the headline: the CEC feed's national total (${natT != null ? natT.toFixed(1) : '–'}%) is the official hourly release, while its per-ballot layer is an earlier vintage (weighted mean ${f1(wMean)}, a ${lag != null ? lag.toFixed(1) : '–'}-point gap). The national figure rules for the country; the ballot layer catches up in later exports.`
@@ -522,7 +556,8 @@
             showSheet(`<div class="sheet-title">${i18n.settlementName ? i18n.settlementName(d.name) : d.name}</div>
                 <div class="sheet-sub">${en() ? 'Ballot' : 'קלפי'} ${d.ballot}<br>
                 ${en() ? 'Turnout so far' : 'הצבעה עד כה'}: <b>${d.turnout == null ? '–' : d.turnout.toFixed(1) + '%'}</b> (${fmt(d.voters)} / ${fmt(d.eligible)})<br>
-                ${en() ? 'K25 recovery' : 'שחזור מ־25'}: <b>${d.pace == null ? '–' : '×' + d.pace.toFixed(2)}</b>
+                ${en() ? 'K25 recovery' : 'שחזור מ־25'}: <b>${d.pace == null ? '–' : '×' + d.pace.toFixed(2)}</b><br>
+                ${en() ? 'CEC last report for this ballot' : 'דיווח אחרון לקלפי זו (ועדת הבחירות)'}: <b>${d.upd ? d.upd : (en() ? 'not in the feed' : 'לא הופיעה בהזנה')}</b>
                 ${d.winner25 ? `<br>${en() ? 'K25 winner here' : 'ניצחה כאן ב־25'}: ${d.winner25}` : ''}
                 ${d.k25Ballot ? `<br>${en() ? 'K25 twin ballot' : 'קלפי תאומה ב־25'}: ${d.k25Ballot}` : ''}</div>`);
         }
@@ -560,7 +595,7 @@
                 const k25final = a[8] ? a[5] / a[8] : null;
                 const t = (v == null || !a[4]) ? null : 100 * v / a[4];
                 const p = (v == null || !k25final) ? null : v / k25final;
-                const d = { name: a[0], ballot: a[1], turnout: t, pace: p, voters: v, eligible: a[4], winner25: a[9] || '', k25Ballot: a[17] || '' };
+                const d = { name: a[0], ballot: a[1], turnout: t, pace: p, voters: v, eligible: a[4], winner25: a[9] || '', k25Ballot: a[17] || '', upd: a[20] };
                 const rec = { lng: a[3], lat: a[2], origLng: a[3], origLat: a[2], color: tdColor(byPace ? p : t, byPace), radius: 5, station: d };
                 items.push(rec);
                 const key = a[2].toFixed(5) + ',' + a[3].toFixed(5);
