@@ -121,8 +121,8 @@
     <a href="index.html" class="home-link">🏠 דף הבית</a>
 
     <div class="nav-arrows">
-        <button class="nav-btn" id="prev-btn" title="הקודם">‹</button>
-        <button class="nav-btn" id="next-btn" title="הבא">›</button>
+        <button class="nav-btn" id="prev-btn" title="הקודם">›</button>
+        <button class="nav-btn" id="next-btn" title="הבא">‹</button>
     </div>
 
     <div class="stage" id="stage">
@@ -461,7 +461,7 @@
             });
             prevBtn.disabled = chapter === 0;
             nextBtn.title = chapter === chapters.length - 1 ? 'סיום' : 'הבא';
-            nextBtn.textContent = chapter === chapters.length - 1 ? (EMBED ? '✕' : '🏠') : '›';
+            nextBtn.textContent = chapter === chapters.length - 1 ? (EMBED ? '✕' : '🏠') : '‹';
         }
         function render() {
             const ch = chapters[chapter];
