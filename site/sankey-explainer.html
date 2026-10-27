@@ -807,6 +807,9 @@
             // Big R² + button to interactive view
             const W = 700, H = 360;
             const svg = makeSvg(W, H);
+            // Leave room below the diagram for the closing CTA so it
+            // never overlays the step dots / click hint.
+            svg.style('max-height', 'calc(100vh - 340px)');
             const r2 = DATA.transfer_r2 || 0.89;
             svg.append('text').attr('x', W / 2).attr('y', 100)
                 .attr('text-anchor', 'middle').attr('fill', 'var(--text2)').attr('font-size', '1rem')
@@ -827,7 +830,7 @@
             btn.href = EMBED ? '#' : 'sankey.html';
             btn.textContent = EMBED ? '✕ סגירה וחזרה למרכז הבקרה' : '🔀 לתרשים האינטראקטיבי ←';
             if (EMBED) btn.addEventListener('click', (e) => { e.preventDefault(); window.parent.postMessage({ type: 'kolot-close-explainer' }, location.origin); });
-            btn.style.cssText = 'display:inline-block;padding:0.75rem 1.5rem;background:var(--accent);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:1rem;margin-top:0.5rem;';
+            btn.style.cssText = 'display:inline-block;padding:0.75rem 1.5rem;background:var(--accent);color:#fff;border-radius:10px;text-decoration:none;font-weight:600;font-size:1rem;margin-top:0.5rem;margin-bottom:2.6rem;flex:none;';
             visEl.appendChild(btn);
         }
 
