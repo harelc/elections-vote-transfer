@@ -1873,7 +1873,12 @@
         if (!DATA._tkSelected || !slices.some(s => s.id === DATA._tkSelected)) DATA._tkSelected = slices[0].id;
         const sel = slices.find(s => s.id === DATA._tkSelected);
         document.getElementById('tk-grid').innerHTML = slices.map(s => {
-            const bar = s.top.map(t => `<div title="${displayName(t.name)}: ${t.seats}" style="width:${t.seats / 120 * 100}%;background:${DATA.colorOf[t.name] || '#666'}"></div>`).join('');
+            // Segments are seats/120 of the top-4 only; pad the rest
+            // with an 'others' remainder so every card's bar is the
+            // same full width on the same seat scale.
+            const topSeats = s.top.reduce((a, t) => a + (t.seats || 0), 0);
+            const bar = s.top.map(t => `<div title="${displayName(t.name)}: ${t.seats}" style="width:${t.seats / 120 * 100}%;background:${DATA.colorOf[t.name] || '#666'}"></div>`).join('')
+                + (topSeats < 120 ? `<div title="${en() ? 'Others' : 'אחרים'}: ${120 - topSeats}" style="width:${(120 - topSeats) / 120 * 100}%;background:rgba(255,255,255,.13)"></div>` : '');
             const top = s.top.map(t => `<div><b>${t.seats}</b> ${displayName(t.name)} · ${t.share}%</div>`).join('');
             return `<div class="tk-card" data-tk="${s.id}" style="cursor:pointer;${s.id === sel.id ? 'border-color:var(--accent-primary)' : ''}"><h4>${en() ? s.label_en : s.label_he}</h4>
                 <div class="tk-meta">${fmt(s.settlements)} ${en() ? 'settlements' : 'יישובים'} · ${fmt(s.voters)} ${en() ? 'votes' : 'קולות'} · ${s.share_national}% ${en() ? 'of the national vote' : 'מהקול הארצי'}</div>
