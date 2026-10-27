@@ -1999,28 +1999,41 @@
     let TH = null;
     function computeTurnout() {
         const BINS = 20;
+        // "Strongest for party X" is a K26-share ranking, knowable
+        // only once a box is counted -- so during a partial count the
+        // top-100 are picked from the counted ballots only (the
+        // nowcast's geo_counted keys; in a rehearsal the t-SNE file
+        // holds the full roster and must not be peeked at).
+        let stations = DATA.tsne.stations;
+        if (K26STATUS.kind === 'partial' && DATA.cc && DATA.cc.nowcast && DATA.cc.nowcast.geo_counted) {
+            const counted = new Set(DATA.cc.nowcast.geo_counted.map(a => `${a[0]}|${a[1]}`));
+            stations = stations.filter(st => counted.has(`${st.n}|${st.b}`));
+        }
         const groups = DATA.results.map(p => {
-            const strongest = [...DATA.tsne.stations]
+            const strongest = [...stations]
                 .sort((a, b) => ((b.p[p.name]||0) - (a.p[p.name]||0)) || ((b.v||0) - (a.v||0))).slice(0, 100);
-            const g = { name: p.name, binsB: new Array(BINS).fill(0), binsV: new Array(BINS).fill(0), n: strongest.length, voters: 0, tWeighted: 0, avgShare: 0 };
+            const g = { name: p.name, binsB: new Array(BINS).fill(0), binsV: new Array(BINS).fill(0), n: strongest.length, voters: 0, tWeighted: 0, avgShare: 0,
+                        topShare: strongest.length ? (strongest[strongest.length - 1].p[p.name] || 0) : 0 };
             strongest.forEach(st => { const bin = Math.min(BINS-1, Math.floor((st.t||0)/5)); g.binsB[bin]++; g.binsV[bin]+=st.v||0; g.voters+=st.v||0; g.tWeighted+=(st.v||0)*(st.t||0); g.avgShare+=st.p[p.name]||0; });
             g.avgShare = g.n ? g.avgShare/g.n : 0;
             return g;
         });
         TH = { groups, mode: TH ? TH.mode : 'ballots' };
     }
+    const TH_MIN_N = 30; // counted stronghold ballots needed for a trustworthy histogram
     function renderTurnout() {
         if (!TH) computeTurnout();
+        const partial = K26STATUS.kind === 'partial';
         document.getElementById('th-agreement').textContent = '';
         ['ballots','voters'].forEach(m => document.getElementById('th-mode-'+m).classList.toggle('gold', TH.mode === m));
         (function renderShared() {
             const W = 340, H = 178, base = H - 34, maxV = 100;
             const bw = W / TH.groups.length;
             const overall = DATA.map.stats.totalVoters / DATA.map.stats.totalEligible * 100;
-            const bars = TH.groups.map((g, i) => { const mean = g.voters ? g.tWeighted / g.voters : 0; const h = mean / maxV * (base - 18); const sym = (DATA.map.parties.find(x=>x.name===g.name)||{}).symbol||'';
-                return `<rect x="${(i*bw+2).toFixed(1)}" y="${(base-h).toFixed(1)}" width="${(bw-4).toFixed(1)}" height="${h.toFixed(1)}" fill="${DATA.colorOf[g.name]||'#888'}"><title>${displayName(g.name)}: ${mean.toFixed(1)}%</title></rect><text x="${(i*bw+bw/2).toFixed(1)}" y="${(base-h-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#c8ceda">${mean.toFixed(0)}</text><text x="${(i*bw+bw/2).toFixed(1)}" y="${base+11}" text-anchor="middle" font-size="7.5" fill="#939aab">${sym}</text>`; }).join('');
+            const bars = TH.groups.map((g, i) => { const mean = g.voters ? g.tWeighted / g.voters : 0; const ok = g.n >= TH_MIN_N && g.topShare >= 10; const h = mean / maxV * (base - 18); const sym = (DATA.map.parties.find(x=>x.name===g.name)||{}).symbol||'';
+                return `<rect x="${(i*bw+2).toFixed(1)}" y="${(base-h).toFixed(1)}" width="${(bw-4).toFixed(1)}" height="${h.toFixed(1)}" fill="${DATA.colorOf[g.name]||'#888'}" opacity="${ok ? 1 : 0.25}"><title>${displayName(g.name)}: ${mean.toFixed(1)}% (${fmt(g.n)} ${en() ? 'stronghold ballots' : 'קלפיות מעוז'})</title></rect><text x="${(i*bw+bw/2).toFixed(1)}" y="${(base-h-3).toFixed(1)}" text-anchor="middle" font-size="7.5" fill="#c8ceda">${ok ? mean.toFixed(0) : '…'}</text><text x="${(i*bw+bw/2).toFixed(1)}" y="${base+11}" text-anchor="middle" font-size="7.5" fill="#939aab">${sym}</text>`; }).join('');
             const oy = base - overall / maxV * (base - 18);
-            document.getElementById('th-shared').innerHTML = `<div class="pane-note" style="margin:.2rem 0 .3rem">${en() ? 'Mean turnout in each party’s strongholds' : 'אחוז הצבעה ממוצע במעוזי כל מפלגה'} · ${en() ? 'dashed = overall' : 'מקווקו = כללי'} ${overall.toFixed(1)}%</div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${bars}<line x1="0" y1="${oy.toFixed(1)}" x2="${W}" y2="${oy.toFixed(1)}" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="4 3"/></svg>`;
+            document.getElementById('th-shared').innerHTML = `<div class="pane-note" style="margin:.2rem 0 .3rem">${en() ? 'Mean turnout in each party’s strongholds' : 'אחוז הצבעה ממוצע במעוזי כל מפלגה'} · ${en() ? 'dashed = overall' : 'מקווקו = כללי'} ${overall.toFixed(1)}%${partial ? (en() ? ' · strongest among counted ballots only' : ' · החזקות מבין הקלפיות שנספרו בלבד') : ''}</div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${bars}<line x1="0" y1="${oy.toFixed(1)}" x2="${W}" y2="${oy.toFixed(1)}" stroke="#f0b429" stroke-width="1.2" stroke-dasharray="4 3"/></svg>`;
         })();
         document.getElementById('th-grid').innerHTML = TH.groups.map(g => {
             const bins = TH.mode === 'ballots' ? g.binsB : g.binsV;
@@ -2028,10 +2041,13 @@
             const W = 160, H = 86, bw = W / bins.length;
             const bars = bins.map((v, i) => `<rect x="${(i*bw).toFixed(1)}" y="${(H - v/max*(H-8)).toFixed(1)}" width="${Math.max(1, bw-1).toFixed(1)}" height="${(v/max*(H-8)).toFixed(1)}" fill="${DATA.colorOf[g.name]||'#888'}" opacity="0.85"><title>${i*5}-${i*5+5}%: ${fmt(v)}</title></rect>`).join('');
             const mx = (mean/100*W).toFixed(1);
+            if (g.n < TH_MIN_N) return `<div class="th-card"><h4><span class="dot" style="background:${DATA.colorOf[g.name]||'#888'}"></span>${displayName(g.name)}</h4>
+              <div class="pane-note" style="margin:.3rem 0">${en() ? `Only ${fmt(g.n)} of this party’s 100 strongest ballots available so far — too few for a turnout histogram yet.` : `זמינות רק ${fmt(g.n)} מתוך 100 הקלפיות החזקות של המפלגה — עדיין מעט מדי להיסטוגרמת הצבעה.`}</div>
+              <div class="th-stats">${fmt(g.n)} / 100 ${en() ? 'stronghold ballots' : 'קלפיות מעוז'}</div></div>`;
             return `<div class="th-card"><h4><span class="dot" style="background:${DATA.colorOf[g.name]||'#888'}"></span>${displayName(g.name)}</h4>
               <svg class="th-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${bars}<line x1="${mx}" y1="2" x2="${mx}" y2="${H-2}" stroke="#f0b429" stroke-width="1.6" stroke-dasharray="3 2"><title>${i18n.t('k26_th_mean')}: ${mean.toFixed(1)}%</title></line></svg>
               <div class="th-axis"><span>0%</span><span>50%</span><span>100%</span></div>
-              <div class="th-stats">${i18n.t('k26_th_mean')}: <b>${mean.toFixed(1)}%</b></div></div>`;
+              <div class="th-stats">${i18n.t('k26_th_mean')}: <b>${mean.toFixed(1)}%</b> · ${fmt(g.n)} ${en() ? 'ballots' : 'קלפיות'}${g.n < 100 ? (en() ? ' of 100' : ' מתוך 100') : ''} · ${en() ? 'weakest' : 'החלשה'} ${g.topShare.toFixed(0)}%</div>${g.topShare < 10 ? `<div class="pane-note" style="color:#f59e0b;margin-top:.15rem">${en() ? 'Diluted set: the weakest of the 100 is not really a stronghold yet.' : 'קבוצה מדוללת: החלשה במאה עדיין אינה מעוז של ממש.'}</div>` : ''}</div>`;
         }).join('');
     }
     function renderDhondt() {
