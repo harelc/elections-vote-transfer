@@ -65,13 +65,15 @@ from generate_map_data import normalize_name
 
 # K25 blocs in party *names* (tsne_25 proportions are keyed by name).
 K25_BLOCS = {
-    "right": ["הליכוד", "הציונות הדתית", "ש״ס", "יהדות התורה"],
+    "right": ["הליכוד", "הציונות הדתית"],
+    "haredi": ["ש״ס", "יהדות התורה"],
     "leftcenter": ["יש עתיד", "המחנה הממלכתי", "ישראל ביתנו", "העבודה", "מרצ", "הבית היהודי"],
     "arab": ["רע״ם", "חד״ש-תע״ל", "בל״ד"],
 }
 BLOC_OF = {p: b for b, ps in K25_BLOCS.items() for p in ps}
 BLOC_LABELS = {
     "right": ("גוש הימין (25)", "Right bloc (K25)"),
+    "haredi": ("גוש החרדים (25)", "Haredi bloc (K25)"),
     "leftcenter": ("גוש מרכז־שמאל (25)", "Centre-left bloc (K25)"),
     "arab": ("מפלגות ערביות (25)", "Arab parties (K25)"),
     "other": ("אחר / לא מסווג", "Other / unclassified"),
