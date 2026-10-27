@@ -127,7 +127,7 @@ def refresh_turnout():
 # Non-party columns the K26 CEC file (see the official dummy expb.csv)
 # carries between כשרים and the first list symbol: external / double-
 # envelope tallies, not lists. They must never reach party consumers.
-NON_PARTY_COLUMNS = ("חיצוניות", "חיצוניים")
+NON_PARTY_COLUMNS = ("חיצוניות", "חיצוניים", "קלפי אחרת")
 
 
 def _num(value):

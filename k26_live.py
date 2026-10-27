@@ -120,7 +120,7 @@ def summarize(path):
     # חיצוניות/חיצוניים sit after כשרים in the K26 CEC file but are
     # external-ballot tallies, not lists (refresh_k26 strips them too).
     symbols = [column for column in columns
-               if column not in meta_columns and column not in ("חיצוניות", "חיצוניים")]
+               if column not in meta_columns and column not in ("חיצוניות", "חיצוניים", "קלפי אחרת")]
     votes_by_symbol = {symbol: 0 for symbol in symbols}
     eligible = voters = valid = 0
     for row in rows:

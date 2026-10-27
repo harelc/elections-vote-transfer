@@ -1,16 +1,27 @@
 name: Refresh K26 count
 
+# Two entry points:
+#  * schedule (every 5 min) — fully unattended: downloads the CEC file
+#    itself (Chrome fallback for the gov.il bot challenge, see
+#    download_expb.js), rebuilds only when the snapshot actually moved.
+#  * workflow_dispatch — the Netlify poller still dispatches with the
+#    sha it accepted; if the file moved since, the inspect step skips
+#    and the next tick/schedule run picks the new one up.
 on:
+  schedule:
+    - cron: "*/5 * * * *"
   workflow_dispatch:
     inputs:
       sha256:
         description: sha256 of the results file the poller accepted
-        required: true
+        required: false
         type: string
+        default: ""
       ballot_count:
         description: ballot rows in that file
-        required: true
+        required: false
         type: string
+        default: ""
       as_of:
         description: source timestamp
         required: false
@@ -66,7 +77,8 @@ jobs:
       - run: pip install -r requirements.txt
         if: steps.gate.outputs.proceed == 'true'
 
-      - name: Download the results file
+      - name: Download the results file (curl)
+        id: curl_dl
         if: steps.gate.outputs.proceed == 'true'
         env:
           K26_RESULTS_URL: ${{ secrets.K26_RESULTS_URL }}
@@ -74,22 +86,101 @@ jobs:
           # Public per the CEC K26 guide; the secret only overrides it.
           URL="${K26_RESULTS_URL:-https://media26.bechirot.gov.il/files/expb.csv}"
           mkdir -p data/k26_inbox
-          curl -fsSL "$URL" -o data/k26_inbox/snapshot.bin
+          ok=""
+          if curl -fsSL "$URL" -o data/k26_inbox/snapshot.bin; then
+            # media26 sits behind a gov.il bot challenge: a 404
+            # maintenance page or an empty 202 can come back with a
+            # success-ish status — only a real CSV header counts.
+            if python3 - <<'PY'
+          raw = open("data/k26_inbox/snapshot.bin", "rb").read()
+          try:
+              text = raw.decode("utf-8-sig")
+          except UnicodeDecodeError:
+              text = raw.decode("cp1255")
+          head = text.lstrip()[:2000]
+          assert "קלפי" in head and "," in head, "not a ballot CSV"
+          print("curl download looks like the ballot CSV")
+          PY
+            then ok=1; fi
+          fi
+          echo "ok=$ok" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.proceed == 'true' && steps.curl_dl.outputs.ok != '1'
+        with:
+          node-version: "22"
+
+      - name: Download the results file (Chrome fallback)
+        if: steps.gate.outputs.proceed == 'true' && steps.curl_dl.outputs.ok != '1'
+        env:
+          K26_RESULTS_URL: ${{ secrets.K26_RESULTS_URL }}
+        run: |
+          # The bot challenge needs a real browser: install puppeteer
+          # (pulls Chrome) outside the repo and let download_expb.js
+          # drive it. NODE_PATH lets the repo script resolve the module.
+          npm install --prefix /tmp/expb-dl puppeteer@25
+          NODE_PATH=/tmp/expb-dl/node_modules node download_expb.js data/k26_inbox/snapshot.bin
+
+      - name: Inspect the snapshot
+        id: inspect
+        if: steps.gate.outputs.proceed == 'true'
+        env:
+          DISPATCH_SHA: ${{ inputs.sha256 }}
+          IS_FINAL: ${{ inputs.final }}
+          IS_FORCE: ${{ inputs.force }}
+        run: |
+          python - <<'PY'
+          import csv, hashlib, io, json, os
+          from datetime import datetime, timezone
+          raw = open("data/k26_inbox/snapshot.bin", "rb").read()
+          try:
+              text = raw.decode("utf-8-sig")
+          except UnicodeDecodeError:
+              text = raw.decode("cp1255")
+          rows = list(csv.DictReader(io.StringIO(text)))
+          def num(r, k):
+              try: return float(r.get(k) or 0)
+              except (TypeError, ValueError): return 0.0
+          counted = sum(1 for r in rows if num(r, "מצביעים") > 0 or num(r, "כשרים") > 0)
+          sha = hashlib.sha256(raw).hexdigest()
+          try:
+              status = json.load(open("site/data/k26_status.json", encoding="utf-8"))
+          except Exception:
+              status = {}
+          prev_sha = status.get("sha256")
+          prev_ballots = status.get("ballots") or 0
+          dispatch_sha = os.environ.get("DISPATCH_SHA") or ""
+          proceed, reason = True, "new snapshot"
+          if counted == 0:
+              proceed, reason = False, "no counted ballots yet"
+          elif dispatch_sha and dispatch_sha != sha:
+              proceed, reason = False, "file moved since the poller accepted it; next run takes the new one"
+          elif sha == prev_sha:
+              proceed, reason = False, "snapshot unchanged"
+          elif counted < prev_ballots and os.environ.get("IS_FINAL") != "true" and os.environ.get("IS_FORCE") != "true":
+              proceed, reason = False, f"ballot count shrank ({prev_ballots} -> {counted}); refusing"
+          print(f"counted={counted} sha={sha[:12]} prev_ballots={prev_ballots} proceed={proceed} ({reason})")
+          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
+              handle.write(f"proceed={'true' if proceed else 'false'}\n")
+              handle.write(f"sha={sha}\n")
+              handle.write(f"ballots={counted}\n")
+              handle.write("as_of=" + datetime.now(timezone.utc).isoformat() + "\n")
+          PY
 
       - name: Rebuild K26
-        if: steps.gate.outputs.proceed == 'true'
+        if: steps.gate.outputs.proceed == 'true' && steps.inspect.outputs.proceed == 'true'
         run: |
           python refresh_k26.py \
             --csv data/k26_inbox/snapshot.bin \
-            --sha256 "${{ inputs.sha256 }}" \
-            --ballots "${{ inputs.ballot_count }}" \
-            --as-of "${{ inputs.as_of }}" \
+            --sha256 "${{ steps.inspect.outputs.sha }}" \
+            --ballots "${{ steps.inspect.outputs.ballots }}" \
+            --as-of "${{ inputs.as_of || steps.inspect.outputs.as_of }}" \
             ${{ inputs.final == 'true' && '--final' || '' }} \
             ${{ inputs.force == true && '--force' || '' }} \
             --ci
 
       - name: Commit the snapshot
-        if: steps.gate.outputs.proceed == 'true'
+        if: steps.gate.outputs.proceed == 'true' && steps.inspect.outputs.proceed == 'true'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

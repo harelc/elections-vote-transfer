@@ -60,7 +60,7 @@ def get_party_columns(df, election_id):
     # Also handle alternate column names
     alt_cols = ['סמל_ועדה', 'מספר קלפי']
     # K26 CEC files add external-ballot tallies after כשרים; not lists.
-    exclude = set(standard_cols + alt_cols + ['חיצוניות', 'חיצוניים'])
+    exclude = set(standard_cols + alt_cols + ['חיצוניות', 'חיצוניים', 'קלפי אחרת'])
     return [col for col in df.columns if col not in exclude and df[col].dtype in ['int64', 'float64', 'int32', 'float32']]
 
 

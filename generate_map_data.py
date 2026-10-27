@@ -126,7 +126,7 @@ def count_lists(election_id):
     try:
         idx = header.index('\u05db\u05e9\u05e8\u05d9\u05dd')  # כשרים
         # K26 CEC files carry חיצוניות/חיצוניים tallies after כשרים; not lists.
-        return sum(1 for c in header[idx + 1:] if c not in ('חיצוניות', 'חיצוניים'))
+        return sum(1 for c in header[idx + 1:] if c not in ('חיצוניות', 'חיצוניים', 'קלפי אחרת'))
     except ValueError:
         return 0
 
