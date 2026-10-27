@@ -1432,6 +1432,9 @@
                     geoItems.forEach(it => { it.color = stationGeoColor(it.station); });
                     geoLayer.setStations(geoItems);
                 }
+                // The turnout pane's group bars paint with tdColor too —
+                // repaint them under the newly selected scale.
+                if (TURNOUT_ACTIVE) renderTurnoutDay();
             });
         });
     }
