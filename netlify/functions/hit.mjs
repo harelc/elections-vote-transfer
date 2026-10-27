@@ -36,6 +36,30 @@ function clientIp(request) {
 export default async function handler(request) {
   const store = getStore("site-traffic");
 
+  if (request.method === "GET" && new URL(request.url).searchParams.get("summary") === "1") {
+    // Public aggregate only (counts, no identifiers) for the on-site
+    // visit line. Unique IPs are unioned across today's hour buckets.
+    const { day, hour } = jerusalemParts();
+    const { blobs } = await store.list({ prefix: `h:${day}T` });
+    let pv = 0, hourPv = 0;
+    const ips = new Set(), hourIps = new Set(), pagePv = {};
+    for (const { key } of blobs) {
+      const data = await store.get(key, { type: "json" }).catch(() => null);
+      if (!data) continue;
+      const isHour = key === `h:${day}T${hour}`;
+      pv += data.pv || 0;
+      (data.ips || []).forEach((h) => ips.add(h));
+      for (const [path, p] of Object.entries(data.pages || {})) pagePv[path] = (pagePv[path] || 0) + (p.pv || 0);
+      if (isHour) { hourPv = data.pv || 0; (data.ips || []).forEach((h) => hourIps.add(h)); }
+    }
+    return Response.json({
+      today: { pageviews: pv, unique_ips: ips.size },
+      hour: { pageviews: hourPv, unique_ips: hourIps.size },
+      top_pages: Object.entries(pagePv).map(([path, p]) => ({ path, pageviews: p }))
+        .sort((a, b) => b.pageviews - a.pageviews).slice(0, 5),
+    }, { headers: { "Cache-Control": "public, max-age=30" } });
+  }
+
   if (request.method === "GET") {
     const token = process.env.HIT_READ_TOKEN;
     if (!token || request.headers.get("x-hit-token") !== token) {

@@ -1531,14 +1531,33 @@
         } catch (e) { /* analytics must never break the page */ }
     }
 
+    // Public visit line: pages opt in with a #visit-line element.
+    function fillVisitLine() {
+        const el = document.getElementById('visit-line');
+        if (!el) return;
+        fetch('/.netlify/functions/hit?summary=1', { cache: 'no-store' })
+            .then(r => r.ok ? r.json() : null)
+            .then(s => {
+                if (!s || !s.today) return;
+                const hebrew = currentLang !== 'en';
+                const n = x => (x || 0).toLocaleString(hebrew ? 'he-IL' : 'en-US');
+                el.textContent = hebrew
+                    ? `היום באתר: ${n(s.today.pageviews)} צפיות · ${n(s.today.unique_ips)} מבקרים ייחודיים · בשעה האחרונה ${n(s.hour.pageviews)} צפיות`
+                    : `Today on the site: ${n(s.today.pageviews)} pageviews · ${n(s.today.unique_ips)} unique visitors · ${n(s.hour.pageviews)} pageviews in the last hour`;
+                el.hidden = false;
+            })
+            .catch(() => { /* traffic line is decorative */ });
+    }
+
     // Run init as early as possible
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); injectMobileTabCC(); sendHit(); });
+        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); injectMobileTabCC(); sendHit(); fillVisitLine(); });
     } else {
         init();
         setupE26Widget();
         injectMobileTabCC();
         sendHit();
+        fillVisitLine();
     }
 
     /* ── Public API ── */
