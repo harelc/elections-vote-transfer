@@ -73,6 +73,7 @@ jobs:
         env:
           K26_TURNOUT_URL: ${{ secrets.K26_TURNOUT_URL }}
           K26_TURNOUT_AUTH: ${{ secrets.K26_TURNOUT_AUTH }}
+          K26_FEED_TOKEN: ${{ secrets.K26_FEED_TOKEN }}
         run: |
           if [ -z "$K26_TURNOUT_URL" ]; then
             echo "K26_TURNOUT_URL is not set on this GitHub repo"
@@ -88,15 +89,25 @@ jobs:
           AUTH=()
           if [ -n "$K26_TURNOUT_AUTH" ]; then AUTH=(-u "$K26_TURNOUT_AUTH"); fi
           ok=""
-          for url in "$K26_TURNOUT_URL" \
-                     "https://mapvotes.bechirot.gov.il/data/votes/latest/kalpi_data.json" \
-                     "https://mapvotes.bechirot.gov.il/data/votes/latest/municipal_data.json"; do
-            [ -z "$url" ] && continue
-            for bust in "?v=$(date +%s)" ""; do
-              echo "trying: $url$bust"
-              if curl -fsSL "${AUTH[@]}" -A "$UA" -e "https://mapvotes.bechirot.gov.il/" "$url$bust" -o data/k26_inbox/turnout.bin; then ok=1; break 2; fi
+          # First choice: the token-gated Netlify proxy — the CEC
+          # geofences GitHub runner IPs (403), Netlify's pass.
+          if [ -n "$K26_FEED_TOKEN" ]; then
+            echo "trying: netlify feed proxy"
+            if curl -fsSL -H "x-feed-token: $K26_FEED_TOKEN" \
+                 "https://kolot-nodedim.netlify.app/.netlify/functions/k26-turnout-feed" \
+                 -o data/k26_inbox/turnout.bin; then ok=1; fi
+          fi
+          if [ -z "$ok" ]; then
+            for url in "$K26_TURNOUT_URL" \
+                       "https://mapvotes.bechirot.gov.il/data/votes/latest/kalpi_data.json" \
+                       "https://mapvotes.bechirot.gov.il/data/votes/latest/municipal_data.json"; do
+              [ -z "$url" ] && continue
+              for bust in "?v=$(date +%s)" ""; do
+                echo "trying: $url$bust"
+                if curl -fsSL "${AUTH[@]}" -A "$UA" -e "https://mapvotes.bechirot.gov.il/" "$url$bust" -o data/k26_inbox/turnout.bin; then ok=1; break 2; fi
+              done
             done
-          done
+          fi
           if [ -z "$ok" ]; then echo "all turnout download attempts failed"; exit 1; fi
 
       - name: Rebuild turnout view data
