@@ -381,6 +381,23 @@ def main():
         by_code, by_name, settle_by_code, settle_by_name = rehearsal_records(args.target_turnout)
     else:
         by_code, by_name, settle_by_code, settle_by_name = snapshot_records(args.snapshot[-1])
+        # The CEC feed is generated continuously, but its national
+        # figure is an hourly release with a ~1h lag (the 10:00 figure
+        # is published ~11:00). Stamp the snapshot with the DATA hour —
+        # the feed total's "updated" HH:MM minus one hour, floored —
+        # not the generation time, so graphs and comparisons line up
+        # with the historical hourly table.
+        if args.as_of:
+            try:
+                raw = json.loads(Path(args.snapshot[-1]).read_text(encoding="utf-8"))
+                upd = (raw.get("total") or {}).get("updated") if isinstance(raw, dict) else None
+                if upd and ":" in str(upd):
+                    hh = int(str(upd).split(":")[0]) - 1
+                    if hh >= 7:
+                        base = str(args.as_of)
+                        args.as_of = f"{base[:10]}T{hh:02d}:00:00{base[19:] or '+02:00'}"
+            except Exception:
+                pass
 
     # K25 neighbour index: every K25 station with a pin, bucketed on a
     # ~500 m grid, for the neighbour fallback below.
