@@ -81,11 +81,23 @@ jobs:
           mkdir -p data/k26_inbox
           # K26_TURNOUT_AUTH (optional, "user:password") is the CEC
           # turnout map's Basic auth; a secret, never committed.
-          if [ -n "$K26_TURNOUT_AUTH" ]; then
-            curl -fsSL -u "$K26_TURNOUT_AUTH" "$K26_TURNOUT_URL?v=$(date +%s)" -o data/k26_inbox/turnout.bin
-          else
-            curl -fsSL "$K26_TURNOUT_URL?v=$(date +%s)" -o data/k26_inbox/turnout.bin
-          fi
+          # The CEC feed 403s some clients/IPs, so try the configured
+          # URL first, then the canonical mapvotes feed URLs, with a
+          # browser user-agent — first success wins.
+          UA="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"
+          AUTH=()
+          if [ -n "$K26_TURNOUT_AUTH" ]; then AUTH=(-u "$K26_TURNOUT_AUTH"); fi
+          ok=""
+          for url in "$K26_TURNOUT_URL" \
+                     "https://mapvotes.bechirot.gov.il/data/votes/latest/kalpi_data.json" \
+                     "https://mapvotes.bechirot.gov.il/data/votes/latest/municipal_data.json"; do
+            [ -z "$url" ] && continue
+            for bust in "?v=$(date +%s)" ""; do
+              echo "trying: $url$bust"
+              if curl -fsSL "${AUTH[@]}" -A "$UA" -e "https://mapvotes.bechirot.gov.il/" "$url$bust" -o data/k26_inbox/turnout.bin; then ok=1; break 2; fi
+            done
+          done
+          if [ -z "$ok" ]; then echo "all turnout download attempts failed"; exit 1; fi
 
       - name: Rebuild turnout view data
         if: steps.gate.outputs.proceed == 'true'
