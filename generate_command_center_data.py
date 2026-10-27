@@ -703,6 +703,7 @@ def nowcast(status, sectors, target_share=None, force=False):
     ready = all(c["ok"] for c in checks)
 
     projection = None
+    projection_plain = None
     if (ready or force) and uncounted_rows:
         alpha_data = load("alpha_estimates.json", {}) or {}
         alpha = float((alpha_data.get("24_to_25") or {}).get("alpha_pooled") or ALPHA_FALLBACK)
