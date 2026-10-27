@@ -309,7 +309,7 @@
             document.getElementById('nat-title').textContent = en() ? 'National turnout' : 'הצבעה ארצית';
             document.getElementById('nat-turnout').textContent = (n.turnout ?? 0).toFixed(1) + '%';
             document.getElementById('nat-asof').textContent = (en() ? 'as of ' : 'נכון ל־') + hhmm(s.as_of);
-            document.getElementById('nat-updated').textContent = (() => {
+            document.getElementById('nat-updated').innerHTML = (() => {
                 if (!s.as_of) return '';
                 const when = new Date(s.as_of);
                 const full = when.toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
@@ -317,7 +317,7 @@
                 const age = mins < 60 ? (en() ? `${mins} min ago` : `לפני ${mins} דק׳`) : (en() ? `${Math.floor(mins / 60)}h ${mins % 60}m ago` : `לפני ${Math.floor(mins / 60)} שע׳ ו־${mins % 60} דק׳`);
                 const pub = (status && status.kind === 'turnout' && status.as_of)
                     ? new Date(status.as_of).toLocaleTimeString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit' }) : null;
-                return `${en() ? 'Turnout data as of' : 'נתוני אחוזי ההצבעה נכונים ל'} ${full} (${age})${pub ? (en() ? ` · published on this site at ${pub}` : ` · עודכן באתר ב־${pub}`) : ''}`;
+                return `${en() ? 'National turnout figures last updated at' : 'נתוני אחוזי ההצבעה הארציים עודכנו ב'}${full} (${age})${pub ? `<br>${en() ? 'Per-ballot data, as received from the Central Elections Committee, last updated at ' : 'נתוני הקלפיות הבודדים כפי שמתקבלים מוועדת הבחירות עודכנו לאחרונה ב־'}${pub}` : ''}`;
             })();
             document.getElementById('nat-fill').style.width = Math.min(100, n.turnout || 0) + '%';
             document.getElementById('nat-voters').textContent = fmt(n.voters);
