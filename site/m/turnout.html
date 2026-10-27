@@ -305,7 +305,7 @@
             const n = s.national;
             const natOnly = document.getElementById('nat-only-note');
             natOnly.hidden = !s.national_only;
-            natOnly.textContent = en() ? 'Only national figures have been published so far — the per-ballot breakdown will update when the CEC feed opens.' : 'פורסמו רק נתונים ארציים — הפילוח לפי קלפיות יתעדכן עם פתיחת הזנת ועדת הבחירות.';
+            natOnly.textContent = en() ? 'Only national figures have been published for this hour so far — the per-ballot breakdown will update with the CEC feed\'s next release.' : 'לשעה זו פורסמו רק נתונים ארציים — הפילוח לפי קלפיות יתעדכן עם הפרסום הבא של הזנת ועדת הבחירות.';
             document.getElementById('nat-title').textContent = en() ? 'National turnout' : 'הצבעה ארצית';
             document.getElementById('nat-turnout').textContent = (n.turnout ?? 0).toFixed(1) + '%';
             document.getElementById('nat-asof').textContent = (en() ? 'as of ' : 'נכון ל־') + hhmm(s.as_of);
