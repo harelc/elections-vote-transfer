@@ -41,9 +41,9 @@ export default async function handler(request) {
     if (!token || request.headers.get("x-hit-token") !== token) {
       return new Response("forbidden", { status: 403 });
     }
-    const { keys } = await store.list({ prefix: "h:" });
+    const { blobs } = await store.list({ prefix: "h:" });
     const hours = [];
-    for (const { key } of keys.sort().reverse()) {
+    for (const { key } of blobs.sort((a, b) => b.key.localeCompare(a.key))) {
       const data = await store.get(key, { type: "json" }).catch(() => null);
       if (!data) continue;
       hours.push({
