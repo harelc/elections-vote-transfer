@@ -389,14 +389,15 @@ def main():
         by_code, by_name, settle_by_code, settle_by_name = rehearsal_records(args.target_turnout)
     else:
         by_code, by_name, settle_by_code, settle_by_name = snapshot_records(args.snapshot[-1])
-        # The CEC feed's national figure is an hourly release with a
-        # ~1h lag. Stamp the snapshot with the DATA hour so graphs and
-        # comparisons line up with the historical hourly table. The
-        # reliable signal is the file's own "generated" stamp minus
-        # one hour, floored (11:41 gen -> 10:00 figure; 13:09 gen ->
-        # 12:00 figure). The total's "updated" HH:MM is NOT usable:
-        # it read 11:09 for the 10:00 release but 12:49 for the 12:00
-        # one, so updated-1h would stamp the second release 11:00.
+        # The CEC feed's national figure is a scheduled release; the
+        # file's "generated" stamp trails the data hour by a lag that
+        # shrank over the day (11:41 gen -> 10:00 figure; 13:09 ->
+        # 12:00; ~20:50 -> 20:00), so a fixed -1h offset mislabels
+        # the evening releases. Instead stamp with the latest CEC
+        # release hour (even hours, plus 21:00 and the 22:00 close)
+        # that is at least 15 minutes before generation. The total's
+        # "updated" HH:MM is NOT usable (11:09 for the 10:00 release
+        # but 12:49 for the 12:00 one).
         if args.as_of:
             try:
                 from datetime import datetime, timezone, timedelta
@@ -405,7 +406,9 @@ def main():
                 il = timezone(timedelta(hours=2))
                 dt = None
                 if gen:
-                    dt = datetime.fromisoformat(str(gen).replace("Z", "+00:00")).astimezone(il) - timedelta(hours=1)
+                    cutoff = datetime.fromisoformat(str(gen).replace("Z", "+00:00")).astimezone(il) - timedelta(minutes=15)
+                    hour = max([h for h in (10, 12, 14, 16, 18, 20, 21, 22) if h <= cutoff.hour] or [cutoff.hour])
+                    dt = cutoff.replace(hour=hour)
                 else:
                     upd = (raw.get("total") or {}).get("updated")
                     if upd and ":" in str(upd):
