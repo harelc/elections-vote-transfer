@@ -236,7 +236,7 @@
             svg.append('text').attr('x', 572).attr('y', 315).attr('fill', 'var(--text2)').attr('font-size', '0.85rem').text('נספרה — התוצאה ידועה');
             svg.append('circle').attr('cx', 590).attr('cy', 340).attr('r', 9).attr('fill', 'none').attr('stroke', 'var(--text3)').attr('stroke-dasharray', '3 3');
             svg.append('text').attr('x', 572).attr('y', 345).attr('fill', 'var(--text2)').attr('font-size', '0.85rem').text('טרם נספרה — זו השאלה');
-            svg.append('text').attr('x', 120).attr('y', 315).attr('fill', 'var(--accent)').attr('font-size', '1rem').attr('font-weight', 700).text('~45% נספרו (להמחשה)');
+            svg.append('text').attr('x', 300).attr('y', 318).attr('text-anchor', 'middle').attr('fill', 'var(--accent)').attr('font-size', '1rem').attr('font-weight', 700).text('~45% נספרו (להמחשה)');
         }
 
         function drawTwin() {
@@ -249,20 +249,20 @@
                     .attr('fill', 'var(--text)').attr('font-size', '0.95rem').attr('font-weight', 700).text(title);
             }
             // RTL: reading starts at the right — the uncounted K26 box.
-            card(430, 'קלפי 14 · כנסת 26 — טרם נספרה', false);
-            svg.append('text').attr('x', 555).attr('y', 175).attr('text-anchor', 'middle')
+            card(450, 'קלפי 14 · כנסת 26 — טרם נספרה', false);
+            svg.append('text').attr('x', 575).attr('y', 175).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text3)').attr('font-size', '2.2rem').attr('font-weight', 700).text('?');
-            svg.append('text').attr('x', 555).attr('y', 250).attr('text-anchor', 'middle')
+            svg.append('text').attr('x', 575).attr('y', 250).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text2)').attr('font-size', '0.8rem').text('812 בעלי זכות בחירה — ידוע מהמרשם');
-            card(80, 'קלפי 14 · כנסת 25 — התאומה', true);
-            stackBar(svg, 100, 140, 210, 26, [0.55, 0.3, 0.1, 0.05], 300);
-            svg.append('text').attr('x', 205).attr('y', 192).attr('text-anchor', 'middle')
+            card(60, 'קלפי 14 · כנסת 25 — התאומה', true);
+            stackBar(svg, 80, 140, 210, 26, [0.55, 0.3, 0.1, 0.05], 300);
+            svg.append('text').attr('x', 185).attr('y', 192).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--text2)').attr('font-size', '0.8rem').text('א׳ 55% · ב׳ 30% · ג׳ 10% · ד׳ 5% · הצביעו 640');
             // Arrow from the K26 box back to its twin
-            svg.append('line').attr('x1', 430).attr('x2', 338).attr('y1', 155).attr('y2', 155)
+            svg.append('line').attr('x1', 450).attr('x2', 318).attr('y1', 155).attr('y2', 155)
                 .attr('stroke', 'var(--accent)').attr('stroke-width', 2.5)
                 .style('opacity', 0).transition().delay(600).duration(400).style('opacity', 1);
-            svg.append('text').attr('x', 384).attr('y', 140).attr('text-anchor', 'middle')
+            svg.append('text').attr('x', 384).attr('y', 138).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--accent)').attr('font-size', '0.85rem').attr('font-weight', 700)
                 .style('opacity', 0).transition().delay(800).duration(400).style('opacity', 1)
                 .text('אותו יישוב + מספר');
@@ -410,7 +410,7 @@
         }
 
         function drawGate() {
-            const W = 760, H = 372;
+            const W = 760, H = 292;
             const svg = makeSvg(W, H);
             const checks = [
                 ['קלפיות מוצלבות עם כנסת 25', 'לפחות 1,000', true],
@@ -420,7 +420,7 @@
                 ['קולות־מקור לכל מפלגה גדולה', 'לפחות 8,000', false],
             ];
             checks.forEach(([label, need, ok], i) => {
-                const y = 36 + i * 44;
+                const y = 14 + i * 42;
                 svg.append('rect').attr('x', 90).attr('y', y).attr('width', 580).attr('height', 36)
                     .attr('rx', 8).attr('fill', 'var(--bg2)').attr('stroke', ok ? 'var(--green)' : 'var(--red)').attr('stroke-width', 1)
                     .attr('opacity', 0).transition().delay(200 + i * 180).duration(300).attr('opacity', 1);
@@ -431,7 +431,7 @@
                     .attr('fill', 'var(--text3)').attr('font-size', '0.78rem').text(need)
                     .style('opacity', 0).transition().delay(300 + i * 180).duration(300).style('opacity', 1);
             });
-            svg.append('text').attr('x', W / 2).attr('y', 292).attr('text-anchor', 'middle')
+            svg.append('text').attr('x', W / 2).attr('y', 262).attr('text-anchor', 'middle')
                 .attr('fill', 'var(--red)').attr('font-size', '0.95rem').attr('font-weight', 700)
                 .text('אחד חסר? הפאנל מציג ״⏳ מוקדם מדי״ — בלי מספרים.')
                 .style('opacity', 0).transition().delay(1300).duration(400).style('opacity', 1);
@@ -439,7 +439,7 @@
             const btn = document.createElement('a');
             btn.href = EMBED ? '#' : 'k26.html';
             btn.textContent = EMBED ? '✕ סגירה וחזרה למרכז הבקרה' : '🗳 למרכז הבקרה של כנסת 26 ←';
-            btn.style.cssText = 'display:inline-block;padding:0.75rem 1.5rem;background:var(--accent);color:#1a1408;border-radius:10px;text-decoration:none;font-weight:600;font-size:1rem;margin-top:0.5rem;';
+            btn.style.cssText = 'display:inline-block;padding:0.65rem 1.4rem;background:var(--accent);color:#1a1408;border-radius:10px;text-decoration:none;font-weight:600;font-size:1rem;margin-top:0.15rem;';
             if (EMBED) btn.addEventListener('click', (e) => { e.preventDefault(); closeEmbed(); });
             visEl.appendChild(btn);
         }
