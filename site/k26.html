@@ -153,6 +153,7 @@
         .td-slider-ticks { display:flex; justify-content:space-between; font-size:.65rem; color:var(--text-muted); margin-top:.15rem; }
         .td-row { display:grid; grid-template-columns:minmax(120px,190px) 1fr minmax(160px,200px); gap:.6rem; align-items:center; padding:.32rem 0; border-bottom:1px solid rgba(255,255,255,.05); font-size:.84rem; }
         .td-bar { height:12px; background:rgba(255,255,255,.07); border-radius:6px; overflow:hidden; }
+        .td-swatch { display:inline-block; width:9px; height:9px; border-radius:2px; margin-inline-end:5px; vertical-align:baseline; }
         .td-bar i { display:block; height:100%; border-radius:6px; }
         .td-nums { text-align:end; color:var(--text-muted); font-size:.76rem; line-height:1.4; }
         .td-nums b { color:var(--text-primary); font-size:.88rem; }
@@ -2334,11 +2335,18 @@
         const maxV = byPace ? Math.max(0.5, ...rows.map(r => r.pace || 0)) : Math.max(60, ...rows.map(r => r.turnout || 0));
         document.getElementById('td-groups').innerHTML = rows.map(r => {
             const label = en() ? (r.label_en || r.label_he) : r.label_he;
-            const col = colors[r.id] || '#f0b429';
+            // Bars are painted with the map's colour scale for the
+            // metric on show (turnout ramp / pace palette, fixed or
+            // adaptive — same tdColor the stations use). A party's own
+            // colour, when the row is a party group, becomes a small
+            // swatch next to its name instead of the bar fill.
+            const partyCol = colors[r.id];
+            const col = tdColor(byPace ? r.pace : (r.turnout || 0), byPace);
+            const swatch = partyCol ? `<span class="td-swatch" style="background:${partyCol}"></span>` : '';
             const primary = byPace ? (r.pace != null ? '×' + r.pace.toFixed(2) : '–') : (r.turnout || 0).toFixed(1) + '%';
             const secondary = byPace ? `${en() ? 'turnout' : 'הצבעה'} ${(r.turnout || 0).toFixed(1)}%` : `${en() ? 'recovery' : 'שחזור'} ${r.pace != null ? '×' + r.pace.toFixed(2) : '–'}`;
             const width = byPace ? (r.pace || 0) / maxV * 100 : (r.turnout || 0) / maxV * 100;
-            return `<div class="td-row"><div title="${label}">${label}</div>
+            return `<div class="td-row"><div title="${label}">${swatch}${label}</div>
               <div class="td-bar"><i style="width:${Math.min(100, width).toFixed(1)}%;background:${col}"></i></div>
               <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)} · ${r.share_of_voters != null ? r.share_of_voters.toFixed(1) + (en() ? '% of voters' : '% מהמצביעים') : ''}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
