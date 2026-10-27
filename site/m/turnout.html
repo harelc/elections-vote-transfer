@@ -579,11 +579,14 @@
             (td.stations || []).forEach((a, i) => {
                 const v = voters ? voters[i] : a[5];
                 if (v == null || !a[4]) return;
-                const r = agg.get(a[0]) || { name: a[0], eligible: 0, voters: 0 };
-                r.eligible += a[4]; r.voters += v; agg.set(a[0], r);
+                const r = agg.get(a[0]) || { name: a[0], eligible: 0, voters: 0, updSum: 0, updN: 0 };
+                r.eligible += a[4]; r.voters += v;
+                if (a[20]) { const p = String(a[20]).split(':'); const m = (+p[0]) * 60 + (+p[1] || 0); if (isFinite(m)) { r.updSum += m; r.updN++; } }
+                agg.set(a[0], r);
             });
+            const hhmmOf = m => `${String(Math.floor(m / 60)).padStart(2, '0')}:${String(Math.round(m % 60)).padStart(2, '0')}`;
             return [...agg.values()].filter(r => r.eligible > 25000)
-                .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible }))
+                .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible, updAvg: r.updN ? hhmmOf(r.updSum / r.updN) : null }))
                 .sort((a, b) => b.turnout - a.turnout);
         }
         function renderTowns() {
@@ -593,7 +596,7 @@
             document.getElementById('towns-title').textContent = en() ? 'Large towns (over 25,000 eligible)' : 'יישובים גדולים (מעל 25 אלף בעלי זכות)';
             document.getElementById('towns-high-title').textContent = en() ? 'Highest turnout' : 'ההצבעה הגבוהה ביותר';
             document.getElementById('towns-low-title').textContent = en() ? 'Lowest turnout' : 'ההצבעה הנמוכה ביותר';
-            const row = x => `<div class="set-row"><span class="nm">${i18n.settlementName ? i18n.settlementName(x.name) : x.name}</span><span class="vl">${x.turnout.toFixed(1)}% <small>${fmt(x.voters)} / ${fmt(x.eligible)}</small></span></div>`;
+            const row = x => `<div class="set-row"><span class="nm">${i18n.settlementName ? i18n.settlementName(x.name) : x.name}</span><span class="vl">${x.turnout.toFixed(1)}% <small>${fmt(x.voters)} / ${fmt(x.eligible)}${x.updAvg ? ` · ${en() ? 'ballots updated on avg' : 'עדכון קלפיות בממוצע'} ${x.updAvg}` : ''}</small></span></div>`;
             document.getElementById('towns-high').innerHTML = rows.slice(0, 8).map(row).join('');
             document.getElementById('towns-low').innerHTML = rows.slice(-8).reverse().map(row).join('');
             document.getElementById('towns-note').textContent = en()
