@@ -2,12 +2,13 @@
 command = "echo 'Static site'"
 publish = "site"
 
-# Fires every 10 minutes all year. k26_control.json limits fetching to
-# 27 Oct 2026 21:00 through 31 Oct 2026 23:59, Asia/Jerusalem.
-# Dispatch stays off while auto is false. K26_AUTO=0 stops it even after that file is set true.
-# K26_POLL=0 stops fetching before the window ends.
+# Results poller — schedule removed 28 Oct 2026: media26 is behind a
+# gov.il bot challenge that a plain fetch cannot pass, so the polling
+# moved to the GitHub-scheduled k26-refresh workflow (Chrome download
+# fallback). The function stays deployed (k26_control.json poll:false
+# also gates it) in case it is ever needed manually; re-add a
+# `schedule = "*/5 * * * *"` line here to resume Netlify-side polling.
 [functions."k26-poll"]
-schedule = "*/5 * * * *"
 included_files = ["k26_control.json"]
 
 # Election-day turnout poller: every 2 minutes inside the daytime
