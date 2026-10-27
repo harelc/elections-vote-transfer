@@ -107,7 +107,15 @@
                 <div class="td-stat"><b id="nat-remaining">–</b><span id="lbl-remaining"></span></div>
                 <div class="td-stat"><b id="nat-ballots">–</b><span id="lbl-ballots"></span></div>
             </div>
+            <div class="note" id="nat-only-note" hidden style="color:#ffd75e;margin-top:.5rem"></div>
             <div class="note" id="nat-note" style="margin-top:.5rem"></div>
+        </section>
+
+        <section class="card" id="hist-card" hidden>
+            <h3 id="hist-title"></h3>
+            <div id="hist-chart"></div>
+            <div class="note" id="hist-note"></div>
+            <div class="note" id="hist-src" style="font-size:.62rem;opacity:.75;margin-top:.15rem"></div>
         </section>
 
         <section class="card">
@@ -198,17 +206,22 @@
             ['socio', 'Socioeconomic cluster', 'אשכול חברתי־כלכלי'],
             ['k25_turnout_band', 'K25 turnout band', 'רצועת הצבעה 25'],
         ];
-        let td = null, status = null, snapIdx = null, metric = 'turnout', dim = 'k25_bloc', map = null;
+        let td = null, status = null, snapIdx = null, metric = 'turnout', dim = 'k25_bloc', map = null, hist = null;
 
         function snaps() { return (td && td.snapshots) || []; }
         function snap() { const s = snaps(); return s[snapIdx == null ? s.length - 1 : snapIdx] || null; }
+        // National-only snapshots (CEC headline figures) carry no
+        // groups/settlements — fall back to the last detailed one.
+        function detailSnap() { const s = snap(); return (s && s.groups) ? s : ([...snaps()].reverse().find(x => x.groups) || s); }
         function hhmm(iso) { return (iso || '').slice(11, 16); }
 
         async function load() {
-            const [st, data] = await Promise.all([
+            const [st, data, histData] = await Promise.all([
                 fetch('../data/k26_status.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
                 fetch('../data/turnout_day_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
+                fetch('../data/historical_turnout.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
             ]);
+            hist = histData;
             status = st || { kind: 'simulated' };
             // Results are out: the count centre takes over.
             if (status.kind === 'partial' || status.kind === 'official') { location.replace('k26.html'); return; }
@@ -244,6 +257,9 @@
             if (active) active.scrollIntoView({ inline: 'center', block: 'nearest' });
 
             const n = s.national;
+            const natOnly = document.getElementById('nat-only-note');
+            natOnly.hidden = !s.national_only;
+            natOnly.textContent = en() ? 'Only national figures have been published so far — the per-ballot breakdown will update when the CEC feed opens.' : 'פורסמו רק נתונים ארציים — הפילוח לפי קלפיות יתעדכן עם פתיחת הזנת ועדת הבחירות.';
             document.getElementById('nat-title').textContent = en() ? 'National turnout' : 'הצבעה ארצית';
             document.getElementById('nat-turnout').textContent = (n.turnout ?? 0).toFixed(1) + '%';
             document.getElementById('nat-asof').textContent = (en() ? 'as of ' : 'נכון ל־') + hhmm(s.as_of);
@@ -274,6 +290,58 @@
 
             renderGroups();
             renderSettlements();
+            renderHist();
+        }
+
+        // Today (gold) vs every past election's hourly turnout curve
+        // (K8–K25; data/historical_turnout.json, credited below).
+        function histAtHour(values, hours, t) {
+            if (t <= hours[0]) return values[0];
+            for (let i = 1; i < hours.length; i++) {
+                if (t <= hours[i]) { const f = (t - hours[i - 1]) / (hours[i] - hours[i - 1]); return values[i - 1] + f * (values[i] - values[i - 1]); }
+            }
+            return values[values.length - 1];
+        }
+        function renderHist() {
+            const card = document.getElementById('hist-card');
+            if (!hist || !td) { card.hidden = true; return; }
+            const hours = hist.hours, els = hist.elections || [];
+            const today = snaps().map(s => {
+                const hm = hhmm(s.as_of).split(':'); return { t: (+hm[0]) + (+hm[1]) / 60, v: (s.national || {}).turnout };
+            }).filter(p => p.v != null && p.t >= 10);
+            const W = 720, H = 300, L = 46, R = 706, T = 12, B = 262;
+            const X = t => L + (t - 10) / 12 * (R - L), Y = v => T + (85 - v) / 85 * (B - T);
+            const path = pts => pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+            let g = '';
+            [0, 25, 50, 75].forEach(v => { g += `<line x1="${L}" y1="${Y(v)}" x2="${R}" y2="${Y(v)}" stroke="rgba(255,255,255,.08)"/><text x="${L - 5}" y="${Y(v) + 3}" fill="#8b93a5" font-size="11" text-anchor="end">${v}%</text>`; });
+            hours.forEach(h => { g += `<text x="${X(h)}" y="${B + 17}" fill="#8b93a5" font-size="11" text-anchor="middle">${String(h).padStart(2, '0')}:00</text>`; });
+            const env = hours.map((h, i) => [Math.min(...els.map(e => e.values[i])), Math.max(...els.map(e => e.values[i]))]);
+            g += `<path d="${path(env.map((e, i) => [X(hours[i]), Y(e[1])]))} ${env.map((e, i) => [X(hours[hours.length - 1 - i]), Y(env[hours.length - 1 - i][0])]).map(p => `L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} Z" fill="rgba(160,175,200,.10)"/>`;
+            els.forEach(e => { g += `<path d="${path(e.values.map((v, i) => [X(hours[i]), Y(v)]))}" fill="none" stroke="rgba(170,182,205,.30)" stroke-width="1"/>`; });
+            const k25 = els.find(e => e.knesset === 25);
+            if (k25) g += `<path d="${path(k25.values.map((v, i) => [X(hours[i]), Y(v)]))}" fill="none" stroke="#dbe4ee" stroke-width="2.4"/>`;
+            if (today.length) {
+                g += `<path d="${path(today.map(p => [X(p.t), Y(p.v)]))}" fill="none" stroke="#f0b429" stroke-width="4" stroke-linejoin="round"/>`;
+                today.forEach(p => { g += `<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="4" fill="#f0b429"/>`; });
+                const last = today[today.length - 1];
+                g += `<text x="${Math.min(X(last.t) + 8, R - 70)}" y="${Math.max(Y(last.v) - 9, 13)}" fill="#ffd75e" font-size="15" font-weight="700">${en() ? 'Today' : 'היום'} ${last.v.toFixed(1)}%</text>`;
+            }
+            document.getElementById('hist-title').textContent = en() ? 'Today vs history: turnout by hour' : 'היום מול ההיסטוריה: הצבעה לפי שעה';
+            document.getElementById('hist-chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;direction:ltr">${g}</svg>`;
+            const last = today[today.length - 1];
+            let note = '';
+            if (last && last.t >= 10 && els.length) {
+                const at = els.map(e => histAtHour(e.values, hours, last.t)).sort((a, b) => a - b);
+                const med = at[Math.floor(at.length / 2)], k25v = k25 ? histAtHour(k25.values, hours, last.t) : null;
+                const higher = at.filter(v => v > last.v).length;
+                note = en() ? `At this hour in past elections: median ${med.toFixed(1)}%${k25v != null ? `, K25 ${k25v.toFixed(1)}% (today ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} pts)` : ''}. Only ${higher} of ${at.length} past elections were higher.`
+                    : `בשעה זו בבחירות קודמות: חציון ${med.toFixed(1)}%${k25v != null ? `, כנסת 25: ${k25v.toFixed(1)}% (היום ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} נק׳)` : ''}. רק ${higher} מתוך ${at.length} הבחירות הקודמות היו גבוהות יותר.`;
+            } else if (k25) {
+                note = en() ? `Hourly history starts at 10:00 — K25 stood at ${k25.values[0].toFixed(1)}% then.` : `ההיסטוריה השעתית מתחילה ב־10:00 — בכנסת 25 עמדה אז על ${k25.values[0].toFixed(1)}%.`;
+            }
+            document.getElementById('hist-note').innerHTML = `${note} <span style="color:#dbe4ee">— ${en() ? 'K25 (2022)' : 'כנסת 25 (2022)'}</span> · <span style="color:#ffd75e">${en() ? 'gold: today' : 'זהב: היום'}</span>`;
+            document.getElementById('hist-src').textContent = en() ? hist.source_en : hist.source_he;
+            card.hidden = false;
         }
 
         function renderGroups() {
@@ -281,7 +349,7 @@
             const sel = document.getElementById('dim-select');
             sel.innerHTML = DIMS.map(([id, e, h]) => `<option value="${id}" ${id === dim ? 'selected' : ''}>${en() ? e : h}</option>`).join('');
             sel.onchange = () => { dim = sel.value; renderGroups(); };
-            const s = snap();
+            const s = detailSnap();
             const byPace = metric === 'pace';
             const rows = ((s && s.groups && s.groups[dim]) || []).slice()
                 .sort((a, b) => (byPace ? (b.pace || 0) - (a.pace || 0) : (b.turnout || 0) - (a.turnout || 0)));
@@ -299,7 +367,7 @@
         }
 
         function renderSettlements() {
-            const s = snap();
+            const s = detailSnap();
             const st = (s && s.settlements) || {};
             document.getElementById('set-title').textContent = en() ? 'Settlements' : 'יישובים';
             document.getElementById('set-high-title').textContent = en() ? 'Highest turnout' : 'ההצבעה הגבוהה ביותר';

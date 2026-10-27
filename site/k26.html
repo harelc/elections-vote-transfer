@@ -167,6 +167,11 @@
         .td-stat b { display:block; font-size:1.25rem; color:var(--text-primary); }
         .td-stat span { font-size:.72rem; color:var(--text-muted); }
         .td-tabs { display:flex; flex-wrap:wrap; gap:.4rem; margin-bottom:.6rem; }
+        .td-history { background:var(--bg-tertiary); border-radius:8px; padding:.6rem .7rem .5rem; margin-bottom:.8rem; }
+        .td-history h4 { font-size:.9rem; color:var(--text-primary); margin-bottom:.15rem; }
+        .td-history .hist-note { font-size:.76rem; color:var(--text-secondary); line-height:1.5; }
+        .td-history .hist-src { font-size:.66rem; color:var(--text-muted); margin-top:.2rem; }
+        .td-history svg { width:100%; height:auto; display:block; direction:ltr; }
         .td-scale-row { display:flex; align-items:center; gap:.4rem; margin:.1rem 0 .3rem; }
         .td-scale-row[hidden] { display:none; }
         .td-slider-wrap { margin:.35rem 0 .55rem; width:100%; direction:ltr; } /* time axes run left→right even on the RTL page */
@@ -559,6 +564,8 @@
             <div class="pane-note" id="td-note" style="margin-bottom:.35rem"></div>
             <div class="td-match-chips" id="td-match-chips"></div>
             <div class="td-stats" id="td-stats"></div>
+            <div class="pane-note" id="td-natonly" hidden style="color:#ffd75e;margin:-.3rem 0 .7rem"></div>
+            <div class="td-history" id="td-history" hidden></div>
             <div class="td-tabs" id="td-tabs" role="group"></div>
             <div class="td-tabs" id="td-metric" role="group"></div>
             <div id="td-groups"></div>
@@ -798,7 +805,7 @@
         // no-store: on election night these JSONs are recommitted every few
         // minutes; a cached copy would freeze the command center mid-count.
         const F = { cache: 'no-store' };
-        const [wiki, map, transfer, tsne, suspects, mks, coords, cc, turnoutDay, liveStatus] = await Promise.all([
+        const [wiki, map, transfer, tsne, suspects, mks, coords, cc, turnoutDay, liveStatus, histTurnout] = await Promise.all([
             fetch('data/wiki_official_results.json', F).then(r => r.json()),
             fetch('data/map_26.json', F).then(r => r.json()),
             fetch('data/transfer_25_to_26.json', F).then(r => r.json()),
@@ -809,13 +816,14 @@
             fetch(CC_FILE, F).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch('data/turnout_day_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
             fetch('data/k26_status.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
+            fetch('data/historical_turnout.json', F).then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
         if (liveStatus && !PREVIEW_PARTIAL) K26STATUS = liveStatus;
         TURNOUT_ACTIVE = !!turnoutDay && (TURNOUT_PARAM === '1' || (TURNOUT_PARAM !== '0' && K26STATUS.kind === 'turnout'));
         if (TURNOUT_ACTIVE) { document.body.classList.add('td-on'); geoMode = 'td_turnout'; }
         const enNames = {}, enLeaders = {};
         (transfer.nodes_to || []).forEach(n => { if (n.info) { enNames[n.name] = n.info.name_en || n.name; enLeaders[n.name] = n.info.leader_en || ''; } });
-        DATA = { wiki, map, transfer, tsne, suspects, cc, turnoutDay, twinsMode: false, mks: (mks && mks.parties) || {}, coords: coords || { stations: {} }, enNames, enLeaders,
+        DATA = { wiki, map, transfer, tsne, suspects, cc, turnoutDay, histTurnout, twinsMode: false, mks: (mks && mks.parties) || {}, coords: coords || { stations: {} }, enNames, enLeaders,
                  parties: map.parties, results: wiki['26'] || [],
                  colorOf: {}, infoOf: {} };
         map.parties.forEach(p => { DATA.colorOf[p.name] = p.color; DATA.infoOf[p.name] = p.info || {}; });
@@ -2252,6 +2260,10 @@
         const snaps = tdSnapshots();
         if (!snaps.length) return;
         tdSnapIdx = Math.max(0, Math.min(snaps.length - 1, idx));
+        // National-only snapshot (e.g. the CEC 10:00 headline figure):
+        // no per-ballot voters — keep the map on the last ballot-level
+        // snapshot; only the stats/chart follow the selected time.
+        if (!Array.isArray(snaps[tdSnapIdx].voters)) { updateTdSlider(); if (TURNOUT_ACTIVE) renderTurnoutDay(); return; }
         const voters = snaps[tdSnapIdx].voters || [];
         geoItems.forEach(it => {
             const st = it.station, td = st.td;
@@ -2269,6 +2281,72 @@
         updateTdSlider();
         updateGeoLegend();
         if (TURNOUT_ACTIVE) renderTurnoutDay();
+    }
+    // Today-vs-history chart: today's cumulative turnout (gold) over
+    // every past election's hourly curve (K8–K25, gray envelope; K25
+    // picked out). Data: data/historical_turnout.json (transcribed
+    // from @ElectionOwl's hourly table — credited under the chart).
+    function histAtHour(values, hours, t) {
+        if (t <= hours[0]) return values[0];
+        for (let i = 1; i < hours.length; i++) {
+            if (t <= hours[i]) {
+                const f = (t - hours[i - 1]) / (hours[i] - hours[i - 1]);
+                return values[i - 1] + f * (values[i] - values[i - 1]);
+            }
+        }
+        return values[values.length - 1];
+    }
+    function snapHourDec(s) {
+        try {
+            const p = new Intl.DateTimeFormat('en-GB', { timeZone: 'Asia/Jerusalem', hour: '2-digit', minute: '2-digit', hour12: false }).formatToParts(new Date(s.as_of));
+            const h = +((p.find(x => x.type === 'hour') || {}).value || 0), m = +((p.find(x => x.type === 'minute') || {}).value || 0);
+            return h + m / 60;
+        } catch (e) { return null; }
+    }
+    function renderTdHistory() {
+        const box = document.getElementById('td-history');
+        const hist = DATA && DATA.histTurnout, td = DATA && DATA.turnoutDay;
+        if (!box) return;
+        if (!hist || !td) { box.hidden = true; return; }
+        const hours = hist.hours, els = hist.elections || [];
+        const today = tdSnapshots()
+            .map(s => ({ t: snapHourDec(s), v: (s.national || {}).turnout }))
+            .filter(p => p.t != null && p.v != null && p.t >= 10);
+        const W = 720, H = 280, L = 44, R = 706, T = 12, B = 248;
+        const X = t => L + (t - 10) / 12 * (R - L), Y = v => T + (85 - v) / 85 * (B - T);
+        const path = pts => pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+        let g = '';
+        [0, 25, 50, 75].forEach(v => { g += `<line x1="${L}" y1="${Y(v)}" x2="${R}" y2="${Y(v)}" stroke="rgba(255,255,255,.08)"/><text x="${L - 5}" y="${Y(v) + 3}" fill="#8b93a5" font-size="10" text-anchor="end">${v}%</text>`; });
+        hours.forEach(h => { g += `<text x="${X(h)}" y="${B + 16}" fill="#8b93a5" font-size="10" text-anchor="middle">${String(h).padStart(2, '0')}:00</text>`; });
+        const env = hours.map((h, i) => [Math.min(...els.map(e => e.values[i])), Math.max(...els.map(e => e.values[i]))]);
+        g += `<path d="${path(env.map((e, i) => [X(hours[i]), Y(e[1])]))} ${env.map((e, i) => [X(hours[hours.length - 1 - i]), Y(env[hours.length - 1 - i][0])]).map(p => `L${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ')} Z" fill="rgba(160,175,200,.10)"/>`;
+        els.forEach(e => { g += `<path d="${path(e.values.map((v, i) => [X(hours[i]), Y(v)]))}" fill="none" stroke="rgba(170,182,205,.30)" stroke-width="1"/>`; });
+        const k25 = els.find(e => e.knesset === 25);
+        if (k25) g += `<path d="${path(k25.values.map((v, i) => [X(hours[i]), Y(v)]))}" fill="none" stroke="#dbe4ee" stroke-width="2.2"/>`;
+        if (today.length) {
+            g += `<path d="${path(today.map(p => [X(p.t), Y(p.v)]))}" fill="none" stroke="#f0b429" stroke-width="3.5" stroke-linejoin="round"/>`;
+            today.forEach(p => { g += `<circle cx="${X(p.t)}" cy="${Y(p.v)}" r="3.5" fill="#f0b429"/>`; });
+            const last = today[today.length - 1];
+            g += `<text x="${Math.min(X(last.t) + 7, R - 62)}" y="${Math.max(Y(last.v) - 8, 12)}" fill="#ffd75e" font-size="13" font-weight="700">${en() ? 'Today' : 'היום'} ${last.v.toFixed(1)}%</text>`;
+        }
+        let note = '';
+        const last = today[today.length - 1];
+        if (last && last.t >= 10 && els.length) {
+            const at = els.map(e => histAtHour(e.values, hours, last.t)).sort((a, b) => a - b);
+            const med = at[Math.floor(at.length / 2)];
+            const k25v = k25 ? histAtHour(k25.values, hours, last.t) : null;
+            const higher = at.filter(v => v > last.v).length;
+            note = en()
+                ? `At this hour in past elections: median ${med.toFixed(1)}%${k25v != null ? `, K25 ${k25v.toFixed(1)}% (today ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} pts)` : ''}. Only ${higher} of ${at.length} past elections were higher.`
+                : `בשעה זו בבחירות קודמות: חציון ${med.toFixed(1)}%${k25v != null ? `, כנסת 25: ${k25v.toFixed(1)}% (היום ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} נק׳)` : ''}. רק ${higher} מתוך ${at.length} הבחירות הקודמות היו גבוהות יותר.`;
+        } else if (k25) {
+            note = en() ? `Hourly history starts at 10:00 — K25 stood at ${k25.values[0].toFixed(1)}% then.` : `ההיסטוריה השעתית מתחילה ב־10:00 — בכנסת 25 עמדה אז על ${k25.values[0].toFixed(1)}%.`;
+        }
+        box.innerHTML = `<h4>${en() ? 'Today vs history: cumulative turnout by hour' : 'היום מול ההיסטוריה: אחוז הצבעה מצטבר לפי שעה'}</h4>
+            <svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>
+            <div class="hist-note">${note} <span style="color:#dbe4ee">— ${en() ? 'K25 (2022)' : 'כנסת 25 (2022)'}</span> · <span style="color:#ffd75e">${en() ? 'gold: today' : 'זהב: היום'}</span> · <span>${en() ? 'band: range of all elections 1973–2022' : 'רצועה: טווח כל הבחירות 1973–2022'}</span></div>
+            <div class="hist-src">${en() ? hist.source_en : hist.source_he}</div>`;
+        box.hidden = false;
     }
     // Group histograms can be ranked + painted (bar length) by the
     // absolute turnout so far, or by the recovery ratio (voters so
@@ -2360,6 +2438,12 @@
             [fmt(n.remaining_voters || 0), en() ? 'Eligible still to vote' : 'בעלי זכות שטרם הצביעו'],
             [prev ? ((n.turnout - prev.turnout) >= 0 ? '+' : '') + (n.turnout - prev.turnout).toFixed(1) + (en() ? ' pts' : ' נק׳') : '–', en() ? 'Since previous update' : 'מהעדכון הקודם'],
         ].map(([v, l]) => `<div class="td-stat"><b>${v}</b><span>${l}</span></div>`).join('');
+        const natOnly = document.getElementById('td-natonly');
+        if (natOnly) {
+            natOnly.hidden = !(snap && snap.national_only);
+            natOnly.textContent = en() ? 'Only national figures have been published so far — the per-ballot breakdown will update when the CEC feed opens.' : 'פורסמו רק נתונים ארציים — הפילוח לפי קלפיות יתעדכן עם פתיחת הזנת ועדת הבחירות.';
+        }
+        renderTdHistory();
         document.getElementById('td-tabs').innerHTML = TD_DIMS.map(([id, enL, heL]) => `<button class="pane-btn ${id === tdDim ? 'gold' : ''}" data-td-dim="${id}">${en() ? enL : heL}</button>`).join('');
         pane.querySelectorAll('[data-td-dim]').forEach(b => b.addEventListener('click', () => { tdDim = b.dataset.tdDim; renderTurnoutDay(); }));
         document.getElementById('td-metric').innerHTML =
@@ -2369,7 +2453,8 @@
         pane.querySelectorAll('[data-td-metric]').forEach(b => b.addEventListener('click', () => { tdMetric = b.dataset.tdMetric; renderTurnoutDay(); }));
         const colors = td.party_colors_25 || {};
         const byPace = tdMetric === 'pace';
-        const rows = [...((((snap && snap.groups) || td.groups || {})[tdDim]) || [])]
+        const detailSnap = (snap && snap.groups) ? snap : ([...snaps].reverse().find(s => s.groups) || snap);
+        const rows = [...((((detailSnap && detailSnap.groups) || td.groups || {})[tdDim]) || [])]
             .sort((a, b) => byPace ? ((b.pace ?? -1) - (a.pace ?? -1)) : ((b.turnout || 0) - (a.turnout || 0)))
             .slice(0, 18);
         const maxV = byPace ? Math.max(0.5, ...rows.map(r => r.pace || 0)) : Math.max(60, ...rows.map(r => r.turnout || 0));
@@ -2391,7 +2476,7 @@
               <div class="td-nums"><b>${primary}</b> · ${secondary}<br>${fmt(r.voters)} / ${fmt(r.eligible)} · ${r.share_of_voters != null ? r.share_of_voters.toFixed(1) + (en() ? '% of voters' : '% מהמצביעים') : ''}</div></div>`;
         }).join('') || `<p class="pane-note">${en() ? 'No groups in this dimension yet.' : 'אין קבוצות במימד זה עדיין.'}</p>`;
         const settleBlock = (title, list, val) => `<div><h4>${title}</h4>${(list || []).slice(0, 8).map(r => `<div class="td-settle-row"><a href="settlement.html?name=${encodeURIComponent(r.name)}" style="color:var(--text-secondary);text-decoration:none">${en() ? i18n.settlementName(r.name) : r.name}</a><span>${val(r)}</span></div>`).join('')}</div>`;
-        const S = (snap && snap.settlements) || td.settlements || {};
+        const S = (detailSnap && detailSnap.settlements) || td.settlements || {};
         document.getElementById('td-settles').innerHTML =
             settleBlock(en() ? 'Highest turnout settlements' : 'היישובים עם ההצבעה הגבוהה ביותר', S.highest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
             settleBlock(en() ? 'Lowest turnout settlements' : 'היישובים עם ההצבעה הנמוכה ביותר', S.lowest_turnout, r => (r.turnout || 0).toFixed(1) + '%') +
