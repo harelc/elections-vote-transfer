@@ -2377,8 +2377,8 @@
                     : ` הפעם האחרונה שבה נרשם בשעה זו שיעור גבוה יותר הייתה כנסת ${lh.knesset} (${lh.year}) — ${histAtHour(lh.values, hours, last.t).toFixed(1)}%.`)
                 : (en() ? ' No past election was higher at this hour — a record for this hour.' : ' אף בחירות קודמות לא היו גבוהות יותר בשעה זו — שיא לשעה זו.');
             note = en()
-                ? `At this hour in past elections: median ${med.toFixed(1)}%${k25v != null ? `, K25 ${k25v.toFixed(1)}% (today ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} pts)` : ''}. Only ${higher} of ${at.length} past elections were higher.${lhTxt}`
-                : `בשעה זו בבחירות קודמות: חציון ${med.toFixed(1)}%${k25v != null ? `, כנסת 25: ${k25v.toFixed(1)}% (היום ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} נק׳)` : ''}. רק ${higher} מתוך ${at.length} הבחירות הקודמות היו גבוהות יותר.${lhTxt}`;
+                ? `At this hour in past elections: median ${med.toFixed(1)}%${k25v != null ? `, K25 ${k25v.toFixed(1)}% (today ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} pts)` : ''}.${higher ? ` Only ${higher} of ${at.length} past elections were higher.` : ''}${lhTxt}`
+                : `בשעה זו בבחירות קודמות: חציון ${med.toFixed(1)}%${k25v != null ? `, כנסת 25: ${k25v.toFixed(1)}% (היום ${last.v >= k25v ? '+' : ''}${(last.v - k25v).toFixed(1)} נק׳)` : ''}.${higher ? ` רק ${higher} מתוך ${at.length} הבחירות הקודמות היו גבוהות יותר.` : ''}${lhTxt}`;
         } else if (k25) {
             note = en() ? `Hourly history starts at 10:00 — K25 stood at ${k25.values[0].toFixed(1)}% then.` : `ההיסטוריה השעתית מתחילה ב־10:00 — בכנסת 25 עמדה אז על ${k25.values[0].toFixed(1)}%.`;
         }
