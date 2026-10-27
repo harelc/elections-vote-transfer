@@ -2634,7 +2634,7 @@
         const towns = [...townAgg.values()].filter(r => r.eligible > 25000)
             .map(r => ({ ...r, turnout: 100 * r.voters / r.eligible, updAvg: r.updN ? hhmmOf(r.updSum / r.updN) : null }))
             .sort((a, b) => b.turnout - a.turnout);
-        const townVal = r => `${(r.turnout || 0).toFixed(1)}%${r.updAvg ? ` <small>(${en() ? 'ballots updated on avg' : 'עדכון קלפיות בממוצע'} ${r.updAvg})</small>` : ''}`;
+        const townVal = r => `${(r.turnout || 0).toFixed(1)}%${r.updAvg ? ` <small>(${en() ? 'avg update time' : 'שעת עדכון ממוצעת'} ${r.updAvg})</small>` : ''}`;
         const S = (detailSnap && detailSnap.settlements) || td.settlements || {};
         document.getElementById('td-settles').innerHTML =
             settleBlock(en() ? 'Highest turnout — large towns (over 25,000 eligible)' : 'ההצבעה הגבוהה ביותר — יישובים גדולים (מעל 25 אלף בעלי זכות)', towns, townVal, 25) +
