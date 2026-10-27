@@ -2310,8 +2310,11 @@
         ctx.fillText(`${E ? 'National nowcast' : 'תחזית ארצית'} · ${fmt(nc.counted_ballots)} / ${fmt(nc.roster_ballots)} ${E ? 'ballots counted' : 'קלפיות נספרו'} (${pctCounted}%) · ${prov}`, W - PAD, 102);
         // Seat table (right half)
         const tx1 = W - PAD, tx0 = W * 0.545;
-        ctx.font = '700 27px Heebo, Arial'; ctx.fillStyle = ink; ctx.textAlign = 'right';
-        ctx.fillText(E ? 'Forecast seats' : 'מנדטים לפי התחזית', tx1, 178);
+        ctx.fillStyle = ink; ctx.textAlign = 'right';
+        let titleFs = 27;
+        const seatTitle = E ? 'Seats: final-count forecast from the partial count' : 'מנדטים לפי תחזית לספירה הסופית, לפי הספירה החלקית';
+        do { ctx.font = `700 ${titleFs}px Heebo, Arial`; titleFs -= 1; } while (ctx.measureText(seatTitle).width > tx1 - tx0 && titleFs > 17);
+        ctx.fillText(seatTitle, tx1, 178);
         const totV = P.parties.reduce((a, p) => a + (p.proj_votes || 0), 0);
         const chips = Object.entries(P.blocs || {});
         const chipW = (tx1 - tx0 - (chips.length - 1) * 10) / Math.max(1, chips.length);
@@ -2323,18 +2326,56 @@
             ctx.fillStyle = ink; ctx.font = '800 34px Heebo, Arial'; ctx.textAlign = 'left';
             ctx.fillText('' + (v.proj_seats ?? Math.round(v.mean ?? v.median)), x + 12, 232);
         });
-        let y = 292;
+        ctx.fillStyle = mut; ctx.textAlign = 'right';
+        let legendFs = 15;
+        const stripLegend = E ? 'Density strip = final-seat distribution over simulated completions · party-colour tick = forecast · orange = mean · white = current partial count'
+            : 'פס הצפיפות = התפלגות המנדטים הסופיים בהשלמות המדומות · קו בצבע המפלגה = תחזית · כתום = ממוצע · לבן = לפי הספירה החלקית הנוכחית';
+        do { ctx.font = `400 ${legendFs}px Heebo, Arial`; legendFs -= 1; } while (ctx.measureText(stripLegend).width > tx1 - tx0 && legendFs > 10);
+        ctx.fillText(stripLegend, tx1, 272);
+        let y = 308;
+        const maxSeatC = 30;
         P.parties.filter(p => (p.proj_seats ?? p.median) > 0 || p.seats_now > 0).forEach(p => {
             const col = DATA.colorOf[p.name] || '#888';
             ctx.fillStyle = col; ctx.fillRect(tx1 - 8, y - 24, 8, 30);
             ctx.fillStyle = ink; ctx.font = '600 24px Heebo, Arial'; ctx.textAlign = 'right';
             ctx.fillText(displayName(p.name), tx1 - 20, y);
             ctx.fillStyle = mut; ctx.font = '400 17px Heebo, Arial';
-            ctx.fillText(`${(100 * (p.proj_votes || 0) / Math.max(1, totV)).toFixed(1)}% · ${p.p90}–${p.p10}`, tx1 - 20, y + 24);
+            ctx.fillText(`${(100 * (p.proj_votes || 0) / Math.max(1, totV)).toFixed(1)}%`, tx1 - 20, y + 24);
+            // CI as in the nowcast pane: a party-colour density strip along
+            // the seat axis (saturation = share of simulated completions
+            // ending at that seat count), with forecast/mean/counted ticks.
+            const stripXR = tx1 - 92, stripXL = tx0 + 82, stripW = stripXR - stripXL, stripY = y + 13, stripH = 12;
+            const hexC = col.replace('#', '');
+            const rgbC = [0, 2, 4].map(i => parseInt(hexC.slice(i, i + 2), 16) || 0);
+            const cntC = {}; Object.entries(p.hist || {}).forEach(([s, c]) => cntC[+s] = c);
+            const seatsHist = Object.keys(cntC).map(Number);
+            ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.beginPath(); ctx.roundRect(stripXL, stripY, stripW, stripH, 6); ctx.fill();
+            if (seatsHist.length) {
+                const loC = Math.min(...seatsHist, p.seats_now || 0), hiC = Math.max(...seatsHist, p.seats_now || 0);
+                const smoothC = s => 0.25 * (cntC[s - 1] || 0) + 0.5 * (cntC[s] || 0) + 0.25 * (cntC[s + 1] || 0);
+                const maxDC = Math.max(1e-9, ...Array.from({ length: hiC - loC + 1 }, (_, i) => smoothC(loC + i)));
+                const grad = ctx.createLinearGradient(stripXR, 0, stripXL, 0);
+                if (loC > 0) grad.addColorStop(0, `rgba(${rgbC[0]},${rgbC[1]},${rgbC[2]},0)`);
+                for (let s = loC - 1; s <= hiC + 1; s++) {
+                    const aC = Math.max(0, Math.min(0.95, smoothC(s) / maxDC * 0.95));
+                    grad.addColorStop(Math.max(0, Math.min(1, s / maxSeatC)), `rgba(${rgbC[0]},${rgbC[1]},${rgbC[2]},${aC.toFixed(3)})`);
+                }
+                if (hiC < maxSeatC) grad.addColorStop(1, `rgba(${rgbC[0]},${rgbC[1]},${rgbC[2]},0)`);
+                ctx.save(); ctx.beginPath(); ctx.roundRect(stripXL, stripY, stripW, stripH, 6); ctx.clip();
+                ctx.fillStyle = grad; ctx.fillRect(stripXL, stripY, stripW, stripH);
+                ctx.restore();
+            } else if (p.p10 != null && p.p90 != null) {
+                const xA = stripXR - (p.p90 / maxSeatC) * stripW, xB = stripXR - (p.p10 / maxSeatC) * stripW;
+                ctx.fillStyle = `rgba(${rgbC[0]},${rgbC[1]},${rgbC[2]},.55)`; ctx.beginPath(); ctx.roundRect(xA, stripY, Math.max(3, xB - xA), stripH, 6); ctx.fill();
+            }
+            const tickC = (val, color, wdt) => { if (val == null || isNaN(val)) return; const tx = stripXR - (Math.max(0, Math.min(maxSeatC, val)) / maxSeatC) * stripW; ctx.fillStyle = color; ctx.fillRect(tx - wdt / 2, stripY - 3, wdt, stripH + 6); };
+            tickC(p.seats_now, '#ffffff', 2);
+            tickC(p.mean ?? p.median, '#f59e0b', 2);
+            tickC(p.proj_seats ?? (p.median != null ? Math.round(p.median) : null), col, 3.5);
             ctx.fillStyle = col; ctx.font = '800 42px Heebo, Arial'; ctx.textAlign = 'left';
             ctx.fillText('' + (p.proj_seats ?? Math.round(p.median)), tx0, y + 6);
-            ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fillRect(tx0, y + 38, tx1 - tx0, 1);
-            y += 56;
+            ctx.fillStyle = 'rgba(255,255,255,.07)'; ctx.fillRect(tx0, y + 36, tx1 - tx0, 1);
+            y += 51;
         });
         // Sankey (left half)
         const sx1 = W * 0.505, sx0 = PAD;
@@ -2376,19 +2417,40 @@
             });
             sk.nodes_from.forEach(n => { const p = pf.get(n.name); ctx.fillStyle = colOf(n.name); ctx.fillRect(fromX, p.y0, nodeW, p.h); });
             sk.nodes_to.forEach(n => { const p = pt.get(n.name); ctx.fillStyle = colOf(n.name); ctx.fillRect(toX, p.y0, nodeW, p.h); });
-            const nodeLabel = (n, p, x, align, extra) => {
-                if (p.h < 13) return;
-                ctx.textAlign = align; ctx.fillStyle = ink; ctx.font = '600 19px Heebo, Arial';
-                if (p.h >= 36) {
-                    ctx.fillText(displayName(n.name), x, p.y0 + 20);
-                    ctx.fillStyle = mut; ctx.font = '400 15px Heebo, Arial';
-                    ctx.fillText(extra, x, p.y0 + 39);
-                } else {
-                    ctx.fillText(displayName(n.name), x, p.y0 + p.h / 2 + 6);
+            // Every node gets a label, even a paper-thin one: place labels
+            // at their node's centre, then push overlapping ones apart
+            // (with a thin leader line back to the node when shifted).
+            const drawLabels = (nodes, pos, x, align, extraOf) => {
+                const items = nodes.map(n => ({ n, p: pos.get(n.name) })).filter(it => it.p)
+                    .map(it => ({ ...it, cy: it.p.y0 + it.p.h / 2 })).sort((a, b) => a.cy - b.cy);
+                const gapAfter = it => it.p.h >= 36 ? 34 : 17;
+                const ys = [];
+                items.forEach((it, i) => {
+                    let y = Math.max(top + 10, Math.min(bot - 4, it.cy + 5));
+                    if (i) y = Math.max(y, ys[i - 1] + gapAfter(items[i - 1]));
+                    ys.push(y);
+                });
+                for (let i = items.length - 1; i >= 0; i--) {
+                    const maxY = bot - 4 - items.slice(i + 1).reduce((a, x) => a + gapAfter(x), 0);
+                    if (ys[i] > maxY) ys[i] = maxY;
+                    if (i < items.length - 1) ys[i] = Math.min(ys[i], ys[i + 1] - gapAfter(items[i]));
                 }
+                items.forEach((it, i) => {
+                    const y = ys[i];
+                    if (Math.abs(y - 5 - it.cy) > 7) {
+                        ctx.strokeStyle = 'rgba(255,255,255,.28)'; ctx.lineWidth = 1;
+                        ctx.beginPath(); ctx.moveTo(align === 'left' ? x - 6 : x + 6, it.cy); ctx.lineTo(align === 'left' ? x - 1 : x + 1, y - 5); ctx.stroke();
+                    }
+                    ctx.textAlign = align; ctx.fillStyle = ink; ctx.font = '600 17px Heebo, Arial';
+                    ctx.fillText(displayName(it.n.name), x, y);
+                    if (it.p.h >= 36) {
+                        ctx.fillStyle = mut; ctx.font = '400 14px Heebo, Arial';
+                        ctx.fillText(extraOf(it.n), x, y + 16);
+                    }
+                });
             };
-            sk.nodes_from.forEach(n => { const p = pf.get(n.name); nodeLabel(n, p, fromX + nodeW + 8, 'left', fmtS(n.votes || 0)); });
-            sk.nodes_to.forEach(n => { const p = pt.get(n.name); nodeLabel(n, p, toX - 8, 'right', fmtS(n.votes || 0) + (n.seats ? ` · ${n.seats}` : '')); });
+            drawLabels(sk.nodes_from, pf, fromX + nodeW + 8, 'left', n => fmtS(n.votes || 0));
+            drawLabels(sk.nodes_to, pt, toX - 8, 'right', n => fmtS(n.votes || 0) + (n.seats ? ` · ${n.seats}` : ''));
         }
         // Footer: QR + credit + timestamps
         const fy = H - 118;
@@ -2407,7 +2469,7 @@
         ctx.fillStyle = mut; ctx.font = '400 18px Heebo, Arial';
         ctx.fillText(E ? 'Scan for the live count centre' : 'סרקו למרכז הספירה החי', PAD + 128, fy + 68);
         ctx.textAlign = 'right'; ctx.fillStyle = mut; ctx.font = '400 19px Heebo, Arial';
-        ctx.fillText(`${E ? 'Kolot Nodedim' : 'קולות נודדים'} · ${E ? 'convex transfer model' : 'מודל מעבר קונבקסי'} 25←26${sk && sk.r_squared != null ? ` · R²=${Number(sk.r_squared).toFixed(2)}` : ''} · © Harell Cain, CC BY-NC-SA 4.0`, W - PAD, fy + 40);
+        ctx.fillText(`${E ? 'Kolot Nodedim' : 'קולות נודדים'} · ${E ? 'vote-migration model' : 'מודל נדידת קולות'} 25←26${sk && sk.r_squared != null ? ` · R²=${Number(sk.r_squared).toFixed(2)}` : ''} · © ${E ? 'Harel Cain' : 'הראל קין'}, CC BY-NC-SA 4.0`, W - PAD, fy + 40);
         ctx.fillText(`${E ? 'Data as of' : 'נתונים נכון ל'} ${when(K26STATUS.as_of)} · ${E ? 'graphic generated' : 'הגרפיקה הופקה'} ${when(new Date().toISOString())}`, W - PAD, fy + 68);
         const url2 = cv.toDataURL('image/png');
         const modal = document.getElementById('share-modal');
