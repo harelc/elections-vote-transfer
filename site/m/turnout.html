@@ -118,6 +118,13 @@
             <div class="note" id="hist-src" style="font-size:.62rem;opacity:.75;margin-top:.15rem"></div>
         </section>
 
+        <section class="card" id="dist-card" hidden>
+            <h3 id="dist-title"></h3>
+            <div id="dist-chart"></div>
+            <div class="note" id="dist-stats"></div>
+            <div class="note" id="dist-note" style="margin-top:.35rem"></div>
+        </section>
+
         <section class="card">
             <h3 id="map-title"></h3>
             <div class="metric-row">
@@ -333,6 +340,55 @@
             renderGroups();
             renderSettlements();
             renderHist();
+            renderDist();
+        }
+
+        // Per-ballot turnout histogram + why it trails the national
+        // headline (the CEC feed's two layers are different vintages).
+        function renderDist() {
+            const card = document.getElementById('dist-card');
+            if (!td) { card.hidden = true; return; }
+            const s = snap();
+            const voters = (s && s.voters) || null;
+            const natT = (s && s.national || {}).turnout;
+            const vals = [];
+            let wSum = 0, wElig = 0;
+            (td.stations || []).forEach((a, i) => {
+                const v = voters ? voters[i] : a[5];
+                if (v == null || !a[4]) return;
+                vals.push(100 * v / a[4]); wSum += v; wElig += a[4];
+            });
+            if (vals.length < 50) { card.hidden = true; return; }
+            vals.sort((a, b) => a - b);
+            const q = p => vals[Math.min(vals.length - 1, Math.floor(vals.length * p))];
+            const mean = vals.reduce((x, v) => x + v, 0) / vals.length;
+            const wMean = wElig ? 100 * wSum / wElig : null;
+            const above = natT != null ? vals.filter(v => v > natT).length : 0;
+            const BIN = 2, MAXB = 40, bins = new Array(MAXB / BIN).fill(0);
+            vals.forEach(v => { bins[Math.min(bins.length - 1, Math.floor(v / BIN))]++; });
+            const maxBin = Math.max(...bins);
+            const W = 720, H = 250, L = 46, R = 706, T = 16, B = 206;
+            const X = v => L + v / MAXB * (R - L), Y = c => B - c / maxBin * (B - T);
+            let g = '';
+            bins.forEach((c, i) => { const h = B - Y(c); if (h > 0) g += `<rect x="${(X(i * BIN) + 1).toFixed(1)}" y="${Y(c).toFixed(1)}" width="${(X(BIN) - X(0) - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="rgba(150,170,205,.55)"/>`; });
+            [0, 10, 20, 30, 40].forEach(v => { g += `<text x="${X(v)}" y="${B + 17}" fill="#8b93a5" font-size="11" text-anchor="middle">${v}%</text>`; });
+            if (natT != null && natT <= MAXB) {
+                g += `<line x1="${X(natT)}" y1="${T - 4}" x2="${X(natT)}" y2="${B}" stroke="#f0b429" stroke-width="3"/>`;
+                g += `<text x="${Math.min(X(natT) + 7, R - 140)}" y="${T + 9}" fill="#ffd75e" font-size="14" font-weight="700">${en() ? 'National' : 'ארצי'} ${natT.toFixed(1)}%</text>`;
+            }
+            const med = q(0.5);
+            g += `<line x1="${X(med)}" y1="${T - 4}" x2="${X(med)}" y2="${B}" stroke="#dbe4ee" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+            document.getElementById('dist-title').textContent = en() ? 'Turnout spread across ballot boxes' : 'התפלגות ההצבעה בין הקלפיות';
+            document.getElementById('dist-chart').innerHTML = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block;direction:ltr">${g}</svg>`;
+            const f1 = v => v == null ? '–' : v.toFixed(1) + '%';
+            document.getElementById('dist-stats').innerHTML = en()
+                ? `Median ballot <b>${f1(med)}</b> · mean <b>${f1(mean)}</b> · weighted mean <b>${f1(wMean)}</b> · middle 50%: ${f1(q(0.25))}–${f1(q(0.75))} · only <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> of ballots are above the national figure.`
+                : `קלפי חציונית <b>${f1(med)}</b> · ממוצע <b>${f1(mean)}</b> · ממוצע משוקלל <b>${f1(wMean)}</b> · 50% האמצעיים: ${f1(q(0.25))}–${f1(q(0.75))} · רק <b>${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)</b> מהקלפיות מעל הנתון הארצי.`;
+            const lag = (natT != null && wMean != null) ? natT - wMean : null;
+            document.getElementById('dist-note').textContent = en()
+                ? `Why the map trails the headline: the CEC feed's national total (${natT != null ? natT.toFixed(1) : '–'}%) is the official hourly release, while its per-ballot layer is an earlier vintage (weighted mean ${f1(wMean)}, a ${lag != null ? lag.toFixed(1) : '–'}-point gap). The national figure rules for the country; the ballot layer catches up in later exports.`
+                : `למה המפה מפגרת אחרי הכותרת: הנתון הארצי בהזנת ועדת הבחירות (${natT != null ? natT.toFixed(1) : '–'}%) הוא הפרסום השעתי הרשמי, ואילו שכבת הקלפיות היא מגרסה מוקדמת יותר (ממוצע משוקלל ${f1(wMean)}, פער של ${lag != null ? lag.toFixed(1) : '–'} נקודות). הנתון הארצי קובע לגבי המדינה; שכבת הקלפיות מתעדכנת בייצואים הבאים.`;
+            card.hidden = false;
         }
 
         // Today (gold) vs every past election's hourly turnout curve

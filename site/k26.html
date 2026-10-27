@@ -566,6 +566,7 @@
             <div class="td-stats" id="td-stats"></div>
             <div class="pane-note" id="td-natonly" hidden style="color:#ffd75e;margin:-.3rem 0 .7rem"></div>
             <div class="td-history" id="td-history" hidden></div>
+            <div class="td-history" id="td-ballotdist" hidden></div>
             <div class="td-tabs" id="td-tabs" role="group"></div>
             <div class="td-tabs" id="td-metric" role="group"></div>
             <div id="td-groups"></div>
@@ -2374,6 +2375,68 @@
             <div class="hist-src">${en() ? hist.source_en : hist.source_he}</div>`;
         box.hidden = false;
     }
+    // Per-ballot turnout distribution for the selected snapshot, with
+    // the CEC national figure marked. The two routinely disagree: the
+    // feed's national total is the official hourly release, while its
+    // per-ballot layer lags behind it (see the note under the chart).
+    function renderTdBallotDist() {
+        const box = document.getElementById('td-ballotdist');
+        const td = DATA && DATA.turnoutDay;
+        if (!box || !td) { if (box) box.hidden = true; return; }
+        const snaps = tdSnapshots();
+        const snap = snaps[tdSnapIdx == null ? snaps.length - 1 : tdSnapIdx] || null;
+        const voters = (snap && snap.voters) || null;
+        const nat = (snap && snap.national) || td.national || {};
+        const vals = [];
+        let wSum = 0, wElig = 0;
+        (td.stations || []).forEach((a, i) => {
+            const v = voters ? voters[i] : a[5];
+            if (v == null || !a[4]) return;
+            vals.push(100 * v / a[4]); wSum += v; wElig += a[4];
+        });
+        if (vals.length < 50) { box.hidden = true; return; }
+        vals.sort((a, b) => a - b);
+        const q = p => vals[Math.min(vals.length - 1, Math.floor(vals.length * p))];
+        const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+        const wMean = wElig ? 100 * wSum / wElig : null;
+        const natT = nat.turnout;
+        const above = natT != null ? vals.filter(v => v > natT).length : 0;
+        const BIN = 2, MAXB = 40, bins = new Array(MAXB / BIN).fill(0);
+        vals.forEach(v => { bins[Math.min(bins.length - 1, Math.floor(v / BIN))]++; });
+        const maxBin = Math.max(...bins);
+        const W = 720, H = 240, L = 44, R = 706, T = 14, B = 196;
+        const X = v => L + v / MAXB * (R - L), Y = c => B - c / maxBin * (B - T);
+        let g = '';
+        bins.forEach((c, i) => {
+            const h = B - Y(c);
+            if (h > 0) g += `<rect x="${(X(i * BIN) + 1).toFixed(1)}" y="${Y(c).toFixed(1)}" width="${(X(BIN) - X(0) - 2).toFixed(1)}" height="${h.toFixed(1)}" rx="2" fill="rgba(150,170,205,.55)"/>`;
+        });
+        [0, 10, 20, 30, 40].forEach(v => { g += `<text x="${X(v)}" y="${B + 16}" fill="#8b93a5" font-size="10" text-anchor="middle">${v}%</text>`; });
+        g += `<text x="${L - 5}" y="${Y(maxBin) + 3}" fill="#8b93a5" font-size="10" text-anchor="end">${maxBin}</text>`;
+        if (natT != null && natT <= MAXB) {
+            g += `<line x1="${X(natT)}" y1="${T - 4}" x2="${X(natT)}" y2="${B}" stroke="#f0b429" stroke-width="2.5"/>`;
+            g += `<text x="${Math.min(X(natT) + 6, R - 120)}" y="${T + 8}" fill="#ffd75e" font-size="12" font-weight="700">${en() ? 'National (CEC)' : 'ארצי (ועדת הבחירות)'} ${natT.toFixed(1)}%</text>`;
+        }
+        const med = q(0.5);
+        g += `<line x1="${X(med)}" y1="${T - 4}" x2="${X(med)}" y2="${B}" stroke="#dbe4ee" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+        const fmt1 = v => v == null ? '–' : v.toFixed(1) + '%';
+        const stats = [
+            [fmt1(med), en() ? 'Median ballot' : 'קלפי חציונית'],
+            [fmt1(mean), en() ? 'Mean ballot' : 'ממוצע קלפיות'],
+            [fmt1(wMean), en() ? 'Weighted mean' : 'ממוצע משוקלל מצביעים'],
+            [`${fmt1(q(0.25))}–${fmt1(q(0.75))}`, en() ? 'Middle 50% of ballots' : '50% האמצעיים של הקלפיות'],
+            [fmt1(q(0.99)), en() ? '99th percentile' : 'אחוזון 99'],
+            [natT != null ? `${above.toLocaleString()} (${(100 * above / vals.length).toFixed(1)}%)` : '–', en() ? 'Ballots above the national figure' : 'קלפיות מעל הנתון הארצי'],
+        ].map(([v, l]) => `<div class="td-stat"><b>${v}</b><span>${l}</span></div>`).join('');
+        const lag = (natT != null && wMean != null) ? natT - wMean : null;
+        box.innerHTML = `<h4>${en() ? 'How turnout is spread across ballot boxes' : 'איך מתפלגת ההצבעה בין הקלפיות'}</h4>
+            <svg viewBox="0 0 ${W} ${H}" role="img">${g}</svg>
+            <div class="td-stats" style="margin:.4rem 0">${stats}</div>
+            <div class="hist-note">${en()
+                ? `Why does the map look lower than the national headline? The CEC feed publishes two layers that are not the same vintage: the national total (${natT != null ? natT.toFixed(1) : '–'}%) is the official hourly release, while the per-ballot layer trails it — its weighted mean here is ${fmt1(wMean)}, a gap of ${lag != null ? lag.toFixed(1) : '–'} points. The national figure is authoritative for the country; the ballot layer catches up in later exports, and everything per-ballot on this page (map, groups, rankings) is drawn from it.`
+                : `למה המפה נראית נמוכה מהכותרת הארצית? הזנת ועדת הבחירות מפרסמת שתי שכבות שאינן מאותו זמן: הנתון הארצי (${natT != null ? natT.toFixed(1) : '–'}%) הוא הפרסום השעתי הרשמי, ואילו שכבת הקלפיות מפגרת אחריו — הממוצע המשוקלל שלה כאן הוא ${fmt1(wMean)}, פער של ${lag != null ? lag.toFixed(1) : '–'} נקודות. הנתון הארצי הוא הקובע לגבי המדינה; שכבת הקלפיות מתעדכנת בייצואים הבאים, וכל הניתוח לפי קלפי בעמוד הזה (מפה, קבוצות, דירוגים) נבנה ממנה.`}</div>`;
+        box.hidden = false;
+    }
     // Group histograms can be ranked + painted (bar length) by the
     // absolute turnout so far, or by the recovery ratio (voters so
     // far / the group's final K25 voters) -- the two tell different
@@ -2470,6 +2533,7 @@
             natOnly.textContent = en() ? 'Only national figures have been published so far — the per-ballot breakdown will update when the CEC feed opens.' : 'פורסמו רק נתונים ארציים — הפילוח לפי קלפיות יתעדכן עם פתיחת הזנת ועדת הבחירות.';
         }
         renderTdHistory();
+        renderTdBallotDist();
         document.getElementById('td-tabs').innerHTML = TD_DIMS.map(([id, enL, heL]) => `<button class="pane-btn ${id === tdDim ? 'gold' : ''}" data-td-dim="${id}">${en() ? enL : heL}</button>`).join('');
         pane.querySelectorAll('[data-td-dim]').forEach(b => b.addEventListener('click', () => { tdDim = b.dataset.tdDim; renderTurnoutDay(); }));
         document.getElementById('td-metric').innerHTML =
