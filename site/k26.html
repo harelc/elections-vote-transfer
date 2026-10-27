@@ -2399,6 +2399,12 @@
             const pf = layout(sk.nodes_from, sumF), pt = layout(sk.nodes_to, sumT);
             const offF = new Map(), offT = new Map();
             const colOf = n => (DATA.colorOf[n] || (sk.nodes_from.find(x => x.name === n) || {}).color || '#888');
+            const rgbaOf = (hex, a) => {
+                const m = /^#?([0-9a-f]{6})$/i.exec(hex || '');
+                if (!m) return hex;
+                const v = parseInt(m[1], 16);
+                return `rgba(${(v >> 16) & 255},${(v >> 8) & 255},${v & 255},${a})`;
+            };
             [...sk.transfers].sort((a, b) => sk.nodes_from.findIndex(n => n.name === a.source) - sk.nodes_from.findIndex(n => n.name === b.source)).forEach(tr => {
                 const s = pf.get(tr.source), t = pt.get(tr.target); if (!s || !t) return;
                 const scF = (s.y1 - s.y0) / Math.max(1, sk.nodes_from.find(n => n.name === tr.source).votes || 1);
@@ -2413,7 +2419,12 @@
                 ctx.lineTo(toX, ty0 + ht);
                 ctx.bezierCurveTo(mx, ty0 + ht, mx, sy0 + hs, fromX + nodeW, sy0 + hs);
                 ctx.closePath();
-                ctx.fillStyle = colOf(tr.source); ctx.globalAlpha = 0.45; ctx.fill(); ctx.globalAlpha = 1;
+                // Edge-to-edge gradient: source-party colour at the source
+                // edge, target-party colour at the target edge.
+                const gradR = ctx.createLinearGradient(fromX + nodeW, 0, toX, 0);
+                gradR.addColorStop(0, rgbaOf(colOf(tr.source), 0.55));
+                gradR.addColorStop(1, rgbaOf(colOf(tr.target), 0.55));
+                ctx.fillStyle = gradR; ctx.fill();
             });
             sk.nodes_from.forEach(n => { const p = pf.get(n.name); ctx.fillStyle = colOf(n.name); ctx.fillRect(fromX, p.y0, nodeW, p.h); });
             sk.nodes_to.forEach(n => { const p = pt.get(n.name); ctx.fillStyle = colOf(n.name); ctx.fillRect(toX, p.y0, nodeW, p.h); });
