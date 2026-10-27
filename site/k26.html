@@ -338,8 +338,8 @@
         .nc-seat-row .nc-now { position:absolute; top:-2px; width:2px; height:16px; background:#fff; }
         .nc-seat-row b { color:var(--text-primary); }
         /* Nowcast on the central stage (partial count) gets the wide layout */
-        #panel-nowcast .nc-seat-row { grid-template-columns:150px 1fr 56px 70px 56px; font-size:0.92rem; padding:0.38rem 0; }
-        #panel-nowcast .nc-table-head { grid-template-columns:150px 1fr 56px 70px 56px; font-size:.72rem; }
+        #panel-nowcast .nc-seat-row { grid-template-columns:150px 1fr 64px 70px 64px; font-size:0.92rem; padding:0.38rem 0; }
+        #panel-nowcast .nc-table-head { grid-template-columns:150px 1fr 64px 70px 64px; font-size:.72rem; line-height:1.3; }
         #panel-nowcast .nc-seat-row .nc-forecast { font-size:2.1rem; }
         #panel-nowcast .nc-seat-row .nc-track { height:17px; }
         #panel-nowcast .nc-seat-row .nc-now { height:21px; }
@@ -2009,7 +2009,7 @@
                     <b class="nc-forecast">${intVal}</b><span class="nc-num">${meanVal.toFixed(2)}</span><span class="nc-num">${p.seats_now}</span></div>`;
             }).join('');
             const blocs = Object.entries(P.blocs).map(([b, v]) => `${i18n.t('k26_bloc_' + b)} <b>${v.proj_seats ?? Math.round(v.mean ?? v.median)}</b>`).join(' · ');
-            const tableHead = `<div class="nc-table-head"><span>${en() ? 'Party' : 'מפלגה'}</span><span>${en() ? 'Final-seat distribution' : 'התפלגות מנדטים סופית'}</span><span class="nc-th-forecast">${en() ? 'Forecast' : 'תחזית'}</span><span>${en() ? 'Mean' : 'ממוצע'}</span><span>${en() ? 'Counted' : 'נספר'}</span></div>`;
+            const tableHead = `<div class="nc-table-head"><span>${en() ? 'Party' : 'מפלגה'}</span><span>${en() ? 'Final-seat distribution' : 'התפלגות מנדטים סופית'}</span><span class="nc-th-forecast">${en() ? 'Forecast for the final count' : 'לפי תחזית לסוף הספירה'}</span><span>${en() ? 'Mean' : 'ממוצע'}</span><span>${en() ? 'Per the partial count' : 'לפי הספירה החלקית'}</span></div>`;
             body += `<div style="margin-top:.7rem">${tableHead}${rows}<div class="pane-note" style="margin-top:.4rem">${blocs}<br>${fmt(P.uncounted_ballots)} ${en() ? 'uncounted boxes' : 'קלפיות לא ספורות'} · ${fmt(P.expected_uncounted_votes)} ${en() ? 'expected votes' : 'קולות צפויים'} · ${P.sims} ${en() ? 'simulations' : 'סימולציות'} · α=${P.alpha}</div>
             <div class="pane-note" style="margin-top:.35rem">${en() ? 'Strip saturation = how many simulated completions ended at that seat count. Ticks: ' : 'רווית הפס = כמה מההשלמות המדומות הסתיימו במספר המנדטים הזה. הקווים: '}<span class="nc-tick-key" style="background:#22d3ee"></span>${en() ? 'forecast · ' : 'תחזית · '}<span class="nc-tick-key" style="background:#f59e0b"></span>${en() ? 'mean · ' : 'ממוצע · '}<span class="nc-tick-key" style="background:#fff"></span>${en() ? 'counted so far' : 'נספר עד כה'}</div></div>`;
             // Predicted vote transfers live together with the seat nowcast,
