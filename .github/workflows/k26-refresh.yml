@@ -120,7 +120,11 @@ jobs:
           # drive it. NODE_PATH lets the repo script resolve the module.
           npm install --prefix /tmp/expb-dl puppeteer@25
           /tmp/expb-dl/node_modules/.bin/puppeteer browsers install chrome
-          NODE_PATH=/tmp/expb-dl/node_modules node download_expb.js data/k26_inbox/snapshot.bin
+          # Run a copy from /tmp: from the repo root, require('puppeteer')
+          # would resolve the repo's older puppeteer (pinned to a
+          # different Chrome build) instead of the fresh pair above.
+          cp download_expb.js /tmp/expb-dl/
+          node /tmp/expb-dl/download_expb.js data/k26_inbox/snapshot.bin
 
       - name: Inspect the snapshot
         id: inspect
