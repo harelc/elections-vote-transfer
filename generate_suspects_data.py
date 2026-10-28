@@ -171,6 +171,7 @@ def score_all(ballot25_path, ballot26_path):
         dev_idx = max(range(len(dst_symbols)), key=lambda j: actual[j] - pred[j])
         scored.append({
             "n": row["k26_name"], "b": norm_ballot(row["k26_ballot"]), "v": dst_valid,
+            "code": norm_code(row["k26_code"]),
             "venue": row.get("k26_venue", ""),
             "src_n": row["k25_name"], "src_b": norm_ballot(row["k25_ballot"]),
             "decision": row["decision"],

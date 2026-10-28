@@ -2095,12 +2095,26 @@
         const parties = DATA.suspects.parties || [];
         const decLabel = d => en() ? ({ id: 'same ballot', id_dot1: 'same ballot (.1)', venue: 'same venue', coord: 'nearby ballot' }[d] || d) : ({ id: 'אותה קלפי', id_dot1: 'אותה קלפי (.1)', venue: 'אותו מקום הצבעה', coord: 'קלפי סמוכה' }[d] || d);
         const stacked = vec => { const s = vec.reduce((x, y) => x + y, 0) || 1; return vec.map((v, j) => v > 0 ? `<i style="width:${(v / s * 100).toFixed(2)}%;background:${(parties[j] || {}).color || '#666'}" title="${displayName((parties[j] || {}).name)}: ${(+v).toFixed(1)}%"></i>` : '').join(''); };
+        // CEC ballot-page deeplinks (votes26.bechirot.gov.il), same URL
+        // shape as the geomap pages. Only on a real count — in previews
+        // and the simulated scenario these boxes' real CEC pages would
+        // tell a different story. Code comes from suspects_26.json
+        // ("code"); fall back to the tsne settlement code by
+        // separator-insensitive name+ballot (union names are raw CEC
+        // spellings, tsne names normalized).
+        const cecLive = !PREVIEW_PARTIAL && !PREVIEW_FULLCOUNT && (K26STATUS.kind === 'partial' || K26STATUS.kind === 'official');
+        const normKey = n => geoNormalize(n).replace(/['׳’"״]/g, '');
+        const codeByBallot = {};
+        (DATA.tsne.stations || []).forEach(st => { if (st.s != null) codeByBallot[`${normKey(st.n)}|${st.b}`] = st.s; });
         el.innerHTML = DATA.suspects.ballots.slice(0, 12).map((b, i) => {
             const sName = en() ? i18n.settlementName(b.n) : b.n;
             const srcName = en() ? i18n.settlementName(b.src_n) : b.src_n;
+            const bn = String(b.b).endsWith('.0') ? String(b.b).slice(0, -2) : String(b.b);
+            const code = b.code || codeByBallot[`${normKey(b.n)}|${bn}`];
+            const cec = cecLive && code ? ` · <a href="https://votes26.bechirot.gov.il/ballotresults?cityID=${encodeURIComponent(code)}&BallotNumber=${encodeURIComponent(bn)}" target="_blank" rel="noopener noreferrer" style="color:#f0b429;text-decoration:none">${en() ? 'CEC ballot page ↗' : 'לקלפי באתר ועדת הבחירות ↗'}</a>` : '';
             return `<div class="suspect-row"><div class="suspect-meta"><span class="rank">#${i + 1}</span><a class="name" href="settlement.html?name=${encodeURIComponent(b.n)}">${sName}</a><span class="ballot-num">${en() ? 'Ballot' : 'קלפי'} ${b.b}</span><span class="score">${i18n.t('k26_suspects_mismatch')} ${(b.tvd * 100).toFixed(1)}%</span></div>
             <div class="suspect-bars"><span class="bar-label">${i18n.t('k26_suspects_pred')}</span><div class="stacked">${stacked(b.pred || [])}</div><span class="bar-label">${i18n.t('k26_suspects_actual')}</span><div class="stacked">${stacked(b.actual || [])}</div></div>
-            <div class="suspect-dev">${fmt(b.v || 0)} ${i18n.t('votes')} · <b>${displayName(b.dev_party)}</b> +${b.dev_pts}${en() ? ' pts vs prediction' : ' נק׳ מעל הצפי'}<br>${i18n.t('k26_suspects_src', { b: b.src_b, s: srcName })} (${decLabel(b.decision)})${b.venue ? ` · ${b.venue}` : ''}</div></div>`;
+            <div class="suspect-dev">${fmt(b.v || 0)} ${i18n.t('votes')} · <b>${displayName(b.dev_party)}</b> +${b.dev_pts}${en() ? ' pts vs prediction' : ' נק׳ מעל הצפי'}<br>${i18n.t('k26_suspects_src', { b: b.src_b, s: srcName })} (${decLabel(b.decision)})${b.venue ? ` · ${b.venue}` : ''}${cec}</div></div>`;
         }).join('');
     }
     // ---------- Command-center extras (data/command_center_26.json) ----------
