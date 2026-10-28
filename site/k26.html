@@ -1797,10 +1797,10 @@
                     ? `Partial count: the coloured stations are the ${fmt(nc.counted_ballots)} counted ballots of ${fmt(nc.roster_ballots)}; ballots not yet counted are faint gray.`
                     : `ספירה חלקית: התחנות הצבעוניות הן ${fmt(nc.counted_ballots)} הקלפיות שנספרו מתוך ${fmt(nc.roster_ballots)}; קלפיות שטרם נספרו באפור חיוור.`);
         }
-        if (!geoMap || !window.whenMapReady) return;
-        whenMapReady(geoMap, () => {
-            // Read the mode NOW, not at call time: this callback can run
-            // after the style loads, by which point the user may already
+        if (!geoMap) return;
+        const applyUncounted = () => {
+            // Read the mode NOW, not at call time: this can run after
+            // the style settles, by which point the user may already
             // have switched layers — a stale winner-mode call queued
             // before a td-mode call would otherwise resurrect the gray
             // uncounted rings on top of the turnout layer.
@@ -1811,7 +1811,15 @@
                 geoMap.addLayer({ id: 'uncounted-dots', type: 'circle', source: 'uncounted', paint: { 'circle-radius': 4, 'circle-color': '#9aa3af', 'circle-opacity': 0.38, 'circle-stroke-color': '#111827', 'circle-stroke-width': 0.5 } });
             }
             geoMap.setLayoutProperty('uncounted-dots', 'visibility', pts.length ? 'visible' : 'none');
-        });
+        };
+        // NOT whenMapReady/map.once('load'): 'load' fires once in the
+        // map's lifetime, so a call landing while isStyleLoaded() is
+        // momentarily false (mid pan/zoom/data-load) registered a
+        // callback that never ran — the gray dots then stuck in every
+        // layer. Once the source exists we can update immediately;
+        // before that, 'idle' (which refires) is the reliable hook.
+        if (geoMap.getSource('uncounted') || geoMap.isStyleLoaded()) applyUncounted();
+        else { geoMap.once('load', applyUncounted); geoMap.once('idle', applyUncounted); }
     }
     function renderGeomap() {
         if (!document.getElementById('pane-geomap')) return;
