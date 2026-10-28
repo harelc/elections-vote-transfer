@@ -1805,11 +1805,20 @@
             // before a td-mode call would otherwise resurrect the gray
             // uncounted rings on top of the turnout layer.
             const tdNow = geoMode === 'td_turnout' || geoMode === 'td_pace';
-            const pts = partial && !tdNow ? (nc.geo_uncounted || []) : [];
+            // No gray dot where a counted station already sits: hundreds
+            // of uncounted boxes share the exact pin of a counted sibling
+            // (same venue / settlement fallback), and the gray ring then
+            // peeks out from under the coloured dot as if the counted
+            // ballot itself were uncounted.
+            const countedPts = new Set(geoItems.map(it => `${it.origLat.toFixed(5)},${it.origLng.toFixed(5)}`));
+            const pts = (partial && !tdNow ? (nc.geo_uncounted || []) : [])
+                .filter(a => !countedPts.has(`${a[2].toFixed(5)},${a[3].toFixed(5)}`));
             upsertGeoJSON(geoMap, 'uncounted', { type: 'FeatureCollection', features: pts.map(a => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [a[3], a[2]] }, properties: {} })) });
             if (!geoMap.getLayer('uncounted-dots')) {
                 geoMap.addLayer({ id: 'uncounted-dots', type: 'circle', source: 'uncounted', paint: { 'circle-radius': 4, 'circle-color': '#9aa3af', 'circle-opacity': 0.38, 'circle-stroke-color': '#111827', 'circle-stroke-width': 0.5 } });
             }
+            // Under the station dots, so a coloured dot always wins its pin.
+            if (geoMap.getLayer('station-circles')) { try { geoMap.moveLayer('uncounted-dots', 'station-circles'); } catch (e) {} }
             geoMap.setLayoutProperty('uncounted-dots', 'visibility', pts.length ? 'visible' : 'none');
         };
         // NOT whenMapReady/map.once('load'): 'load' fires once in the
