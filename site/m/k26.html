@@ -237,6 +237,7 @@
             // daytime layer during the count.
             const tdDay = await fetch('../data/turnout_day_26.json', F).then(r => r.ok ? r.json() : null).catch(() => null);
             tdDayM = new Map(((tdDay && tdDay.stations) || []).map(a => [a[0] + '|' + a[1], a]));
+            tdNational = (tdDay && tdDay.national) || null;
             if (PREVIEW === 'fullcount' && cc && cc.nowcast) {
                 status = { kind: 'official', ballots: cc.nowcast.roster_ballots, ballots_total: cc.nowcast.roster_ballots, as_of: new Date().toISOString() };
             } else if (PREVIEW && cc && cc.nowcast) {
@@ -304,9 +305,17 @@
                 document.getElementById('count-pct').textContent = pct.toFixed(1) + '%';
                 document.getElementById('count-fill').style.width = pct.toFixed(1) + '%';
                 const upd = status.as_of ? new Date(status.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' }) : '';
+                // Eligible-voter coverage: eligible in the counted boxes
+                // out of every eligible voter known on the roster.
+                const ncE = (cc && cc.nowcast) || {};
+                const countedElig = ncE.counted_eligible || geoRows().reduce((a, r) => a + (r[7] || 0), 0);
+                const rosterElig = ncE.roster_eligible || (tdNational && tdNational.eligible) || 0;
+                const eligTxt = partial && rosterElig > 0
+                    ? ` · ${fmt(countedElig)} / ${fmt(rosterElig)} ${en() ? 'eligible voters in counted ballots' : 'בעלי זכות בקלפיות שנספרו'} (${(100 * countedElig / rosterElig).toFixed(1)}%)` : '';
                 document.getElementById('count-meta').textContent =
                     `${fmt(status.ballots)} / ${fmt(status.ballots_total)} ${en() ? 'ballot boxes' : 'קלפיות'}` +
                     (partial ? ` · ${fmt(status.ballots_total - (status.ballots || 0))} ${en() ? 'remaining' : 'נותרו'}` : '') +
+                    eligTxt +
                     (upd ? ` · ${en() ? 'updated' : 'עודכן'} ${upd}` : '');
             } else cc1.hidden = true;
             // Seats
@@ -486,7 +495,7 @@
         // count, uncounted boxes stay faint gray in every layer.
         // Interaction mirrors m/geomap.html: StationClusterLayer with
         // finger-sized tap targets, cluster zoom, bottom sheets.
-        let ccMap = null, ccLayer = null, geoMode = 'winner', geoPartyIdx = 0, embedRange = null, tdDayM = null;
+        let ccMap = null, ccLayer = null, geoMode = 'winner', geoPartyIdx = 0, embedRange = null, tdDayM = null, tdNational = null;
         const SOCIO_COLORS = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
         function hexRgb(h) {
             if (h && h[0] !== '#') { const m = String(h).match(/\d+/g); if (m) return [+m[0], +m[1], +m[2]]; }

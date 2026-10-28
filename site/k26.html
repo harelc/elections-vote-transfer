@@ -917,8 +917,17 @@
         // sub-50-vote stations dropped by the tsne filter); valid = party sum.
         const eligible = m.stats.totalEligibleCsv || m.stats.totalEligible;
         const cast = m.stats.totalCast || m.stats.totalVoters;
+        // During a partial count the eligible pill must say whose eligible
+        // voters these are: the counted boxes' eligible, out of every
+        // eligible voter known on the roster — the coverage of the count.
+        const ncE = (DATA.cc && DATA.cc.nowcast) || {};
+        const knownEligible = ncE.roster_eligible || (DATA.turnoutDay && DATA.turnoutDay.national && DATA.turnoutDay.national.eligible) || eligible;
+        const countedEligible = ncE.counted_eligible || eligible;
+        const eligItem = K26STATUS.kind === 'partial' && knownEligible > 0
+            ? [`${fmt(countedEligible)} / ${fmt(knownEligible)}`, `${i18n.t('eligible_voters')} ${en() ? 'in counted ballots' : 'בקלפיות שנספרו'} · ${(100 * countedEligible / knownEligible).toFixed(1)}% ${en() ? 'of all eligible voters' : 'מכלל בעלי הזכות'}`]
+            : [fmt(eligible), i18n.t('eligible_voters')];
         const items = [
-            [fmt(eligible), i18n.t('eligible_voters')],
+            eligItem,
             [fmt(cast), i18n.t('voted')], [fmt(valid), i18n.t('k26_valid')],
             [(100*cast/eligible).toFixed(1)+'%', i18n.t('turnout_pct')],
             [fmt(m.stats.totalBallots), i18n.t('k26_ballots_label')], [fmt(m.stats.totalSettlements), i18n.t('k26_settlements_label')],

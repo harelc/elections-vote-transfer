@@ -968,6 +968,13 @@ def nowcast(status, sectors, target_share=None, force=False):
         "mode": mode, "estimator": estimator,
         "rehearsal_target": target_share,
         "counted_ballots": len(counted_rows), "roster_ballots": len(roster),
+        # Eligible-voter coverage of the count so far: eligible voters in
+        # the counted boxes vs every eligible voter on the K26 roster.
+        # Live: sum the counted snapshot's stations (includes counted
+        # boxes with no union-roster row). Rehearsal: the masked subset.
+        "counted_eligible": int(sum((s.get("e") or 0) for s in st26.values())) if mode == "live"
+            else int(sum(float(r.get("k26_eligible") or 0) for r in counted_rows)),
+        "roster_eligible": int(sum(float(r.get("k26_eligible") or 0) for r in roster)),
         "geo_uncounted": geo_uncounted, "geo_counted": geo_counted,
         "matched_ballots": len(matched), "r_squared": round(float(r2), 4),
         "counted_k25_share": round(counted_share, 3), "composition_tvd": round(comp_tvd, 3),
