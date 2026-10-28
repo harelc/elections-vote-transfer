@@ -21,7 +21,7 @@ test("shallow inference", () => {
     name?: string | undefined;
     age?: number | undefined;
     outer?: { inner: string } | undefined;
-    array?: { asdf: string }[] | undefined;
+    array?: { asdf: string }[];
   };
   util.assertEqual<shallow, correct>(true);
 });
@@ -41,7 +41,7 @@ test("deep partial inference", () => {
   asdf.parse("asdf");
   type deep = z.infer<typeof deep>;
   type correct = {
-    array?: { asdf?: string | undefined }[] | undefined;
+    array?: { asdf?: string }[];
     name?: string | undefined;
     age?: number | undefined;
     outer?: { inner?: string | undefined } | undefined;
@@ -118,7 +118,7 @@ test("deep partial inference", () => {
           asdf?: string | undefined;
         }[]
       | undefined;
-    tuple?: [{ value?: string | undefined }] | undefined;
+    tuple?: [{ value?: string }] | undefined;
   };
   util.assertEqual<expected, partialed>(true);
 });
