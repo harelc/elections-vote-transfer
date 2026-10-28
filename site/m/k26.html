@@ -210,7 +210,7 @@
         const CC_FILE = PREVIEW === 'partial17' ? '../data/command_center_26_p17.json'
             : PREVIEW === 'partial12' ? '../data/command_center_26_p12.json'
             : '../data/command_center_26.json';
-        let status = null, results = [], colors = {}, enNames = {}, cc = null, factIdx = 0, factTimer = null, transferData = null, transferAbs = null, sankeyAbsM = false, hemiMode = 'counted', ncModelM = 'abs';
+        let status = null, results = [], colors = {}, enNames = {}, cc = null, factIdx = 0, factTimer = null, transferData = null, transferAbs = null, sankeyAbsM = false, hemiMode = 'forecast', ncModelM = 'abs';
         // Nowcast variant picker: projection = with non-voters,
         // projection_plain = without. One switch drives table,
         // hemicycle forecast and predicted transfers.
@@ -315,11 +315,14 @@
                 : (en() ? 'Seats' : 'מנדטים');
             const totalVotes = results.reduce((a, p) => a + (p.votes || 0), 0);
             renderHemi();
+            // Rows show the same seats as the hemicycle (forecast seats
+            // while the toggle is on forecast), not a second allocation.
+            const sm0 = seatMap();
             document.getElementById('party-rows').innerHTML = results.map(p => `
-                <div class="prow${p.seats ? '' : ' below'}">
+                <div class="prow${sm0[p.name] ? '' : ' below'}">
                     <span class="sw" style="background:${colors[p.name] || '#666'}"></span>
                     <span class="nm"><b>${name(p.name)}</b><span>${fmt(p.votes)} ${en() ? 'votes' : 'קולות'} · ${totalVotes ? (100 * p.votes / totalVotes).toFixed(1) : '0.0'}%</span></span>
-                    <span></span><span class="st">${p.seats || ''}</span>
+                    <span></span><span class="st">${sm0[p.name] || ''}</span>
                 </div>`).join('');
             document.getElementById('bloc-line').textContent = '';
             renderMap();
@@ -334,7 +337,7 @@
         function seatMap() {
             const m = {};
             const ncP0 = cc && cc.nowcast && ncProjM(cc.nowcast);
-            if (hemiMode === 'forecast' && ncP0) {
+            if (hemiMode === 'forecast' && ncP0 && status && status.kind === 'partial') {
                 ncP0.parties.forEach(p => m[p.name] = p.proj_seats ?? Math.round(p.median) ?? 0);
             } else results.forEach(p => m[p.name] = p.seats || 0);
             return m;

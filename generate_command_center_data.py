@@ -720,6 +720,18 @@ def nowcast(status, sectors, target_share=None, force=False):
                 continue
             counted_keys.add(key)
             counted_votes += shares_of(st.get("p") or {}, to_names) * (st.get("v") or 0)
+        if mode == "live":
+            # Canonical counted votes are the CEC ballot-file totals
+            # (wiki_official_results.json, written by k26_live from
+            # ballot26.csv before this generator runs in the refresh).
+            # The roster loop above misses counted boxes with no union
+            # roster row (34 of 908 at the 908-ballot snapshot) and reads
+            # rounded tsne percentages; that put seats_now one seat off
+            # the published counted allocation (e.g. Likud 37 vs 36).
+            wiki26 = (load("wiki_official_results.json", {}) or {}).get("26") or []
+            by_name = {r.get("name"): r.get("votes") for r in wiki26}
+            if by_name:
+                counted_votes = np.array([float(by_name.get(n) or 0.0) for n in to_names])
         # Expected valid votes per uncounted box: its K25 turnout, adjusted by
         # how counted boxes' turnout moved vs their own K25 turnout.
         num = den = 0.0
