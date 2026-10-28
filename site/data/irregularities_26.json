@@ -4,17 +4,17 @@
     "name": "הכנסת ה-26",
     "name_en": "26th Knesset",
     "date": "2026-10-27",
-    "total_ballots": 128,
-    "analyzed_ballots": 125,
-    "irregular_found": 0
+    "total_ballots": 302,
+    "analyzed_ballots": 299,
+    "irregular_found": 1
   },
   "parties": [
     {
       "symbol": "מחל",
       "name": "הליכוד",
       "color": "#2563eb",
-      "votes": 7739,
-      "proportion": "26.44%",
+      "votes": 24929,
+      "proportion": "26.61%",
       "description": "מפלגת הימין הגדולה בישראל, שולטת בפוליטיקה הישראלית מאז 1977",
       "ideology": "ימין, לאומנות, ליברליזם כלכלי",
       "leader": "בנימין נתניהו"
@@ -23,8 +23,8 @@
       "symbol": "דרך",
       "name": "ישר",
       "color": "#eab308",
-      "votes": 5502,
-      "proportion": "18.80%",
+      "votes": 16009,
+      "proportion": "17.09%",
       "description": "ישר! עם איזנקוט לראשות הממשלה. אותיות דרך.",
       "ideology": "מרכז, ממלכתיות, ביטחון",
       "leader": "גדי אייזנקוט"
@@ -33,18 +33,38 @@
       "symbol": "רק",
       "name": "ביחד",
       "color": "#f97316",
-      "votes": 2557,
-      "proportion": "8.74%",
+      "votes": 8368,
+      "proportion": "8.93%",
       "description": "ביחד בראשות נפתלי בנט, רשימה משותפת עם יש עתיד. אותיות רק.",
       "ideology": "מרכז-ימין, ממלכתיות, ליברליזם",
       "leader": "נפתלי בנט"
     },
     {
+      "symbol": "ל",
+      "name": "ישראל ביתנו",
+      "color": "#db2777",
+      "votes": 7143,
+      "proportion": "7.62%",
+      "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר",
+      "ideology": "ימין חילוני, לאומנות, חילוניות",
+      "leader": "אביגדור ליברמן"
+    },
+    {
+      "symbol": "ב",
+      "name": "עוצמה יהודית",
+      "color": "#7f1d1d",
+      "votes": 6799,
+      "proportion": "7.26%",
+      "description": "עוצמה יהודית בראשות איתמר בן גביר. אות ב.",
+      "ideology": "ימין קיצוני, לאומנות",
+      "leader": "איתמר בן גביר"
+    },
+    {
       "symbol": "אמת",
       "name": "הדמוקרטים",
       "color": "#16a34a",
-      "votes": 2524,
-      "proportion": "8.62%",
+      "votes": 5856,
+      "proportion": "6.25%",
       "description": "הדמוקרטים בראשות יאיר גולן, איחוד העבודה ומרצ. אותיות אמת.",
       "ideology": "שמאל-מרכז, סוציאל-דמוקרטיה",
       "leader": "יאיר גולן"
@@ -53,138 +73,128 @@
       "symbol": "ט",
       "name": "הציונות הדתית",
       "color": "#92400e",
-      "votes": 2236,
-      "proportion": "7.64%",
+      "votes": 5750,
+      "proportion": "6.14%",
       "description": "רשימה משותפת של הציונות הדתית וזהות (פייגלין)",
       "ideology": "ימין קיצוני, ציונות דתית, התנחלויות",
       "leader": "בצלאל סמוטריץ׳"
     },
     {
-      "symbol": "ב",
-      "name": "עוצמה יהודית",
-      "color": "#7f1d1d",
-      "votes": 2145,
-      "proportion": "7.33%",
-      "description": "עוצמה יהודית בראשות איתמר בן גביר. אות ב.",
-      "ideology": "ימין קיצוני, לאומנות",
-      "leader": "איתמר בן גביר"
-    },
-    {
-      "symbol": "ל",
-      "name": "ישראל ביתנו",
-      "color": "#db2777",
-      "votes": 1868,
-      "proportion": "6.38%",
-      "description": "מפלגת ימין חילונית, פופולרית בקרב עולים מברית המועצות לשעבר",
-      "ideology": "ימין חילוני, לאומנות, חילוניות",
-      "leader": "אביגדור ליברמן"
-    },
-    {
       "symbol": "שס",
       "name": "ש״ס",
       "color": "#1e3a8a",
-      "votes": 1311,
-      "proportion": "4.48%",
+      "votes": 4979,
+      "proportion": "5.31%",
       "description": "מפלגה חרדית ספרדית-מזרחית, מייצגת את הציבור החרדי הספרדי",
       "ideology": "חרדית ספרדית, שמרנות חברתית, מסורתיות",
       "leader": "אריה דרעי"
     },
     {
-      "symbol": "די",
-      "name": "המילואימניקים והכלכלית",
-      "color": "#9333ea",
-      "votes": 951,
-      "proportion": "3.25%",
-      "description": "המילואימניקים והכלכלית בראשות יועז הנדל וירון זליכה. אותיות די.",
-      "ideology": "מרכז, כלכלה, ממלכתיות",
-      "leader": "יועז הנדל, ירון זליכה"
-    },
-    {
       "symbol": "ג",
       "name": "יהדות התורה",
       "color": "#4b5563",
-      "votes": 850,
-      "proportion": "2.90%",
+      "votes": 4232,
+      "proportion": "4.52%",
       "description": "ברית של אגודת ישראל ודגל התורה, מייצגת את הציבור החרדי האשכנזי",
       "ideology": "חרדית אשכנזית, שמרנות דתית",
       "leader": "יצחק גולדקנופף"
     },
     {
-      "symbol": "ך",
-      "name": "עמך ישראל",
-      "color": "#4d7c0f",
-      "votes": 651,
-      "proportion": "2.22%",
-      "description": "עמך ישראל בראשות עופר וינטר. אות ך.",
-      "ideology": "ימין, ביטחון, שמרנות",
-      "leader": "עופר וינטר"
-    },
-    {
       "symbol": "ודם",
       "name": "הרשימה המשותפת",
       "color": "#0d9488",
-      "votes": 568,
-      "proportion": "1.94%",
+      "votes": 3326,
+      "proportion": "3.55%",
       "description": "חד״ש–תע״ל–בל״ד רצים יחד כרשימה המשותפת. אותיות ודם.",
       "ideology": "",
       "leader": "יוסף ג׳בארין"
     },
     {
+      "symbol": "די",
+      "name": "המילואימניקים והכלכלית",
+      "color": "#9333ea",
+      "votes": 3005,
+      "proportion": "3.21%",
+      "description": "המילואימניקים והכלכלית בראשות יועז הנדל וירון זליכה. אותיות די.",
+      "ideology": "מרכז, כלכלה, ממלכתיות",
+      "leader": "יועז הנדל, ירון זליכה"
+    },
+    {
+      "symbol": "ך",
+      "name": "עמך ישראל",
+      "color": "#4d7c0f",
+      "votes": 1843,
+      "proportion": "1.97%",
+      "description": "עמך ישראל בראשות עופר וינטר. אות ך.",
+      "ideology": "ימין, ביטחון, שמרנות",
+      "leader": "עופר וינטר"
+    },
+    {
       "symbol": "עם",
       "name": "רע״ם",
       "color": "#84cc16",
-      "votes": 143,
-      "proportion": "0.49%",
+      "votes": 616,
+      "proportion": "0.66%",
       "description": "הרשימה הערבית המאוחדת, המפלגה הערבית הראשונה להצטרף לקואליציה",
       "ideology": "ערבי-אסלאמי, פרגמטיזם, שמרנות חברתית",
       "leader": "מנסור עבאס"
     },
     {
-      "symbol": "ני",
-      "name": "נעם",
-      "color": "#be123c",
-      "votes": 62,
-      "proportion": "0.21%",
-      "description": "נעם לישראל בראשות אבי מעוז. אותיות ני. רצה בנפרד אחרי שרצה בתוך הציונות הדתית ב-2022.",
-      "ideology": "ציונות דתית, שמרנות",
-      "leader": "אבי מעוז"
-    },
-    {
       "symbol": "בי",
       "name": "צומת בית ישראל",
       "color": "#08C26B",
-      "votes": 52,
-      "proportion": "0.18%",
+      "votes": 158,
+      "proportion": "0.17%",
       "description": "צומת בית ישראל. אותיות בי.",
       "ideology": "",
       "leader": ""
     },
     {
+      "symbol": "ני",
+      "name": "נעם",
+      "color": "#be123c",
+      "votes": 149,
+      "proportion": "0.16%",
+      "description": "נעם לישראל בראשות אבי מעוז. אותיות ני. רצה בנפרד אחרי שרצה בתוך הציונות הדתית ב-2022.",
+      "ideology": "ציונות דתית, שמרנות",
+      "leader": "אבי מעוז"
+    },
+    {
+      "symbol": "זך",
+      "name": "הציבור החרדי",
+      "color": "#a16207",
+      "votes": 137,
+      "proportion": "0.15%",
+      "description": "הציבור החרדי בראשות מוטי ליטנר. אותיות זך. קולותיה מגיעים מש״ס ומיהדות התורה.",
+      "ideology": "חרדי",
+      "leader": "מוטי ליטנר"
+    },
+    {
       "symbol": "ד",
       "name": "השותפות לכולם",
       "color": "#64748b",
-      "votes": 26,
+      "votes": 82,
       "proportion": "0.09%",
       "description": "השותפות לכולם. אות ד.",
       "ideology": "לאומנות ערבית, שמאל",
       "leader": "סמי אבו שחאדה"
     },
     {
-      "symbol": "זך",
-      "name": "הציבור החרדי",
-      "color": "#a16207",
-      "votes": 19,
+      "symbol": "נר",
+      "name": "צבע שחור",
+      "color": "#4B5694",
+      "votes": 56,
       "proportion": "0.06%",
-      "description": "הציבור החרדי בראשות מוטי ליטנר. אותיות זך. קולותיה מגיעים מש״ס ומיהדות התורה.",
-      "ideology": "חרדי",
-      "leader": "מוטי ליטנר"
+      "description": "צבע שחור. אותיות נר.",
+      "ideology": "רפורמה פוליטית",
+      "leader": "מוש חוג'ה"
     },
     {
       "symbol": "צדק",
       "name": "שרשר",
       "color": "#C4E2F5",
-      "votes": 14,
-      "proportion": "0.05%",
+      "votes": 39,
+      "proportion": "0.04%",
       "description": "שרשר. אותיות צדק.",
       "ideology": "",
       "leader": ""
@@ -193,29 +203,29 @@
       "symbol": "בד",
       "name": "ביחד נצליח",
       "color": "#C90661",
-      "votes": 7,
-      "proportion": "0.02%",
+      "votes": 25,
+      "proportion": "0.03%",
       "description": "ביחד נצליח. אותיות בד.",
       "ideology": "",
       "leader": ""
     },
     {
-      "symbol": "ק",
-      "name": "תקומה",
-      "color": "#6cb334",
-      "votes": 7,
+      "symbol": "פה",
+      "name": "אני ואתה",
+      "color": "#64748b",
+      "votes": 21,
       "proportion": "0.02%",
-      "description": "תקומה. אות ק.",
-      "ideology": "סביבה",
-      "leader": "דרור בן-עמי"
+      "description": "אני ואתה מפלגת העם הישראלית. אותיות פה. יש עתיד רצה בתוך ביחד.",
+      "ideology": "מרכז, ליברליזם, חילוניות",
+      "leader": "יאיר לפיד"
     },
     {
-      "symbol": "נקי",
-      "name": "התיקון לשיטת הבחירות והממשל",
-      "color": "#DEC384",
-      "votes": 5,
+      "symbol": "בקר",
+      "name": "אורות השחר",
+      "color": "#1591DC",
+      "votes": 16,
       "proportion": "0.02%",
-      "description": "התיקון לשיטת הבחירות והממשל. אותיות נקי.",
+      "description": "אורות השחר. אותיות בקר.",
       "ideology": "",
       "leader": ""
     },
@@ -223,98 +233,28 @@
       "symbol": "צף",
       "name": "הפיראטים",
       "color": "#8B639B",
-      "votes": 5,
+      "votes": 16,
       "proportion": "0.02%",
       "description": "הפיראטים. אותיות צף.",
       "ideology": "",
       "leader": ""
     },
     {
-      "symbol": "בקר",
-      "name": "אורות השחר",
-      "color": "#1591DC",
-      "votes": 3,
-      "proportion": "0.01%",
-      "description": "אורות השחר. אותיות בקר.",
-      "ideology": "",
-      "leader": ""
-    },
-    {
-      "symbol": "י",
-      "name": "ישראל תחילה",
-      "color": "#70b9b8",
-      "votes": 3,
-      "proportion": "0.01%",
-      "description": "ישראל תחילה בראשות שרן השכל. אות י.",
-      "ideology": "חילוניות",
-      "leader": "אלי אבידר"
-    },
-    {
-      "symbol": "נץ",
-      "name": "ביטחון אישי",
-      "color": "#FF84BA",
-      "votes": 3,
-      "proportion": "0.01%",
-      "description": "ביטחון אישי. אותיות נץ.",
-      "ideology": "עסקים קטנים",
-      "leader": "יורם מועלמי"
-    },
-    {
-      "symbol": "נר",
-      "name": "צבע שחור",
-      "color": "#4B5694",
-      "votes": 3,
-      "proportion": "0.01%",
-      "description": "צבע שחור. אותיות נר.",
-      "ideology": "רפורמה פוליטית",
-      "leader": "מוש חוג'ה"
-    },
-    {
-      "symbol": "רץ",
-      "name": "הקהל",
-      "color": "#AEEA94",
-      "votes": 3,
-      "proportion": "0.01%",
-      "description": "הקהל. אותיות רץ.",
-      "ideology": "",
-      "leader": ""
-    },
-    {
-      "symbol": "ה",
-      "name": "גן עדן",
-      "color": "#D10056",
-      "votes": 2,
-      "proportion": "0.01%",
-      "description": "גן עדן. אות ה.",
-      "ideology": "",
-      "leader": ""
-    },
-    {
-      "symbol": "ז",
-      "name": "בטח",
-      "color": "#ffde15",
-      "votes": 2,
-      "proportion": "0.01%",
-      "description": "בטח – בטחון חברתי. אות ז.",
-      "ideology": "חברתי",
-      "leader": "וג'די טאהר"
-    },
-    {
-      "symbol": "זץ",
-      "name": "ברית עולם",
-      "color": "#2D0000",
-      "votes": 2,
-      "proportion": "0.01%",
-      "description": "ברית עולם. אותיות זץ.",
-      "ideology": "ימין לאומי",
-      "leader": "משה גרין"
+      "symbol": "ק",
+      "name": "תקומה",
+      "color": "#6cb334",
+      "votes": 16,
+      "proportion": "0.02%",
+      "description": "תקומה. אות ק.",
+      "ideology": "סביבה",
+      "leader": "דרור בן-עמי"
     },
     {
       "symbol": "קה",
       "name": "קול הנשים",
       "color": "#70FFD2",
-      "votes": 2,
-      "proportion": "0.01%",
+      "votes": 16,
+      "proportion": "0.02%",
       "description": "קול הנשים. אותיות קה.",
       "ideology": "",
       "leader": ""
@@ -323,52 +263,161 @@
       "symbol": "קך",
       "name": "סדר-חדש",
       "color": "#F2A900",
-      "votes": 2,
+      "votes": 14,
       "proportion": "0.01%",
       "description": "סדר-חדש. אותיות קך.",
       "ideology": "גיל שלישי",
       "leader": "אופק אביטל"
     },
     {
+      "symbol": "רץ",
+      "name": "הקהל",
+      "color": "#AEEA94",
+      "votes": 12,
+      "proportion": "0.01%",
+      "description": "הקהל. אותיות רץ.",
+      "ideology": "",
+      "leader": ""
+    },
+    {
+      "symbol": "נקי",
+      "name": "התיקון לשיטת הבחירות והממשל",
+      "color": "#DEC384",
+      "votes": 11,
+      "proportion": "0.01%",
+      "description": "התיקון לשיטת הבחירות והממשל. אותיות נקי.",
+      "ideology": "",
+      "leader": ""
+    },
+    {
       "symbol": "קץ",
       "name": "משפט צדק",
       "color": "#FFEDB9",
-      "votes": 2,
+      "votes": 11,
       "proportion": "0.01%",
       "description": "משפט צדק. אותיות קץ.",
       "ideology": "חירות",
       "leader": "צביקה גרנות"
     },
     {
-      "symbol": "יק",
-      "name": "גה\"ת",
-      "color": "#FFC0DE",
-      "votes": 1,
-      "proportion": "0.00%",
-      "description": "גה\"ת. אותיות יק.",
-      "ideology": "נוצרי-יהודי",
-      "leader": "דניס ליפקין"
+      "symbol": "ז",
+      "name": "בטח",
+      "color": "#ffde15",
+      "votes": 9,
+      "proportion": "0.01%",
+      "description": "בטח – בטחון חברתי. אות ז.",
+      "ideology": "חברתי",
+      "leader": "וג'די טאהר"
+    },
+    {
+      "symbol": "י",
+      "name": "ישראל תחילה",
+      "color": "#70b9b8",
+      "votes": 9,
+      "proportion": "0.01%",
+      "description": "ישראל תחילה בראשות שרן השכל. אות י.",
+      "ideology": "חילוניות",
+      "leader": "אלי אבידר"
+    },
+    {
+      "symbol": "ה",
+      "name": "גן עדן",
+      "color": "#D10056",
+      "votes": 6,
+      "proportion": "0.01%",
+      "description": "גן עדן. אות ה.",
+      "ideology": "",
+      "leader": ""
     },
     {
       "symbol": "נף",
       "name": "שמע",
       "color": "#C9CAAC",
-      "votes": 1,
-      "proportion": "0.00%",
+      "votes": 6,
+      "proportion": "0.01%",
       "description": "שמע. אותיות נף.",
       "ideology": "שמרני דתי",
       "leader": "נפתלי גולדמן"
     },
     {
-      "symbol": "פה",
-      "name": "אני ואתה",
-      "color": "#64748b",
-      "votes": 1,
-      "proportion": "0.00%",
-      "description": "אני ואתה מפלגת העם הישראלית. אותיות פה. יש עתיד רצה בתוך ביחד.",
-      "ideology": "מרכז, ליברליזם, חילוניות",
-      "leader": "יאיר לפיד"
+      "symbol": "נץ",
+      "name": "ביטחון אישי",
+      "color": "#FF84BA",
+      "votes": 6,
+      "proportion": "0.01%",
+      "description": "ביטחון אישי. אותיות נץ.",
+      "ideology": "עסקים קטנים",
+      "leader": "יורם מועלמי"
+    },
+    {
+      "symbol": "זץ",
+      "name": "ברית עולם",
+      "color": "#2D0000",
+      "votes": 5,
+      "proportion": "0.01%",
+      "description": "ברית עולם. אותיות זץ.",
+      "ideology": "ימין לאומי",
+      "leader": "משה גרין"
+    },
+    {
+      "symbol": "יק",
+      "name": "גה\"ת",
+      "color": "#FFC0DE",
+      "votes": 5,
+      "proportion": "0.01%",
+      "description": "גה\"ת. אותיות יק.",
+      "ideology": "נוצרי-יהודי",
+      "leader": "דניס ליפקין"
     }
   ],
-  "irregularities": []
+  "irregularities": [
+    {
+      "id": "אשקלון_68.0",
+      "settlement": "אשקלון",
+      "settlement_code": 7100,
+      "ballot": "68.0",
+      "eligible": 496,
+      "voted": 292,
+      "valid": 286,
+      "invalid": 6,
+      "votes": {
+        "אמת": 1,
+        "ב": 25,
+        "בי": 14,
+        "ג": 4,
+        "ד": 1,
+        "די": 6,
+        "דרך": 11,
+        "ודם": 1,
+        "ט": 14,
+        "ל": 25,
+        "מחל": 154,
+        "צף": 2,
+        "רק": 6,
+        "שס": 22
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 14,
+              "expected_votes": "0.9",
+              "proportion": "4.90%",
+              "expected_share": "0.300%",
+              "ratio": ">10x",
+              "z_score": "14.2",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    }
+  ]
 }
