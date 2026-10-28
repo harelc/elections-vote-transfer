@@ -511,6 +511,7 @@
                 <div class="stage-tabs" role="tablist">
                     <button class="pane-btn stage-tab" data-stage="nowcast" id="stage-tab-nowcast" data-i18n="k26_nowcast_pane" hidden>תחזית הקלפיות שטרם נספרו</button>
                     <button class="pane-btn gold stage-tab" data-stage="sankey" data-i18n="k26_sankey_pane">נדידת קולות 25 ← 26</button>
+                    <button class="pane-btn stage-tab" data-stage="blocs" data-i18n="k26_blocs_pane">גושים 25 ← 26</button>
                     <!-- Ballot-distribution (t-SNE) stage pill hidden 2026-10-24; panel + renderTsne() kept — remove `hidden` to bring it back -->
                     <button class="pane-btn stage-tab" data-stage="tsne" data-i18n="k26_tsne_pane" hidden>התפלגות קלפיות</button>
                     <a class="full-view-cta" id="stage-full-link" href="sankey.html" data-i18n="k26_open_full" style="margin-inline-start:auto">לתצוגה המלאה ↗</a>
@@ -526,6 +527,19 @@
                     </div>
                     <button class="explainer-cta" id="sankey-explainer-open" data-i18n="k26_sankey_explainer">📘 איך מחשבים את מעברי הקולות? להסבר המונפש</button>
                     <div id="sankey-mini"></div>
+                </div>
+                <div class="stage-panel" id="panel-blocs" hidden>
+                    <div class="pane-note"><span data-i18n="k26_blocs_note"></span> · <span id="blocs-r2"></span></div>
+                    <div class="td-tabs" id="blocs-abs-toggle" style="margin:.35rem 0">
+                        <button class="pane-btn gold" id="blocs-abs-off"></button>
+                        <button class="pane-btn" id="blocs-abs-on"></button>
+                        <button class="pane-btn" id="blocs-export" data-i18n="export_png" style="margin-inline-start:auto">📷 ייצוא PNG</button>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:0 58px;margin-top:.4rem">
+                        <span style="font-weight:700;color:var(--text-primary)" data-i18n="k26_blocs_from">הכנסת ה־25 · נובמבר 2022</span>
+                        <span style="font-weight:700;color:var(--text-primary)" data-i18n="k26_blocs_to">הכנסת ה־26 · אוקטובר 2026</span>
+                    </div>
+                    <div id="blocs-diagram"></div>
                 </div>
                 <div class="stage-panel" id="panel-tsne" hidden style="position:relative">
                     <div class="pane-note" data-i18n="k26_tsne_note"></div>
@@ -870,6 +884,11 @@
         const skOff = document.getElementById('sankey-abs-off'), skOn = document.getElementById('sankey-abs-on');
         if (skOff) skOff.addEventListener('click', () => { sankeyAbs = false; renderSankey(); });
         if (skOn) skOn.addEventListener('click', () => { sankeyAbs = true; renderSankey(); });
+        const blOff = document.getElementById('blocs-abs-off'), blOn = document.getElementById('blocs-abs-on');
+        if (blOff) blOff.addEventListener('click', () => { blocsAbs = false; renderBlocs(); });
+        if (blOn) blOn.addEventListener('click', () => { blocsAbs = true; renderBlocs(); });
+        const blExport = document.getElementById('blocs-export');
+        if (blExport) blExport.addEventListener('click', exportBlocsPNG);
         // Preview: set the partial status BEFORE the first render so the
         // geomap builds its coloured layer from counted ballots only.
         if (PREVIEW_PARTIAL && DATA.cc && DATA.cc.nowcast) {
@@ -897,6 +916,15 @@
             }
         }
         renderAll();
+        // Deep link: k26.html?stage=blocs (or sankey/tsne/nowcast) opens
+        // that stage directly and counts as a user choice.
+        const urlStage = new URLSearchParams(window.location.search).get('stage');
+        if (urlStage && document.getElementById('panel-' + urlStage)) {
+            DATA._userStage = true;
+            activateStage(urlStage);
+            const pane = document.getElementById('pane-stage');
+            if (pane) pane.scrollIntoView({ block: 'start' });
+        }
         if (PREVIEW_PARTIAL && DATA.cc && DATA.cc.nowcast) {
             renderCountStatus(); renderNowcast();
         }
@@ -1257,6 +1285,163 @@
     // source); this picks the live variant. projection = abstention
     // model, projection_plain = party-only model.
     function ncProj(nc) { nc = nc || (DATA.cc && DATA.cc.nowcast); if (!nc) return null; return (ncModel === 'plain' && nc.projection_plain) || nc.projection || null; }
+    // Political spectrum order (right → left, Arab parties, non-voters
+    // last) — mirrors sankey.js; columns stack by bloc, not by size.
+    const POLITICAL_ORDER = [
+        'נעם', 'עוצמה יהודית', 'הציונות הדתית', 'הבית היהודי', 'הימין החדש',
+        'ימינה', 'האיחוד הלאומי', 'עמך ישראל', 'הליכוד', 'הליכוד ישראל ביתנו',
+        'ישראל ביתנו', 'ישראל בעלייה', 'ש״ס', 'יהדות התורה', 'הציבור החרדי',
+        'ביחד', 'ישר', 'יש עתיד', 'תקווה חדשה', 'המחנה הממלכתי', 'כחול לבן',
+        'כולנו', 'המילואימניקים והכלכלית', 'קדימה', 'התנועה', 'שינוי', 'גיל',
+        'הגמלאים', 'הדמוקרטים', 'המחנה הציוני', 'העבודה', 'עם אחד', 'מרצ',
+        'הרשימה המשותפת', 'חד״ש-תע״ל', 'חד״ש', 'רע״ם', 'בל״ד',
+        'לא הצביעו',
+    ];
+    const BLOC_RANK = { 'ימין': 0, 'Right': 0, 'מרכז־שמאל': 1, 'Center–Left': 1, 'Center-Left': 1, 'מפלגות ערביות': 2, 'Arab parties': 2, 'לא הצביעו': 3, "Didn't vote": 3 };
+    function politicalRank(name) {
+        if (BLOC_RANK[name] != null) return -100 + BLOC_RANK[name];
+        const i = POLITICAL_ORDER.indexOf(name);
+        return i === -1 ? POLITICAL_ORDER.length - 1.5 : i;
+    }
+    // ── Bloc-level Sankey: the same transfers grouped into Right /
+    // Center–Left / Arab parties (+ non-voters with the abstention file).
+    let blocsAbs = false;
+    const BLOC_DEFS = [
+        { id: 'right', he: 'ימין', en: 'Right', color: '#3b82f6' },
+        { id: 'center', he: 'מרכז־שמאל', en: 'Center–Left', color: '#f0b429' },
+        { id: 'arab', he: 'מפלגות ערביות', en: 'Arab parties', color: '#0d9488' },
+        { id: 'dnv', he: 'לא הצביעו', en: "Didn't vote", color: '#6b7280' },
+    ];
+    const BLOC_OF = {
+        'הליכוד': 'right', 'הליכוד ישראל ביתנו': 'right', 'עוצמה יהודית': 'right', 'הציונות הדתית': 'right',
+        'הבית היהודי': 'right', 'ימינה': 'right', 'הימין החדש': 'right', 'האיחוד הלאומי': 'right',
+        'עמך ישראל': 'right', 'נעם': 'right', 'ישראל ביתנו': 'right', 'ישראל בעלייה': 'right',
+        'ש״ס': 'right', 'יהדות התורה': 'right', 'הציבור החרדי': 'right',
+        'ישר': 'center', 'ביחד': 'center', 'הדמוקרטים': 'center', 'המילואימניקים והכלכלית': 'center',
+        'יש עתיד': 'center', 'המחנה הממלכתי': 'center', 'כחול לבן': 'center', 'כולנו': 'center',
+        'קדימה': 'center', 'התנועה': 'center', 'תקווה חדשה': 'center', 'שינוי': 'center',
+        'המחנה הציוני': 'center', 'העבודה': 'center', 'עם אחד': 'center', 'מרצ': 'center',
+        'הרשימה המשותפת': 'arab', 'חד״ש-תע״ל': 'arab', 'חד״ש': 'arab', 'רע״ם': 'arab', 'בל״ד': 'arab',
+        'לא הצביעו': 'dnv',
+    };
+    function buildBlocData(src) {
+        if (!src) return null;
+        const label = b => en() ? b.en : b.he;
+        const mkNodes = list => {
+            const sums = {};
+            (list || []).forEach(n => { const b = BLOC_OF[n.name]; if (b) sums[b] = (sums[b] || 0) + (n.votes || 0); });
+            return BLOC_DEFS.filter(b => sums[b.id]).map(b => ({ name: label(b), votes: Math.round(sums[b.id]), color: b.color, symbol: '' }));
+        };
+        const flow = {};
+        (src.transfers || []).forEach(tr => {
+            const sb = BLOC_OF[tr.source], tb = BLOC_OF[tr.target];
+            if (!sb || !tb || !tr.votes) return;
+            const k = sb + '>' + tb;
+            flow[k] = (flow[k] || 0) + tr.votes;
+        });
+        const nameOf = id => label(BLOC_DEFS.find(b => b.id === id));
+        const transfers = Object.entries(flow).map(([k, votes]) => {
+            const [s, t] = k.split('>');
+            return { source: nameOf(s), target: nameOf(t), votes: Math.round(votes) };
+        }).filter(tr => tr.votes > 0);
+        const nodes_from = mkNodes(src.nodes_from), nodes_to = mkNodes(src.nodes_to);
+        if (!nodes_from.length || !nodes_to.length || !transfers.length) return null;
+        return { nodes_from, nodes_to, transfers, stats: src.stats };
+    }
+    function renderBlocs() {
+        const panel = document.getElementById('panel-blocs');
+        if (!panel || panel.hidden || !DATA) return;
+        const partial = K26STATUS && K26STATUS.kind === 'partial';
+        let src, note = '';
+        if (partial) {
+            const P = ncProj();
+            src = P && ((blocsAbs && P.projected_sankey_abstention) || P.projected_sankey);
+            note = en() ? 'Predicted (nowcast)' : 'חזוי (תחזית)';
+        } else {
+            src = (blocsAbs && DATA.transferAbs) || DATA.transfer;
+        }
+        const bOff = document.getElementById('blocs-abs-off'), bOn = document.getElementById('blocs-abs-on');
+        if (bOff && bOn) {
+            bOff.textContent = en() ? 'Without non-voters' : 'ללא לא־הצביעו';
+            bOn.textContent = en() ? 'With non-voters' : 'עם לא־הצביעו';
+            bOff.classList.toggle('gold', !blocsAbs);
+            bOn.classList.toggle('gold', blocsAbs);
+            bOn.disabled = partial ? !(ncProj() && ncProj().projected_sankey_abstention) : !DATA.transferAbs;
+        }
+        const r2el = document.getElementById('blocs-r2');
+        const data = buildBlocData(src);
+        if (r2el) { const r2 = src && src.stats && src.stats.r_squared; r2el.textContent = [note, r2 != null ? 'R² = ' + r2 : ''].filter(Boolean).join(' · '); }
+        if (!data) { document.getElementById('blocs-diagram').innerHTML = ''; return; }
+        renderSankey(data, 'blocs-diagram', 520);
+    }
+    // PNG export for the bloc Sankey, styled after sankey.html's export:
+    // header (title + side labels) + diagram + credit footer, ×2 scale.
+    function exportBlocsPNG() {
+        const svgElement = document.querySelector('#blocs-diagram svg');
+        if (!svgElement) return;
+        const svgClone = svgElement.cloneNode(true);
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('width', '100%'); rect.setAttribute('height', '100%');
+        rect.setAttribute('fill', '#16181d');
+        svgClone.insertBefore(rect, svgClone.firstChild);
+        // Node labels overflow the SVG viewport in-page (visible there,
+        // clipped in a raster) — widen the clone's viewBox to keep them.
+        const _ow = parseInt(svgElement.getAttribute('width') || svgElement.clientWidth);
+        const _oh = parseInt(svgElement.getAttribute('height') || svgElement.clientHeight);
+        svgClone.setAttribute('viewBox', `-100 0 ${_ow + 200} ${_oh}`);
+        svgClone.setAttribute('width', _ow + 200);
+        svgClone.setAttribute('height', _oh);
+        const svgWidth = parseInt(svgElement.getAttribute('width') || svgElement.clientWidth);
+        const svgHeight = parseInt(svgElement.getAttribute('height') || svgElement.clientHeight);
+        const headerHeight = 74, footerHeight = 46, scale = 2;
+        // Node labels overflow the SVG box in-page; pad the export so
+        // they are not clipped at the edges.
+        const padX = 100;
+        const W = svgWidth + padX * 2;
+        const totalHeight = svgHeight + headerHeight + footerHeight;
+        const canvas = document.createElement('canvas');
+        canvas.width = W * scale; canvas.height = totalHeight * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.scale(scale, scale);
+        ctx.fillStyle = '#16181d'; ctx.fillRect(0, 0, W, totalHeight);
+        ctx.fillStyle = '#1e212a'; ctx.fillRect(0, 0, W, headerHeight);
+        const rtl = i18n.isRTL();
+        ctx.fillStyle = '#f3f5f8';
+        ctx.font = 'bold 19px Heebo, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(en() ? 'Vote flows between blocs: Knesset 25 → Knesset 26' : 'מעברי קולות בין גושים: הכנסת ה־25 ← הכנסת ה־26', W / 2, 30);
+        ctx.font = '600 13px Heebo, sans-serif';
+        ctx.fillStyle = '#c8ceda';
+        // Side labels sit over their columns: in RTL the K25 (from)
+        // column is on the right, in LTR on the left.
+        ctx.textAlign = rtl ? 'right' : 'left';
+        ctx.fillText(i18n.t('k26_blocs_from'), rtl ? W - padX - 58 : padX + 58, 56);
+        ctx.textAlign = rtl ? 'left' : 'right';
+        ctx.fillText(i18n.t('k26_blocs_to'), rtl ? padX + 58 : W - padX - 58, 56);
+        const svgData = new XMLSerializer().serializeToString(svgClone);
+        const url = URL.createObjectURL(new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' }));
+        const img = new Image();
+        img.onload = () => {
+            ctx.drawImage(img, 0, headerHeight, W, svgHeight);
+            URL.revokeObjectURL(url);
+            const footerY = totalHeight - footerHeight;
+            ctx.fillStyle = '#272b36'; ctx.fillRect(0, footerY, W, footerHeight);
+            ctx.strokeStyle = '#3a4050'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, footerY); ctx.lineTo(W, footerY); ctx.stroke();
+            ctx.fillStyle = '#f3f5f8';
+            ctx.font = 'bold 13px Heebo, sans-serif';
+            ctx.textAlign = rtl ? 'right' : 'left';
+            ctx.fillText(i18n.t('watermark_created'), rtl ? W - 15 : 15, footerY + 20);
+            ctx.fillStyle = '#939aab';
+            ctx.font = '11px Heebo, sans-serif';
+            ctx.fillText('https://kolot-nodedim.netlify.app/k26.html' + (blocsAbs ? ' · ' + (en() ? 'incl. non-voters' : 'כולל לא־הצביעו') : ''), rtl ? W - 15 : 15, footerY + 37);
+            const link = document.createElement('a');
+            link.download = 'blocs-25-to-26' + (blocsAbs ? '-with-nonvoters' : '') + '.png';
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        };
+        img.src = url;
+    }
     function renderSankey(transferData, elId, height) {
         transferData = transferData || DATA.transfer;
         elId = elId || 'sankey-mini'; height = height || 1060;
@@ -1294,7 +1479,9 @@
         if (rtl) graph.nodes.forEach(n => { const x0 = innerW - n.x1; n.x1 = innerW - n.x0; n.x0 = x0; });
         // normalizeColumns (from sankey.js): both columns fill the same vertical extent
         ['from', 'to'].forEach(side => {
-            const col = graph.nodes.filter(n => n.side === side).sort((a, b) => (b.votes || 0) - (a.votes || 0));
+            const col = graph.nodes.filter(n => n.side === side).sort((a, b) =>
+                (politicalRank(a.name) - politicalRank(b.name)) ||
+                ((b.votes || b.value || 0) - (a.votes || a.value || 0)));
             const totalVotes = d3.sum(col, n => n.votes || 1), pad = 10, avail = innerH - (col.length - 1) * pad;
             let y = 0;
             col.forEach(n => { const h = Math.max(2, ((n.votes || 1) / totalVotes) * avail); n.y0 = y; n.y1 = y + h; y += h + pad; });
@@ -3025,9 +3212,9 @@
             settleBlock(en() ? 'Most eligible voters still to vote' : 'הכי הרבה בעלי זכות שטרם הצביעו', S.most_remaining, r => fmt(r.remaining || 0));
     }
 
-    function renderAll() { renderProvenance(); renderCountStatus(); renderStats(); renderVotes(); renderBubble(); renderTurnout(); renderSuspects(); renderSankey(); renderGeomap(); renderTsne(); renderDhondt(); renderExtras(); renderTurnoutDay(); }
+    function renderAll() { renderProvenance(); renderCountStatus(); renderStats(); renderVotes(); renderBubble(); renderTurnout(); renderSuspects(); renderSankey(); renderBlocs(); renderGeomap(); renderTsne(); renderDhondt(); renderExtras(); renderTurnoutDay(); }
 
-    const STAGE_FULL = { sankey:'sankey.html', tsne:'tsne.html', dhondt:'dhondt.html' };
+    const STAGE_FULL = { sankey:'sankey.html', blocs:'sankey.html', tsne:'tsne.html', dhondt:'dhondt.html' };
     function openDhondtModal() {
         const m = document.getElementById('dhondt-modal');
         if (!m) return;
@@ -3056,18 +3243,19 @@
         const m = document.getElementById('dhondt-modal');
         if (m) m.hidden = true;
         // gold returns to whichever stage panel is actually visible
-        const vis = ['nowcast', 'sankey', 'tsne'].find(s => { const p = document.getElementById('panel-' + s); return p && !p.hidden; }) || 'sankey';
+        const vis = ['nowcast', 'sankey', 'blocs', 'tsne'].find(s => { const p = document.getElementById('panel-' + s); return p && !p.hidden; }) || 'sankey';
         document.querySelectorAll('.stage-tab').forEach(b => b.classList.toggle('gold', b.dataset.stage === vis));
     }
     function activateStage(stage) {
         if (stage === 'dhondt') { openDhondtModal(); return; }
         document.querySelectorAll('.stage-tab').forEach(b => b.classList.toggle('gold', b.dataset.stage === stage));
-        ['nowcast','sankey','tsne','dhondt'].forEach(s => { const p = document.getElementById('panel-' + s); if (p) p.hidden = s !== stage; });
+        ['nowcast','sankey','blocs','tsne','dhondt'].forEach(s => { const p = document.getElementById('panel-' + s); if (p) p.hidden = s !== stage; });
         const link = document.getElementById('stage-full-link');
         if (STAGE_FULL[stage]) { link.style.display = ''; link.href = STAGE_FULL[stage]; } else { link.style.display = 'none'; }
         if (!DATA) return;
         if (stage === 'nowcast') renderNcFlows();
         if (stage === 'sankey') renderSankey();
+        if (stage === 'blocs') renderBlocs();
         if (stage === 'tsne') renderTsne();
         if (stage === 'dhondt') renderDhondt();
     }
@@ -3095,7 +3283,7 @@
         document.getElementById(btn.dataset.expand).classList.toggle('expanded');
         setTimeout(()=>{ if (DATA) { const fl=document.getElementById('nc-flows-diagram'); if (fl && !document.getElementById('panel-nowcast').hidden) { fl.innerHTML=''; renderNcFlows(); } if (!document.getElementById('panel-sankey').hidden) renderSankey(); renderGeomap(); renderTsne(); } }, 60);
     }));
-    let rz; window.addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(!DATA) return; const fl=document.getElementById('nc-flows-diagram'); if (fl && !document.getElementById('panel-nowcast').hidden) { fl.innerHTML=''; renderNcFlows(); } const ps=document.getElementById('panel-sankey'); if (ps && !ps.hidden) renderSankey(); renderGeomap(); if(!document.getElementById('panel-tsne').hidden) renderTsne(); }, 200); });
+    let rz; window.addEventListener('resize', ()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(!DATA) return; const fl=document.getElementById('nc-flows-diagram'); if (fl && !document.getElementById('panel-nowcast').hidden) { fl.innerHTML=''; renderNcFlows(); } const ps=document.getElementById('panel-sankey'); if (ps && !ps.hidden) renderSankey(); const pb=document.getElementById('panel-blocs'); if (pb && !pb.hidden) renderBlocs(); renderGeomap(); if(!document.getElementById('panel-tsne').hidden) renderTsne(); }, 200); });
     window.addEventListener('langchange', ()=>{ if (DATA) renderAll(); });
     // Keep the "data as of ... (x min ago)" stamp honest while the page sits open.
     setInterval(() => { if (DATA && TURNOUT_ACTIVE) renderTurnoutDay(); }, 60000);

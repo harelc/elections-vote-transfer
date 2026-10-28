@@ -32,6 +32,24 @@ const INFO_OVERRIDES = {
     'נעם': { ideology: 'ציונות דתית, שמרנות', founded: 2019, description: 'נעם בראשות אבי מעוז. ב-2022 רצה בתוך הציונות הדתית, וב-2026 רצה בנפרד' },
 };
 
+// Political spectrum order (right → left, then Arab parties, non-voters
+// last). Columns are stacked in this order instead of by size so that
+// flows stay within neighbouring blocs and link crossings are minimised.
+const POLITICAL_ORDER = [
+    'נעם', 'עוצמה יהודית', 'הציונות הדתית', 'הבית היהודי', 'הימין החדש',
+    'ימינה', 'האיחוד הלאומי', 'עמך ישראל', 'הליכוד', 'הליכוד ישראל ביתנו',
+    'ישראל ביתנו', 'ישראל בעלייה', 'ש״ס', 'יהדות התורה', 'הציבור החרדי',
+    'ביחד', 'ישר', 'יש עתיד', 'תקווה חדשה', 'המחנה הממלכתי', 'כחול לבן',
+    'כולנו', 'המילואימניקים והכלכלית', 'קדימה', 'התנועה', 'שינוי', 'גיל',
+    'הגמלאים', 'הדמוקרטים', 'המחנה הציוני', 'העבודה', 'עם אחד', 'מרצ',
+    'הרשימה המשותפת', 'חד״ש-תע״ל', 'חד״ש', 'רע״ם', 'בל״ד',
+    'לא הצביעו',
+];
+function politicalRank(name) {
+    const i = POLITICAL_ORDER.indexOf(name);
+    return i === -1 ? POLITICAL_ORDER.length - 1.5 : i; // unknown: just above non-voters
+}
+
 function applyColorOverrides(nodes) {
     nodes.forEach(n => {
         if (COLOR_OVERRIDES[n.name]) n.color = COLOR_OVERRIDES[n.name];
@@ -969,8 +987,11 @@ class VoteTransferSankey {
             const nodes = sides[side];
             if (!nodes.length) continue;
 
-            // Sort by votes descending
-            nodes.sort((a, b) => (b.votes || 0) - (a.votes || 0));
+            // Political order (right → left), size only as tie-break —
+            // keeps bloc-internal flows adjacent and minimises crossings.
+            nodes.sort((a, b) =>
+                (politicalRank(a.name) - politicalRank(b.name)) ||
+                ((b.votes || 0) - (a.votes || 0)));
 
             const totalVotes = d3.sum(nodes, n => n.votes || 1);
             const totalPadding = (nodes.length - 1) * nodePad;

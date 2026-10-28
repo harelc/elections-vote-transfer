@@ -55,10 +55,16 @@
 
         .transition-pill .arrow { opacity: 0.5; font-size: 0.6rem; }
 
-        /* Sankey area */
+        /* Sankey area — vertically scrollable so a tall chart is never
+           trapped beneath the screen on small phones */
+        #main-area {
+            overflow-y: auto;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
         #sankey-chart {
             width: 100%;
-            height: 100%;
+            display: block;
         }
 
         .sankey-link {
@@ -197,6 +203,23 @@
     </nav>
 
     <script>
+    // Political spectrum order (right → left, Arab parties, non-voters
+    // last) — mirrors sankey.js so columns stack by bloc, not by size.
+    const POLITICAL_ORDER = [
+        'נעם', 'עוצמה יהודית', 'הציונות הדתית', 'הבית היהודי', 'הימין החדש',
+        'ימינה', 'האיחוד הלאומי', 'עמך ישראל', 'הליכוד', 'הליכוד ישראל ביתנו',
+        'ישראל ביתנו', 'ישראל בעלייה', 'ש״ס', 'יהדות התורה', 'הציבור החרדי',
+        'ביחד', 'ישר', 'יש עתיד', 'תקווה חדשה', 'המחנה הממלכתי', 'כחול לבן',
+        'כולנו', 'המילואימניקים והכלכלית', 'קדימה', 'התנועה', 'שינוי', 'גיל',
+        'הגמלאים', 'הדמוקרטים', 'המחנה הציוני', 'העבודה', 'עם אחד', 'מרצ',
+        'הרשימה המשותפת', 'חד״ש-תע״ל', 'חד״ש', 'רע״ם', 'בל״ד',
+        'לא הצביעו',
+    ];
+    function politicalRank(name) {
+        const i = POLITICAL_ORDER.indexOf(name);
+        return i === -1 ? POLITICAL_ORDER.length - 1.5 : i;
+    }
+
     class MobileSankey {
         constructor() {
             this.currentTransition = (typeof i18n !== 'undefined' && i18n.SHOW_E26) ? '25_to_26' : '24_to_25';
@@ -349,8 +372,12 @@
 
         render() {
             const container = document.getElementById('main-area');
+            container.scrollTop = 0;
             const width = container.clientWidth;
-            const height = container.clientHeight;
+            // Minimum height so every node gets a legible slot; the area
+            // scrolls vertically when this exceeds the visible height.
+            const maxNodes = Math.max(this.data.nodes_from.length, this.data.nodes_to.length);
+            const height = Math.max(container.clientHeight, maxNodes * 38 + 20);
 
             const margin = { top: 10, right: 45, bottom: 10, left: 45 };
             const innerWidth = width - margin.left - margin.right;
@@ -413,6 +440,38 @@
                 const x1 = innerWidth - node.x0;
                 node.x0 = x0;
                 node.x1 = x1;
+            });
+
+            // Restack both columns in political order (not by size),
+            // each filling the full height — same normalisation as the
+            // desktop sankey.js, minimising link crossings.
+            ['from', 'to'].forEach(side => {
+                const col = graph.nodes.filter(n => n.side === side);
+                col.sort((a, b) =>
+                    (politicalRank(a.name) - politicalRank(b.name)) ||
+                    ((b.value || 0) - (a.value || 0)));
+                const total = d3.sum(col, n => n.value || 1);
+                const pad = 8, avail = innerHeight - (col.length - 1) * pad;
+                let y = 0;
+                col.forEach(n => {
+                    const h = Math.max(2, ((n.value || 1) / total) * avail);
+                    n.y0 = y; n.y1 = y + h; y += h + pad;
+                });
+            });
+            graph.nodes.forEach(node => {
+                const nodeH = node.y1 - node.y0;
+                if (node.sourceLinks && node.sourceLinks.length) {
+                    const tot = d3.sum(node.sourceLinks, l => l.value);
+                    node.sourceLinks.sort((a, b) => ((a.target.y0 + a.target.y1) / 2) - ((b.target.y0 + b.target.y1) / 2));
+                    let sy = node.y0;
+                    node.sourceLinks.forEach(l => { l.width = Math.max(0.5, tot > 0 ? (l.value / tot) * nodeH : 0); l.y0 = sy + l.width / 2; sy += l.width; });
+                }
+                if (node.targetLinks && node.targetLinks.length) {
+                    const tot = d3.sum(node.targetLinks, l => l.value);
+                    node.targetLinks.sort((a, b) => ((a.source.y0 + a.source.y1) / 2) - ((b.source.y0 + b.source.y1) / 2));
+                    let ty = node.y0;
+                    node.targetLinks.forEach(l => { l.width = Math.max(0.5, tot > 0 ? (l.value / tot) * nodeH : 0); l.y1 = ty + l.width / 2; ty += l.width; });
+                }
             });
 
             // Draw links
