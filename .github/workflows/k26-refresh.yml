@@ -160,7 +160,7 @@ jobs:
               proceed, reason = False, "no counted ballots yet"
           elif dispatch_sha and dispatch_sha != sha:
               proceed, reason = False, "file moved since the poller accepted it; next run takes the new one"
-          elif sha == prev_sha:
+          elif sha == prev_sha and os.environ.get("IS_FORCE") != "true":
               proceed, reason = False, "snapshot unchanged"
           elif counted < prev_ballots and os.environ.get("IS_FINAL") != "true" and os.environ.get("IS_FORCE") != "true":
               proceed, reason = False, f"ballot count shrank ({prev_ballots} -> {counted}); refusing"
