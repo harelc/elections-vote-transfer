@@ -317,6 +317,11 @@
         .station-popup-party-name { display:flex; align-items:center; gap:0.25rem; color:var(--text-secondary); }
         .station-popup-party-color { width:10px; height:10px; border-radius:2px; }
         .station-popup-party-pct { color:var(--text-primary); font-weight:500; }
+        .suspect-links { display:flex; gap:0.4rem; flex-wrap:wrap; margin-top:0.5rem; }
+        .suspect-links a { font-size:0.72rem; font-weight:700; text-decoration:none; border-radius:999px; padding:0.28rem 0.6rem; border:1px solid #f0b429; color:#f0b429; }
+        .suspect-links a:hover { background:rgba(240,180,41,.15); }
+        .suspect-links a.cec26 { background:#f0b429; color:#191204; }
+        .suspect-links a.cec26:hover { background:#ffc94d; }
         .suspect-dev { font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; }
         .suspect-dev b { color:var(--text-secondary); }
         /* Bubble candidates — per-list edge of the D'Hondt seat-block histogram */
@@ -2110,11 +2115,14 @@
             const sName = en() ? i18n.settlementName(b.n) : b.n;
             const srcName = en() ? i18n.settlementName(b.src_n) : b.src_n;
             const bn = String(b.b).endsWith('.0') ? String(b.b).slice(0, -2) : String(b.b);
+            const sbn = String(b.src_b).endsWith('.0') ? String(b.src_b).slice(0, -2) : String(b.src_b);
             const code = b.code || codeByBallot[`${normKey(b.n)}|${bn}`];
-            const cec = cecLive && code ? ` · <a href="https://votes26.bechirot.gov.il/ballotresults?cityID=${encodeURIComponent(code)}&BallotNumber=${encodeURIComponent(bn)}" target="_blank" rel="noopener noreferrer" style="color:#f0b429;text-decoration:none">${en() ? 'CEC ballot page ↗' : 'לקלפי באתר ועדת הבחירות ↗'}</a>` : '';
+            // K26 link only on a real count; the K25 source ballot is a
+            // real historical box, so its link is always safe to show.
+            const cecLinks = `<div class="suspect-links">${cecLive && code ? `<a class="cec26" href="https://votes26.bechirot.gov.il/ballotresults?cityID=${encodeURIComponent(code)}&BallotNumber=${encodeURIComponent(bn)}" target="_blank" rel="noopener noreferrer">${en() ? 'K26 ballot at the CEC ↗' : 'הקלפי בכנסת 26 באתר הוועדה ↗'}</a>` : ''}${b.src_code ? `<a href="https://votes25.bechirot.gov.il/ballotresults?cityID=${encodeURIComponent(b.src_code)}&BallotNumber=${encodeURIComponent(sbn)}" target="_blank" rel="noopener noreferrer">${en() ? 'Its K25 twin at the CEC ↗' : 'הקלפי התאומה בכנסת 25 באתר הוועדה ↗'}</a>` : ''}</div>`;
             return `<div class="suspect-row"><div class="suspect-meta"><span class="rank">#${i + 1}</span><a class="name" href="settlement.html?name=${encodeURIComponent(b.n)}">${sName}</a><span class="ballot-num">${en() ? 'Ballot' : 'קלפי'} ${b.b}</span><span class="score">${i18n.t('k26_suspects_mismatch')} ${(b.tvd * 100).toFixed(1)}%</span></div>
             <div class="suspect-bars"><span class="bar-label">${i18n.t('k26_suspects_pred')}</span><div class="stacked">${stacked(b.pred || [])}</div><span class="bar-label">${i18n.t('k26_suspects_actual')}</span><div class="stacked">${stacked(b.actual || [])}</div></div>
-            <div class="suspect-dev">${fmt(b.v || 0)} ${i18n.t('votes')} · <b>${displayName(b.dev_party)}</b> +${b.dev_pts}${en() ? ' pts vs prediction' : ' נק׳ מעל הצפי'}<br>${i18n.t('k26_suspects_src', { b: b.src_b, s: srcName })} (${decLabel(b.decision)})${b.venue ? ` · ${b.venue}` : ''}${cec}</div></div>`;
+            <div class="suspect-dev">${fmt(b.v || 0)} ${i18n.t('votes')} · <b>${displayName(b.dev_party)}</b> +${b.dev_pts}${en() ? ' pts vs prediction' : ' נק׳ מעל הצפי'}<br>${i18n.t('k26_suspects_src', { b: b.src_b, s: srcName })} (${decLabel(b.decision)})${b.venue ? ` · ${b.venue}` : ''}</div>${cecLinks}</div>`;
         }).join('');
     }
     // ---------- Command-center extras (data/command_center_26.json) ----------
