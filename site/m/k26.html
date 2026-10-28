@@ -703,9 +703,14 @@
                 : (en() ? 'Ballot map — results' : 'מפת קלפיות — תוצאות');
             const labels = { winner: en() ? 'Winner' : 'מנצחת', party: en() ? 'Party support' : 'תמיכת מפלגה', turnout: en() ? 'Turnout (counted results)' : 'אחוז הצבעה (מהספירה)', tday: en() ? 'Turnout (election-day reports)' : 'אחוז הצבעה (דיווחי יום הבחירות)', socio: en() ? 'Socioeconomic' : 'חברתי־כלכלי', embed: en() ? 'Voting pattern' : 'דפוס הצבעה' };
             if (geoMode === 'tday' && !(partial && tdDayM && tdDayM.size)) geoMode = 'winner';
+            // Same rule as desktop: during the count the generic turnout
+            // layer duplicates the election-day reports layer, so only
+            // the election-day one stays in the selector.
+            if (geoMode === 'turnout' && partial && tdDayM && tdDayM.size) geoMode = 'tday';
             document.querySelectorAll('#geo-modes [data-gmode]').forEach(b => {
                 b.textContent = labels[b.dataset.gmode];
-                b.hidden = b.dataset.gmode === 'tday' && !(partial && tdDayM && tdDayM.size);
+                b.hidden = (b.dataset.gmode === 'tday' && !(partial && tdDayM && tdDayM.size))
+                    || (b.dataset.gmode === 'turnout' && partial && tdDayM && tdDayM.size);
                 b.classList.toggle('gold', b.dataset.gmode === geoMode);
                 b.onclick = () => { geoMode = b.dataset.gmode; renderMap(); };
             });
