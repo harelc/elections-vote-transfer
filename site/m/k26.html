@@ -701,7 +701,7 @@
             document.getElementById('map-title').textContent = partial
                 ? (en() ? 'Counted ballots map' : 'מפת הקלפיות שנספרו')
                 : (en() ? 'Ballot map — results' : 'מפת קלפיות — תוצאות');
-            const labels = { winner: en() ? 'Winner' : 'מנצחת', party: en() ? 'Party support' : 'תמיכת מפלגה', turnout: en() ? 'Turnout' : 'אחוז הצבעה', tday: en() ? 'Election-day turnout' : 'אחוז הצבעה ביום הבחירות', socio: en() ? 'Socioeconomic' : 'חברתי־כלכלי', embed: en() ? 'Voting pattern' : 'דפוס הצבעה' };
+            const labels = { winner: en() ? 'Winner' : 'מנצחת', party: en() ? 'Party support' : 'תמיכת מפלגה', turnout: en() ? 'Turnout (counted results)' : 'אחוז הצבעה (מהספירה)', tday: en() ? 'Turnout (election-day reports)' : 'אחוז הצבעה (דיווחי יום הבחירות)', socio: en() ? 'Socioeconomic' : 'חברתי־כלכלי', embed: en() ? 'Voting pattern' : 'דפוס הצבעה' };
             if (geoMode === 'tday' && !(partial && tdDayM && tdDayM.size)) geoMode = 'winner';
             document.querySelectorAll('#geo-modes [data-gmode]').forEach(b => {
                 b.textContent = labels[b.dataset.gmode];
@@ -718,6 +718,8 @@
             renderLegend();
             document.getElementById('map-note').textContent = geoMode === 'tday'
                 ? (en() ? 'Election-day turnout layer: all ballots coloured, counted or not. Tap a dot for details.' : 'שכבת אחוזי ההצבעה של יום הבחירות: כל הקלפיות צבועות, נספרו או לא. הקשה על נקודה לפרטים.')
+                : geoMode === 'turnout' && partial
+                    ? (en() ? 'Final turnout from the counted results — only counted ballots are coloured. The election-day reports layer colours every ballot by its last daytime report, so a ballot can show slightly different values in the two layers.' : 'אחוז הצבעה סופי מתוך תוצאות הספירה — רק קלפיות שנספרו צבועות. שכבת דיווחי יום הבחירות צובעת כל קלפי לפי הדיווח האחרון שלה מהיום, ולכן אותה קלפי יכולה להראות ערך קצת שונה בשתי השכבות.')
                 : (partial
                     ? (en() ? 'Gray = not counted yet. ' : 'אפור = טרם נספרה. ') : '')
                     + (en() ? 'Tap a dot or cluster for ballot details.' : 'הקשה על נקודה או מקבץ לפרטי הקלפי.');
