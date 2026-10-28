@@ -111,6 +111,11 @@ jobs:
           node-version: "22"
 
       - name: Download the results file (Chrome fallback)
+        # The download script self-limits to ~7 min; cap the step (incl.
+        # the Chrome install) so a hung browser can't squat the
+        # concurrency group until the 30-min job timeout (seen 28 Oct:
+        # 11+ min stuck here, queue frozen behind it).
+        timeout-minutes: 12
         if: steps.gate.outputs.proceed == 'true' && steps.curl_dl.outputs.ok != '1'
         env:
           K26_RESULTS_URL: ${{ secrets.K26_RESULTS_URL }}
