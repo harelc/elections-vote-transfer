@@ -4,6 +4,7 @@
     "name": "הכנסת ה-19",
     "name_en": "19th Knesset",
     "date": "2013-01-22",
+    "estimated": false,
     "eligible_voters": 5656705,
     "votes_cast": 3834136,
     "valid_votes": 3792742,
@@ -14,6 +15,7 @@
     "name": "הכנסת ה-20",
     "name_en": "20th Knesset",
     "date": "2015-03-17",
+    "estimated": false,
     "eligible_voters": 5881696,
     "votes_cast": 4254738,
     "valid_votes": 4210884,
@@ -23,7 +25,7 @@
     {
       "name": "הליכוד ישראל ביתנו",
       "symbol": "מחל",
-      "votes": 885092,
+      "votes": 885163,
       "seats": 31,
       "color": "#2563eb",
       "info": {
@@ -42,7 +44,7 @@
     {
       "name": "יש עתיד",
       "symbol": "פה",
-      "votes": 543376,
+      "votes": 543458,
       "seats": 19,
       "color": "#06b6d4",
       "info": {
@@ -61,7 +63,7 @@
     {
       "name": "העבודה",
       "symbol": "אמת",
-      "votes": 432007,
+      "votes": 432118,
       "seats": 15,
       "color": "#dc2626",
       "info": {
@@ -80,7 +82,7 @@
     {
       "name": "הבית היהודי",
       "symbol": "טב",
-      "votes": 345959,
+      "votes": 345985,
       "seats": 12,
       "color": "#ea580c",
       "info": {
@@ -99,7 +101,7 @@
     {
       "name": "ש״ס",
       "symbol": "שס",
-      "votes": 331865,
+      "votes": 331868,
       "seats": 11,
       "color": "#1e3a8a",
       "info": {
@@ -137,7 +139,7 @@
     {
       "name": "התנועה",
       "symbol": "צפ",
-      "votes": 189137,
+      "votes": 189167,
       "seats": 6,
       "color": "#fde68a",
       "info": {
@@ -156,7 +158,7 @@
     {
       "name": "מרצ",
       "symbol": "מרץ",
-      "votes": 172366,
+      "votes": 172403,
       "seats": 6,
       "color": "#16a34a",
       "info": {
@@ -194,7 +196,7 @@
     {
       "name": "חד״ש",
       "symbol": "ו",
-      "votes": 113433,
+      "votes": 113439,
       "seats": 4,
       "color": "#f43f5e",
       "info": {
@@ -232,7 +234,7 @@
     {
       "name": "קדימה",
       "symbol": "כן",
-      "votes": 78964,
+      "votes": 78974,
       "seats": 2,
       "color": "#f59e0b",
       "info": {
@@ -251,7 +253,7 @@
     {
       "name": "לא הצביעו",
       "symbol": "abstain",
-      "votes": 2038686,
+      "votes": 1823059,
       "seats": null,
       "color": "#9ca3af",
       "info": {
@@ -265,7 +267,7 @@
     {
       "name": "הליכוד",
       "symbol": "מחל",
-      "votes": 983366,
+      "votes": 985408,
       "seats": 30,
       "color": "#2563eb",
       "info": {
@@ -284,7 +286,7 @@
     {
       "name": "המחנה הציוני",
       "symbol": "אמת",
-      "votes": 784343,
+      "votes": 786313,
       "seats": 24,
       "color": "#dc2626",
       "info": {
@@ -303,7 +305,7 @@
     {
       "name": "הרשימה המשותפת",
       "symbol": "ודעם",
-      "votes": 446452,
+      "votes": 446583,
       "seats": 13,
       "color": "#059669",
       "info": {
@@ -322,7 +324,7 @@
     {
       "name": "יש עתיד",
       "symbol": "פה",
-      "votes": 370831,
+      "votes": 371602,
       "seats": 11,
       "color": "#06b6d4",
       "info": {
@@ -341,7 +343,7 @@
     {
       "name": "כולנו",
       "symbol": "כ",
-      "votes": 314825,
+      "votes": 315360,
       "seats": 10,
       "color": "#f472b6",
       "info": {
@@ -360,7 +362,7 @@
     {
       "name": "הבית היהודי",
       "symbol": "טב",
-      "votes": 283048,
+      "votes": 283910,
       "seats": 8,
       "color": "#ea580c",
       "info": {
@@ -379,7 +381,7 @@
     {
       "name": "ש״ס",
       "symbol": "שס",
-      "votes": 240555,
+      "votes": 241613,
       "seats": 7,
       "color": "#1e3a8a",
       "info": {
@@ -398,7 +400,7 @@
     {
       "name": "ישראל ביתנו",
       "symbol": "ל",
-      "votes": 214580,
+      "votes": 214906,
       "seats": 6,
       "color": "#db2777",
       "info": {
@@ -417,7 +419,7 @@
     {
       "name": "יהדות התורה",
       "symbol": "ג",
-      "votes": 207538,
+      "votes": 210143,
       "seats": 6,
       "color": "#4b5563",
       "info": {
@@ -436,7 +438,7 @@
     {
       "name": "מרצ",
       "symbol": "מרצ",
-      "votes": 164935,
+      "votes": 165529,
       "seats": 5,
       "color": "#16a34a",
       "info": {
@@ -455,7 +457,7 @@
     {
       "name": "לא הצביעו",
       "symbol": "abstain",
-      "votes": 1855105,
+      "votes": 1626958,
       "seats": null,
       "color": "#9ca3af",
       "info": {
@@ -471,199 +473,167 @@
       "source_symbol": "מחל",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 690047,
-      "percentage": 78.0
+      "votes": 687969,
+      "percentage": 77.7
     },
     {
       "source": "הליכוד ישראל ביתנו",
       "source_symbol": "מחל",
       "target": "כולנו",
       "target_symbol": "כ",
-      "votes": 76048,
-      "percentage": 8.6
+      "votes": 74008,
+      "percentage": 8.4
     },
     {
       "source": "הליכוד ישראל ביתנו",
       "source_symbol": "מחל",
       "target": "ישראל ביתנו",
       "target_symbol": "ל",
-      "votes": 121192,
-      "percentage": 13.7
+      "votes": 123188,
+      "percentage": 13.9
     },
     {
       "source": "יש עתיד",
       "source_symbol": "פה",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 30000,
-      "percentage": 5.5
+      "votes": 27321,
+      "percentage": 5.0
     },
     {
       "source": "יש עתיד",
       "source_symbol": "פה",
       "target": "המחנה הציוני",
       "target_symbol": "אמת",
-      "votes": 151943,
-      "percentage": 28.0
+      "votes": 150741,
+      "percentage": 27.7
     },
     {
       "source": "יש עתיד",
       "source_symbol": "פה",
       "target": "יש עתיד",
       "target_symbol": "פה",
-      "votes": 288049,
-      "percentage": 53.0
+      "votes": 286119,
+      "percentage": 52.6
     },
     {
       "source": "יש עתיד",
       "source_symbol": "פה",
       "target": "כולנו",
       "target_symbol": "כ",
-      "votes": 82026,
-      "percentage": 15.1
+      "votes": 79277,
+      "percentage": 14.6
     },
     {
       "source": "העבודה",
       "source_symbol": "אמת",
       "target": "המחנה הציוני",
       "target_symbol": "אמת",
-      "votes": 405155,
-      "percentage": 93.8
+      "votes": 404929,
+      "percentage": 93.7
     },
     {
       "source": "העבודה",
       "source_symbol": "אמת",
       "target": "מרצ",
       "target_symbol": "מרצ",
-      "votes": 30929,
-      "percentage": 7.2
+      "votes": 27188,
+      "percentage": 6.3
     },
     {
       "source": "הבית היהודי",
       "source_symbol": "טב",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 73886,
-      "percentage": 21.4
+      "votes": 75808,
+      "percentage": 21.9
     },
     {
       "source": "הבית היהודי",
       "source_symbol": "טב",
       "target": "הבית היהודי",
       "target_symbol": "טב",
-      "votes": 268025,
-      "percentage": 77.5
+      "votes": 264704,
+      "percentage": 76.5
     },
     {
       "source": "ש״ס",
       "source_symbol": "שס",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 68542,
-      "percentage": 20.7
+      "votes": 71121,
+      "percentage": 21.4
     },
     {
       "source": "ש״ס",
       "source_symbol": "שס",
       "target": "כולנו",
       "target_symbol": "כ",
-      "votes": 16191,
-      "percentage": 4.9
+      "votes": 18738,
+      "percentage": 5.6
     },
     {
       "source": "ש״ס",
       "source_symbol": "שס",
       "target": "ש״ס",
       "target_symbol": "שס",
-      "votes": 237775,
-      "percentage": 71.6
-    },
-    {
-      "source": "ש״ס",
-      "source_symbol": "שס",
-      "target": "יהדות התורה",
-      "target_symbol": "ג",
-      "votes": 8532,
-      "percentage": 2.6
-    },
-    {
-      "source": "יהדות התורה",
-      "source_symbol": "ג",
-      "target": "ש״ס",
-      "target_symbol": "שס",
-      "votes": 6443,
-      "percentage": 3.3
+      "votes": 232736,
+      "percentage": 70.1
     },
     {
       "source": "יהדות התורה",
       "source_symbol": "ג",
       "target": "יהדות התורה",
       "target_symbol": "ג",
-      "votes": 182789,
-      "percentage": 93.3
-    },
-    {
-      "source": "יהדות התורה",
-      "source_symbol": "ג",
-      "target": "לא הצביעו",
-      "target_symbol": "abstain",
-      "votes": 6403,
-      "percentage": 3.3
+      "votes": 183085,
+      "percentage": 93.5
     },
     {
       "source": "התנועה",
       "source_symbol": "צפ",
       "target": "המחנה הציוני",
       "target_symbol": "אמת",
-      "votes": 143209,
-      "percentage": 75.7
+      "votes": 145317,
+      "percentage": 76.8
     },
     {
       "source": "התנועה",
       "source_symbol": "צפ",
       "target": "יש עתיד",
       "target_symbol": "פה",
-      "votes": 20234,
-      "percentage": 10.7
+      "votes": 19778,
+      "percentage": 10.5
     },
     {
       "source": "התנועה",
       "source_symbol": "צפ",
       "target": "לא הצביעו",
       "target_symbol": "abstain",
-      "votes": 27472,
-      "percentage": 14.5
+      "votes": 24068,
+      "percentage": 12.7
     },
     {
       "source": "מרצ",
       "source_symbol": "מרץ",
       "target": "המחנה הציוני",
       "target_symbol": "אמת",
-      "votes": 59234,
-      "percentage": 34.4
+      "votes": 58935,
+      "percentage": 34.2
     },
     {
       "source": "מרצ",
       "source_symbol": "מרץ",
       "target": "מרצ",
       "target_symbol": "מרצ",
-      "votes": 102475,
-      "percentage": 59.5
-    },
-    {
-      "source": "מרצ",
-      "source_symbol": "מרץ",
-      "target": "לא הצביעו",
-      "target_symbol": "abstain",
-      "votes": 10558,
-      "percentage": 6.1
+      "votes": 102800,
+      "percentage": 59.6
     },
     {
       "source": "רע״ם-תע״ל",
       "source_symbol": "עם",
       "target": "הרשימה המשותפת",
       "target_symbol": "ודעם",
-      "votes": 138412,
+      "votes": 138450,
       "percentage": 100.0
     },
     {
@@ -671,7 +641,7 @@
       "source_symbol": "ו",
       "target": "הרשימה המשותפת",
       "target_symbol": "ודעם",
-      "votes": 113385,
+      "votes": 113439,
       "percentage": 100.0
     },
     {
@@ -679,7 +649,7 @@
       "source_symbol": "ד",
       "target": "הרשימה המשותפת",
       "target_symbol": "ודעם",
-      "votes": 97013,
+      "votes": 97030,
       "percentage": 100.0
     },
     {
@@ -687,39 +657,39 @@
       "source_symbol": "כן",
       "target": "כולנו",
       "target_symbol": "כ",
-      "votes": 52149,
-      "percentage": 66.0
+      "votes": 51941,
+      "percentage": 65.8
     },
     {
       "source": "קדימה",
       "source_symbol": "כן",
       "target": "לא הצביעו",
       "target_symbol": "abstain",
-      "votes": 17395,
-      "percentage": 22.0
+      "votes": 17079,
+      "percentage": 21.6
     },
     {
       "source": "לא הצביעו",
       "source_symbol": "abstain",
       "target": "הליכוד",
       "target_symbol": "מחל",
-      "votes": 66974,
-      "percentage": 3.3
+      "votes": 58501,
+      "percentage": 3.2
     },
     {
       "source": "לא הצביעו",
       "source_symbol": "abstain",
       "target": "הרשימה המשותפת",
       "target_symbol": "ודעם",
-      "votes": 87662,
-      "percentage": 4.3
+      "votes": 74961,
+      "percentage": 4.1
     },
     {
       "source": "לא הצביעו",
       "source_symbol": "abstain",
       "target": "יש עתיד",
       "target_symbol": "פה",
-      "votes": 20544,
+      "votes": 19077,
       "percentage": 1.0
     },
     {
@@ -727,15 +697,15 @@
       "source_symbol": "abstain",
       "target": "כולנו",
       "target_symbol": "כ",
-      "votes": 53171,
-      "percentage": 2.6
+      "votes": 46079,
+      "percentage": 2.5
     },
     {
       "source": "לא הצביעו",
       "source_symbol": "abstain",
       "target": "ישראל ביתנו",
       "target_symbol": "ל",
-      "votes": 85395,
+      "votes": 76027,
       "percentage": 4.2
     },
     {
@@ -743,15 +713,15 @@
       "source_symbol": "abstain",
       "target": "לא הצביעו",
       "target_symbol": "abstain",
-      "votes": 1728625,
-      "percentage": 84.8
+      "votes": 1543748,
+      "percentage": 84.7
     }
   ],
   "stats": {
     "common_precincts": 10068,
-    "r_squared": 0.854,
-    "total_votes_from": 5562257,
-    "total_votes_to": 5865578,
-    "generated_at": "2026-02-17 08:48:41"
+    "r_squared": 0.8539,
+    "total_votes_from": 5347006,
+    "total_votes_to": 5648325,
+    "generated_at": "2026-10-28 09:45:13"
   }
 }
