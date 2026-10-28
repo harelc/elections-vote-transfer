@@ -229,6 +229,21 @@ class VoteTransferAnalyzer:
         logger.warning("No eligible voter data available, abstention will be 0")
         return pd.Series(0, index=df.index)
 
+    def _compute_national_dnv(self, df, config):
+        """National 'did not vote' total: eligible minus voters, UNclipped.
+
+        The per-ballot series must clip at 0 for the solver, but summing
+        the clipped series inflates the national total: double-envelope
+        boxes (מעטפות חיצוניות, בזב=0 with hundreds of voters each) then
+        contribute 0 instead of a negative, which in K25 turned 415,245
+        excess voters into phantom non-voters (2,453,340 shown vs the
+        true ~2,038,095)."""
+        bzv = df['בזב']
+        voters = df['מצביעים']
+        if bzv.sum() > 0:
+            return float((bzv - voters).sum())
+        return float(self._compute_dnv(df, config).sum())
+
     def design_matrices(self, election_from, election_to):
         """Matched ballots, party names, and constraints for one transition.
 
@@ -428,7 +443,7 @@ class VoteTransferAnalyzer:
             for sym in symbols_from if sym != 'abstain'
         ], dtype=float)
         if self.include_abstention:
-            national_dnv_from = self._compute_dnv(df_from, config_from).sum()
+            national_dnv_from = self._compute_national_dnv(df_from_raw, config_from)
             total_votes_from = np.append(total_votes_from, national_dnv_from)
         vote_movements = M * total_votes_from[:, np.newaxis]
 
@@ -486,7 +501,7 @@ class VoteTransferAnalyzer:
             for sym in symbols_to if sym != 'abstain'
         ], dtype=float)
         if self.include_abstention:
-            national_dnv_to = self._compute_dnv(df_to, config_to).sum()
+            national_dnv_to = self._compute_national_dnv(df_to_raw, config_to)
             total_votes_to = np.append(total_votes_to, national_dnv_to)
         seats_to = parties_to.get('seats', [None] * len(names_to))
         nodes_to = []
