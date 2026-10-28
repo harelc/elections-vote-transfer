@@ -325,6 +325,10 @@
         bmc_short:             { he: 'קנו לי קפה', en: 'Buy me a coffee' },
         bmc_line1:             { he: 'אהבתם? רוצים לתמוך בפיתוח האתר?', en: 'Enjoying this? Want to support development?' },
         bmc_line2:             { he: 'קנו לי כוס קפה ☕', en: 'Buy me a coffee ☕' },
+        support_title:         { he: 'האתר הזה עולה כסף להפעיל', en: 'This site costs money to run' },
+        support_body:          { he: 'ל"קולות נודדים" יש הוצאות תפעול ישירות ועקיפות — אחסון ושרתים, דומיין, שירותי מפות וגיאוקודינג, וכוח מחשוב לעיבוד נתוני הבחירות. אם אהבתם את האתר או מצאתם אותו מועיל, שקלו בבקשה תרומה חד־פעמית קטנה. כל סכום עוזר להשאיר אותו חי, מהיר ומתעדכן.', en: 'Kolot Nodedim has direct and indirect operating expenses — hosting and servers, the domain, map and geocoding services, and compute for processing the election data. If you liked the site or found it valuable, please consider a small one-time contribution. Any amount helps keep it alive, fast and up to date.' },
+        support_cta:           { he: '☕ לתרומה ב־Buy Me a Coffee', en: '☕ Contribute on Buy Me a Coffee' },
+        support_later:         { he: 'אחר כך', en: 'Maybe later' },
 
         /* ── Methodology modal ── */
         about_methodology:     { he: 'על המתודולוגיה', en: 'About the Methodology' },
@@ -1002,6 +1006,103 @@
         applyTranslations();
     }
 
+    /* ── Support modal ────────────────────────────────────────────
+       Dismissible operating-expenses appeal with the BMC link.
+       Reappears at most once every 12 hours (localStorage timestamp,
+       set on any dismissal — ✕, "later", backdrop, Esc, or CTA click). */
+    const SUPPORT_MODAL_KEY = 'support_modal_dismissed_at';
+    const SUPPORT_MODAL_INTERVAL_MS = 12 * 60 * 60 * 1000;
+    const SUPPORT_MODAL_DELAY_MS = 12000;
+
+    function supportModalSnoozed() {
+        try {
+            const ts = parseInt(localStorage.getItem(SUPPORT_MODAL_KEY) || '0', 10);
+            return ts > 0 && (Date.now() - ts) < SUPPORT_MODAL_INTERVAL_MS;
+        } catch (e) { return false; }
+    }
+
+    function snoozeSupportModal() {
+        try { localStorage.setItem(SUPPORT_MODAL_KEY, String(Date.now())); } catch (e) { /* private mode */ }
+    }
+
+    function injectSupportModalCSS() {
+        if (document.getElementById('support-modal-css')) return;
+        const style = document.createElement('style');
+        style.id = 'support-modal-css';
+        style.textContent =
+            '.support-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:center;justify-content:center;z-index:100000;padding:16px;animation:supportModalFade .25s ease}' +
+            '@keyframes supportModalFade{from{opacity:0}to{opacity:1}}' +
+            '.support-modal{position:relative;background:var(--bg-card,#232733);color:var(--text-primary,#f3f5f8);border:1px solid var(--border-color,#3a4050);border-radius:16px;max-width:430px;width:100%;padding:26px 24px 20px;box-shadow:0 12px 40px rgba(0,0,0,.5);font-family:\'Heebo\',sans-serif;text-align:start}' +
+            '.support-modal-title{font-size:1.2rem;font-weight:700;margin:0 0 10px;line-height:1.35}' +
+            '.support-modal-body{font-size:.93rem;line-height:1.65;color:var(--text-secondary,#c8ceda);margin:0 0 20px}' +
+            '.support-modal-actions{display:flex;flex-direction:column;gap:10px}' +
+            '.support-cta{display:block;text-align:center;background:#FFDD00;color:#000;font-weight:700;font-size:.98rem;padding:12px 18px;border-radius:10px;text-decoration:none;transition:transform .15s ease}' +
+            '.support-cta:hover{transform:translateY(-2px)}' +
+            '.support-later{background:transparent;border:1px solid var(--border-color,#3a4050);color:var(--text-secondary,#c8ceda);font-family:inherit;font-size:.88rem;padding:9px 18px;border-radius:10px;cursor:pointer}' +
+            '.support-later:hover{background:var(--bg-hover,#2e3340)}' +
+            '.support-modal-close{position:absolute;top:10px;inset-inline-end:10px;width:28px;height:28px;border-radius:50%;border:none;background:var(--bg-tertiary,#272b36);color:var(--text-secondary,#c8ceda);font-size:.8rem;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}' +
+            '.support-modal-close:hover{background:var(--bg-hover,#2e3340)}';
+        document.head.appendChild(style);
+    }
+
+    function maybeShowSupportModal() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('embed')) return;
+        if (document.body && document.body.classList.contains('record')) return;
+        if (supportModalSnoozed()) return;
+        setTimeout(() => {
+            if (supportModalSnoozed()) return;
+            if (document.querySelector('.support-modal-overlay')) return;
+            injectSupportModalCSS();
+            const overlay = document.createElement('div');
+            overlay.className = 'support-modal-overlay';
+            const modal = document.createElement('div');
+            modal.className = 'support-modal';
+            modal.setAttribute('role', 'dialog');
+            modal.setAttribute('aria-modal', 'true');
+            const closeBtn = document.createElement('button');
+            closeBtn.className = 'support-modal-close';
+            closeBtn.innerHTML = '\u2715';
+            closeBtn.setAttribute('aria-label', 'Close');
+            const title = document.createElement('h2');
+            title.className = 'support-modal-title';
+            title.setAttribute('data-i18n', 'support_title');
+            title.textContent = t('support_title');
+            const bodyText = document.createElement('p');
+            bodyText.className = 'support-modal-body';
+            bodyText.setAttribute('data-i18n', 'support_body');
+            bodyText.textContent = t('support_body');
+            const actions = document.createElement('div');
+            actions.className = 'support-modal-actions';
+            const cta = document.createElement('a');
+            cta.className = 'support-cta';
+            cta.href = 'https://www.buymeacoffee.com/harelc';
+            cta.target = '_blank';
+            cta.rel = 'noopener noreferrer';
+            cta.setAttribute('data-i18n', 'support_cta');
+            cta.textContent = t('support_cta');
+            const later = document.createElement('button');
+            later.className = 'support-later';
+            later.setAttribute('data-i18n', 'support_later');
+            later.textContent = t('support_later');
+            actions.appendChild(cta);
+            actions.appendChild(later);
+            modal.appendChild(closeBtn);
+            modal.appendChild(title);
+            modal.appendChild(bodyText);
+            modal.appendChild(actions);
+            overlay.appendChild(modal);
+            const dismiss = () => { snoozeSupportModal(); overlay.remove(); document.removeEventListener('keydown', onKey); };
+            const onKey = (e) => { if (e.key === 'Escape') dismiss(); };
+            closeBtn.addEventListener('click', dismiss);
+            later.addEventListener('click', dismiss);
+            cta.addEventListener('click', snoozeSupportModal);
+            overlay.addEventListener('click', (e) => { if (e.target === overlay) dismiss(); });
+            document.addEventListener('keydown', onKey);
+            document.body.appendChild(overlay);
+        }, SUPPORT_MODAL_DELAY_MS);
+    }
+
     /** Floating mobile BMC banner — shows once per session after 3s delay. */
     function renderMobileBMC() {
         if (sessionStorage.getItem('bmc_dismissed')) return;
@@ -1551,11 +1652,12 @@
 
     // Run init as early as possible
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); injectMobileTabCC(); sendHit(); fillVisitLine(); });
+        document.addEventListener('DOMContentLoaded', () => { init(); setupE26Widget(); injectMobileTabCC(); sendHit(); fillVisitLine(); maybeShowSupportModal(); });
     } else {
         init();
         setupE26Widget();
         injectMobileTabCC();
+        maybeShowSupportModal();
         sendHit();
         fillVisitLine();
     }
