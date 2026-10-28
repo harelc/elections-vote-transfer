@@ -442,6 +442,15 @@ def nowcast(status, sectors, target_share=None, force=False):
         for row in csv.DictReader(fh):
             if row["decision"] == "k25_only" or not row["k26_name"]:
                 continue
+            # The union CSV carries raw CEC spellings (מודיעין-מכבים-רעות,
+            # מודיעיןמכביםרעות) while tsne/map names are normalized
+            # (מודיעין מכבים רעות). Normalize once here, or every keyed
+            # lookup below (counted/matched/source shares) silently
+            # misses those settlements — 94 counted boxes in 38
+            # settlements at the 1,660-ballot snapshot, Modi'in included.
+            row["k26_name"] = normalize_name(row["k26_name"])
+            if row["k25_name"]:
+                row["k25_name"] = normalize_name(row["k25_name"])
             roster.append(row)
 
     def is_haredi_box(row):
