@@ -107,7 +107,7 @@ def main():
 
     # Step 2: Generate T-SNE data for election 26
     run_script(
-        [sys.executable, 'generate_tsne_data.py', '--elections', '26'],
+        [sys.executable, 'generate_tsne_data.py', '--elections', '26', '--min-votes', '0'],
         'Generating T-SNE data for election 26'
     )
 

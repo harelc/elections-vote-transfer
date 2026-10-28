@@ -46,7 +46,7 @@ def load_election_data(election_id):
     return df, config
 
 
-def compute_tsne_projection(df, config, perplexity=30, random_state=42):
+def compute_tsne_projection(df, config, perplexity=30, random_state=42, min_votes=50):
     """
     Compute T-SNE projection for voting stations based on vote proportions.
 
@@ -87,8 +87,9 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
     else:
         valid_votes = major_votes
 
-    # Filter out stations with very few votes (noise)
-    min_votes = 50
+    # Filter out stations with very few votes (noise). Callers running a
+    # live count pass min_votes=0: a real counted ballot must not vanish
+    # from the map just for being small.
     valid_mask = major_votes >= min_votes
     logger.info(f"Filtering stations with >= {min_votes} votes: {valid_mask.sum()} of {len(df)}")
 
@@ -198,7 +199,7 @@ def compute_tsne_projection(df, config, perplexity=30, random_state=42):
     return result, existing_names, existing_symbols
 
 
-def generate_tsne_json(election_id, compact=True):
+def generate_tsne_json(election_id, compact=True, min_votes=50):
     """Generate T-SNE data for a single election."""
     df, config = load_election_data(election_id)
 
@@ -207,7 +208,7 @@ def generate_tsne_json(election_id, compact=True):
     df = df.reset_index(drop=True)
 
     # Compute T-SNE projection
-    stations, party_names, party_symbols = compute_tsne_projection(df, config)
+    stations, party_names, party_symbols = compute_tsne_projection(df, config, min_votes=min_votes)
 
     # Build party info for legend (always include info for tooltips)
     parties = []
@@ -274,6 +275,8 @@ def main():
     parser = argparse.ArgumentParser(description='Generate T-SNE clustering data')
     parser.add_argument('--elections', nargs='+',
                         help='Only process specific elections, e.g. --elections 25 26')
+    parser.add_argument('--min-votes', type=int, default=50,
+                        help='Drop stations with fewer major-party votes (default 50; live counts pass 0)')
     args = parser.parse_args()
 
     elections = args.elections or ['16', '17', '18', '19', '20', '21', '22', '23', '24', '25']
@@ -284,7 +287,7 @@ def main():
         logger.info('='*60)
 
         try:
-            data = generate_tsne_json(election_id)
+            data = generate_tsne_json(election_id, min_votes=args.min_votes)
 
             # Save to file
             output_file = f"data/tsne_{election_id}.json"
