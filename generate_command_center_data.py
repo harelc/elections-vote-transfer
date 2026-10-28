@@ -33,10 +33,13 @@ together (and refreshed together on election night):
                     entirely uncounted), so the gate and the now-vs-mean
                     divergence can be exercised before the night.
                 The gate opens into the full party-level projection as
-                soon as it is semi-reliable: >=1,000 matched counted
-                ballots, >=12% of roster K25 votes counted, R2>=0.75,
-                composition TVD<=0.18, and every K25 source party with
-                >=3% national share has >=8,000 counted origin votes.
+                soon as it is semi-reliable: >=250 matched counted
+                ballots, >=2% of roster K25 votes counted, R2>=0.70,
+                composition TVD<=0.22, and every K25 source party with
+                >=3% national share has >=2,000 counted origin votes.
+                (Thresholds relaxed on election night 28 Oct 2026 at the
+                operator's request ahead of a large CEC batch; the Monte
+                Carlo intervals widen accordingly at low counts.)
                 Source rows below the origin-vote floor are shrunk toward
                 the global row (partial pooling) instead of being trusted.
                 Monte-Carlo dispersion uses the empirical Dirichlet
@@ -683,23 +686,23 @@ def nowcast(status, sectors, target_share=None, force=False):
     ]
 
     checks = [
-        {"id": "matched", "ok": len(matched) >= 1000, "value": len(matched), "threshold": 1000,
+        {"id": "matched", "ok": len(matched) >= 250, "value": len(matched), "threshold": 250,
          "he": "קלפיות מוצלבות שנספרו", "en": "Matched counted ballots"},
-        {"id": "share", "ok": counted_share >= 0.12, "value": round(counted_share, 3), "threshold": 0.12,
+        {"id": "share", "ok": counted_share >= 0.02, "value": round(counted_share, 3), "threshold": 0.02,
          "he": "איזה חלק מקולות 25 כבר יש לו קלפי תאומה שנספרה", "en": "Share of K25 votes that already have a counted twin ballot"},
-        {"id": "r2", "ok": r2 >= 0.75, "value": round(float(r2), 3), "threshold": 0.75,
+        {"id": "r2", "ok": r2 >= 0.70, "value": round(float(r2), 3), "threshold": 0.70,
          "he": "מדד התאמה של מעברי הקולות המשוערים לתוצאות שנספרו (R² — מדד יחסי בלבד: גם התאמה מצוינת נמוכה מ־1.00, כי בכל קלפי יש גם רעש אקראי)",
          "en": "Fit of the estimated vote transfers to the counted results (R² — a relative index only: even an excellent fit is below 1.00, because every ballot box also contains random noise)"},
-        {"id": "tvd", "ok": comp_tvd <= 0.18, "value": round(comp_tvd, 3), "threshold": 0.18,
+        {"id": "tvd", "ok": comp_tvd <= 0.22, "value": round(comp_tvd, 3), "threshold": 0.22,
          "he": "כמה תמהיל ההצבעה של 25 בקלפיות שנספרו שונה מהתמהיל הארצי (קטן = מייצג את הארץ)",
          "en": "How different the counted ballots' K25 vote mix is from the national mix (smaller = more representative)"},
     ]
     weak_sources = []
     for i, n in enumerate(from_names):
-        if nat25[i] >= 0.03 and origin_votes[i] < 8000:
+        if nat25[i] >= 0.03 and origin_votes[i] < 2000:
             weak_sources.append(n)
-    checks.append({"id": "sources", "ok": not weak_sources, "value": weak_sources, "threshold": 8000,
-                   "he": "מפלגות־מקור עם מספיק קולות מוצלבים (≥8,000)", "en": "Source parties with enough matched origin votes (≥8,000)"})
+    checks.append({"id": "sources", "ok": not weak_sources, "value": weak_sources, "threshold": 2000,
+                   "he": "מפלגות־מקור עם מספיק קולות מוצלבים (≥2,000)", "en": "Source parties with enough matched origin votes (≥2,000)"})
     ready = all(c["ok"] for c in checks)
 
     projection = None
