@@ -331,8 +331,8 @@
         bmc_short:             { he: 'קנו לי קפה', en: 'Buy me a coffee' },
         bmc_line1:             { he: 'אהבתם? רוצים לתמוך בפיתוח האתר?', en: 'Enjoying this? Want to support development?' },
         bmc_line2:             { he: 'קנו לי כוס קפה ☕', en: 'Buy me a coffee ☕' },
-        support_title:         { he: 'האתר הזה עולה כסף להפעיל', en: 'This site costs money to run' },
-        support_body:          { he: 'ל"קולות נודדים" יש הוצאות תפעול ישירות ועקיפות — אחסון ושרתים, דומיין, שירותי מפות וגיאוקודינג, וכוח מחשוב לעיבוד נתוני הבחירות. אם אהבתם את האתר או מצאתם אותו מועיל, שקלו בבקשה תרומה חד־פעמית קטנה. כל סכום עוזר להשאיר אותו חי, מהיר ומתעדכן.', en: 'Kolot Nodedim has direct and indirect operating expenses — hosting and servers, the domain, map and geocoding services, and compute for processing the election data. If you liked the site or found it valuable, please consider a small one-time contribution. Any amount helps keep it alive, fast and up to date.' },
+        support_title:         { he: 'עולה כסף להפעיל את האתר הזה', en: 'This site costs money to run' },
+        support_body:          { he: 'שרתים, דומיין, שירותי מפות וזמן מחשוב לעיבוד נתוני הבחירות — זה מצטבר. אם נהניתם מהאתר או שהוא עזר לכם, תרומה חד־פעמית קטנה תעזור מאוד. כל סכום עוזר להשאיר אותו באוויר ומעודכן.', en: 'Servers, the domain, map services and compute time for processing the election data — it adds up. If you enjoyed the site or found it useful, a small one-time contribution would really help. Any amount helps keep it online and up to date.' },
         support_cta:           { he: '☕ לתרומה ב־Buy Me a Coffee', en: '☕ Contribute on Buy Me a Coffee' },
         support_later:         { he: 'אחר כך', en: 'Maybe later' },
 
