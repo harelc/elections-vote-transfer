@@ -2499,15 +2499,25 @@
                 ctx.restore();
                 y += barH + 26;
 
-                // Party table
+                // Party table (mixed mode adds regional/national seat columns)
                 txt('תוצאות לפי מפלגה', PX + PW, y + 14, F(800, 28), INK); y += 44;
-                const cols = [PX + PW, PX + PW - 300, PX + PW - 420, PX + PW - 540, PX + PW - 670];
+                const mixed = nationalSeats > 0;
+                const cols = mixed
+                    ? [PX + PW, PX + PW - 250, PX + PW - 350, PX + PW - 450, PX + PW - 550, PX + PW - 660, PX + PW - 760]
+                    : [PX + PW, PX + PW - 300, PX + PW - 420, PX + PW - 540, PX + PW - 670];
                 ctx.strokeStyle = LINE;
                 txt('מפלגה', cols[0], y, F(700, 20), MUT);
                 txt('% קולות', cols[1], y, F(700, 20), MUT);
                 txt('בפועל', cols[2], y, F(700, 20), MUT);
-                txt('סימולציה', cols[3], y, F(700, 20), MUT);
-                txt('הפרש', cols[4], y, F(700, 20), MUT);
+                if (mixed) {
+                    txt('אזורי', cols[3], y, F(700, 20), MUT);
+                    txt('ארצי', cols[4], y, F(700, 20), MUT);
+                    txt('סה״כ', cols[5], y, F(700, 20), MUT);
+                    txt('הפרש', cols[6], y, F(700, 20), MUT);
+                } else {
+                    txt('סימולציה', cols[3], y, F(700, 20), MUT);
+                    txt('הפרש', cols[4], y, F(700, 20), MUT);
+                }
                 y += 14; ctx.beginPath(); ctx.moveTo(PX, y); ctx.lineTo(PX + PW, y); ctx.stroke(); y += 20;
                 const partyRows = results.filter(r => r.seats > 0 || r.actual > 0).slice(0, 14);
                 partyRows.forEach(r => {
@@ -2517,30 +2527,44 @@
                     txt(r.name, cols[0] - 18, y, F(700, 23), INK);
                     txt(share.toFixed(1) + '%', cols[1], y, F(500, 22), DIM);
                     txt(String(r.actual), cols[2], y, F(500, 22), DIM);
-                    txt(String(r.seats), cols[3], y, F(800, 23), INK);
-                    txt(diff > 0 ? '+' + diff : String(diff), cols[4], y, F(700, 22), diff > 0 ? '#4ade80' : diff < 0 ? '#f87171' : MUT);
+                    if (mixed) {
+                        txt(String(r.regionalSeats != null ? r.regionalSeats : r.seats), cols[3], y, F(600, 22), INK);
+                        txt(String(r.nationalSeatsCount || 0), cols[4], y, F(600, 22), INK);
+                        txt(String(r.seats), cols[5], y, F(800, 23), INK);
+                        txt(diff > 0 ? '+' + diff : String(diff), cols[6], y, F(700, 22), diff > 0 ? '#4ade80' : diff < 0 ? '#f87171' : MUT);
+                    } else {
+                        txt(String(r.seats), cols[3], y, F(800, 23), INK);
+                        txt(diff > 0 ? '+' + diff : String(diff), cols[4], y, F(700, 22), diff > 0 ? '#4ade80' : diff < 0 ? '#f87171' : MUT);
+                    }
                     y += 30;
                 });
                 y += 12;
 
                 // Regions
-                txt(`האזורים (${regionResults.length})`, PX + PW, y + 14, F(800, 28), INK); y += 44;
+                txt(`האזורים (${regionResults.length})`, PX + PW, y + 14, F(800, 28), INK);
+                if (regionResults.length <= 22) txt('ממוין מצפון לדרום', PX, y + 14, F(400, 19), MUT, 'left');
+                y += 44;
                 if (regionResults.length <= 22) {
                     txt('אזור', PX + PW, y, F(700, 20), MUT);
-                    txt('בז״ה', PX + PW - 300, y, F(700, 20), MUT);
-                    txt('מנדטים', PX + PW - 430, y, F(700, 20), MUT);
+                    txt('בז״ה', PX + PW - 250, y, F(700, 20), MUT);
+                    txt('בז״ה למנדט', PX + PW - 380, y, F(700, 20), MUT);
+                    txt(nationalSeats > 0 ? 'מנדטים אזוריים' : 'מנדטים', PX + PW - 500, y, F(700, 20), MUT);
                     y += 14; ctx.beginPath(); ctx.moveTo(PX, y); ctx.lineTo(PX + PW, y); ctx.stroke(); y += 20;
-                    regionResults.forEach((r, idx) => {
+                    const orderedRegions = regionResults
+                        .map((r, idx) => ({ r, idx, lat: getRegionCentroid(r.stations).lat }))
+                        .sort((a, b) => b.lat - a.lat);
+                    orderedRegions.forEach(({ r, idx }) => {
                         // One dot per seat, coloured by the party that won it (largest party first)
                         const dots = Object.entries(r.seats).filter(([_, s]) => s > 0)
                             .sort((a, b) => b[1] - a[1])
                             .flatMap(([name, s]) => Array(s).fill(partyColorMap[name] || '#888'));
-                        const perRow = 26, dotR = dots.length > 52 ? 4.5 : 5.5, dotGap = dotR * 2 + 5;
+                        const perRow = 19, dotR = dots.length > 38 ? 4.5 : 5.5, dotGap = dotR * 2 + 5;
                         const rows = Math.max(1, Math.ceil(dots.length / perRow));
                         txt((regionNames[idx] || {}).he || getDisplayName(idx), PX + PW, y, F(700, 22), INK);
-                        txt(i18n.fmtNum(r.eligible), PX + PW - 300, y, F(500, 21), DIM);
+                        txt(i18n.fmtNum(r.eligible), PX + PW - 250, y, F(500, 21), DIM);
+                        txt(r.seatCount > 0 ? i18n.fmtNum(Math.round(r.eligible / r.seatCount)) : '—', PX + PW - 380, y, F(500, 21), DIM);
                         dots.forEach((color, i) => {
-                            const dx = PX + PW - 430 - (i % perRow) * dotGap;
+                            const dx = PX + PW - 500 - (i % perRow) * dotGap;
                             const dy = y + (Math.floor(i / perRow) - (rows - 1) / 2) * (dotR * 2 + 4);
                             ctx.fillStyle = color; ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, Math.PI * 2); ctx.fill();
                         });
