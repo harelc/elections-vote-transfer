@@ -341,9 +341,18 @@
                 const rosterElig = ncE.roster_eligible || (tdNational && tdNational.eligible) || 0;
                 const eligTxt = partial && rosterElig > 0
                     ? ` · ${fmt(countedElig)} / ${fmt(rosterElig)} ${en() ? 'eligible voters in counted ballots' : 'בעלי זכות בקלפיות שנספרו'} (${(100 * countedElig / rosterElig).toFixed(1)}%)` : '';
+                // Explicit split: regular boxes vs double-envelope (9999)
+                // boxes — `ballots` mixes both and can exceed the roster.
+                const extN = Number(status.external_envelopes_counted);
+                const splitTxt = Number.isFinite(extN)
+                    ? (en()
+                        ? ` · in the data: ${fmt(Number.isFinite(Number(status.regular_ballots)) ? Number(status.regular_ballots) : (status.ballots || 0) - extN)} regular · ${fmt(extN)} double-envelope (9999)`
+                        : ` · בנתונים: ${fmt(Number.isFinite(Number(status.regular_ballots)) ? Number(status.regular_ballots) : (status.ballots || 0) - extN)} רגילות · ${fmt(extN)} מעטפות חיצוניות (9999)`)
+                    : '';
                 document.getElementById('count-meta').textContent =
                     `${fmt(status.ballots)} / ${fmt(status.ballots_total)} ${en() ? 'ballot boxes' : 'קלפיות'}` +
-                    (partial ? ` · ${fmt(status.ballots_total - (status.ballots || 0))} ${en() ? 'remaining' : 'נותרו'}` : '') +
+                    splitTxt +
+                    (partial ? ` · ${fmt(Math.max(0, status.ballots_total - (status.ballots || 0)))} ${en() ? 'remaining' : 'נותרו'}` : '') +
                     eligTxt +
                     (upd ? ` · ${en() ? 'updated' : 'עודכן'} ${upd}` : '');
             } else cc1.hidden = true;

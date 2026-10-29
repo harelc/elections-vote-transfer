@@ -204,6 +204,10 @@ def status_document(summary, kind, as_of, sha256, ci_coverage):
         "as_of": as_of,
         "ballots": summary["ballots"],
         "ballots_total": ROSTER,
+        # Explicit split of what's in the data: regular polling stations
+        # vs double-envelope (settlement 9999) boxes. `ballots` mixes both,
+        # which is how the total can exceed the regular roster.
+        "regular_ballots": summary["ballots"] - summary["external_envelopes_counted"],
         "roster_complete": summary["ballots"] >= ROSTER,
         "external_envelopes_expected": summary["external_envelopes_expected"],
         "external_envelopes_counted": summary["external_envelopes_counted"],
