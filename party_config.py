@@ -726,17 +726,17 @@ ELECTIONS = {
         'ballot_field': 'קלפי',
         # Simulated on the official K26 roster (CEC 6 Sep 2026): 12,018 boxes,
         # 7,331,981 eligible. Letter symbols are the final CEC signs.
-        'eligible_voters': 7298639,
-        'votes_cast': 5474083,
-        'valid_votes': 5449594,
-        'turnout_percent': 75.0,
+        'eligible_voters': 7303934,
+        'votes_cast': 5540051,
+        'valid_votes': 5515211,
+        'turnout_percent': 75.9,
         'major_parties': {
             'symbols': ['דרך', 'מחל', 'רק', 'אמת', 'ל', 'ודם', 'ג', 'שס', 'ב', 'ט', 'עם', 'ך', 'די', 'זך', 'ני'],
             'names': ['ישר', 'הליכוד', 'ביחד', 'הדמוקרטים', 'ישראל ביתנו',
                      'הרשימה המשותפת', 'יהדות התורה', 'ש״ס', 'עוצמה יהודית',
                      'הציונות הדתית', 'רע״ם', 'עמך ישראל', 'המילואימניקים והכלכלית',
                      'הציבור החרדי', 'נעם'],
-            'seats': [21, 26, 12, 8, 7, 11, 7, 7, 7, 6, 8, 0, 0, 0, 0]
+            'seats': [21, 27, 12, 8, 7, 11, 7, 6, 7, 6, 8, 0, 0, 0, 0]
         }
     }
 }
