@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta property="og:type" content="website">
+<meta property="og:title" content="המתמטיקה של הרכבת ממשלה — קולות נודדים">
+<meta property="og:description" content="2,048 קואליציות אפשריות, 1,000 עם רוב, ורעיון מופרע אחד לפתור את המבוי הסתום — מוסבר פשוט, עם המתמטיקה מקופלת בפנים">
+<meta property="og:image" content="https://kolot-nodedim.netlify.app/og-image.png?v=2">
+<meta name="twitter:card" content="summary_large_image">
+<title>המתמטיקה של הרכבת ממשלה | קולות נודדים</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#101216; --bg2:#16181d; --card:#1b1e25; --card2:#21242d;
+  --line:#2c303c; --text:#f3f5f8; --dim:#b9bfcc; --muted:#878ea0;
+  --gold:#f0b429; --gold-soft:#f6d78a; --green:#4ade80; --red:#f87171;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:'Heebo',sans-serif;line-height:1.75;font-size:17px}
+a{color:var(--gold-soft)}
+.wrap{max-width:880px;margin:0 auto;padding:0 22px 90px}
+.topbar{display:flex;align-items:center;gap:12px;padding:20px 0 4px;color:var(--muted);font-size:.9rem}
+.topbar a{color:var(--muted);text-decoration:none}
+.topbar a:hover{color:var(--gold-soft)}
+.topbar .brand{font-weight:800;color:var(--text)}
+/* hero */
+.hero{padding:44px 0 10px;text-align:center}
+.hero h1{font-family:'Frank Ruhl Libre',serif;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1.2;font-weight:900;margin:0 0 14px}
+.hero h1 .gold{color:var(--gold)}
+.hero .lede{font-size:1.16rem;color:var(--dim);max-width:640px;margin:0 auto}
+.hero .note{margin-top:14px;font-size:.86rem;color:var(--muted)}
+.bigstats{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:34px 0 6px}
+.bigstat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 22px;min-width:150px}
+.bigstat b{display:block;font-size:2rem;line-height:1.1;color:var(--gold);font-weight:900}
+.bigstat span{font-size:.88rem;color:var(--dim)}
+/* seat dots */
+.seatdots{display:flex;flex-wrap:wrap;gap:3px;justify-content:center;max-width:640px;margin:26px auto 6px}
+.seatdots i{width:11px;height:11px;border-radius:3px;display:block}
+.seatlegend{display:flex;flex-wrap:wrap;gap:6px 14px;justify-content:center;font-size:.8rem;color:var(--dim);max-width:700px;margin:10px auto 0}
+.seatlegend i{width:9px;height:9px;border-radius:2px;display:inline-block;margin-inline-end:5px}
+/* sections */
+section{margin-top:64px}
+h2{font-family:'Frank Ruhl Libre',serif;font-size:clamp(1.5rem,4vw,2rem);font-weight:900;line-height:1.3;margin:0 0 8px}
+h2 .num{color:var(--gold);margin-inline-end:.35em}
+.sub{color:var(--dim);margin:0 0 20px;font-size:1.02rem}
+p{margin:0 0 14px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:18px 0}
+.card h3{margin:0 0 10px;font-size:1.12rem;font-weight:800}
+.callout{border-inline-start:4px solid var(--gold);background:linear-gradient(270deg,rgba(240,180,41,.08),transparent 70%);padding:16px 20px;border-radius:10px;margin:20px 0}
+.callout b{color:var(--gold-soft)}
+/* builder */
+.parties{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:9px;margin:16px 0}
+.party{border:1.5px solid var(--line);background:var(--card2);border-radius:12px;padding:10px 12px;cursor:pointer;text-align:start;font-family:inherit;color:var(--text);transition:border-color .15s,background .15s}
+.party:hover{border-color:var(--muted)}
+.party.on{border-color:var(--pc);background:color-mix(in srgb,var(--pc) 16%,var(--card2))}
+.party .pn{font-weight:700;font-size:.98rem;display:flex;align-items:center;gap:7px}
+.party .pn i{width:10px;height:10px;border-radius:3px;background:var(--pc);flex:none}
+.party .ps{font-size:.82rem;color:var(--dim)}
+.meter{height:16px;background:#0b0c0f;border:1px solid var(--line);border-radius:99px;overflow:hidden;position:relative;margin:14px 0 8px}
+.meter i{display:block;height:100%;background:linear-gradient(90deg,#b45309,var(--gold));width:0;transition:width .25s}
+.meter .mark{position:absolute;top:-2px;bottom:-2px;inset-inline-start:50.83%;width:2px;background:var(--text);opacity:.75}
+.meterlab{display:flex;justify-content:space-between;font-size:.85rem;color:var(--dim);flex-wrap:wrap;gap:6px}
+.verdict{font-size:1.12rem;font-weight:800;margin-top:10px;min-height:1.8em}
+.verdict.win{color:var(--green)} .verdict.lose{color:var(--dim)} .verdict.tie{color:var(--gold)}
+.btnrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}
+button.act{font-family:inherit;font-size:.9rem;font-weight:700;border-radius:99px;padding:8px 18px;cursor:pointer;border:1px solid var(--line);background:var(--card2);color:var(--text)}
+button.act:hover{border-color:var(--gold);color:var(--gold-soft)}
+button.act.goldb{background:var(--gold);color:#1a1408;border-color:var(--gold)}
+/* bars */
+.bar-row{display:grid;grid-template-columns:130px 1fr 74px;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.bar-row:last-child{border-bottom:none}
+.bar-row .bn{font-weight:600;font-size:.95rem}
+.bar-row .bn small{color:var(--muted);font-weight:400}
+.track{height:14px;background:#0b0c0f;border-radius:99px;overflow:hidden}
+.track i{display:block;height:100%;border-radius:99px}
+.bar-row .bv{font-weight:800;text-align:end;font-variant-numeric:tabular-nums}
+/* steps */
+.steps{display:grid;gap:12px;margin:18px 0}
+.step{display:flex;gap:16px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px}
+.step .sn{flex:none;width:38px;height:38px;border-radius:50%;background:var(--gold);color:#1a1408;font-weight:900;display:flex;align-items:center;justify-content:center;font-size:1.05rem}
+.step h3{margin:2px 0 6px;font-size:1.05rem}
+.step p{margin:0;color:var(--dim);font-size:.97rem}
+/* scoreboard */
+.scores{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}
+@media(max-width:560px){.scores{grid-template-columns:1fr}}
+.score{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;text-align:center}
+.score .sv{font-size:2.4rem;font-weight:900;line-height:1}
+.score .sl{color:var(--dim);font-size:.9rem;margin-top:6px}
+.score.good .sv{color:var(--green)} .score.bad .sv{color:var(--red)} .score.mid .sv{color:var(--gold)}
+.quote{font-family:'Frank Ruhl Libre',serif;font-size:1.2rem;line-height:1.65;background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:18px 0}
+.quote small{display:block;font-family:'Heebo',sans-serif;font-size:.85rem;color:var(--muted);margin-top:10px}
+/* advanced */
+details.advanced{border:1px dashed #3d4356;border-radius:12px;margin:16px 0;background:rgba(255,255,255,.02)}
+details.advanced summary{cursor:pointer;padding:12px 18px;font-weight:700;color:var(--gold-soft);list-style:none;display:flex;align-items:center;gap:9px}
+details.advanced summary::-webkit-details-marker{display:none}
+details.advanced summary::before{content:'▸';color:var(--gold);transition:transform .2s}
+details.advanced[open ] summary::before{transform:rotate(-90deg)}
+details.advanced .inner{padding:2px 18px 16px;color:var(--dim);font-size:.94rem;line-height:1.7}
+details.advanced code{font-family:ui-monospace,Menlo,monospace;background:#0b0c0f;padding:1px 6px;border-radius:5px;color:var(--gold-soft);direction:ltr;unicode-bidi:embed}
+details.advanced table{width:100%;border-collapse:collapse;margin:10px 0;font-size:.9rem}
+details.advanced th,details.advanced td{padding:5px 8px;border-bottom:1px solid rgba(255,255,255,.07);text-align:start}
+details.advanced td:last-child,details.advanced th:last-child{text-align:end;font-variant-numeric:tabular-nums}
+.formula{direction:ltr;text-align:center;font-family:ui-monospace,Menlo,monospace;background:#0b0c0f;border-radius:10px;padding:14px 10px;margin:12px 0;color:var(--text);overflow-x:auto;white-space:nowrap}
+/* coalition chips */
+.coal{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip{border-radius:99px;padding:6px 14px;font-weight:700;font-size:.92rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.5)}
+.chip small{opacity:.85;font-weight:500}
+.sumline{font-size:1.25rem;font-weight:900}
+.sumline .n61{color:var(--green)}
+footer{margin-top:80px;border-top:1px solid var(--line);padding-top:22px;color:var(--muted);font-size:.88rem;text-align:center}
+.kicker{display:inline-block;background:rgba(240,180,41,.12);color:var(--gold-soft);border:1px solid rgba(240,180,41,.35);border-radius:99px;padding:3px 14px;font-size:.85rem;font-weight:700;margin-bottom:16px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="topbar">
+  <a class="brand" href="index.html">קולות נודדים</a>
+  <span>·</span><span>המתמטיקה של הרכבת ממשלה</span>
+</div>
+
+<header class="hero">
+  <div class="kicker">כנסת 26 · לפי הספירה הנוכחית, שעדיין אינה סופית־רשמית</div>
+  <h1>אף אחד לא יכול להרכיב ממשלה.<br>אז בדקנו את <span class="gold">כל האפשרויות</span>.</h1>
+  <p class="lede">11 מפלגות עברו את אחוז החסימה. כל קבוצה שהן יכולות להקים היא "קואליציה אפשרית" — יש 2,048 קבוצות כאלה. ספרנו כמה מהן באמת מנצחות, מי מחזיק בכוח האמיתי, והצענו פתרון מופרע אחד למבוי הסתום. ושלחנו אותו לביקורת.</p>
+  <div class="bigstats">
+    <div class="bigstat"><b>2,048</b><span>קואליציות אפשריות</span></div>
+    <div class="bigstat"><b>1,000</b><span>עם רוב של 61+</span></div>
+    <div class="bigstat"><b>48</b><span>תקועות על 60–60</span></div>
+    <div class="bigstat"><b>0</b><span>קואליציות של 3 מפלגות בלבד</span></div>
+  </div>
+  <div class="seatdots" id="seatdots" aria-hidden="true"></div>
+  <div class="seatlegend" id="seatlegend"></div>
+  <p class="note">כל נקודה היא מושב בכנסת. צריך 61 כדי לשלוט — שימו לב כמה רחוקה כל מפלגה לבדה מהקו הזה.</p>
+</header>
+
+<section>
+  <h2><span class="num">1</span>למה כל כך קשה להרכיב ממשלה?</h2>
+  <p class="sub">כי הרוב הדרוש הוא 61 מתוך 120, ואף מפלגה לא מתקרבת לזה לבד. הגדולה ביותר, הליכוד, מחזיקה 27. גם שלוש הגדולות יחד — הליכוד, ישר וביחד — מגיעות רק ל־60. חסר אחד.</p>
+  <p>אז כל ממשלה חייבת לחבר לפחות ארבע מפלגות, ובדרך כלל הרבה יותר — וכל מפלגה נוספת היא עוד שותפה שיכולה לפרוש ולהפיל את הכול. נסו בעצמכם:</p>
+
+  <div class="card">
+    <h3>🎛️ בנו קואליציה</h3>
+    <p style="color:var(--dim);margin:0">לחצו על מפלגות כדי לצרף אותן לקואליציה שלכם. המטרה: 61 מושבים לפחות.</p>
+    <div class="parties" id="parties"></div>
+    <div class="meter"><i id="meterfill"></i><div class="mark"></div></div>
+    <div class="meterlab"><span id="metercount">0 / 120 מושבים</span><span>הקו הלבן = 61, רוב</span></div>
+    <div class="verdict lose" id="verdict">בחרו מפלגות כדי להתחיל</div>
+    <div class="btnrow">
+      <button class="act goldb" id="crazy">טענו את הקואליציה המטורפת ביותר</button>
+      <button class="act" id="clear">נקו הכול</button>
+    </div>
+  </div>
+
+  <div class="callout">מתוך 2,048 הקבוצות האפשריות, <b>1,000 בדיוק</b> מגיעות לרוב. נשמע הרבה? הבעיה היא לא שאין רוב — הבעיה היא שכל מפלגה מעדיפה לחכות לקבוצה טובה יותר מאשר לחתום על זו שמול העיניים.</div>
+
+  <details class="advanced">
+    <summary>מתקדם: איך סופרים 2,048 ו־1,000?</summary>
+    <div class="inner">
+      <p>כל מפלגה או בפנים או בחוץ — שתי אפשרויות לכל אחת מ־11 המפלגות, כלומר <code>2^11 = 2048</code> תתי־קבוצות. עברנו על כולן וחיברנו מושבים. התפלגות התוצאות:</p>
+      <table>
+        <tr><th>גודל הקבוצה</th><th>עם רוב (61+)</th><th>תיקו (60)</th></tr>
+        <tr><td>3 מפלגות</td><td>0</td><td>1</td></tr>
+        <tr><td>4 מפלגות</td><td>35</td><td>1</td></tr>
+        <tr><td>5 מפלגות</td><td>119</td><td>22</td></tr>
+        <tr><td>6 מפלגות</td><td>321</td><td>22</td></tr>
+        <tr><td>7 מפלגות</td><td>294</td><td>1</td></tr>
+        <tr><td>8 מפלגות</td><td>164</td><td>1</td></tr>
+        <tr><td>9 מפלגות</td><td>55</td><td>0</td></tr>
+        <tr><td>10–11 מפלגות</td><td>12</td><td>0</td></tr>
+      </table>
+      <p>45 מהקואליציות המנצחות עומדות על 61 בדיוק — הרוב הרזה ביותר. ויש סימטריה יפה: לכל קבוצה מנצחת, הקבוצה המשלימה (כל מי שלא בפנים) מפסידה, ולכן מספר המנצחות שווה למספר המפסידות מתחת ל־60: 1,000 מול 1,000, ובאמצע 48 תיקו.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">2</span>הקואליציה המטורפת ביותר</h2>
+  <p class="sub">אם כבר מחברים יריבים, הנה השילוב שהכי קשה לדמיין יושב סביב שולחן אחד — והוא עומד על 61 בדיוק, בלי אף מושב מיותר:</p>
+  <div class="card">
+    <div class="coal" id="crazycoal"></div>
+    <div class="sumline">סך הכול: <span class="n61">61 מושבים</span> — רוב של אחד</div>
+    <p style="color:var(--dim);margin-top:12px">ממשלת בנט (ביחד היא הגדולה בקבוצה, עם 12 מושבים בלבד) בלי הליכוד, בלי ישר ובלי הרשימה המשותפת — אבל עם בן גביר וסמוטריץ' לצד רע״ם והדמוקרטים, ליברמן לצד שתי המפלגות החרדיות. כל אחת משמונה המפלגות יכולה להפיל את הממשלה לבד. הסיכוי שזה יקרה באמת? אפסי. אבל מתמטית — זה מנצח.</p>
+  </div>
+
+  <details class="advanced">
+    <summary>מתקדם: איך מדרגים "מטורף"?</summary>
+    <div class="inner">
+      <p>הגדרנו זוגות של מפלגות שיריבותן מוצהרת או עמוקה (למשל עוצמה יהודית × הרשימה המשותפת, ישראל ביתנו × המפלגות החרדיות), נתנו לכל זוג משקל, וחישבנו לכל אחת מ־1,000 הקואליציות המנצחות ציון עוינות פנימית. הקואליציה שלמעלה היא זו עם הציון הגבוה ביותר מבין הקואליציות שעומדות על 61 בדיוק — כלומר מרב העוינות במינימום המושבים. הקואליציה של כל 11 המפלגות צוברת יותר עוינות בסך הכול, אבל היא פשוט "כולם", ולכן פחות מעניינת.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">3</span>למי באמת יש כוח?</h2>
+  <p class="sub">לא למי שיש הכי הרבה מושבים — אלא למי שהכי הרבה פעמים הוא ה"אחד שחסר". דמיינו שכל 11 המפלגות עומדות בתור בסדר אקראי ומצטרפות אחת־אחת. מישהי בתור היא זו שברגע הצטרפותה הסכום חוצה את 61 — היא ה"מכריעה". אם חוזרים על הניסוי בכל הסדרים האפשריים, כל מפלגה מכריעה בחלק מהם. החלק הזה הוא הכוח האמיתי שלה, והוא נקרא <b>ערך שפלי</b>.</p>
+
+  <div class="card" id="shapley"></div>
+
+  <div class="callout">שימו לב: <b>הליכוד חזק יותר מהמושבים שלו</b> (27 מושבים, אבל מכריע ב־25.9% מהסדרים), ואילו <b>הרשימה המשותפת חלשה מהמושבים שלה</b> (11 מושבים, רק 7.4%). למה? כי 11 הוא גודל "לא נוח": כמעט אף פעם היא בדיוק זו שחסרה כדי לחצות את הקו.</div>
+
+  <details class="advanced">
+    <summary>מתקדם: הנוסחה של שפלי–שוביק</summary>
+    <div class="inner">
+      <p>זהו מדד הכוח של שפלי–שוביק למשחק הצבעה משוקלל עם מכסה 61:</p>
+      <div class="formula">φᵢ = Σ |S|! (n−|S|−1)! / n! · [v(S∪{i}) − v(S)]</div>
+      <p>כאשר <code>v(S)</code> שווה 1 אם לקבוצה S יש 61+ מושבים, ואחרת 0. הסכום רץ על כל הקבוצות S שלא כוללות את המפלגה i, ומשקלל כל קבוצה במספר הסדרים שבהם i מצטרפת בדיוק אחריה. שתי נקודות שחשוב לא לבלבל:</p>
+      <p>· ערך שפלי הוא <b>של מפלגה</b>, לא של קואליציה. לקואליציה עצמה יש רק ערך v: מנצחת (1) או לא (0).<br>
+      · ערכי שפלי מסתכמים ל־1, ולכן הם <b>לא</b> יכולים להיות "הסתברות להיכלל בקואליציה" — בכל קואליציה מנצחת יש לפחות 4 מפלגות, אז הסתברויות הכללה חייבות להסתכם ל־4 לפחות. זו טעות שנחזור אליה למטה.</p>
+      <p>מפלגות עם אותו מספר מושבים מקבלות אותו ערך בדיוק — הדמוקרטים ורע״ם (8), שלוש מפלגות ה־7, ושתי מפלגות ה־6 — כי המדד רואה רק מספרים, לא שמות.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">4</span>הרעיון המופרע: הגרלת הקואליציות</h2>
+  <p class="sub">אם הבעיה היא שכל מפלגה מחכה לעסקה טובה יותר — אולי צריך לקחת ממנה את הבחירה, אחרי שהסכימה לכללים אבל לפני שהיא יודעת את התוצאה:</p>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div><h3>כולם חותמים מראש</h3><p>11 ראשי המפלגות מתחייבים: מה שההגרלה תוציא — שולט לשנתיים. אי־אמון רק אם מציגים ממשלה חלופית באותה הצבעה.</p></div></div>
+    <div class="step"><div class="sn">2</div><div><h3>מגרילים אחת מ־1,000</h3><p>ההגרלה פומבית (מספרי מפעל הפיס כזרע אקראיות), ומשוקללת כך שכל מפלגה תקבל בממוצע נתח תיקים לפי ערך השפלי שלה — הליכוד הכי הרבה, הקטנות פחות.</p></div></div>
+    <div class="step"><div class="sn">3</div><div><h3>אלגוריתם מחלק את התיקים</h3><p>בתוך הקואליציה שעלתה בגורל, המפלגות מדרגות תיקים בסתר, ואלגוריתם שידוך מפורסם (גייל–שפלי) מחלק אותם כך שאף שתי מפלגות לא ירצו להתחלף זו עם זו.</p></div></div>
+    <div class="step"><div class="sn">4</div><div><h3>השאר — הצבעות חופשיות</h3><p>הקואליציה מחויבת רק לתקציב. כל חוק אחר עובר עם איזה 61 חברי כנסת שמסכימים עליו באותו יום.</p></div></div>
+  </div>
+  <p>נשמע מטורף? שלחנו את זה לבדיקה אצל מומחה עצמאי לתורת המשחקים ומדע המדינה. הוא לא ריחם:</p>
+
+  <div class="scores">
+    <div class="score mid"><div class="sv">5/10</div><div class="sl">אלגנטיות מתמטית</div></div>
+    <div class="score bad"><div class="sv">2/10</div><div class="sl">היתכנות בפועל</div></div>
+  </div>
+  <div class="quote">"רעיון מסקרן כנקודת ייחוס להוגנות, אבל כפי שהוא מנוסח הוא מבלבל בין שלושה דברים שונים, מיישם את אלגוריתם גייל–שפלי לא נכון, ואין לו שום מנגנון שיגרום ליריבים מושבעים לשלוט יחד."
+    <small>— מהערכת המומחה העצמאי. ההתנגדות החריפה ביותר שלו: אם קיימת קואליציה שיכולה לאכוף את ההסכם — היא פשוט יכולה לנהל משא ומתן רגיל.</small></div>
+
+  <details class="advanced">
+    <summary>מתקדם: איפה בדיוק ההגרלה נשברת מתמטית?</summary>
+    <div class="inner">
+      <p><b>ערך שפלי אינו הסתברות הכללה.</b> ערכי השפלי של 11 המפלגות מסתכמים ל־1, אבל בכל הגרלה נבחרת קואליציה של 4 מפלגות לפחות, ולכן סכום ההסתברויות שכל מפלגה תיכלל חייב להיות לפחות 4. אי אפשר לשקלל את ההגרלה כך ש"הסתברות ההכללה = ערך שפלי" — זה לא מסתדר אריתמטית. אפשר לנסות להתאים נתחי תיקים במקום, אבל זה כבר בעיית אופטימיזציה נפרדת שלא הוגדרה.</p>
+      <p><b>גייל–שפלי לא חל על תיקים.</b> האלגוריתם דורש שני צדדים שמדרגים זה את זה. למשרדי ממשלה אין העדפות — הם לא "מדרגים" מפלגות. כשהצד השני פסיבי, האלגוריתם קורס להכתבה לפי תור, שהיא הוגנת הרבה פחות ממה שהובטח. וגם כשהוא כן חל: יציבות (אין זוג שחוסם) אינה חפות מקנאה — מפלגה יכולה לקנא בתיק של אחרת בלי שיהיה זוג שרוצה להתחלף.</p>
+      <p><b>הקרדיט שמגיע לו:</b> גייל–שפלי עצמו תמיד מוצא שידוך יציב בבעיית הנישואים הקלאסית (גודל שווה, דירוגים מלאים), ותמיד מסתיים תוך n² הצעות לכל היותר. לשידוך יציב בתלת־ממד (אחד מכל אחד משלושה צדדים) כבר אין הבטחה כזו — עצם ההכרעה אם קיים שידוך יציב היא בעיה NP־שלמה.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2><span class="num">5</span>הגרסה הטובה יותר: מרכיב ממשלה אלגוריתמי</h2>
+  <p class="sub">לקחנו את הביקורת ובנינו גרסה צנועה בהרבה: לא הגרלה שמחליטה במקום הפוליטיקאים, אלא מכרז שקוף שעוזר להם להחליט.</p>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div><h3>כל מפלגה מגישה בסתר</h3><p>עם מי היא מסרבת לשבת (רשימת וטו), כמה כל תיק שווה לה (100 נקודות לחלק בין התיקים), ושניים־שלושה קווים אדומים.</p></div></div>
+    <div class="step"><div class="sn">2</div><div><h3>בודקים מה בכלל אפשרי</h3><p>עוברים על כל 2,048 הקבוצות ומשאירים רק מנצחות שאין בהן זוג וטו. מדרגים לפי קרבה רעיונית וגודל. הנשיא עדיין ממנה את מרכיב הממשלה — כרגיל.</p></div></div>
+    <div class="step"><div class="sn">3</div><div><h3>התיקים נבדקים מול שפלי</h3><p>חלוקת התיקים נעשית באופטימיזציה לפי הנקודות שהמפלגות עצמן נתנו, וערך השפלי משמש רק כמד־הוגנות: האם כל אחת קיבלה בערך את הנתח שמגיע לכוחה האמיתי?</p></div></div>
+  </div>
+
+  <div class="scores">
+    <div class="score mid"><div class="sv">6/10</div><div class="sl">אלגנטיות מתמטית</div></div>
+    <div class="score mid"><div class="sv">4/10</div><div class="sl">היתכנות בפועל</div></div>
+  </div>
+  <div class="quote">"שיפור אמיתי לעומת ההגרלה — אבל בסוף זו גיליון אלקטרוני מואר היטב בשביל מנהלי משא ומתן, לא מנגנון שמרכיב ממשלות."
+    <small>— אותו מומחה. הבעיה שנשארה: וטו והצעות מחיר הם מהלכים אסטרטגיים, לא נתוני אמת — מפלגות ישחקו במערכת. ומה שכן שווה להציל: עצם הפרסום של אילו קואליציות אפשריות ומה חוסם אותן.</small></div>
+</section>
+
+<section>
+  <h2><span class="num">6</span>ואם אין אף קואליציה בלי וטו?</h2>
+  <p class="sub">יכול לקרות שרשימות הווטו כל כך צפופות, שכל קבוצה מנצחת מכילה לפחות זוג אחד שמסרב לשבת יחד. אז המנגנון לא קורס — הוא יורד בסולם, וכל שלב חושף משהו שהמערכת הנוכחית מסתירה:</p>
+  <div class="steps">
+    <div class="step"><div class="sn">1</div><div><h3>כמה וטו צריך לשבור?</h3><p>מדרגים את כל הקואליציות המנצחות לפי מספר זוגות הווטו שבהן. "אין קואליציה נקייה, אבל שלוש קואליציות דורשות שבירת וטו אחד בלבד" — זו עובדה שאפשר לפרסם.</p></div></div>
+    <div class="step"><div class="sn">2</div><div><h3>שוק להסרת וטו</h3><p>מחשבים את קבוצת הווטו הקטנה ביותר שהסרתה פותחת קואליציה אפשרית. כל מפלגה מצהירה בפומבי מה המחיר — ויתור מדיניות, לא כסף. למבוי הסתום יש פתאום שם ותג מחיר.</p></div></div>
+    <div class="step"><div class="sn">3</div><div><h3>תמיכה מבחוץ</h3><p>רוב הווטו הם "לא נשב איתם בממשלה", לא "לא נקבל את הקולות שלהם". מפלגה מווטאת יכולה לתמוך בהשבעה ובתקציב מבחוץ, בלי תיקים — כמו שהיה כאן בעבר.</p></div></div>
+    <div class="step"><div class="sn">4</div><div><h3>מודה שנתקענו</h3><p>אם גם זה לא עובד: ממשלת מיעוט שמעבירה כל חוק עם 61 אד־הוק, או בחירות חדשות — עם הוכחה פורמלית שלא קיים רוב תואם. מנגנון ש"מייצר" ממשלה מעבר לנקודה הזו פשוט משקר.</p></div></div>
+  </div>
+
+  <details class="advanced">
+    <summary>מתקדם: הווטו כבעיה בגרף</summary>
+    <div class="inner">
+      <p>בונים גרף שבו קשת בין שתי מפלגות פירושה "מוכנות לשבת יחד". קואליציה בלי וטו היא <b>קליקה</b> בגרף הזה (כל זוג מחובר) עם 61+ מושבים. במפת וטו סבירה לכנסת הזו (בן גביר וסמוטריץ' מול שתי הרשימות הערביות והדמוקרטים, ליברמן מול החרדיות, רוב המפלגות הציוניות מול המשותפת, בנט–נתניהו) עדיין יש <b>15 קליקות מנצחות</b> — למשל הליכוד + ישר + יהדות התורה + ש״ס = 61 בדיוק.</p>
+      <p>קבוצת הווטו הקטנה ביותר שהסרתה יוצרת קליקה מנצחת היא בעיית <b>קבוצת פגיעה מינימלית</b> (hitting set) — NP־קשה בכלליות, אבל עם 11 מפלגות ו־2,048 קבוצות היא נפתרת במניית־כוח־גס בשבריר שנייה. וגם כאן יש מוקש תורת־משחקי: שוק להסרת וטו מתגמל מפלגות על הכרזת וטו שלא התכוונו אליו, רק כדי שיקנו אותו מהן. ההגנה החלקית: הגשה חתומה ובו־זמנית, ומחירי הסרה פומביים בדמות ויתורי מדיניות — וטו מזויף שנקנה בזול מביך את בעליו.</p>
+    </div>
+  </details>
+</section>
+
+<section>
+  <h2>השורה התחתונה</h2>
+  <div class="card">
+    <p style="margin:0">המתמטיקה לא תרכיב ממשלה במקום הפוליטיקאים. אבל היא כן עושה שלושה דברים שהשיח הנוכחי לא עושה: היא <b>מונה</b> את כל האפשרויות במקום לנחש, היא <b>מודדת</b> כוח אמיתי במקום לספור מושבים בלבד, והיא <b>מאלצת</b> את מי שחוסם לומר את זה במספרים — כמה וטו, של מי, ובאיזה מחיר הם יורדים. לפעמים זה כל מה שחסר כדי שמשא ומתן יתחיל.</p>
+  </div>
+</section>
+
+<footer>
+  נבנה על נתוני הספירה החלקית של כנסת 26 כפי שפורסמה באתר זה (עדיין לא תוצאות סופיות רשמיות). מפות המנדטים והספירות עלולות להשתנות עם הגעת המעטפות החיצוניות.<br>
+  <a href="index.html">קולות נודדים</a> · <a href="k26.html">מרכז המידע כנסת 26</a> · <a href="sankey.html">נדידת קולות</a>
+</footer>
+
+</div>
+
+<script>
+const PARTIES = [
+  ['הליכוד','#2563eb',27,25.85],['ישר','#eab308',21,18.70],['ביחד','#f97316',12,9.38],
+  ['הרשימה המשותפת','#0d9488',11,7.44],['הדמוקרטים','#16a34a',8,6.56],['רע״ם','#84cc16',8,6.56],
+  ['ישראל ביתנו','#db2777',7,5.53],['עוצמה יהודית','#7f1d1d',7,5.53],['יהדות התורה','#4b5563',7,5.53],
+  ['ש״ס','#1e3a8a',6,4.46],['הציונות הדתית','#92400e',6,4.46]
+];
+const CRAZY = ['ביחד','הדמוקרטים','רע״ם','ישראל ביתנו','עוצמה יהודית','יהדות התורה','ש״ס','הציונות הדתית'];
+
+// seat dots + legend
+const dots = document.getElementById('seatdots'), leg = document.getElementById('seatlegend');
+PARTIES.forEach(([name,color,seats]) => {
+  for (let i=0;i<seats;i++){ const d=document.createElement('i'); d.style.background=color; dots.appendChild(d); }
+  const s=document.createElement('span'); s.innerHTML=`<i style="background:${color}"></i>${name} ${seats}`; leg.appendChild(s);
+});
+
+// coalition builder
+const chosen = new Set();
+const box = document.getElementById('parties');
+PARTIES.forEach(([name,color,seats]) => {
+  const b=document.createElement('button');
+  b.className='party'; b.style.setProperty('--pc',color); b.dataset.name=name;
+  b.setAttribute('aria-pressed','false');
+  b.innerHTML=`<span class="pn"><i></i>${name}</span><span class="ps">${seats} מושבים</span>`;
+  b.addEventListener('click',()=>{ chosen.has(name)?chosen.delete(name):chosen.add(name); sync(); });
+  box.appendChild(b);
+});
+function total(){ return PARTIES.filter(p=>chosen.has(p[0])).reduce((a,p)=>a+p[2],0); }
+function sync(){
+  document.querySelectorAll('.party').forEach(el=>{
+    const on=chosen.has(el.dataset.name);
+    el.classList.toggle('on',on); el.setAttribute('aria-pressed',on);
+  });
+  const t=total();
+  document.getElementById('meterfill').style.width=(t/120*100)+'%';
+  document.getElementById('metercount').textContent=`${t} / 120 מושבים · ${chosen.size} מפלגות`;
+  const v=document.getElementById('verdict');
+  if(!chosen.size){ v.className='verdict lose'; v.textContent='בחרו מפלגות כדי להתחיל'; }
+  else if(t>=61){ v.className='verdict win'; v.textContent=`✓ יש רוב! ${t} מושבים — הקואליציה הזו יכולה להקים ממשלה`; }
+  else if(t===60){ v.className='verdict tie'; v.textContent='60 מושבים — תיקו. חסר בדיוק אחד.'; }
+  else { v.className='verdict lose'; v.textContent=`${t} מושבים — חסרים עוד ${61-t} לרוב`; }
+}
+document.getElementById('clear').addEventListener('click',()=>{ chosen.clear(); sync(); });
+document.getElementById('crazy').addEventListener('click',()=>{ chosen.clear(); CRAZY.forEach(n=>chosen.add(n)); sync(); });
+sync();
+
+// crazy coalition chips
+const cc=document.getElementById('crazycoal');
+CRAZY.forEach(n=>{ const p=PARTIES.find(x=>x[0]===n);
+  const c=document.createElement('span'); c.className='chip'; c.style.background=p[1];
+  c.innerHTML=`${n} <small>${p[2]}</small>`; cc.appendChild(c); });
+
+// shapley bars
+const sh=document.getElementById('shapley');
+sh.innerHTML = PARTIES.map(([name,color,seats,shap])=>`
+  <div class="bar-row"><span class="bn">${name} <small>· ${seats} מושבים</small></span>
+  <span class="track"><i style="width:${shap/25.85*100}%;background:${color}"></i></span>
+  <span class="bv">${shap.toFixed(2)}%</span></div>`).join('') +
+  `<p style="color:var(--muted);font-size:.85rem;margin:12px 0 0">ערך שפלי = באיזה חלק מכל סדרי ההצטרפות האפשריים המפלגה היא זו שחוצה את קו ה־61.</p>`;
+</script>
+</body>
+</html>
