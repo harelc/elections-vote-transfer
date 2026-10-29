@@ -34,6 +34,9 @@
         .prov .sub { font-size: 0.76rem; opacity: 0.88; line-height: 1.4; }
         /* Count progress */
         .count-big { font-size: 2rem; font-weight: 800; color: var(--text-primary); line-height: 1.1; }
+        .count-pct-sub { font-size: 0.82rem; font-weight: 600; color: var(--text-muted); }
+        .count-lines { display: grid; gap: 0.18rem; margin-top: 0.3rem; }
+        .count-lines b { color: var(--text-secondary); font-weight: 700; }
         .count-bar { height: 10px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; margin: 0.5rem 0 0.35rem; }
         .count-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #f59e0b, #fbbf24); }
         .official .count-bar i { background: linear-gradient(90deg, #16a34a, #4ade80); }
@@ -120,7 +123,7 @@
 
         <section class="card" id="count-card" hidden>
             <h3 id="count-title"></h3>
-            <div class="count-big"><span id="count-pct">–</span></div>
+            <div class="count-big"><span id="count-pct">–</span> <span class="count-pct-sub" id="count-pct-sub"></span></div>
             <div class="count-bar"><i id="count-fill" style="width:0%"></i></div>
             <div class="note" id="count-meta"></div>
         </section>
@@ -325,13 +328,24 @@
             if ((partial || kind === 'official') && status.ballots_total) {
                 cc1.hidden = false;
                 cc1.className = 'card' + (kind === 'official' ? ' official' : '');
-                const pct = 100 * (status.ballots || 0) / status.ballots_total;
+                // Headline % is regular-box progress only. `ballots` mixes
+                // regular boxes with double-envelope (9999) boxes, so
+                // ballots/ballots_total can exceed 100% (12,032/12,018).
+                const extN = Number(status.external_envelopes_counted);
+                const hasSplit = Number.isFinite(extN);
+                const regularN = hasSplit
+                    ? (Number.isFinite(Number(status.regular_ballots)) ? Number(status.regular_ballots) : (status.ballots || 0) - extN)
+                    : (status.ballots || 0);
+                const pct = Math.min(100, Math.max(0, 100 * regularN / status.ballots_total));
                 document.getElementById('count-title').textContent = kind === 'official'
                     ? (en() ? 'Certified final results' : 'תוצאות סופיות מאושרות')
                     : (extPending && rosterDone)
                         ? (en() ? 'Regular boxes in — waiting on double envelopes' : 'קלפיות רגילות נספרו — ממתינים למעטפות החיצוניות')
                         : (en() ? 'Counting in progress' : 'הספירה בעיצומה');
                 document.getElementById('count-pct').textContent = pct.toFixed(1) + '%';
+                document.getElementById('count-pct-sub').textContent = hasSplit
+                    ? (en() ? 'of regular ballot boxes counted' : 'מהקלפיות הרגילות נספרו')
+                    : (en() ? 'counted' : 'נספרו');
                 document.getElementById('count-fill').style.width = pct.toFixed(1) + '%';
                 const upd = status.as_of ? new Date(status.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' }) : '';
                 // Eligible-voter coverage: eligible in the counted boxes
@@ -340,21 +354,25 @@
                 const countedElig = ncE.counted_eligible || geoRows().reduce((a, r) => a + (r[7] || 0), 0);
                 const rosterElig = ncE.roster_eligible || (tdNational && tdNational.eligible) || 0;
                 const eligTxt = partial && rosterElig > 0
-                    ? ` · ${fmt(countedElig)} / ${fmt(rosterElig)} ${en() ? 'eligible voters in counted ballots' : 'בעלי זכות בקלפיות שנספרו'} (${(100 * countedElig / rosterElig).toFixed(1)}%)` : '';
-                // Explicit split: regular boxes vs double-envelope (9999)
-                // boxes — `ballots` mixes both and can exceed the roster.
-                const extN = Number(status.external_envelopes_counted);
-                const splitTxt = Number.isFinite(extN)
-                    ? (en()
-                        ? ` · in the data: ${fmt(Number.isFinite(Number(status.regular_ballots)) ? Number(status.regular_ballots) : (status.ballots || 0) - extN)} regular · ${fmt(extN)} double-envelope (9999)`
-                        : ` · בנתונים: ${fmt(Number.isFinite(Number(status.regular_ballots)) ? Number(status.regular_ballots) : (status.ballots || 0) - extN)} רגילות · ${fmt(extN)} מעטפות חיצוניות (9999)`)
-                    : '';
-                document.getElementById('count-meta').textContent =
-                    `${fmt(status.ballots)} / ${fmt(status.ballots_total)} ${en() ? 'ballot boxes' : 'קלפיות'}` +
-                    splitTxt +
-                    (partial ? ` · ${fmt(Math.max(0, status.ballots_total - (status.ballots || 0)))} ${en() ? 'remaining' : 'נותרו'}` : '') +
-                    eligTxt +
-                    (upd ? ` · ${en() ? 'updated' : 'עודכן'} ${upd}` : '');
+                    ? `${fmt(countedElig)} / ${fmt(rosterElig)} ${en() ? 'eligible voters in counted ballots' : 'בעלי זכות בקלפיות שנספרו'} (${(100 * countedElig / rosterElig).toFixed(1)}%)` : '';
+                const metaEl = document.getElementById('count-meta');
+                if (hasSplit) {
+                    const extExp = Number(status.external_envelopes_expected);
+                    const rows = [
+                        `<div><b>${en() ? 'Regular ballot boxes:' : 'קלפיות רגילות:'}</b> ${fmt(regularN)} ${en() ? 'of' : 'מתוך'} ${fmt(status.ballots_total)}</div>`,
+                        `<div><b>${en() ? 'Double envelopes (9999):' : 'מעטפות חיצוניות (9999):'}</b> ${fmt(extN)}${Number.isFinite(extExp) && extExp > 0 ? (en() ? ` of ~${fmt(extExp)} expected` : ` מתוך ~${fmt(extExp)} צפויות`) : ''}</div>`,
+                        `<div><b>${en() ? 'Total boxes in the data:' : 'סה״כ קלפיות בנתונים:'}</b> ${fmt(status.ballots || 0)}</div>`,
+                    ];
+                    if (eligTxt) rows.push(`<div>${eligTxt}</div>`);
+                    if (upd) rows.push(`<div>${en() ? 'Updated' : 'עודכן'} ${upd}</div>`);
+                    metaEl.innerHTML = `<div class="count-lines">${rows.join('')}</div>`;
+                } else {
+                    metaEl.textContent =
+                        `${fmt(status.ballots)} / ${fmt(status.ballots_total)} ${en() ? 'ballot boxes' : 'קלפיות'}` +
+                        (partial ? ` · ${fmt(Math.max(0, status.ballots_total - (status.ballots || 0)))} ${en() ? 'remaining' : 'נותרו'}` : '') +
+                        (eligTxt ? ` · ${eligTxt}` : '') +
+                        (upd ? ` · ${en() ? 'updated' : 'עודכן'} ${upd}` : '');
+                }
             } else cc1.hidden = true;
             // Seats
             document.getElementById('seats-title').textContent = partial
