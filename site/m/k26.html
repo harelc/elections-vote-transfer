@@ -210,7 +210,24 @@
         const CC_FILE = PREVIEW === 'partial17' ? '../data/command_center_26_p17.json'
             : PREVIEW === 'partial12' ? '../data/command_center_26_p12.json'
             : '../data/command_center_26.json';
-        let status = null, results = [], colors = {}, enNames = {}, cc = null, factIdx = 0, factTimer = null, transferData = null, transferAbs = null, sankeyAbsM = false, hemiMode = 'forecast', ncModelM = 'abs';
+        let status = null, results = [], colors = {}, enNames = {}, cc = null, factIdx = 0, factTimer = null, transferData = null, transferAbs = null, sankeyAbsM = false, hemiMode = 'counted', ncModelM = 'abs';
+        // Political spectrum order (right → left, Arab parties, non-voters
+        // last) — mirrors sankey.js; Yisrael Beytenu sits between Yashar
+        // and Yesh Atid, next to its voters' main destinations.
+        const POLITICAL_ORDER_M = [
+            'נעם', 'עוצמה יהודית', 'הציונות הדתית', 'הבית היהודי', 'הימין החדש',
+            'ימינה', 'האיחוד הלאומי', 'עמך ישראל', 'הליכוד', 'הליכוד ישראל ביתנו',
+            'ישראל בעלייה', 'ש״ס', 'יהדות התורה', 'הציבור החרדי',
+            'ביחד', 'ישר', 'ישראל ביתנו', 'יש עתיד', 'תקווה חדשה', 'המחנה הממלכתי', 'כחול לבן',
+            'כולנו', 'המילואימניקים והכלכלית', 'קדימה', 'התנועה', 'שינוי', 'גיל',
+            'הגמלאים', 'הדמוקרטים', 'המחנה הציוני', 'העבודה', 'עם אחד', 'מרצ',
+            'הרשימה המשותפת', 'חד״ש-תע״ל', 'חד״ש', 'רע״ם', 'בל״ד',
+            'לא הצביעו',
+        ];
+        function politicalRankM(name) {
+            const i = POLITICAL_ORDER_M.indexOf(name);
+            return i === -1 ? POLITICAL_ORDER_M.length - 1.5 : i;
+        }
         // Nowcast variant picker: projection = with non-voters,
         // projection_plain = without. One switch drives table,
         // hemicycle forecast and predicted transfers.
@@ -445,7 +462,9 @@
             const graph = gen({ nodes: nodes.filter(n => linked.has(n.id)).map(d => ({ ...d })), links: links.map(d => ({ ...d })) });
             if (i18n.isRTL()) graph.nodes.forEach(n => { const x0 = innerW - n.x1; n.x1 = innerW - n.x0; n.x0 = x0; });
             ['from', 'to'].forEach(side => {
-                const col = graph.nodes.filter(n => n.side === side).sort((a, b) => (b.votes || 0) - (a.votes || 0));
+                const col = graph.nodes.filter(n => n.side === side).sort((a, b) =>
+                    (politicalRankM(a.name) - politicalRankM(b.name)) ||
+                    ((b.votes || b.value || 0) - (a.votes || a.value || 0)));
                 const totalVotes = d3.sum(col, n => n.votes || 1), pad = 8, avail = innerH - (col.length - 1) * pad;
                 let y = 0;
                 col.forEach(n => { const h = Math.max(2, ((n.votes || 1) / totalVotes) * avail); n.y0 = y; n.y1 = y + h; y += h + pad; });

@@ -1233,7 +1233,9 @@
         // partial count it simply shows the results.
         const proj = (DATA.cc && DATA.cc.nowcast && DATA.cc.nowcast.ready && ncProj()) || null;
         const showHemiToggle = K26STATUS.kind === 'partial' && !!proj;
-        if (!DATA.hemiMode) DATA.hemiMode = 'forecast';
+        // Default to the partial count itself: at ~99% counted the
+        // nowcast forecast adds nothing over the counted allocation.
+        if (!DATA.hemiMode) DATA.hemiMode = 'partial';
         const toggle = document.getElementById('hemi-toggle');
         let seatCounts = null;
         if (toggle) {
@@ -1290,8 +1292,8 @@
     const POLITICAL_ORDER = [
         'נעם', 'עוצמה יהודית', 'הציונות הדתית', 'הבית היהודי', 'הימין החדש',
         'ימינה', 'האיחוד הלאומי', 'עמך ישראל', 'הליכוד', 'הליכוד ישראל ביתנו',
-        'ישראל ביתנו', 'ישראל בעלייה', 'ש״ס', 'יהדות התורה', 'הציבור החרדי',
-        'ביחד', 'ישר', 'יש עתיד', 'תקווה חדשה', 'המחנה הממלכתי', 'כחול לבן',
+        'ישראל בעלייה', 'ש״ס', 'יהדות התורה', 'הציבור החרדי',
+        'ביחד', 'ישר', 'ישראל ביתנו', 'יש עתיד', 'תקווה חדשה', 'המחנה הממלכתי', 'כחול לבן',
         'כולנו', 'המילואימניקים והכלכלית', 'קדימה', 'התנועה', 'שינוי', 'גיל',
         'הגמלאים', 'הדמוקרטים', 'המחנה הציוני', 'העבודה', 'עם אחד', 'מרצ',
         'הרשימה המשותפת', 'חד״ש-תע״ל', 'חד״ש', 'רע״ם', 'בל״ד',
