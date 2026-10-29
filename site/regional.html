@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" />
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="qrcode.min.js"></script>
     <script src="basemap.js"></script>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
@@ -186,6 +187,22 @@
             font-family: inherit;
             font-size: 0.8rem;
         }
+
+        .export-btn {
+            padding: 0.45rem 1.1rem;
+            background: var(--accent-primary);
+            color: #1a1408;
+            border: 1px solid var(--accent-primary);
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            white-space: nowrap;
+        }
+        .export-btn:hover { filter: brightness(1.1); }
+        .export-btn:disabled { opacity: 0.55; cursor: wait; }
 
         /* Main content */
         .main-content {
@@ -628,6 +645,9 @@
                     <button class="pill-btn active" data-value="dhondt" data-i18n="method_dhondt">באדר-עופר</button>
                     <button class="pill-btn" data-value="fptp" data-i18n="method_fptp">זוכה-לוקח-הכל</button>
                 </div>
+            </div>
+            <div class="control-group">
+                <button class="export-btn" id="export-png-btn" title="הורדת תמונת PNG של המפה והתוצאות">📷 ייצוא PNG</button>
             </div>
         </div>
 
@@ -1336,6 +1356,7 @@
 
             // Store for region click
             window._regionResults = regionResults;
+            window._partyResults = results;
         }
 
         // ── Parliament hemicycle ──
@@ -1612,7 +1633,8 @@
                 minZoom: 7,
                 maxZoom: 18,
                 maxBounds: [[33.5, 28.5], [36.5, 34.0]],
-                basemap: 'positron'
+                basemap: 'positron',
+                preserveDrawingBuffer: true
             });
         }
 
@@ -2104,6 +2126,39 @@
             }
         }
 
+        // ── Setup from URL (so shared/QR links reproduce a setup) ──
+        function setupURL() {
+            return `https://kolot-nodedim.netlify.app/regional.html?e=${currentElection}&r=${numRegions}&n=${nationalSeats}&k=${knessetSize}&t=${threshold}&m=${regionalMethod}`;
+        }
+
+        function applySetupParams() {
+            const q = new URLSearchParams(location.search);
+            const e = q.get('e');
+            if ((e === '25' || e === '26') && (e === '25' || i18n.SHOW_E26)) currentElection = e;
+            const k = parseInt(q.get('k'));
+            if ([120, 150, 180, 240, 360, 480, 600].includes(k)) {
+                knessetSize = k;
+                document.getElementById('knesset-size-select').value = String(k);
+                rebuildNationalPills();
+            }
+            const r = parseInt(q.get('r'));
+            if (r >= 1) numRegions = r;
+            const n = parseInt(q.get('n'));
+            if (n >= 0 && n <= knessetSize) nationalSeats = n;
+            const t = parseFloat(q.get('t'));
+            if ([0, 3.25, 5].includes(t)) {
+                threshold = t;
+                document.getElementById('threshold-select').value = String(t);
+            }
+            const m = q.get('m');
+            if (m === 'dhondt' || m === 'fptp') regionalMethod = m;
+            document.querySelectorAll('#election-pills .pill-btn').forEach(b => b.classList.toggle('active', b.dataset.election === currentElection));
+            document.querySelectorAll('#region-pills .pill-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.value) === numRegions));
+            document.querySelectorAll('#national-pills .pill-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.value) === nationalSeats));
+            document.querySelectorAll('#method-pills .pill-btn').forEach(b => b.classList.toggle('active', b.dataset.value === regionalMethod));
+            updateRegionPillStates();
+        }
+
         function setupControls() {
             // Election toggle (only visible when SHOW_E26)
             if (i18n.SHOW_E26) {
@@ -2166,6 +2221,8 @@
                     runSimulation();
                 });
             });
+
+            document.getElementById('export-png-btn').addEventListener('click', exportRegionalPNG);
         }
 
         // ── Draggable resize handle ──
@@ -2285,10 +2342,251 @@
             }
         });
 
+        // ── PNG export (full Israel map + setup/results panel, Hebrew) ──
+        function captureFullMap(regionResults) {
+            return new Promise(resolve => {
+                let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+                geoStations.forEach(s => {
+                    minLat = Math.min(minLat, s.lat); maxLat = Math.max(maxLat, s.lat);
+                    minLng = Math.min(minLng, s.lng); maxLng = Math.max(maxLng, s.lng);
+                });
+                const bounds = [[minLng - 0.06, minLat - 0.06], [maxLng + 0.06, maxLat + 0.06]];
+                const holder = document.createElement('div');
+                holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:1060px;height:1250px;';
+                document.body.appendChild(holder);
+                let style = null;
+                try { style = JSON.parse(JSON.stringify(map.getStyle())); } catch (e) { }
+                if (!style) { holder.remove(); resolve({ url: null, w: 1060, h: 1250, labels: [] }); return; }
+                const m2 = new maplibregl.Map({
+                    container: holder, style: style, preserveDrawingBuffer: true,
+                    attributionControl: false, interactive: false, fadeDuration: 0
+                });
+                let fired = false;
+                const finish = () => {
+                    if (fired) return; fired = true;
+                    const canvas = m2.getCanvas();
+                    let url = null;
+                    try { url = canvas.toDataURL('image/png'); } catch (e) { /* canvas tainted */ }
+                    const labels = regionResults.map((region, idx) => {
+                        const c = getRegionCentroid(region.stations);
+                        const p = m2.project([c.lng, c.lat]);
+                        return { idx, x: p.x, y: p.y, name: (regionNames[idx] || {}).he || getDisplayName(idx) };
+                    });
+                    const out = { url, w: 1060, h: 1250, labels };
+                    try { m2.remove(); } catch (e) { }
+                    holder.remove();
+                    resolve(out);
+                };
+                m2.once('load', () => {
+                    const cam = m2.cameraForBounds(bounds, { padding: 20 });
+                    if (cam) m2.jumpTo(cam);
+                    m2.once('idle', () => setTimeout(finish, 300));
+                    setTimeout(finish, 12000);
+                });
+                setTimeout(finish, 15000);
+            });
+        }
+
+        async function exportRegionalPNG() {
+            const btn = document.getElementById('export-png-btn');
+            const regionResults = window._regionResults, results = window._partyResults;
+            if (!regionResults || !results || !map) return;
+            btn.disabled = true;
+            const oldText = btn.textContent;
+            btn.textContent = '⏳ מייצא…';
+            try {
+                const cap = await captureFullMap(regionResults);
+
+                // National vote shares per party
+                const voteTotals = {};
+                let totalVotesAll = 0;
+                stations.forEach(s => {
+                    for (const [party, pct] of Object.entries(s.parties)) {
+                        const v = s.voters * pct / 100;
+                        voteTotals[party] = (voteTotals[party] || 0) + v;
+                        totalVotesAll += v;
+                    }
+                });
+
+                const W = 2000, H = 1600;
+                const cv = document.createElement('canvas');
+                cv.width = W; cv.height = H;
+                const ctx = cv.getContext('2d');
+                ctx.direction = 'rtl';
+                const INK = '#f3f5f8', DIM = '#b9bfcc', MUT = '#878ea0', GOLD = '#f0b429', CARD = '#1b1e25', LINE = '#2c303c';
+                ctx.fillStyle = '#101216'; ctx.fillRect(0, 0, W, H);
+                const box = (x, y, w, h, fill) => { ctx.fillStyle = fill || CARD; ctx.beginPath(); ctx.roundRect(x, y, w, h, 16); ctx.fill(); ctx.strokeStyle = LINE; ctx.lineWidth = 1.5; ctx.stroke(); };
+                const txt = (s, x, y, font, color, align) => { ctx.font = font; ctx.fillStyle = color || INK; ctx.textAlign = align || 'right'; ctx.textBaseline = 'middle'; ctx.fillText(s, x, y); };
+                const F = (w, s) => `${w} ${s}px Heebo, Arial, sans-serif`;
+
+                // Header
+                txt('קולות נודדים', W - 48, 44, F(800, 26), GOLD);
+                txt(`סימולציית בחירות אזוריות · כנסת ${currentElection}`, W - 48, 92, F(900, 50), INK);
+                txt(currentElection === '26' ? 'מבוסס על תוצאות כנסת 26 כפי שפורסמו באתר, ברמת הקלפי' : 'מבוסס על תוצאות כנסת 25 הרשמיות, ברמת הקלפי', W - 48, 136, F(400, 23), MUT);
+                txt(new Date().toLocaleDateString('he-IL'), 48, 92, F(600, 24), DIM, 'left');
+                ctx.strokeStyle = LINE; ctx.lineWidth = 1.5;
+                ctx.beginPath(); ctx.moveTo(48, 162); ctx.lineTo(W - 48, 162); ctx.stroke();
+
+                // Map (left)
+                const MX = 40, MY = 182, MW = 1060, MH = 1250;
+                box(MX, MY, MW, MH, '#0b0c0f');
+                ctx.save();
+                ctx.beginPath(); ctx.roundRect(MX, MY, MW, MH, 16); ctx.clip();
+                if (cap.url) {
+                    const img = await new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = cap.url; });
+                    if (img) {
+                        const sc = Math.max(MW / cap.w, MH / cap.h);
+                        const dw = cap.w * sc, dh = cap.h * sc;
+                        const ox = MX + (MW - dw) / 2, oy = MY + (MH - dh) / 2;
+                        ctx.drawImage(img, ox, oy, dw, dh);
+                    }
+                } else {
+                    txt('המפה לא נלכדה (מגבלת דפדפן)', MX + MW / 2, MY + MH / 2, F(600, 26), MUT, 'center');
+                }
+                ctx.restore();
+
+                // Info panel (right)
+                const PX = 1140, PW = 820, PY = 182;
+                const regSeats = knessetSize - nationalSeats;
+                const majority = Math.floor(knessetSize / 2) + 1;
+                let y = PY;
+                txt('הגדרות הסימולציה', PX + PW, y + 16, F(800, 30), INK); y += 48;
+                const setupItems = [
+                    ['כנסת', String(currentElection)], ['מחוזות בחירה', String(numRegions)],
+                    ['מנדטים אזוריים', String(regSeats)], ['מנדטים ארציים', String(nationalSeats)],
+                    ['גודל הכנסת', String(knessetSize)], ['אחוז חסימה', threshold + '%'],
+                    ['שיטת חלוקה', regionalMethod === 'fptp' ? 'זוכה־לוקח־הכל' : 'באדר־עופר'], ['רוב נדרש', String(majority)],
+                ];
+                const bw = (PW - 18) / 4, bh = 74;
+                setupItems.forEach(([lab, val], i) => {
+                    const bx = PX + PW - (i % 4 + 1) * bw + (i % 4 ? 6 : 0) - (i % 4) * 0;
+                    const bxx = PX + PW - (i % 4 + 1) * bw + (i % 4) * 6;
+                    const by = y + Math.floor(i / 4) * (bh + 8);
+                    box(bxx, by, bw - 6, bh);
+                    txt(val, bxx + bw - 20, by + 26, F(900, 30), GOLD);
+                    txt(lab, bxx + bw - 20, by + 55, F(500, 19), MUT);
+                });
+                y += 2 * (bh + 8) + 18;
+
+                // Blocs
+                let rightSeats = 0, leftSeats = 0, arabSeats = 0;
+                results.forEach(r => {
+                    if (r.block === 'right') rightSeats += r.seats;
+                    else if (r.block === 'left') leftSeats += r.seats;
+                    else if (r.block === 'arab') arabSeats += r.seats;
+                });
+                const leftTotal = leftSeats + arabSeats;
+                const hw = (PW - 10) / 2;
+                box(PX + PW - hw, y, hw, 92);
+                txt('גוש ימין־חרדי', PX + PW - 22, y + 24, F(600, 22), DIM);
+                txt(String(rightSeats), PX + PW - 22, y + 60, F(900, 44), rightSeats >= majority ? '#4ade80' : INK);
+                box(PX, y, hw, 92);
+                txt('גוש מרכז־שמאל־ערבי', PX + hw - 22, y + 24, F(600, 22), DIM);
+                txt(String(leftTotal), PX + hw - 22, y + 60, F(900, 44), leftTotal >= majority ? '#4ade80' : INK);
+                y += 108 + 14;
+
+                // Stacked seat bar
+                const barX = PX, barW = PW, barH = 34;
+                let cx = PX + PW;
+                ctx.save(); ctx.beginPath(); ctx.roundRect(barX, y, barW, barH, 8); ctx.clip();
+                results.filter(r => r.seats > 0).forEach(r => {
+                    const wseg = barW * r.seats / knessetSize;
+                    ctx.fillStyle = r.color;
+                    ctx.fillRect(cx - wseg, y, wseg, barH);
+                    if (wseg > 34) { ctx.fillStyle = 'rgba(0,0,0,0.75)'; ctx.font = F(800, 20); ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(String(r.seats), cx - wseg / 2, y + barH / 2 + 1); }
+                    cx -= wseg;
+                });
+                ctx.restore();
+                y += barH + 26;
+
+                // Party table
+                txt('תוצאות לפי מפלגה', PX + PW, y + 14, F(800, 28), INK); y += 44;
+                const cols = [PX + PW, PX + PW - 300, PX + PW - 420, PX + PW - 540, PX + PW - 670];
+                ctx.strokeStyle = LINE;
+                txt('מפלגה', cols[0], y, F(700, 20), MUT);
+                txt('% קולות', cols[1], y, F(700, 20), MUT);
+                txt('בפועל', cols[2], y, F(700, 20), MUT);
+                txt('סימולציה', cols[3], y, F(700, 20), MUT);
+                txt('הפרש', cols[4], y, F(700, 20), MUT);
+                y += 14; ctx.beginPath(); ctx.moveTo(PX, y); ctx.lineTo(PX + PW, y); ctx.stroke(); y += 20;
+                const partyRows = results.filter(r => r.seats > 0 || r.actual > 0).slice(0, 14);
+                partyRows.forEach(r => {
+                    const share = totalVotesAll ? (voteTotals[r.name] || 0) / totalVotesAll * 100 : 0;
+                    const diff = r.seats - r.actual;
+                    ctx.fillStyle = r.color; ctx.beginPath(); ctx.arc(PX + PW - 8, y, 7, 0, Math.PI * 2); ctx.fill();
+                    txt(r.name, cols[0] - 18, y, F(700, 23), INK);
+                    txt(share.toFixed(1) + '%', cols[1], y, F(500, 22), DIM);
+                    txt(String(r.actual), cols[2], y, F(500, 22), DIM);
+                    txt(String(r.seats), cols[3], y, F(800, 23), INK);
+                    txt(diff > 0 ? '+' + diff : String(diff), cols[4], y, F(700, 22), diff > 0 ? '#4ade80' : diff < 0 ? '#f87171' : MUT);
+                    y += 30;
+                });
+                y += 12;
+
+                // Regions
+                txt(`האזורים (${regionResults.length})`, PX + PW, y + 14, F(800, 28), INK); y += 44;
+                if (regionResults.length <= 22) {
+                    txt('אזור', PX + PW, y, F(700, 20), MUT);
+                    txt('בז״ה', PX + PW - 300, y, F(700, 20), MUT);
+                    txt('מנדטים', PX + PW - 430, y, F(700, 20), MUT);
+                    y += 14; ctx.beginPath(); ctx.moveTo(PX, y); ctx.lineTo(PX + PW, y); ctx.stroke(); y += 20;
+                    regionResults.forEach((r, idx) => {
+                        // One dot per seat, coloured by the party that won it (largest party first)
+                        const dots = Object.entries(r.seats).filter(([_, s]) => s > 0)
+                            .sort((a, b) => b[1] - a[1])
+                            .flatMap(([name, s]) => Array(s).fill(partyColorMap[name] || '#888'));
+                        const perRow = 26, dotR = dots.length > 52 ? 4.5 : 5.5, dotGap = dotR * 2 + 5;
+                        const rows = Math.max(1, Math.ceil(dots.length / perRow));
+                        txt((regionNames[idx] || {}).he || getDisplayName(idx), PX + PW, y, F(700, 22), INK);
+                        txt(i18n.fmtNum(r.eligible), PX + PW - 300, y, F(500, 21), DIM);
+                        dots.forEach((color, i) => {
+                            const dx = PX + PW - 430 - (i % perRow) * dotGap;
+                            const dy = y + (Math.floor(i / perRow) - (rows - 1) / 2) * (dotR * 2 + 4);
+                            ctx.fillStyle = color; ctx.beginPath(); ctx.arc(dx, dy, dotR, 0, Math.PI * 2); ctx.fill();
+                        });
+                        y += Math.max(28, rows * (dotR * 2 + 4) + 10);
+                    });
+                } else {
+                    const ratios = regionResults.map(r => r.seatCount ? r.eligible / r.seatCount : 0);
+                    txt(`הטבלה המלאה של ${regionResults.length} האזורים מופיעה באתר (סיכום אזורי).`, PX + PW, y, F(500, 22), DIM); y += 32;
+                    txt(`בז״ה למנדט: ממוצע ${i18n.fmtNum(Math.round(ratios.reduce((a, b) => a + b, 0) / ratios.length))} · מינימום ${i18n.fmtNum(Math.round(Math.min(...ratios)))} · מקסימום ${i18n.fmtNum(Math.round(Math.max(...ratios)))}`, PX + PW, y, F(500, 22), DIM);
+                    y += 32;
+                }
+
+                // Footer: QR + link + credit
+                const FY = H - 118;
+                ctx.strokeStyle = LINE; ctx.beginPath(); ctx.moveTo(48, FY - 20); ctx.lineTo(W - 48, FY - 20); ctx.stroke();
+                const url = setupURL();
+                try {
+                    const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+                    const cnt = qr.getModuleCount(), qs = 92, cell = qs / cnt, qx = 48, qy = FY;
+                    ctx.fillStyle = '#fff'; ctx.fillRect(qx - 6, qy - 6, qs + 12, qs + 12);
+                    ctx.fillStyle = '#000';
+                    for (let r = 0; r < cnt; r++) for (let c = 0; c < cnt; c++)
+                        if (qr.isDark(r, c)) ctx.fillRect(qx + c * cell, qy + r * cell, cell, cell);
+                } catch (e) { }
+                ctx.direction = 'ltr';
+                txt('kolot-nodedim.netlify.app/regional.html', 158, FY + 30, F(700, 22), GOLD, 'left');
+                ctx.direction = 'rtl';
+                txt('סרקו כדי לפתוח את הסימולטור עם אותה הגדרה בדיוק', 158, FY + 60, F(400, 20), MUT, 'left');
+                txt('קולות נודדים · © הראל קין · CC BY-NC-SA 4.0', W - 48, FY + 30, F(600, 22), DIM);
+                txt('נתוני קלפיות: ועדת הבחירות המרכזית · החלוקה לאזורים: חלוקה גאוגרפית לפי בעלי זכות בחירה, מושבים לפי בז״ה', W - 48, FY + 60, F(400, 19), MUT);
+
+                const a = document.createElement('a');
+                a.download = `regional-k${currentElection}-r${numRegions}-n${nationalSeats}-k${knessetSize}.png`;
+                a.href = cv.toDataURL('image/png');
+                a.click();
+            } finally {
+                btn.disabled = false;
+                btn.textContent = oldText;
+            }
+        }
+
         // ── Init ──
         async function init() {
             initMap();
             setupControls();
+            applySetupParams();
             updateRegionPillStates();
 
             try {

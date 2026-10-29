@@ -80,6 +80,7 @@
             maxZoom: opts.maxZoom == null ? 18 : opts.maxZoom,
             maxBounds: opts.maxBounds || null,
             attributionControl: true,
+            preserveDrawingBuffer: !!opts.preserveDrawingBuffer,
         });
         if (opts.zoomControl !== false) {
             map.addControl(
