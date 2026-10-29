@@ -275,28 +275,28 @@
             const rehearsal = !!PREVIEW && partial;
             const fullPreview = PREVIEW === 'fullcount';
             const fake = sim || rehearsal || fullPreview;
-            // Provenance
+            // Provenance: hide during a live partial/official count — the
+            // count card already states the same thing. Keep it for
+            // simulated / rehearsal so the "not real" warning stays loud.
             const prov = document.getElementById('prov');
-            prov.className = 'prov ' + (fake ? 'sim' : partial ? 'partial' : 'real');
-            document.getElementById('prov-icon').textContent = fake ? '⚠' : '●';
-            document.getElementById('prov-title').textContent = rehearsal
-                ? (en() ? '⚠ REHEARSAL PREVIEW — simulated data, not real results' : '⚠ תצוגת חזרה — נתונים מדומים, לא תוצאות אמת')
-                : fullPreview
-                    ? (en() ? '⚠ FULL-COUNT PREVIEW — simulated data, not real results' : '⚠ תצוגת ספירה מלאה — נתונים מדומים, לא תוצאות אמת')
-                : sim
-                    ? (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת')
-                    : partial
-                        ? (en() ? '● REAL RESULTS — partial CEC count in progress' : '● תוצאות אמת — ספירת ועדת הבחירות בעיצומה')
-                        : (en() ? '● OFFICIAL RESULTS — Central Elections Committee' : '● תוצאות רשמיות — ועדת הבחירות המרכזית');
-            document.getElementById('prov-sub').textContent = rehearsal
-                ? (en() ? 'A rehearsal of the count-night layout on the simulated scenario (about ' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% counted in the simulation). Nothing here is real.' : 'חזרה על תצוגת ליל הספירה מתוך התרחיש המדומה (כ־' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% נספרו בסימולציה). שום דבר כאן אינו אמיתי.')
-                : fullPreview
-                    ? (en() ? 'A rehearsal of the completed-count layout on the simulated scenario. Nothing here is real.' : 'חזרה על תצוגת סוף הספירה מתוך התרחיש המדומה. שום דבר כאן אינו אמיתי.')
-                : sim
-                    ? (en() ? 'Knesset 26 has not happened on this page yet: a polling-calibrated simulation, replaced automatically when the CEC publishes real data.' : 'הבחירות לכנסת ה־26 טרם נערכו כאן: סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.')
-                    : partial
-                        ? (en() ? 'Real ballot boxes counted so far. Figures change as the count proceeds.' : 'קלפיות אמיתיות שנספרו עד כה. הנתונים משתנים ככל שהספירה מתקדמת.')
-                        : (en() ? 'Final official K26 results as published by the CEC.' : 'תוצאות סופיות רשמיות של כנסת 26 כפי שפרסמה ועדת הבחירות.');
+            const liveCount = !fake && (partial || kind === 'official');
+            if (liveCount) {
+                prov.hidden = true;
+            } else {
+                prov.hidden = false;
+                prov.className = 'prov ' + (fake ? 'sim' : partial ? 'partial' : 'real');
+                document.getElementById('prov-icon').textContent = fake ? '⚠' : '●';
+                document.getElementById('prov-title').textContent = rehearsal
+                    ? (en() ? '⚠ REHEARSAL PREVIEW — simulated data, not real results' : '⚠ תצוגת חזרה — נתונים מדומים, לא תוצאות אמת')
+                    : fullPreview
+                        ? (en() ? '⚠ FULL-COUNT PREVIEW — simulated data, not real results' : '⚠ תצוגת ספירה מלאה — נתונים מדומים, לא תוצאות אמת')
+                        : (en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת');
+                document.getElementById('prov-sub').textContent = rehearsal
+                    ? (en() ? 'A rehearsal of the count-night layout on the simulated scenario (about ' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% counted in the simulation). Nothing here is real.' : 'חזרה על תצוגת ליל הספירה מתוך התרחיש המדומה (כ־' + (PREVIEW === 'partial' ? '45' : PREVIEW === 'partial17' ? '17' : '12') + '% נספרו בסימולציה). שום דבר כאן אינו אמיתי.')
+                    : fullPreview
+                        ? (en() ? 'A rehearsal of the completed-count layout on the simulated scenario. Nothing here is real.' : 'חזרה על תצוגת סוף הספירה מתוך התרחיש המדומה. שום דבר כאן אינו אמיתי.')
+                        : (en() ? 'Knesset 26 has not happened on this page yet: a polling-calibrated simulation, replaced automatically when the CEC publishes real data.' : 'הבחירות לכנסת ה־26 טרם נערכו כאן: סימולציה מכוילת־סקרים, שתוחלף אוטומטית כשועדת הבחירות תפרסם נתוני אמת.');
+            }
             // Mode switcher: only while the count is simulated/rehearsed
             // (on a real partial/official night there is one live mode).
             const ms = document.getElementById('mode-switch');
@@ -313,12 +313,20 @@
             } else ms.hidden = true;
             // Count progress
             const cc1 = document.getElementById('count-card');
+            const extPending = partial && (status.external_envelopes_pending === true
+                || (Number(status.external_envelopes_expected) > 0
+                    && Number(status.external_envelopes_counted) < Number(status.external_envelopes_expected)));
+            const rosterDone = status.roster_complete === true
+                || ((status.ballots || 0) >= status.ballots_total);
             if ((partial || kind === 'official') && status.ballots_total) {
                 cc1.hidden = false;
                 cc1.className = 'card' + (kind === 'official' ? ' official' : '');
                 const pct = 100 * (status.ballots || 0) / status.ballots_total;
                 document.getElementById('count-title').textContent = kind === 'official'
-                    ? (en() ? 'Count complete' : 'הספירה הסתיימה') : (en() ? 'Counting in progress' : 'הספירה בעיצומה');
+                    ? (en() ? 'Certified final results' : 'תוצאות סופיות מאושרות')
+                    : (extPending && rosterDone)
+                        ? (en() ? 'Regular boxes in — waiting on double envelopes' : 'קלפיות רגילות נספרו — ממתינים למעטפות החיצוניות')
+                        : (en() ? 'Counting in progress' : 'הספירה בעיצומה');
                 document.getElementById('count-pct').textContent = pct.toFixed(1) + '%';
                 document.getElementById('count-fill').style.width = pct.toFixed(1) + '%';
                 const upd = status.as_of ? new Date(status.as_of).toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' }) : '';

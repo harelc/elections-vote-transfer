@@ -15,7 +15,12 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
-ROSTER = json.loads((ROOT / "k26_control.json").read_text(encoding="utf-8")).get("roster", 12018)
+_CTRL = json.loads((ROOT / "k26_control.json").read_text(encoding="utf-8"))
+ROSTER = _CTRL.get("roster", 12018)
+# K25 ended with 750 double-envelope (settlement 9999) boxes; the bulk drop
+# on K26 night arrives after the regular polling-station roster is complete.
+EXTERNAL_ENVELOPE_EXPECTED = int(_CTRL.get("external_envelopes_expected", 750))
+EXTERNAL_SETTLEMENT_CODE = "9999"
 WIKI = ROOT / "site" / "data" / "wiki_official_results.json"
 STATUS = ROOT / "site" / "data" / "k26_status.json"
 PARTY_CONFIG = ROOT / "party_config.py"
@@ -149,6 +154,7 @@ def summarize(path):
         )
     seats = [seats_all[name] for name in major["names"]]
     turnout = round(100 * voters / eligible, 1) if eligible else 0
+    envelope = external_envelope_status(rows)
     return {
         "ballots": len(rows),
         "eligible": eligible,
@@ -162,11 +168,31 @@ def summarize(path):
         "other_votes": valid_total - sum(votes_by_name.values()),
         "seats": seats,
         "unknown": unknown,
+        **envelope,
+    }
+
+
+def external_envelope_status(rows):
+    counted = sum(
+        1 for row in rows
+        if str(row.get("סמל ישוב", "")).strip() == EXTERNAL_SETTLEMENT_CODE
+    )
+    expected = EXTERNAL_ENVELOPE_EXPECTED
+    return {
+        "external_envelopes_expected": expected,
+        "external_envelopes_counted": counted,
+        "external_envelopes_pending": counted < expected,
     }
 
 
 def publish_kind(ballots, final):
-    if final or ballots >= ROSTER:
+    """Official is only set when the refresh workflow passes --final (CEC certified).
+
+    Reaching the 12,018-box roster (or more, once 9999 rows land) is not
+    enough: double-envelope ballots drop later and totals stay provisional.
+    """
+    del ballots  # roster size alone must not flip the site to official
+    if final:
         return "official"
     return "partial"
 
@@ -178,6 +204,10 @@ def status_document(summary, kind, as_of, sha256, ci_coverage):
         "as_of": as_of,
         "ballots": summary["ballots"],
         "ballots_total": ROSTER,
+        "roster_complete": summary["ballots"] >= ROSTER,
+        "external_envelopes_expected": summary["external_envelopes_expected"],
+        "external_envelopes_counted": summary["external_envelopes_counted"],
+        "external_envelopes_pending": summary["external_envelopes_pending"],
         "source_he": "ספירה חלקית, ועדת הבחירות המרכזית" if partial else "ועדת הבחירות המרכזית",
         "source_en": "Partial count, Central Elections Committee" if partial else "Central Elections Committee",
         "sha256": sha256,
@@ -244,12 +274,12 @@ def update_party_seats(text, summary):
 def wiki_notes(kind):
     if kind == "official":
         return (
-            "Official count from the Central Elections Committee.",
-            "Official CEC count",
+            "Final certified results from the Central Elections Committee.",
+            "Certified CEC results",
         )
     return (
-        "Partial count from the Central Elections Committee. Totals cover the ballots received so far, not the full roster.",
-        "Partial CEC count",
+        "Provisional count from the Central Elections Committee — not the certified final result. Totals change as ballots arrive, including double-envelope (9999) boxes.",
+        "Provisional CEC count",
     )
 
 

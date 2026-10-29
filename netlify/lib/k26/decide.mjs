@@ -47,7 +47,9 @@ export function autoEnabled(env, file) {
 }
 
 export function publishKind(ballotCount, roster, finalFlag) {
-  if (finalFlag || (roster > 0 && ballotCount >= roster)) return "official";
+  void ballotCount;
+  void roster;
+  if (finalFlag) return "official";
   return "partial";
 }
 

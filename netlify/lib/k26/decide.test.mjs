@@ -86,9 +86,10 @@ test("an in-flight rebuild waits, unless a larger file arrives", () => {
   );
 });
 
-test("official only at the roster or an explicit final flag", () => {
+test("official only with an explicit final flag, not when the roster fills", () => {
   assert.equal(publishKind(4820, 12018, false), "partial");
-  assert.equal(publishKind(12018, 12018, false), "official");
+  assert.equal(publishKind(12018, 12018, false), "partial");
+  assert.equal(publishKind(12032, 12018, false), "partial");
   assert.equal(publishKind(4820, 12018, true), "official");
 });
 

@@ -787,6 +787,15 @@
     function renderProvenance() {
         const banner = document.getElementById('prov-banner');
         if (!banner) return;
+        // Count banner already carries provenance during partial/official
+        // (and count previews); a second green strip repeats the same message.
+        const s = K26STATUS || {};
+        const countOwns = !TURNOUT_ACTIVE && (
+            PREVIEW_PARTIAL || PREVIEW_FULLCOUNT
+            || s.kind === 'partial' || s.kind === 'official'
+        );
+        if (countOwns) { banner.hidden = true; return; }
+        banner.hidden = false;
         const tdMeta = (DATA && DATA.turnoutDay && DATA.turnoutDay.meta) || {};
         let sim, title, sub;
         if (TURNOUT_ACTIVE) {
@@ -797,15 +806,6 @@
             sub = sim
                 ? (en() ? 'A synthetic snapshot built for rehearsal. Real CEC turnout replaces it on election day; every map and table below is simulated until then.' : 'תמונת מצב סינתטית שנבנתה לחזרה. ביום הבחירות יחליפו אותה נתוני האמת של ועדת הבחירות; עד אז כל מפה וטבלה כאן מדומים.')
                 : '';
-        } else if (!PREVIEW_PARTIAL && !PREVIEW_FULLCOUNT && K26STATUS && (K26STATUS.kind === 'partial' || K26STATUS.kind === 'official')) {
-            const official = K26STATUS.kind === 'official';
-            sim = false;
-            title = official
-                ? (en() ? '● OFFICIAL RESULTS — Central Elections Committee' : '● תוצאות רשמיות — ועדת הבחירות המרכזית')
-                : (en() ? '● REAL RESULTS — partial CEC count in progress' : '● תוצאות אמת — ספירת ועדת הבחירות בעיצומה');
-            sub = official
-                ? (en() ? 'Final official K26 results as published by the CEC.' : 'תוצאות סופיות רשמיות של כנסת 26 כפי שפרסמה ועדת הבחירות.')
-                : (en() ? 'Real ballot boxes counted so far by the CEC. Figures change as the count proceeds.' : 'קלפיות אמיתיות שנספרו עד כה בידי ועדת הבחירות. הנתונים משתנים ככל שהספירה מתקדמת.');
         } else {
             sim = true;
             title = en() ? '⚠ SIMULATED SCENARIO — not real data' : '⚠ תרחיש מדומה — אלה אינם נתוני אמת';
@@ -819,6 +819,12 @@
         document.getElementById('prov-title').textContent = title;
         document.getElementById('prov-sub').textContent = sub;
     }
+    function externalEnvelopesPending(s) {
+        if (!s || s.kind !== 'partial') return false;
+        if (s.external_envelopes_pending === true) return true;
+        const exp = Number(s.external_envelopes_expected), got = Number(s.external_envelopes_counted);
+        return Number.isFinite(exp) && exp > 0 && Number.isFinite(got) && got < exp;
+    }
     function renderCountStatus() {
         renderProvenance();
         const s = K26STATUS || {};
@@ -828,6 +834,8 @@
         const hasCount = Number.isFinite(counted) && Number.isFinite(total) && total > 0;
         const pct = hasCount ? Math.min(100, counted / total * 100) : 0;
         const countText = hasCount ? `${fmt(counted)} / ${fmt(total)} (${pct.toFixed(1)}%)` : '';
+        const rosterDone = s.roster_complete === true || (hasCount && counted >= total);
+        const extPending = externalEnvelopesPending(s);
         badge.textContent = s.kind === 'official' ? i18n.t('k26_live_official') + (countText ? ' · ' + countText : '')
             : s.kind === 'partial' ? i18n.t('k26_live_partial') + (countText ? ' · ' + countText : '')
             : s.kind === 'turnout' ? (en() ? 'Election day — turnout only, no results yet' : 'יום הבחירות — אחוזי הצבעה בלבד, עדיין אין תוצאות')
@@ -836,8 +844,21 @@
         if ((s.kind !== 'partial' && s.kind !== 'official') || !hasCount) { banner.hidden = true; return; }
         banner.hidden = false;
         banner.classList.toggle('official', s.kind === 'official');
-        document.getElementById('count-title').textContent = i18n.t(s.kind === 'official' ? 'k26_count_official_title' : 'k26_count_partial_title');
-        document.getElementById('count-note').textContent = i18n.t(s.kind === 'official' ? 'k26_count_official_note' : 'k26_count_partial_note');
+        let titleKey = s.kind === 'official' ? 'k26_count_official_title' : 'k26_count_partial_title';
+        let noteKey = s.kind === 'official' ? 'k26_count_official_note' : 'k26_count_partial_note';
+        if (s.kind === 'partial' && extPending && rosterDone) {
+            titleKey = 'k26_count_awaiting_external_title';
+            noteKey = 'k26_count_awaiting_external_note';
+        }
+        document.getElementById('count-title').textContent = i18n.t(titleKey);
+        let note = i18n.t(noteKey);
+        if (s.kind === 'partial' && extPending && !rosterDone) {
+            const extLine = en()
+                ? ` Double-envelope ballots: ${fmt(Number(s.external_envelopes_counted) || 0)} / ${fmt(Number(s.external_envelopes_expected) || 750)} counted so far.`
+                : ` מעטפות חיצוניות: ${fmt(Number(s.external_envelopes_counted) || 0)} / ${fmt(Number(s.external_envelopes_expected) || 750)} נספרו עד כה.`;
+            note += extLine;
+        }
+        document.getElementById('count-note').textContent = note;
         document.getElementById('count-ballots').textContent = fmt(counted);
         document.getElementById('count-of').textContent = en() ? `of ${fmt(total)} ballot boxes` : `מתוך ${fmt(total)} קלפיות`;
         document.getElementById('count-pct').textContent = pct.toFixed(1) + '%';
