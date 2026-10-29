@@ -161,7 +161,7 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding-top:22px;color:v
   <div class="card">
     <h3>👑 ראשות הממשלה: באיזה חלק מהשבועות המפלגה היא הגדולה בקואליציה?</h3>
     <div id="leadership"></div>
-    <p style="color:var(--muted);font-size:.85rem;margin:12px 0 0">רק שלוש מפלגות יכולות בכלל לעמוד בראש קואליציה מינימלית. הרשימה המשותפת, הרביעית בגודלה, משתתפת ב־118 שבועות — אבל מובילה באפס: בלי אחת משלוש הגדולות, המקסימום הוא 60 מושבים.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin:12px 0 0">רק שלושה אנשים יכולים בכלל להיות ראש ממשלה בסבב הזה: <b>נתניהו</b> (הליכוד) מוביל ב־127 שבועות, <b>אייזנקוט</b> (ישר) ב־85, ו<b>בנט</b> (ביחד) ב־8 בלבד. הרשימה המשותפת, הרביעית בגודלה, משתתפת ב־118 שבועות — אבל מובילה באפס: בלי אחת משלוש הגדולות, המקסימום הוא 60 מושבים.</p>
   </div>
 
   <div class="callout">ההשטחה היא הסיפור: <b>במושבים, הליכוד גדולה פי 4.5 מש״ס</b> (27 מול 6). <b>בשבועות שלטון, היא גדולה רק פי 1.22</b> (127 מול 104 שבועות מתוך 220). קואליציית ריבוב־הזמן היא מכונת השוואה: היא מוחקת כמעט לחלוטין את יתרון הגודל, כי בקואליציה מינימלית הקטנה חיונית בדיוק כמו הגדולה. מי שמרוויחה הכי הרבה מהשיטה היא המפלגה הקטנה; מי שמפסידה — הגדולה, שרגילה לתרגם 27 מושבים לשלטון רצוף.</div>
@@ -171,9 +171,9 @@ footer{margin-top:80px;border-top:1px solid var(--line);padding-top:22px;color:v
     <div class="inner">
       <table>
         <tr><th>מפלגה</th><th>מושבים</th><th>שבועות שלטון / 220</th><th>בשנה ממוצעת</th><th>שבועות ראשות</th><th>ערך שפלי</th></tr>
-        <tr><td>הליכוד</td><td>27</td><td>127 (57.7%)</td><td>30.0</td><td>127</td><td>25.85%</td></tr>
-        <tr><td>ישר</td><td>21</td><td>120 (54.5%)</td><td>28.4</td><td>85</td><td>18.70%</td></tr>
-        <tr><td>ביחד</td><td>12</td><td>119 (54.1%)</td><td>28.1</td><td>8</td><td>9.38%</td></tr>
+        <tr><td>הליכוד (נתניהו)</td><td>27</td><td>127 (57.7%)</td><td>30.0</td><td>127</td><td>25.85%</td></tr>
+        <tr><td>ישר (אייזנקוט)</td><td>21</td><td>120 (54.5%)</td><td>28.4</td><td>85</td><td>18.70%</td></tr>
+        <tr><td>ביחד (בנט)</td><td>12</td><td>119 (54.1%)</td><td>28.1</td><td>8</td><td>9.38%</td></tr>
         <tr><td>הרשימה המשותפת</td><td>11</td><td>118 (53.6%)</td><td>27.9</td><td>0</td><td>7.44%</td></tr>
         <tr><td>הדמוקרטים</td><td>8</td><td>112 (50.9%)</td><td>26.5</td><td>0</td><td>6.56%</td></tr>
         <tr><td>רע״ם</td><td>8</td><td>112 (50.9%)</td><td>26.5</td><td>0</td><td>6.56%</td></tr>
@@ -272,6 +272,8 @@ const PARTIES = [
   ['ישראל ביתנו','#db2777',7,110,0,5.53],['עוצמה יהודית','#7f1d1d',7,110,0,5.53],['יהדות התורה','#4b5563',7,110,0,5.53],
   ['ש״ס','#1e3a8a',6,104,0,4.46],['הציונות הדתית','#92400e',6,104,0,4.46]
 ];
+// party leaders — the only three possible prime ministers in the rotation
+const LEADERS = {'הליכוד':'נתניהו','ישר':'אייזנקוט','ביחד':'בנט'};
 // seat dots + legend
 const dots = document.getElementById('seatdots'), leg = document.getElementById('seatlegend');
 PARTIES.forEach(([name,color,seats]) => {
@@ -285,7 +287,7 @@ document.getElementById('participation').innerHTML = PARTIES.map(([name,color,se
   <span class="bv">${days} שבועות<small>${(days/220*100).toFixed(1)}% מהקדנציה</small></span></div>`).join('');
 // leadership bars (weeks as largest party; scale to Likud's 127)
 document.getElementById('leadership').innerHTML = PARTIES.map(([name,color,seats,days,lead])=>`
-  <div class="bar-row"><span class="bn">${name}</span>
+  <div class="bar-row"><span class="bn">${name}${LEADERS[name]?` <small>· ${LEADERS[name]}</small>`:''}</span>
   <span class="track"><i style="width:${lead/127*100}%;background:${color}"></i></span>
   <span class="bv">${lead} שבועות<small>${lead?(lead/220*100).toFixed(1)+'% מהקדנציה':'אף פעם'}</small></span></div>`).join('');
 // enumerate all 220 minimal winning coalitions in the browser (2^11 subsets)
@@ -304,7 +306,7 @@ function drawWeek(){
     const leader=[...members].sort((a,b)=>b[2]-a[2])[0];
     const chips=members.map(p=>`<span class="chip" style="background:${p[1]}">${p[0]} <small>${p[2]}</small></span>`).join('');
     return `<div class="daycard"><div class="dhead"><span>${WEEKNAMES[d]}</span><span class="dsum">${sum} מושבים · ${members.length} מפלגות</span></div>
-    <div class="coal">${chips}</div><div class="dlead">ראשות הממשלה: ${leader[0]} (הגדולה בקואליציה)</div></div>`;
+    <div class="coal">${chips}</div><div class="dlead">ראש הממשלה: ${LEADERS[leader[0]]||leader[0]} (${leader[0]}, הגדולה בקואליציה)</div></div>`;
   }).join('');
 }
 document.getElementById('drawweek').addEventListener('click',drawWeek);
