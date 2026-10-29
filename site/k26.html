@@ -729,6 +729,14 @@
     // count is complete (official banner, final Sankey stage, no
     // nowcast), on the simulated full-count data.
     const PREVIEW_FULLCOUNT = PREVIEW_MODE === 'fullcount';
+    // Nowcast pane closed on the live page (2026-10-29): regular boxes are
+    // in and only double envelopes remain, so forecasting the rest adds
+    // nothing — the stage returns to the analysed Sankey/blocs. Rehearsal
+    // previews (?preview=partial*) still show it. The payload keeps being
+    // generated: geo_counted / counted votes still drive the partial map
+    // and the votes pane.
+    const NOWCAST_CLOSED_LIVE = true;
+    function nowcastStageOpen() { return !NOWCAST_CLOSED_LIVE || PREVIEW_PARTIAL; }
     // Election-day turnout view: optional pre-results layer. ?turnout=1
     // forces it, ?turnout=0 forces it off; otherwise it activates only
     // when k26_status.json reports kind="turnout" (CEC turnout snapshots
@@ -1374,7 +1382,7 @@
     function renderBlocs() {
         const panel = document.getElementById('panel-blocs');
         if (!panel || panel.hidden || !DATA) return;
-        const partial = K26STATUS && K26STATUS.kind === 'partial';
+        const partial = K26STATUS && K26STATUS.kind === 'partial' && nowcastStageOpen();
         let src, note = '';
         if (partial) {
             const P = ncProj();
@@ -2429,7 +2437,7 @@
         // content node moves to the central stage and its tab auto-activates
         // (unless the user already picked a stage). Otherwise it lives in
         // the side margin as before.
-        const partial = K26STATUS.kind === 'partial';
+        const partial = K26STATUS.kind === 'partial' && nowcastStageOpen();
         const content = document.getElementById('nowcast-content');
         const mount = partial ? document.getElementById('nowcast-stage-mount') : document.getElementById('nowcast-body');
         if (content && mount && content.parentElement !== mount) mount.appendChild(content);
@@ -3271,6 +3279,7 @@
     }
     function activateStage(stage) {
         if (stage === 'dhondt') { openDhondtModal(); return; }
+        if (stage === 'nowcast' && !nowcastStageOpen()) stage = 'sankey';
         document.querySelectorAll('.stage-tab').forEach(b => b.classList.toggle('gold', b.dataset.stage === stage));
         ['nowcast','sankey','blocs','tsne','dhondt'].forEach(s => { const p = document.getElementById('panel-' + s); if (p) p.hidden = s !== stage; });
         const link = document.getElementById('stage-full-link');

@@ -207,6 +207,10 @@
         const fmt = n => i18n.fmtNum(Math.round(n || 0));
         const F = { cache: 'no-store' };
         const PREVIEW = new URLSearchParams(location.search).get('preview') || '';
+        // Nowcast card closed on the live page (2026-10-29, mirrors desktop
+        // k26.html): regular boxes are in, only double envelopes remain.
+        // ?preview=partial* rehearsals still show it.
+        const NOWCAST_OPEN = !!PREVIEW;
         const CC_FILE = PREVIEW === 'partial17' ? '../data/command_center_26_p17.json'
             : PREVIEW === 'partial12' ? '../data/command_center_26_p12.json'
             : '../data/command_center_26.json';
@@ -423,7 +427,7 @@
             const card = document.getElementById('sankey-card');
             const nc = cc && cc.nowcast;
             const ncP = nc && ncProjM(nc);
-            const projected = status.kind === 'partial' && nc && nc.ready && ncP && ncP.projected_sankey;
+            const projected = NOWCAST_OPEN && status.kind === 'partial' && nc && nc.ready && ncP && ncP.projected_sankey;
             const data = projected
                 ? ((sankeyAbsM && ncP.projected_sankey_abstention) || ncP.projected_sankey)
                 : ((sankeyAbsM && transferAbs) || transferData);
@@ -818,7 +822,7 @@
         function renderNowcast() {
             const card = document.getElementById('nowcast-card');
             const nc = cc && cc.nowcast;
-            if (!nc || status.kind !== 'partial') { card.hidden = true; return; }
+            if (!nc || status.kind !== 'partial' || !NOWCAST_OPEN) { card.hidden = true; return; }
             if (!ncModelInitM) { ncModelInitM = true; ncModelM = nc.default_model === 'plain' ? 'plain' : 'abs'; sankeyAbsM = ncModelM === 'abs'; }
             card.hidden = false;
             document.getElementById('nc-title').textContent = en() ? 'Nowcast — forecast for the final count' : 'תחזית — לסוף הספירה';
