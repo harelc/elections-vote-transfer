@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -326,6 +327,37 @@
     let volSortAsc = false;
     let hhiSortCol = 'effective';
     let hhiSortAsc = false;
+    let currentSection = 'settlements';
+    // Deep link: ?tab=&size=&vsort=&vdir=&hsort=&hdir= (same names as desktop)
+    if (window.DL) {
+        if (['all', 'small', 'medium', 'large'].includes(DL.get('size'))) currentFilter = DL.get('size');
+        const vc = ['rank', 'name', 'average', '21_to_22', '22_to_23', '23_to_24', '24_to_25', 'voters'];
+        if (vc.includes(DL.get('vsort'))) volSortCol = DL.get('vsort');
+        if (DL.get('vdir')) volSortAsc = DL.get('vdir') === 'asc';
+        const hc = ['name', 'effective', 'hhi', 's50', 's75', 's90', 's98'];
+        if (hc.includes(DL.get('hsort'))) hhiSortCol = DL.get('hsort');
+        if (DL.get('hdir')) hhiSortAsc = DL.get('hdir') === 'asc';
+        if (DL.get('tab') === 'parties' || location.hash === '#parties') currentSection = 'parties';
+    }
+    function syncRankingsDL() {
+        if (!window.DL) return;
+        DL.sync({
+            tab: currentSection === 'parties' ? 'parties' : null,
+            size: currentFilter === 'all' ? null : currentFilter,
+            vsort: volSortCol === 'average' ? null : volSortCol,
+            vdir: (volSortCol === 'average' && !volSortAsc) ? null : (volSortAsc ? 'asc' : 'desc'),
+            hsort: hhiSortCol === 'effective' ? null : hhiSortCol,
+            hdir: (hhiSortCol === 'effective' && !hhiSortAsc) ? null : (hhiSortAsc ? 'asc' : 'desc')
+        });
+    }
+    function activateSection(sectionId) {
+        currentSection = sectionId;
+        document.querySelectorAll('.section-tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.section === sectionId));
+        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + sectionId).classList.add('active');
+        syncRankingsDL();
+    }
 
     function volColor(v) {
         if (v < 10) return '#22c55e';
@@ -582,10 +614,7 @@
     document.querySelector('.section-tabs').addEventListener('click', e => {
         const tab = e.target.closest('.section-tab');
         if (!tab) return;
-        document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-        document.getElementById('section-' + tab.dataset.section).classList.add('active');
+        activateSection(tab.dataset.section);
     });
 
     // Filter
@@ -595,6 +624,7 @@
         document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         currentFilter = pill.dataset.filter;
+        syncRankingsDL();
         renderSettlements();
     });
 
@@ -608,6 +638,7 @@
         document.querySelectorAll('#vol-table th').forEach(h => h.classList.remove('sorted'));
         th.classList.add('sorted');
         th.querySelector('.sort-arrow').textContent = volSortAsc ? '▲' : '▼';
+        syncRankingsDL();
         renderVolTable(getFilteredSettlements());
     });
 
@@ -620,6 +651,7 @@
         document.querySelectorAll('#hhi-table th').forEach(h => h.classList.remove('sorted'));
         th.classList.add('sorted');
         th.querySelector('.sort-arrow').textContent = hhiSortAsc ? '▲' : '▼';
+        syncRankingsDL();
         renderHHITable();
     });
 
@@ -666,6 +698,19 @@
     });
 
     // Init
+    if (currentSection === 'parties') activateSection('parties');
+    document.querySelectorAll('.filter-pill').forEach(p =>
+        p.classList.toggle('active', p.dataset.filter === currentFilter));
+    const markSortedM = (table, col, asc) => {
+        document.querySelectorAll(table + ' th').forEach(h => {
+            const on = h.dataset.col === col;
+            h.classList.toggle('sorted', on);
+            if (on) h.querySelector('.sort-arrow').textContent = asc ? '▲' : '▼';
+        });
+    };
+    markSortedM('#vol-table', volSortCol, volSortAsc);
+    markSortedM('#hhi-table', hhiSortCol, hhiSortAsc);
+    if (window.DL) DL.addCopyButton('.top-bar');
     loadAllData();
     i18n.renderMobileBMC();
     </script>

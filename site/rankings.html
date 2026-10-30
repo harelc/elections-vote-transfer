@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/rankings.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/rankings.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -467,6 +467,7 @@
     </style>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes -->
@@ -610,6 +611,38 @@
     let volSortAsc = false;
     let hhiSortCol = 'effective';
     let hhiSortAsc = false;
+    let currentSection = 'settlements';
+
+    // Deep link: ?tab=parties&size=large&vsort=voters&vdir=asc&hsort=hhi&hdir=asc
+    if (window.DL) {
+        if (['all', 'small', 'medium', 'large'].includes(DL.get('size'))) currentFilter = DL.get('size');
+        const vc = ['rank', 'name', 'average', '21_to_22', '22_to_23', '23_to_24', '24_to_25', 'voters'];
+        if (vc.includes(DL.get('vsort'))) volSortCol = DL.get('vsort');
+        if (DL.get('vdir')) volSortAsc = DL.get('vdir') === 'asc';
+        const hc = ['name', 'effective', 'hhi', 's50', 's75', 's90', 's98'];
+        if (hc.includes(DL.get('hsort'))) hhiSortCol = DL.get('hsort');
+        if (DL.get('hdir')) hhiSortAsc = DL.get('hdir') === 'asc';
+        if (DL.get('tab') === 'parties') currentSection = 'parties';
+    }
+    function syncRankingsDL() {
+        if (!window.DL) return;
+        DL.sync({
+            tab: currentSection === 'parties' ? 'parties' : null,
+            size: currentFilter === 'all' ? null : currentFilter,
+            vsort: volSortCol === 'average' ? null : volSortCol,
+            vdir: (volSortCol === 'average' && !volSortAsc) ? null : (volSortAsc ? 'asc' : 'desc'),
+            hsort: hhiSortCol === 'effective' ? null : hhiSortCol,
+            hdir: (hhiSortCol === 'effective' && !hhiSortAsc) ? null : (hhiSortAsc ? 'asc' : 'desc')
+        });
+    }
+    function activateSection(sectionId) {
+        currentSection = sectionId;
+        document.querySelectorAll('.section-tab').forEach(t =>
+            t.classList.toggle('active', t.dataset.section === sectionId));
+        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+        document.getElementById('section-' + sectionId).classList.add('active');
+        syncRankingsDL();
+    }
 
     // ── Volatility color ──
     function volColor(v) {
@@ -1058,11 +1091,7 @@
     document.querySelector('.section-tabs').addEventListener('click', e => {
         const tab = e.target.closest('.section-tab');
         if (!tab) return;
-        document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        const sectionId = tab.dataset.section;
-        document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-        document.getElementById('section-' + sectionId).classList.add('active');
+        activateSection(tab.dataset.section);
     });
 
     // ── Size filter ──
@@ -1072,6 +1101,7 @@
         document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
         pill.classList.add('active');
         currentFilter = pill.dataset.filter;
+        syncRankingsDL();
         renderSettlements();
     });
 
@@ -1090,6 +1120,7 @@
         document.querySelectorAll('#vol-table th').forEach(h => h.classList.remove('sorted'));
         th.classList.add('sorted');
         th.querySelector('.sort-arrow').textContent = volSortAsc ? '▲' : '▼';
+        syncRankingsDL();
         renderVolTable(getFilteredSettlements());
     });
 
@@ -1106,6 +1137,7 @@
         document.querySelectorAll('#hhi-table th').forEach(h => h.classList.remove('sorted'));
         th.classList.add('sorted');
         th.querySelector('.sort-arrow').textContent = hhiSortAsc ? '▲' : '▼';
+        syncRankingsDL();
         renderHHITable();
     });
 
@@ -1134,18 +1166,25 @@
     });
 
     // ── Init ──
-    // Auto-switch to parties tab if hash or sessionStorage says so
+    // Auto-switch to parties tab if ?tab=, hash or sessionStorage says so
     function checkTabFromUrl() {
         const hash = location.hash.replace('#', '');
         const stored = sessionStorage.getItem('rankings_tab');
         if (stored) sessionStorage.removeItem('rankings_tab');
-        if (hash === 'parties' || stored === 'parties') {
-            document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
-            const tab = document.querySelector('[data-section="parties"]');
-            if (tab) tab.classList.add('active');
-            document.getElementById('section-parties').classList.add('active');
-        }
+        if (currentSection === 'parties' || hash === 'parties' || stored === 'parties') activateSection('parties');
+        // Reflect deep-linked filter + sort in the controls
+        document.querySelectorAll('.filter-pill').forEach(p =>
+            p.classList.toggle('active', p.dataset.filter === currentFilter));
+        const markSorted = (table, col, asc) => {
+            document.querySelectorAll(table + ' th').forEach(h => {
+                const on = h.dataset.col === col;
+                h.classList.toggle('sorted', on);
+                if (on) h.querySelector('.sort-arrow').textContent = asc ? '▲' : '▼';
+            });
+        };
+        markSorted('#vol-table', volSortCol, volSortAsc);
+        markSorted('#hhi-table', hhiSortCol, hhiSortAsc);
+        if (window.DL) DL.addCopyButton('.section-tabs');
     }
     checkTabFromUrl();
     loadAllData();

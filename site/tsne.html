@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/tsne.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/tsne.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -910,6 +910,8 @@
     </style>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
+    <script src="qrcode.min.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->
@@ -1036,8 +1038,28 @@
                 this.tooltip = d3.select('#tooltip');
                 this.colorScale = d3.select('#color-scale');
                 this.projectionMode = 'tsne'; // 'tsne' or 'umap'
+                // Deep link: ?e=25&mode=party&p=<symbol>&proj=umap
+                this.defaultElection = i18n.SHOW_E26 ? '26' : '25';
+                this._dlElection = this.defaultElection;
+                this._dlPartySymbol = null;
+                if (window.DL) {
+                    const e = DL.get('e');
+                    if (/^(1[6-9]|2[0-6])$/.test(e || '') && (e !== '26' || i18n.SHOW_E26)) this._dlElection = e;
+                    if (['turnout', 'party', 'socioeconomic', 'crossentropy'].includes(DL.get('mode'))) this.colorMode = DL.get('mode');
+                    this._dlPartySymbol = DL.get('p');
+                    if (DL.get('proj') === 'umap') this.projectionMode = 'umap';
+                }
 
                 this.init();
+            }
+
+            syncDL() {
+                if (window.DL) DL.sync({
+                    e: this.currentElection || this._dlElection,
+                    mode: this.colorMode === 'turnout' ? null : this.colorMode,
+                    p: this.colorMode === 'party' && this.selectedParty ? this.selectedParty.symbol : null,
+                    proj: this.projectionMode === 'umap' ? 'umap' : null
+                }, { e: this.defaultElection });
             }
 
             // Coordinate accessors based on projection mode
@@ -1085,6 +1107,7 @@
                         this.projectionMode = btn.dataset.proj;
                         document.querySelectorAll('.proj-btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
+                        this.syncDL();
                         this.render();
                     });
                 });
@@ -1136,8 +1159,11 @@
                     });
                 }
 
-                // Load initial election
-                this.loadElection(i18n.SHOW_E26 ? '26' : '25');
+                if (window.DL) DL.addCopyButton('#export-png');
+                document.querySelectorAll('.proj-btn').forEach(b =>
+                    b.classList.toggle('active', b.dataset.proj === this.projectionMode));
+                // Load initial election (deep-linked if given)
+                this.loadElection(this._dlElection);
             }
 
             buildSettlementsList() {
@@ -1353,6 +1379,7 @@
             selectTurnoutMode() {
                 this.colorMode = 'turnout';
                 this.selectedParty = null;
+                this.syncDL();
 
                 // Update legend active state
                 document.querySelectorAll('.legend-item').forEach(item => {
@@ -1400,6 +1427,7 @@
             async selectSocioeconomicMode() {
                 this.colorMode = 'socioeconomic';
                 this.selectedParty = null;
+                this.syncDL();
 
                 // Load socioeconomic data if not loaded
                 if (!this.socioeconomicData) {
@@ -1502,6 +1530,7 @@
             selectCrossEntropyMode() {
                 this.colorMode = 'crossentropy';
                 this.selectedParty = null;
+                this.syncDL();
 
                 // Compute if needed
                 if (!this.crossEntropyLookup) {
@@ -1572,13 +1601,16 @@
 
             async loadElection(electionId) {
                 this.currentElection = electionId;
+                document.querySelectorAll('.nav-btn[data-election]').forEach(b =>
+                    b.classList.toggle('active', b.dataset.election === String(electionId)));
                 const container = document.querySelector('.visualization-container');
                 container.innerHTML = `<div class="loading">${i18n.t('loading')}</div>`;
 
                 // Preserve current color mode
                 const previousColorMode = this.colorMode;
-                const previousPartySymbol = this.selectedParty ? this.selectedParty.symbol : null;
+                const previousPartySymbol = this.selectedParty ? this.selectedParty.symbol : this._dlPartySymbol;
                 const previousPartyName = this.selectedParty ? this.selectedParty.name : null;
+                this._dlPartySymbol = null;
 
                 try {
                     const response = await fetch(`data/tsne_${electionId}.json`);
@@ -1735,6 +1767,7 @@
             selectParty(party) {
                 this.colorMode = 'party';
                 this.selectedParty = party;
+                this.syncDL();
 
                 // Update legend active state
                 document.querySelectorAll('.legend-item').forEach(item => {
@@ -2115,6 +2148,8 @@
             }
 
             generateQRCodeDataURL() {
+                const _dl = window.DL && DL.qrDataURL(DL.url());
+                if (_dl) return _dl;
                 // Pre-computed QR code for https://kolot-nodedim.netlify.app/
                 const qrMatrix = [
                     [1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1],

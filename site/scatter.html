@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/scatter.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/scatter.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -707,6 +707,8 @@
     </style>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
+    <script src="qrcode.min.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->
@@ -900,7 +902,38 @@
                 };
                 if (i18n.SHOW_E26) this.electionMeta['26'] = { he: 'כנסת 26 (2026)', en: 'Knesset 26 (2026)' };
 
+                // Deep link: ?ex=25&px=<symbol>&ey=22&py=<symbol>&u=abs&scale=symlog&q=settlement,…
+                this._dlPx = this._dlPy = null;
+                this._dlSettlements = null;
+                if (window.DL) {
+                    const validE = e => /^(1[6-9]|2[0-6])$/.test(e || '') && (e !== '26' || i18n.SHOW_E26);
+                    if (validE(DL.get('ex'))) this.currentElectionX = DL.get('ex');
+                    if (validE(DL.get('ey'))) this.currentElectionY = DL.get('ey');
+                    this._dlPx = DL.get('px'); this._dlPy = DL.get('py');
+                    if (DL.get('u') === 'absolute') this.unitsMode = 'absolute';
+                    if (DL.get('scale') === 'symlog') this.scaleType = 'symlog';
+                    if (DL.get('q')) this._dlSettlements = DL.get('q').split(',').map(s => s.trim()).filter(Boolean);
+                }
+
                 this.init();
+            }
+
+            syncDL() {
+                if (!window.DL) return;
+                const sym = (election, name) => {
+                    const d = this.electionsData[election];
+                    const p = d && name && d.parties.find(x => x.name === name);
+                    return p ? p.symbol : null;
+                };
+                const dflt = i18n.SHOW_E26 ? '26' : '25';
+                DL.sync({
+                    ex: this.currentElectionX, ey: this.currentElectionY,
+                    px: sym(this.currentElectionX, this.currentPartyX),
+                    py: sym(this.currentElectionY, this.currentPartyY),
+                    u: this.unitsMode === 'absolute' ? 'absolute' : null,
+                    scale: this.scaleType === 'symlog' ? 'symlog' : null,
+                    q: this.selectedSettlements.length ? this.selectedSettlements.join(',') : null
+                }, { ex: dflt, ey: dflt });
             }
 
             /** Get localized election label for a given election ID */
@@ -963,6 +996,11 @@
 
                 // Export PNG button
                 document.getElementById('export-png').addEventListener('click', () => this.exportPNG());
+                if (window.DL) DL.addCopyButton('#export-png');
+                document.querySelectorAll('.toggle-btn[data-units]').forEach(b =>
+                    b.classList.toggle('active', b.dataset.units === this.unitsMode));
+                document.querySelectorAll('.toggle-btn[data-scale]').forEach(b =>
+                    b.classList.toggle('active', b.dataset.scale === this.scaleType));
 
                 // Swap axes button
                 document.getElementById('swap-axes').addEventListener('click', () => this.swapAxes());
@@ -1003,6 +1041,11 @@
                 // Load initial data (don't update chart until both are loaded)
                 await this.loadElectionParties('x', this.currentElectionX, false);
                 await this.loadElectionParties('y', this.currentElectionY, false);
+                if (this._dlSettlements) {
+                    this.selectedSettlements = this._dlSettlements;
+                    this._dlSettlements = null;
+                    this.updateSelectedSettlementsUI();
+                }
                 this.updateChart();
             }
 
@@ -1226,9 +1269,16 @@
                     `<option value="${p.name}">${i18n.partyName(p)}</option>`
                 ).join('');
 
+                // Deep-linked party (by symbol) wins on first load
+                const dlSym = axis === 'x' ? this._dlPx : this._dlPy;
+                const dlParty = dlSym && data.parties.find(p => p.symbol === dlSym);
+                if (axis === 'x') this._dlPx = null; else this._dlPy = null;
+
                 // Try to keep the same party selected if it exists in the new election
                 let newSelection;
-                if (currentSelection && partyNames.includes(currentSelection)) {
+                if (dlParty) {
+                    newSelection = dlParty.name;
+                } else if (currentSelection && partyNames.includes(currentSelection)) {
                     newSelection = currentSelection;
                 } else {
                     // Fall back to first party (or second for Y if same election)
@@ -1302,6 +1352,7 @@
 
             async updateChart() {
                 if (!this.currentPartyX || !this.currentPartyY) return;
+                this.syncDL();
 
                 const dataX = await this.loadElectionData(this.currentElectionX);
                 const dataY = await this.loadElectionData(this.currentElectionY);
@@ -1740,6 +1791,8 @@
             }
 
             generateQRCodeDataURL() {
+                const _dl = window.DL && DL.qrDataURL(DL.url());
+                if (_dl) return _dl;
                 // Pre-computed QR code for https://kolot-nodedim.netlify.app/
                 const qrMatrix = [
                     [1,1,1,1,1,1,1,0,1,0,0,0,1,1,1,0,0,0,1,1,1,1,1,1,1],

@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <style>
         #map {
             width: 100%;
@@ -655,7 +656,34 @@
         let regionResults = [];
 
         // ── Data loading ──
-        const mobileElection = i18n.SHOW_E26 ? '26' : '25';
+        let mobileElection = i18n.SHOW_E26 ? '26' : '25';
+        // Deep link: ?e=&r=&n=&k=&t=&m= (same names as desktop regional)
+        function applyRegionalDL() {
+            if (!window.DL) return;
+            const e = DL.get('e');
+            if (e === '25' || (e === '26' && i18n.SHOW_E26)) mobileElection = e;
+            const k = parseInt(DL.get('k'));
+            if ([120, 150, 180, 240, 360, 480, 600].includes(k)) {
+                knessetSize = k;
+                document.getElementById('knesset-size-select').value = String(k);
+            }
+            const r = parseInt(DL.get('r'));
+            if (r >= 1) numRegions = r;
+            const n = parseInt(DL.get('n'));
+            if (n >= 0 && n <= knessetSize) nationalSeats = n;
+            const t = parseFloat(DL.get('t'));
+            if ([0, 3.25, 5].includes(t)) {
+                threshold = t;
+                document.getElementById('threshold-select').value = String(t);
+            }
+            if (DL.get('m') === 'dhondt' || DL.get('m') === 'fptp') regionalMethod = DL.get('m');
+            document.querySelectorAll('#method-pills .m-pill-btn').forEach(b =>
+                b.classList.toggle('active', b.dataset.value === regionalMethod));
+            document.querySelectorAll('#region-pills .m-pill-btn').forEach(b =>
+                b.classList.toggle('active', parseInt(b.dataset.value) === numRegions));
+            document.querySelectorAll('#national-pills .m-pill-btn').forEach(b =>
+                b.classList.toggle('active', parseInt(b.dataset.value) === nationalSeats));
+        }
         let K26_MKS = {};
         const mkDisplayName = n => { if (!n) return n; const p = n.trim().split(/\s+/); return p.length > 1 ? p[p.length - 1] + ' ' + p.slice(0, -1).join(' ') : n; };
         async function loadData() {
@@ -834,6 +862,8 @@
 
         // ── Simulation ──
         function runSimulation() {
+            if (window.DL) DL.sync({ e: mobileElection, r: numRegions, n: nationalSeats, k: knessetSize, t: threshold, m: regionalMethod },
+                { e: i18n.SHOW_E26 ? '26' : '25', r: 12, n: 0, k: 120, t: 3.25, m: 'dhondt' });
             const regSeatCount = knessetSize - nationalSeats;
             const totalSeats = {};
             const nationalSeatsByParty = {};
@@ -1407,6 +1437,8 @@
         async function init() {
             initMap();
             setupControls();
+            applyRegionalDL();
+            if (window.DL) DL.addCopyButton('.top-bar');
             updateRegionPillStates();
             try {
                 await loadData();

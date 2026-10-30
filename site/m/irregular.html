@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <style>
         html, body { overflow: auto; height: auto; }
 
@@ -456,6 +457,11 @@
     // ---- State ----
     let currentData = null;
     let currentElection = i18n.SHOW_E26 ? '26' : '25';
+    // Deep link: ?e=24
+    if (window.DL) {
+        const e = DL.get('e');
+        if (/^(1[6-9]|2[0-6])$/.test(e || '') && (e !== '26' || i18n.SHOW_E26)) currentElection = e;
+    }
     let partyData = {};
 
     // ---- Election pills ----
@@ -481,6 +487,9 @@
 
     // ---- Data loading ----
     async function loadData(electionId) {
+        if (window.DL) DL.sync({ e: electionId }, { e: i18n.SHOW_E26 ? '26' : '25' });
+        document.querySelectorAll('.election-pill').forEach(b =>
+            b.classList.toggle('active', b.dataset.election === String(electionId)));
         const container = document.getElementById('cards-container');
         container.innerHTML = '<div class="loading-wrap"><div class="spinner"></div></div>';
 
@@ -637,6 +646,7 @@
     });
 
     // ---- Init ----
+    if (window.DL) DL.addCopyButton('.top-bar');
     buildPills();
     loadData(currentElection);
     </script>

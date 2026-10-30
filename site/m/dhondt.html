@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <script src="https://d3js.org/d3.v7.min.js"></script>
     <style>
         /* Parliament chart area */
@@ -724,6 +725,11 @@
     };
 
     let currentElection = i18n.SHOW_E26 ? '26' : '25';
+    // Deep link: ?e=25&th=&seats=&v=<idx>:<votes>,…&ag=… (same encoding as desktop)
+    if (window.DL) {
+        const e = DL.get('e');
+        if (e === '25' || (e === '26' && i18n.SHOW_E26)) currentElection = e;
+    }
     const defaultParties = presets[currentElection].parties;
     const defaultAgreements = presets[currentElection].agreements;
 
@@ -746,8 +752,47 @@
             this.totalSeats = 120;
             this.step = 10000;
             this.activeSheet = null;
+            if (window.DL) {
+                const th = parseFloat(DL.get('th'));
+                if (isFinite(th) && th >= 0 && th <= 10) this.threshold = th;
+                const seats = parseInt(DL.get('seats'));
+                if (isFinite(seats) && seats >= 10 && seats <= 600) this.totalSeats = seats;
+                (DL.get('v') || '').split(',').forEach(pair => {
+                    const [i, v] = pair.split(':');
+                    const idx = parseInt(i), votes = parseInt(v);
+                    if (this.parties[idx] && isFinite(votes) && votes >= 0) this.parties[idx].votes = votes;
+                });
+                const ag = DL.get('ag');
+                if (ag !== null) {
+                    this.agreements = ag === 'none' ? [] : ag.split(',').map(p => p.split('-').map(Number))
+                        .filter(a => a.length === 2 && this.parties[a[0]] && this.parties[a[1]] && a[0] !== a[1]);
+                }
+            }
 
             this.init();
+            const thEl = document.getElementById('threshold-input');
+            if (thEl) thEl.value = this.threshold;
+            const tsEl = document.getElementById('knesset-size-input');
+            if (tsEl) tsEl.value = this.totalSeats;
+            // Active election pill follows the (possibly deep-linked) election
+            document.querySelectorAll('.election-toggle-btn, [data-election]').forEach(b => {
+                if (b.dataset && b.dataset.election) b.classList.toggle('active', b.dataset.election === currentElection);
+            });
+            if (window.DL) DL.addCopyButton('.top-bar');
+        }
+
+        syncDL() {
+            if (!window.DL) return;
+            const preset = presets[currentElection];
+            const deltas = this.parties
+                .map((p, i) => p.votes !== preset.parties[i].votes ? `${i}:${p.votes}` : null)
+                .filter(Boolean).join(',');
+            const agDiff = JSON.stringify(this.agreements) !== JSON.stringify(preset.agreements);
+            DL.sync({
+                e: currentElection, th: this.threshold, seats: this.totalSeats,
+                v: deltas || null,
+                ag: agDiff ? (this.agreements.length ? this.agreements.map(a => a.join('-')).join(',') : 'none') : null
+            }, { e: i18n.SHOW_E26 ? '26' : '25', th: 3.25, seats: 120 });
         }
 
         init() {
@@ -842,19 +887,15 @@
                 this.closeSheets();
             });
 
-            // Show E26 button if feature flag is set (and make it the active toggle)
+            // Show E26 button if feature flag is set; active = current (possibly deep-linked) election
             if (i18n.SHOW_E26) {
                 const e26Btn = document.getElementById('e26-btn');
-                if (e26Btn) {
-                    e26Btn.style.display = '';
-                    e26Btn.classList.add('active');
-                    e26Btn.style.background = 'var(--accent)';
-                    e26Btn.style.color = 'white';
-                }
-                document.querySelectorAll('.election-toggle-btn[data-election="25"]').forEach(b => {
-                    b.classList.remove('active');
-                    b.style.background = 'transparent';
-                    b.style.color = 'var(--text-secondary)';
+                if (e26Btn) e26Btn.style.display = '';
+                document.querySelectorAll('.election-toggle-btn').forEach(b => {
+                    const isActive = b.dataset.election === currentElection;
+                    b.classList.toggle('active', isActive);
+                    b.style.background = isActive ? 'var(--accent)' : 'transparent';
+                    b.style.color = isActive ? 'white' : 'var(--text-secondary)';
                 });
             }
 
@@ -999,6 +1040,7 @@
 
         // ---- d'Hondt calculation ----
         calculate() {
+            this.syncDL();
             const totalVotes = this.parties.reduce((s, p) => s + p.votes, 0) + this.otherVotes;
             const thresholdVotes = totalVotes * (this.threshold / 100);
 

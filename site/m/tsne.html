@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <style>
         #tsne-chart {
             width: 100%;
@@ -274,10 +275,29 @@
             this.partyScaleMax = 50;
             this.svgGroup = null;
             this.projectionMode = 'tsne'; // 'tsne' or 'umap'
+            // Deep link: ?e=25&mode=party&p=<symbol>&proj=umap (same names as desktop)
+            this.defaultElection = this.currentElection;
+            this._dlMode = null; this._dlPartySymbol = null;
+            if (window.DL) {
+                const e = DL.get('e');
+                if (/^(1[6-9]|2[0-6])$/.test(e || '') && (e !== '26' || i18n.SHOW_E26)) this.currentElection = e;
+                if (['turnout', 'party', 'socioeconomic', 'crossentropy'].includes(DL.get('mode'))) this._dlMode = DL.get('mode');
+                this._dlPartySymbol = DL.get('p');
+                if (DL.get('proj') === 'umap') this.projectionMode = 'umap';
+            }
 
             this.initPills();
             this.initEvents();
             this.loadData();
+        }
+
+        syncDL() {
+            if (window.DL) DL.sync({
+                e: this.currentElection,
+                mode: this.colorMode === 'turnout' ? null : this.colorMode,
+                p: this.colorMode === 'party' && this.selectedParty ? this.selectedParty.symbol : null,
+                proj: this.projectionMode === 'umap' ? 'umap' : null
+            }, { e: this.defaultElection });
         }
 
         // Coordinate accessors based on projection mode
@@ -319,6 +339,7 @@
                     this.projectionMode = btn.dataset.proj;
                     document.querySelectorAll('.proj-pill').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
+                    this.syncDL();
                     this.render();
                 };
             });
@@ -356,7 +377,18 @@
                 this.buildSettlements();
                 this.buildColorFabs();
                 this.updateProjToggle();
-                this.render();
+                document.querySelectorAll('.proj-pill').forEach(b =>
+                    b.classList.toggle('active', b.dataset.proj === this.projectionMode));
+                if (window.DL) DL.addCopyButton('.top-bar');
+                // Apply deep-linked colour mode once data exists
+                if (this._dlMode === 'party' && this._dlPartySymbol) {
+                    const party = (this.data.parties || []).find(p => p.symbol === this._dlPartySymbol);
+                    if (party) this.setColorMode('party', party); else this.render();
+                } else if (this._dlMode && this._dlMode !== 'turnout') {
+                    if (this._dlMode === 'crossentropy' && !this.crossEntropyLookup) this.computeCrossEntropy();
+                    this.setColorMode(this._dlMode);
+                } else this.render();
+                this._dlMode = null; this._dlPartySymbol = null;
             } catch (err) { console.error(err); }
             document.getElementById('loading').style.display = 'none';
         }
@@ -375,6 +407,7 @@
 
         async switchElection(id) {
             this.currentElection = id;
+            this.syncDL();
             document.querySelectorAll('.election-pill').forEach(p => {
                 p.classList.toggle('active', p.textContent === id);
                 if (p.textContent === id) p.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
@@ -452,6 +485,7 @@
         setColorMode(mode, party = null) {
             this.colorMode = mode;
             this.selectedParty = party;
+            this.syncDL();
             if (party) {
                 const vals = this.data.stations
                     .map(s => (s.p || {})[party.name] || 0)

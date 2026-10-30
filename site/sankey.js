@@ -68,10 +68,21 @@ class VoteTransferSankey {
         this.data = null;
         this.officialResults = null;
         this.currentTransition = (typeof i18n !== 'undefined' && i18n.SHOW_E26) ? '25_to_26' : '24_to_25';
+        this.defaultTransition = this.currentTransition;
+        // Deep link: ?t=24_to_25&pct=target&abst=1
+        this.percentMode = 'source';
+        this.abstentionMode = false;
+        if (window.DL) {
+            const valid = [];
+            for (let i = 16; i < 26; i++) valid.push(`${i}_to_${i + 1}`);
+            const t = DL.get('t');
+            if (valid.includes(t) && (t !== '25_to_26' || i18n.SHOW_E26)) this.currentTransition = t;
+            if (DL.get('pct') === 'target') this.percentMode = 'target';
+            if (DL.get('abst') === '1') this.abstentionMode = true;
+        }
         this.svg = null;
         this.g = null;
-        this.percentMode = 'source'; // 'source' or 'target'
-        this.abstentionMode = false;
+        if (!this.percentMode) this.percentMode = 'source'; // 'source' or 'target'
         this.flowCI = null;
         this.flowCIFile = null;
         // Transitions where abstention data is unreliable (K17 has no per-ballot eligible voter data)
@@ -88,6 +99,11 @@ class VoteTransferSankey {
                 this.updateInfo();
                 this.render();
                 this.updateLegend();
+                // Toggle labels are state-dependent; restore after applyTranslations
+                const tv = document.getElementById('toggle-value');
+                if (tv) tv.textContent = i18n.t(this.percentMode === 'source' ? 'pct_from_prev' : 'pct_from_next');
+                const av = document.getElementById('abstention-value');
+                if (av) av.textContent = i18n.t(this.abstentionMode ? 'abstention_on' : 'abstention_off');
             }
         });
 
@@ -142,9 +158,13 @@ class VoteTransferSankey {
         if (exportBtn) {
             exportBtn.addEventListener('click', () => this.exportPNG());
         }
+        if (window.DL) DL.addCopyButton('#export-png');
     }
 
     generateQRCodeDataURL() {
+        // Deep link to this exact view; fall back to homepage QR if it doesn't fit
+        const _dl = window.DL && DL.qrDataURL(DL.url());
+        if (_dl) return _dl;
         // Pre-computed QR code for https://kolot-nodedim.netlify.app/ (29x29, ECC M)
         const qrMatrix = [
             [1,1,1,1,1,1,1,0,0,1,1,0,1,1,1,1,0,1,1,1,1,0,1,1,1,1,1,1,1],
@@ -377,8 +397,15 @@ class VoteTransferSankey {
         });
     }
 
+    syncDL() {
+        if (window.DL) DL.sync(
+            { t: this.currentTransition, pct: this.percentMode, abst: this.abstentionMode ? '1' : null },
+            { t: this.defaultTransition, pct: 'source' });
+    }
+
     togglePercentMode() {
         this.percentMode = this.percentMode === 'source' ? 'target' : 'source';
+        this.syncDL();
         const isSource = this.percentMode === 'source';
 
         // Update desktop toggle
@@ -567,6 +594,14 @@ class VoteTransferSankey {
 
     async loadTransition(transitionId) {
         this.currentTransition = transitionId;
+        this.syncDL();
+        document.querySelectorAll('.nav-btn[data-transition]').forEach(b =>
+            b.classList.toggle('active', b.dataset.transition === transitionId));
+        // Reflect deep-linked toggles in the labels
+        const tv = document.getElementById('toggle-value');
+        if (tv) tv.textContent = i18n.t(this.percentMode === 'source' ? 'pct_from_prev' : 'pct_from_next');
+        const av0 = document.getElementById('abstention-value');
+        if (av0) av0.textContent = i18n.t(this.abstentionMode ? 'abstention_on' : 'abstention_off');
         this.container.innerHTML = `<div class="loading">${i18n.t('loading')}</div>`;
 
         // Disable abstention for transitions with unreliable data
@@ -578,6 +613,7 @@ class VoteTransferSankey {
             const mab = document.getElementById('abstention-btn');
             if (mab) mab.textContent = i18n.t('abstention_off_short');
         }
+        if (abstentionDisabled) this.syncDL();
         // Toggle button disabled state
         const abstentionToggle = document.getElementById('abstention-toggle');
         if (abstentionToggle) {

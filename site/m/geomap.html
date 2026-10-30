@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <style>
         #map {
             width: 100%;
@@ -511,6 +512,19 @@
             this.diffHalfRange = 20;
             this.dynamicRange = true;
             this.partyScaleMax = 50;
+            // Deep link (same names as desktop geomap): ?e=&mode=&party=&cmp=&lat=&lng=&z=
+            this.defaultElection = this.currentElection;
+            this._dl = null;
+            if (window.DL) {
+                const lat = parseFloat(DL.get('lat')), lng = parseFloat(DL.get('lng')), z = parseFloat(DL.get('z'));
+                this._dl = {
+                    mode: ['winner', 'turnout', 'socioeconomic', 'embed', 'party'].includes(DL.get('mode')) ? DL.get('mode') : null,
+                    party: DL.get('party'), cmp: /^(1[6-9]|2[0-6])$/.test(DL.get('cmp') || '') ? DL.get('cmp') : null,
+                    lat: isFinite(lat) ? lat : null, lng: isFinite(lng) ? lng : null, z: isFinite(z) ? z : null
+                };
+                const e = DL.get('e');
+                if (/^(1[6-9]|2[0-6])$/.test(e || '') && (e !== '26' || i18n.SHOW_E26)) this.currentElection = e;
+            }
 
             this.initElectionPills();
             this.initMap();
@@ -544,10 +558,23 @@
             if (active) setTimeout(() => active.scrollIntoView({ inline: 'center', block: 'nearest' }), 0);
         }
 
+        syncDL() {
+            if (!window.DL) return;
+            const c = this.map ? this.map.getCenter() : null;
+            DL.sync({
+                e: this.currentElection,
+                mode: this.colorMode === 'winner' ? null : this.colorMode,
+                party: this.colorMode === 'party' && this.selectedParty ? this.selectedParty.symbol : null,
+                cmp: this.compareElection || null,
+                lat: c ? c.lat.toFixed(5) : null, lng: c ? c.lng.toFixed(5) : null,
+                z: this.map ? this.map.getZoom().toFixed(2) : null
+            }, { e: this.defaultElection });
+        }
+
         initMap() {
             this.map = createMap('map', {
-                center: [34.9, 31.5],
-                zoom: 8,
+                center: (this._dl && this._dl.lat != null && this._dl.lng != null) ? [this._dl.lng, this._dl.lat] : [34.9, 31.5],
+                zoom: (this._dl && this._dl.z != null) ? this._dl.z : 8,
                 minZoom: 7,
                 maxZoom: 18,
                 basemap: 'positron',
@@ -636,7 +663,21 @@
                 this.parties = this.tsneData.parties || [];
                 this.buildSettlements();
                 this.buildColorFabs();
-                this.renderMarkers();
+                if (window.DL) DL.addCopyButton('.top-bar');
+                this.map.on('moveend', () => this.syncDL());
+                // Apply deep-linked mode/party/compare
+                const u = this._dl; this._dl = null;
+                if (u && u.mode === 'party' && u.party) {
+                    const party = this.parties.find(p => p.symbol === u.party);
+                    if (party) {
+                        this.setColorMode('party', party);
+                        if (u.cmp && u.cmp !== this.currentElection) {
+                            try { await this.toggleCompare(u.cmp); } catch (e) { /* unavailable */ }
+                        }
+                    } else this.renderMarkers();
+                } else if (u && u.mode && u.mode !== 'winner') {
+                    this.setColorMode(u.mode);
+                } else this.renderMarkers();
             } catch (err) {
                 console.error('Load error:', err);
             }
@@ -645,6 +686,7 @@
 
         async switchElection(id) {
             this.currentElection = id;
+            this.syncDL();
             document.querySelectorAll('.election-pill').forEach(p => {
                 p.classList.toggle('active', p.textContent === id);
                 if (p.textContent === id) p.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
@@ -744,6 +786,7 @@
             this.updateCompareRow();
             this.updateColorScale();
             this.renderMarkers();
+            this.syncDL();
         }
 
         updatePartyScale() {
@@ -1388,6 +1431,7 @@
             this.updateCompareRow();
             this.updateColorScale();
             this.renderMarkers();
+            this.syncDL();
             if (this.groupMode && this.compareElection) this.showGroupSheet();
         }
 

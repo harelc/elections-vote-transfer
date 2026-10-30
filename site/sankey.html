@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/sankey.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/sankey.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -23,6 +23,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
+    <script src="qrcode.min.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->

@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <style>
         .transition-pills {
             display: flex;
@@ -227,6 +228,16 @@
             this.officialResults = null;
             this.percentMode = 'source';
             this.abstentionMode = false;
+            this.defaultTransition = this.currentTransition;
+            // Deep link: ?t=24_to_25&pct=target&abst=1 (same names as desktop)
+            if (window.DL) {
+                const valid = [];
+                for (let i = 16; i < 26; i++) valid.push(`${i}_to_${i + 1}`);
+                const t = DL.get('t');
+                if (valid.includes(t) && (t !== '25_to_26' || i18n.SHOW_E26)) this.currentTransition = t;
+                if (DL.get('pct') === 'target') this.percentMode = 'target';
+                if (DL.get('abst') === '1') this.abstentionMode = true;
+            }
             this.flowCI = null;
             this.flowCIFile = null;
             this.noAbstentionTransitions = ['16_to_17', '17_to_18'];
@@ -282,7 +293,19 @@
                 this.percentMode = this.percentMode === 'source' ? 'target' : 'source';
                 document.getElementById('pct-btn').textContent =
                     i18n.t(this.percentMode === 'source' ? 'pct_prev_short' : 'pct_next_short');
+                this.syncDL();
             };
+            // Labels reflect state, not a fixed string: drop data-i18n so
+            // applyTranslations() doesn't overwrite them on language change.
+            const pctBtn = document.getElementById('pct-btn');
+            pctBtn.removeAttribute('data-i18n');
+            pctBtn.textContent =
+                i18n.t(this.percentMode === 'source' ? 'pct_prev_short' : 'pct_next_short');
+            const abstBtn = document.getElementById('abstention-btn');
+            abstBtn.removeAttribute('data-i18n');
+            abstBtn.textContent =
+                i18n.t(this.abstentionMode ? 'abstention_on_short' : 'abstention_off_short');
+            if (window.DL) DL.addCopyButton('.top-bar');
 
             // Abstention toggle
             document.getElementById('abstention-btn').onclick = () => {
@@ -310,7 +333,15 @@
             } catch (e) { console.warn('No official results', e); }
         }
 
+        syncDL() {
+            if (window.DL) DL.sync(
+                { t: this.currentTransition, pct: this.percentMode, abst: this.abstentionMode ? '1' : null },
+                { t: this.defaultTransition, pct: 'source' });
+        }
+
         async loadTransition(id) {
+            this.currentTransition = id;
+            this.syncDL();
             document.getElementById('loading').style.display = 'flex';
             // Disable abstention for transitions with unreliable data
             const abstentionDisabled = this.noAbstentionTransitions.includes(id);
@@ -672,6 +703,10 @@
 
         // Language change listener
         window.addEventListener('langchange', () => {
+            document.getElementById('pct-btn').textContent =
+                i18n.t(app.percentMode === 'source' ? 'pct_prev_short' : 'pct_next_short');
+            document.getElementById('abstention-btn').textContent =
+                i18n.t(app.abstentionMode ? 'abstention_on_short' : 'abstention_off_short');
             if (app.data) {
                 app.updateElectionStrip();
                 app.render();

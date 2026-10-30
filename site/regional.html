@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/regional.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/regional.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -25,6 +25,7 @@
     <script src="basemap.js"></script>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
     <style>
         :root {
             --bg-primary: #16181d;
@@ -58,23 +59,23 @@
             z-index: 2;
             display: flex;
             flex-direction: column;
-            height: 100vh;
+            height: 100dvh;
         }
 
         /* Header */
         .main-header {
             text-align: center;
-            padding: 1.2rem 1.5rem 0.8rem;
+            padding: 0.45rem 1rem 0.35rem;
             background: linear-gradient(180deg, var(--bg-secondary) 0%, transparent 100%);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
         }
 
         .main-header h1 {
-            font-size: 2.5rem;
+            font-size: 1.55rem;
             font-weight: 700;
             letter-spacing: -0.02em;
-            margin-bottom: 0.2rem;
+            margin-bottom: 0;
                         color: var(--text-primary);
         }
         .main-header h1::after {
@@ -82,7 +83,7 @@
             display: block;
             width: 3.25rem;
             height: 2px;
-            margin: 0.55rem auto 0;
+            margin: 0.25rem auto 0;
             background: var(--accent-primary);
         }
 
@@ -95,7 +96,7 @@
 
         .main-header .subtitle {
             color: var(--text-secondary);
-            font-size: 1.1rem;
+            font-size: 0.92rem;
             font-weight: 400;
         }
 
@@ -104,7 +105,7 @@
             justify-content: center;
             align-items: center;
             gap: 0.25rem;
-            margin-top: 0.6rem;
+            margin-top: 0.3rem;
             position: relative;
             padding-left: 120px;
             padding-right: 120px;
@@ -132,33 +133,41 @@
         .nav-extras .view-btn:hover { opacity:1; background:var(--bg-tertiary); }
         .nav-extras .view-btn.active { opacity:1; background:var(--accent-primary); border:none; }
 
-        /* Controls bar */
+        /* Simulation setup — first card in the side panel, like the export poster */
         .controls-bar {
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 2rem;
-            padding: 0.75rem 1.5rem;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.65rem;
+            padding: 1rem 1.1rem 1.1rem;
             background: var(--bg-secondary);
             border-bottom: 1px solid var(--border-color);
             flex-shrink: 0;
-            flex-wrap: wrap;
+        }
+
+        .setup-title {
+            font-size: 1.05rem;
+            font-weight: 700;
         }
 
         .control-group {
             display: flex;
-            align-items: center;
+            align-items: flex-start;
             gap: 0.5rem;
         }
 
         .control-group label {
-            font-size: 0.85rem;
+            width: 6.4rem;
+            flex-shrink: 0;
+            padding-top: 0.32rem;
+            font-size: 0.82rem;
             color: var(--text-secondary);
             white-space: nowrap;
         }
 
         .pill-group {
             display: flex;
+            flex-wrap: wrap;
             gap: 2px;
         }
 
@@ -201,24 +210,45 @@
             transition: var(--transition-fast);
             white-space: nowrap;
         }
-        .export-btn:hover { filter: brightness(1.1); }
+        /* Compact header action, matching the Sankey page */
+        .export-btn.header-export {
+            padding: 0.35rem 0.8rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 400;
+            white-space: nowrap;
+        }
+        .export-btn.header-export:hover {
+            background: var(--border-color);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+            filter: none;
+        }
         .export-btn:disabled { opacity: 0.55; cursor: wait; }
 
-        /* Main content */
+        /* Main poster layout: tall map beside the results/setup panel */
         .main-content {
             flex: 1;
+            min-height: 0;
             display: flex;
+            gap: 0.75rem;
+            padding: 0.75rem;
             overflow: hidden;
+            background: var(--bg-primary);
         }
 
-        /* Left panel */
+        /* Side panel */
         .results-panel {
-            width: 550px;
+            width: clamp(470px, 38vw, 620px);
             min-width: 400px;
             max-width: 65vw;
             flex-shrink: 0;
             background: var(--bg-secondary);
-            border-inline-end: 1px solid var(--border-color);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -441,8 +471,14 @@
 
         /* Map */
         .map-container {
-            flex: 1;
+            flex: 1 1 auto;
+            min-width: 0;
+            min-height: 0;
             position: relative;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            background: #0b0c0f;
         }
 
         #map { width: 100%; height: 100%; }
@@ -542,17 +578,17 @@
         .main-footer {
             background: var(--bg-secondary);
             border-top: 1px solid var(--border-color);
-            padding: 0.5rem 1.5rem;
+            padding: 0.3rem 1rem;
             text-align: center;
             flex-shrink: 0;
         }
 
         .main-footer .methodology {
-            font-size: 0.85rem;
+            font-size: 0.76rem;
             color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 0.5rem;
-            max-width: 900px;
+            line-height: 1.45;
+            margin-bottom: 0.15rem;
+            max-width: 1100px;
             margin-left: auto;
             margin-right: auto;
             max-height: 3.2em;
@@ -572,6 +608,15 @@
             color: var(--accent-primary);
             text-decoration: none;
         }
+
+        @media (max-width: 1050px) {
+            .app-container { height: auto; min-height: 100dvh; }
+            .main-content { flex-direction: column; overflow: visible; }
+            .results-panel { width: 100%; min-width: 0; max-width: none; order: 2; overflow: visible; }
+            .map-container { order: 1; flex: none; height: 72dvh; min-height: 520px; }
+            .resize-handle { display: none; }
+            .main-header .view-switcher { padding-left: 0; padding-right: 0; }
+        }
     </style>
 </head>
 <body>
@@ -579,10 +624,13 @@
         <header class="main-header">
             <h1><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="regional_subtitle">סימולציית בחירות אזוריות לכנסת ישראל</p>
-            <nav class="view-switcher"></nav>
+            <nav class="view-switcher"><button class="export-btn header-export" id="export-png-btn" data-i18n="export_png" title="הורדת תמונת PNG של המפה והתוצאות">📷 ייצוא PNG</button></nav>
         </header>
 
-        <div class="controls-bar">
+        <div class="main-content">
+            <aside class="results-panel">
+                <div class="controls-bar">
+                    <div class="setup-title" data-i18n="settings">הגדרות הסימולציה</div>
             <div class="control-group" id="election-toggle-group" style="display:none">
                 <label>כנסת:</label>
                 <div class="pill-group" id="election-pills">
@@ -646,13 +694,8 @@
                     <button class="pill-btn" data-value="fptp" data-i18n="method_fptp">זוכה-לוקח-הכל</button>
                 </div>
             </div>
-            <div class="control-group">
-                <button class="export-btn" id="export-png-btn" title="הורדת תמונת PNG של המפה והתוצאות">📷 ייצוא PNG</button>
-            </div>
-        </div>
+                </div>
 
-        <div class="main-content">
-            <aside class="results-panel">
                 <!-- Parliament hemicycle -->
                 <div class="panel-section">
                     <div class="section-title" id="parliament-title">הרכב הכנסת (120 מושבים)</div>
@@ -1267,6 +1310,8 @@
 
         // ── Run simulation ──
         function runSimulation() {
+            if (window.DL) DL.sync({ e: currentElection, r: numRegions, n: nationalSeats, k: knessetSize, t: threshold, m: regionalMethod },
+                { e: i18n.SHOW_E26 ? '26' : '25', r: 12, n: 0, k: 120, t: 3.25, m: 'dhondt' });
             const regionalSeatCount = knessetSize - nationalSeats;
 
             const totalSeats = {};
@@ -1630,12 +1675,30 @@
             map = createMap('map', {
                 center: [35.0, 31.4],
                 zoom: 8.5,
-                minZoom: 7,
+                minZoom: 5.5,
                 maxZoom: 18,
                 maxBounds: [[33.5, 28.5], [36.5, 34.0]],
                 basemap: 'positron',
                 preserveDrawingBuffer: true
             });
+        }
+
+        // Frame the whole country in the tall map pane after every simulation.
+        function fitMapToIsrael() {
+            if (!map) return;
+            let minLat = 29.45, maxLat = 33.35, minLng = 34.2, maxLng = 35.95;
+            if (geoStations.length) {
+                minLat = Infinity; maxLat = -Infinity; minLng = Infinity; maxLng = -Infinity;
+                geoStations.forEach(s => {
+                    minLat = Math.min(minLat, s.lat); maxLat = Math.max(maxLat, s.lat);
+                    minLng = Math.min(minLng, s.lng); maxLng = Math.max(maxLng, s.lng);
+                });
+            }
+            const cam = map.cameraForBounds(
+                [[minLng - 0.05, minLat - 0.05], [maxLng + 0.05, maxLat + 0.05]],
+                { padding: 16 }
+            );
+            if (cam) map.jumpTo(cam);
         }
 
         function renderMap(regionResults) {
@@ -1884,6 +1947,7 @@
                         .addTo(map);
                     regionLabels.push(label);
                 });
+                fitMapToIsrael();
             });
         }
 
@@ -2247,7 +2311,7 @@
                 const x = isRTL ? (rect.right - e.clientX) : (e.clientX - rect.left);
                 const pct = Math.max(20, Math.min(75, (x / rect.width) * 100));
                 panel.style.width = pct + '%';
-                map.invalidateSize();
+                if (map && map.resize) map.resize();
             });
 
             document.addEventListener('mouseup', () => {
@@ -2256,7 +2320,7 @@
                 handle.classList.remove('dragging');
                 document.body.style.cursor = '';
                 document.body.style.userSelect = '';
-                map.invalidateSize();
+                if (map && map.resize) map.resize();
                 // Re-render parliament to fit new width
                 if (window._regionResults) {
                     const totalSeats = {}, nationalSeatsByParty = {};
@@ -2609,6 +2673,7 @@
         // ── Init ──
         async function init() {
             initMap();
+            if (window.DL) DL.addCopyButton('#export-png-btn');
             setupControls();
             applySetupParams();
             updateRegionPillStates();

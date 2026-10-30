@@ -20,6 +20,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="../i18n.css">
     <script src="../i18n.js"></script>
+    <script src="../deeplink.js"></script>
     <style>
         #scatter-chart {
             width: 100%;
@@ -212,10 +213,36 @@
             this.selectedSettlements = [];
             this.allSettlements = [];
             this.plotData = [];
+            // Deep link: ?ex=&px=<symbol>&ey=&py=<symbol>&q=… (same names as desktop; no units/scale on mobile)
+            this._dlPx = this._dlPy = null;
+            this._dlSettlements = null;
+            if (window.DL) {
+                const validE = e => /^(1[6-9]|2[0-6])$/.test(e || '') && (e !== '26' || i18n.SHOW_E26);
+                if (validE(DL.get('ex'))) this.currentElectionX = DL.get('ex');
+                if (validE(DL.get('ey'))) this.currentElectionY = DL.get('ey');
+                this._dlPx = DL.get('px'); this._dlPy = DL.get('py');
+                if (DL.get('q')) this._dlSettlements = DL.get('q').split(',').map(s => s.trim()).filter(Boolean);
+            }
 
             this.initControls();
             this.initEvents();
             this.init();
+        }
+
+        syncDL() {
+            if (!window.DL) return;
+            const sym = (election, name) => {
+                const d = this.electionsData[election];
+                const p = d && name && d.parties.find(x => x.name === name);
+                return p ? p.symbol : null;
+            };
+            const dflt = i18n.SHOW_E26 ? '26' : '25';
+            DL.sync({
+                ex: this.currentElectionX, ey: this.currentElectionY,
+                px: sym(this.currentElectionX, this.currentPartyX),
+                py: sym(this.currentElectionY, this.currentPartyY),
+                q: this.selectedSettlements.length ? this.selectedSettlements.join(',') : null
+            }, { ex: dflt, ey: dflt });
         }
 
         /** Get short localized election label (e.g., "Knesset 25" / "כנסת 25") */
@@ -296,12 +323,18 @@
             document.getElementById('loading').style.display = 'flex';
             await this.loadParties('x', this.currentElectionX, false);
             await this.loadParties('y', this.currentElectionY, false);
-            // Default: first party for X, second for Y
+            // Default: first party for X, second for Y (unless deep-linked)
             const data = this.electionsData[this.currentElectionX];
-            if (data.parties.length > 1) {
+            if (!this._dlAppliedY && data.parties.length > 1) {
                 this.currentPartyY = data.parties[1].name;
                 document.getElementById('party-y').value = this.currentPartyY;
             }
+            if (this._dlSettlements) {
+                this.selectedSettlements = this._dlSettlements;
+                this._dlSettlements = null;
+                this.renderTags();
+            }
+            if (window.DL) DL.addCopyButton('.top-bar');
             this.buildSettlements();
 
             // Adjust main area
@@ -329,7 +362,10 @@
                 `<option value="${p.name}">${i18n.partyName(p)}</option>`
             ).join('');
 
-            let sel = current && names.includes(current) ? current : data.parties[0]?.name;
+            const dlSym = axis === 'x' ? this._dlPx : this._dlPy;
+            const dlParty = dlSym && data.parties.find(p => p.symbol === dlSym);
+            if (axis === 'x') this._dlPx = null; else { this._dlPy = null; if (dlParty) this._dlAppliedY = true; }
+            let sel = dlParty ? dlParty.name : (current && names.includes(current) ? current : data.parties[0]?.name);
             select.value = sel;
             if (axis === 'x') this.currentPartyX = sel;
             else this.currentPartyY = sel;
@@ -364,6 +400,7 @@
 
         async updateChart() {
             if (!this.currentPartyX || !this.currentPartyY) return;
+            this.syncDL();
 
             const dataX = await this.loadElection(this.currentElectionX);
             const dataY = await this.loadElection(this.currentElectionY);

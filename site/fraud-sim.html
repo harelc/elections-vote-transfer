@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
     <style>
         :root {
             --bg: #16181d;
@@ -587,12 +588,43 @@
             update();
         }
 
+        function syncFraudDL() {
+            if (!window.DL) return;
+            const scen = $('#scenario');
+            DL.sync({
+                t: currentTransition() === '24_25' ? null : currentTransition(),
+                scen: scen && SCENARIOS.length && scen.value !== SCENARIOS[0].id ? scen.value : null,
+                nb: $('#nb') && $('#nb').value !== '400' ? $('#nb').value : null,
+                mag: $('#mag') && $('#mag').value !== '17' ? $('#mag').value : null,
+                topk: $('#topk') && $('#topk').value !== '100' ? $('#topk').value : null,
+                seed: $('#seed') && $('#seed').value !== '42' ? $('#seed').value : null,
+                det: $('#detector') && $('#detector').value !== 'matched' ? $('#detector').value : null,
+                druze: $('#exclude-druze') && !$('#exclude-druze').checked ? '0' : null,
+                src: scen && scen.value === 'custom' ? [...customSrc].join('.') : null,
+                dst: scen && scen.value === 'custom' ? [...customDst].join('.') : null
+            });
+        }
+
         function initControls() {
             const scen = $('#scenario');
             SCENARIOS.forEach(s => {
                 const o = document.createElement('option');
                 o.value = s.id; o.textContent = s.label; scen.appendChild(o);
             });
+            // Deep-linked setup (auto-runs on boot, so the link reproduces the run)
+            if (window.DL) {
+                const setRange = (id, v) => {
+                    const el = document.getElementById(id);
+                    const n = parseInt(v, 10);
+                    if (el && isFinite(n)) el.value = Math.max(+el.min, Math.min(+el.max, n));
+                };
+                if (DL.get('scen') && SCENARIOS.some(s => s.id === DL.get('scen'))) scen.value = DL.get('scen');
+                setRange('nb', DL.get('nb')); setRange('mag', DL.get('mag')); setRange('topk', DL.get('topk'));
+                const seed = parseInt(DL.get('seed'), 10);
+                if (isFinite(seed) && seed >= 0) $('#seed').value = seed;
+                if (['matched', 'l2', 'geo', 'manifold', 'fusion'].includes(DL.get('det'))) $('#detector').value = DL.get('det');
+                if (DL.get('druze') === '0') $('#exclude-druze').checked = false;
+            }
             scen.addEventListener('change', () => {
                 $('#custom-group').style.display = scen.value === 'custom' ? 'block' : 'none';
                 updateScenarioDetail();
@@ -602,6 +634,14 @@
             // Custom scenario: multi-select chips for source and destination
             customSrc = new Set([0]);   // default: Likud → Hadash-Taal (just so something is picked)
             customDst = new Set([3]);
+            if (window.DL && scen.value === 'custom') {
+                const parseIdx = v => (v || '').split('.').map(Number)
+                    .filter(i => Number.isInteger(i) && DATA.parties_26[i]);
+                const s = parseIdx(DL.get('src')), d = parseIdx(DL.get('dst'));
+                if (s.length) customSrc = new Set(s);
+                if (d.length) customDst = new Set(d);
+                $('#custom-group').style.display = 'block';
+            }
             renderCustomChips();
 
             bindControl('nb', 'nb-val', v => fmt(v));
@@ -650,6 +690,14 @@
             updateBudget();
 
             $('#run').addEventListener('click', run);
+            if (window.DL) DL.addCopyButton('#run');
+            // Deep-link sync on any control change (run itself only re-rolls)
+            ['scenario', 'nb', 'mag', 'topk', 'seed', 'detector', 'exclude-druze'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) ['input', 'change'].forEach(ev => el.addEventListener(ev, syncFraudDL));
+            });
+            document.getElementById('custom-group').addEventListener('click', () => setTimeout(syncFraudDL, 0));
+            syncFraudDL();
             $('#filter').addEventListener('change', renderList);
             $('#detector').addEventListener('change', () => {
                 if (!LAST) return;
@@ -1290,8 +1338,9 @@
             pills.innerHTML = '';
             for (const [tid, from, to] of [['24_25', '24', '25'], ['25_26', '25', '26']]) {
                 const a = document.createElement('a');
-                const extra = location.search.includes('e26=0') ? '&e26=0' : '';
-                a.href = '?t=' + tid + extra;
+                const p = new URLSearchParams(location.search);
+                p.set('t', tid);
+                a.href = '?' + p.toString();
                 a.className = 'nav-btn' + (tid === t ? ' active' : '');
                 a.innerHTML = `<span class="nav-from">${from}</span><span class="nav-arrow">←</span><span class="nav-to">${to}</span>`;
                 pills.appendChild(a);

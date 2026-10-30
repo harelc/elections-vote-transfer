@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/geomap.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/geomap.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -666,6 +666,26 @@
             font-weight: 500;
         }
 
+        /* PNG export — compact header action, matching regional.html */
+        .export-btn.header-export {
+            padding: 0.35rem 0.8rem;
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-family: inherit;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        .export-btn.header-export:hover {
+            background: var(--border-color);
+            border-color: var(--accent-primary);
+            color: var(--text-primary);
+        }
+        .export-btn.header-export:disabled { opacity: 0.55; cursor: wait; }
+
         /* Color scale legend */
         .color-scale-legend {
             position: absolute;
@@ -987,13 +1007,14 @@
     </style>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
 </head>
 <body>
     <div class="app-container">
         <header class="main-header">
             <h1><span data-i18n="site_title">קולות נודדים</span></h1>
             <p class="subtitle" data-i18n="geomap_subtitle">מפה גיאוגרפית של קלפיות הצבעה</p>
-            <nav class="view-switcher"></nav>
+            <nav class="view-switcher"><button class="export-btn header-export" id="export-png" data-i18n="export_png" title="הורדת תמונת PNG של המבט הנוכחי במפה">📷 ייצוא PNG</button></nav>
         </header>
 
         <nav class="election-nav">
@@ -1140,6 +1161,7 @@
     </div>
 
     <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="qrcode.min.js"></script>
     <script src="basemap.js"></script>
     <script src="station-clusters.js"></script>
 
@@ -1173,6 +1195,20 @@
                 this.diffCenter = 0;
                 this.diffHalfRange = 20;
 
+                // Shareable view state (?e=&mode=&party=&cmp=&lat=&lng=&z=),
+                // as encoded in the QR code of the PNG export.
+                const q = new URLSearchParams(location.search);
+                const lat = parseFloat(q.get('lat')), lng = parseFloat(q.get('lng')), z = parseFloat(q.get('z'));
+                this.urlState = (q.get('e') || q.get('mode') || q.get('party') || q.get('cmp') || isFinite(lat))
+                    ? {
+                        e: /^(1[6-9]|2[0-6])$/.test(q.get('e') || '') ? q.get('e') : null,
+                        mode: ['winner', 'turnout', 'socioeconomic', 'embed', 'party'].includes(q.get('mode')) ? q.get('mode') : null,
+                        party: q.get('party') || null,
+                        cmp: /^\d+$/.test(q.get('cmp') || '') ? q.get('cmp') : null,
+                        lat: isFinite(lat) ? lat : null, lng: isFinite(lng) ? lng : null,
+                        z: isFinite(z) ? z : null,
+                    } : null;
+
                 this.init();
             }
 
@@ -1190,7 +1226,59 @@
                 this.loadElectionSymbols();
                 await this.loadSocioeconomicData();
                 await this.loadCoordinates();
-                await this.loadElection(this.currentElection);
+                await this.loadElection((this.urlState && this.urlState.e) || this.currentElection);
+                await this.applyUrlState();
+            }
+
+            // Restore the view encoded by an export QR code / shared link.
+            async applyUrlState() {
+                const u = this.urlState;
+                if (!u || !this.tsneData) return;
+                if (u.mode && u.mode !== 'party') {
+                    document.querySelectorAll('.color-option').forEach(o =>
+                        o.classList.toggle('active', o.dataset.mode === u.mode));
+                    this.setColorMode(u.mode);
+                }
+                if (u.mode === 'party' && u.party) {
+                    const party = this.parties.find(p => p.symbol === u.party);
+                    if (party) {
+                        document.querySelectorAll('.color-option').forEach(o => o.classList.remove('active'));
+                        this.selectParty(party);
+                        if (u.cmp && u.cmp !== this.currentElection) {
+                            try { await this.toggleCompare(u.cmp); } catch (e) { /* compare data unavailable */ }
+                        }
+                    }
+                }
+            }
+
+            // Live-update the address bar so copying it reproduces this view.
+            syncDL() {
+                if (!window.DL) return;
+                const c = this.map ? this.map.getCenter() : null;
+                DL.sync({
+                    e: this.currentElection,
+                    mode: this.colorMode === 'winner' ? null : this.colorMode,
+                    party: this.colorMode === 'party' && this.selectedParty ? this.selectedParty.symbol : null,
+                    cmp: this.compareElection || null,
+                    lat: c ? c.lat.toFixed(5) : null, lng: c ? c.lng.toFixed(5) : null,
+                    z: this.map ? this.map.getZoom().toFixed(2) : null
+                }, { e: i18n.SHOW_E26 ? '26' : '25' });
+            }
+
+            // Absolute link that reopens this exact view (QR in the export).
+            exportViewURL() {
+                const c = this.map ? this.map.getCenter() : { lat: 31.5, lng: 34.9 };
+                const p = new URLSearchParams();
+                p.set('e', this.currentElection);
+                p.set('mode', this.colorMode);
+                if (this.colorMode === 'party' && this.selectedParty) p.set('party', this.selectedParty.symbol);
+                if (this.compareElection) p.set('cmp', this.compareElection);
+                p.set('lat', c.lat.toFixed(5));
+                p.set('lng', c.lng.toFixed(5));
+                p.set('z', (this.map ? this.map.getZoom() : 8).toFixed(2));
+                if (i18n.getLang() === 'en') p.set('lang', 'en');
+                if (!i18n.SHOW_E26) p.set('e26', '0');
+                return `https://kolot-nodedim.netlify.app/geomap.html?${p.toString()}`;
             }
 
             applyDynamicLang() {
@@ -1230,12 +1318,15 @@
             }
 
             initMap() {
+                const u = this.urlState;
                 this.map = createMap('map', {
-                    center: [34.9, 31.5],
-                    zoom: 8,
+                    center: (u && u.lat != null && u.lng != null) ? [u.lng, u.lat] : [34.9, 31.5],
+                    zoom: (u && u.z != null) ? u.z : 8,
                     minZoom: 7,
                     maxZoom: 18,
-                    basemap: 'positron'
+                    basemap: 'positron',
+                    // The PNG export reads the WebGL canvas back.
+                    preserveDrawingBuffer: true
                 });
                 const viz = this;
                 this.stationsLayer = new StationClusterLayer(this.map, {
@@ -1530,6 +1621,20 @@
             }
 
             setupEventListeners() {
+                const exportBtn = document.getElementById('export-png');
+                if (exportBtn) exportBtn.addEventListener('click', () => this.exportPNG());
+                // Deferred to load: renderNav() (script after this one)
+                // preserves the first .header-export it finds; the copy
+                // button copies that class, so inserting it earlier (even
+                // via setTimeout, which can fire between parser chunks)
+                // would make renderNav keep the copy button and drop the
+                // export button itself.
+                if (window.DL) {
+                    if (document.readyState === 'complete') DL.addCopyButton('#export-png');
+                    else window.addEventListener('load', () => DL.addCopyButton('#export-png'), { once: true });
+                }
+                if (this.map) this.map.on('moveend', () => this.syncDL());
+
                 // Election navigation
                 document.querySelectorAll('.nav-btn').forEach(btn => {
                     btn.addEventListener('click', () => {
@@ -1675,6 +1780,9 @@
 
             async loadElection(electionId) {
                 this.currentElection = electionId;
+                this.syncDL();
+                document.querySelectorAll('.nav-btn[data-election]').forEach(b =>
+                    b.classList.toggle('active', b.dataset.election === String(electionId)));
                 document.getElementById('loading').classList.remove('hidden');
 
                 // Remember selected party + group A symbols to restore after loading
@@ -1786,6 +1894,7 @@
                 this.updateCompareRow();
                 this.updateLegend();
                 this.renderMarkers();
+                this.syncDL();
             }
 
             showPartyTooltip(event, party) {
@@ -1847,6 +1956,7 @@
                 this.updateCompareRow();
                 this.updateLegend();
                 this.renderMarkers();
+                this.syncDL();
             }
 
             updateLegend() {
@@ -2430,6 +2540,7 @@
                 this.updateCompareRow();
                 this.updateLegend();
                 this.renderMarkers();
+                this.syncDL();
             }
 
             createClusterIcon(cluster) {
@@ -2611,6 +2722,410 @@
                     className: cls,
                     size: size
                 };
+            }
+
+            // ── PNG export (open viewport + current-view panel, styled
+            // after regional.html's poster) ─────────────────────────────
+            viewportItems() {
+                if (!this.map || !this.stationsLayer) return [];
+                const b = this.map.getBounds();
+                return (this.stationsLayer.items || []).filter(it => b.contains([it.origLng, it.origLat]));
+            }
+
+            viewportStats(items) {
+                let voters = 0, eligible = 0;
+                const partyVotes = {}, settlements = {};
+                items.forEach(it => {
+                    const s = it.station, v = s.v || 0, e = s.e || 0;
+                    voters += v; eligible += e;
+                    Object.entries(s.p || {}).forEach(([n, pct]) => { partyVotes[n] = (partyVotes[n] || 0) + v * pct / 100; });
+                    const st = settlements[s.n] || (settlements[s.n] = { name: s.n, ballots: 0, voters: 0, eligible: 0 });
+                    st.ballots++; st.voters += v; st.eligible += e;
+                });
+                return {
+                    ballots: items.length, voters, eligible,
+                    turnout: eligible > 0 ? voters / eligible * 100 : 0,
+                    partyVotes,
+                    totalPartyVotes: Object.values(partyVotes).reduce((a, x) => a + x, 0),
+                    topParties: Object.entries(partyVotes).sort((a, b2) => b2[1] - a[1]),
+                    topSettlements: Object.values(settlements).sort((a, b2) => b2.voters - a.voters),
+                };
+            }
+
+            // Snapshot the HTML cluster pies (MapLibre only rasterises the
+            // WebGL dots; clusters are DOM). Positions are in source-canvas
+            // pixels so they can be re-projected onto the poster map.
+            captureClusters(srcScale) {
+                const out = [];
+                (this.stationsLayer.clusterMarkers || []).forEach(m => {
+                    try {
+                        const el = m.getElement(), inner = el.querySelector('.cluster-inner');
+                        if (!inner) return;
+                        const pt = this.map.project(m.getLngLat());
+                        const cs = getComputedStyle(inner);
+                        out.push({
+                            x: pt.x * srcScale, y: pt.y * srcScale,
+                            size: (parseFloat(el.style.width) || el.offsetWidth || 44) * srcScale,
+                            bgImage: cs.backgroundImage || '', bgColor: cs.backgroundColor || '',
+                            colocated: el.classList.contains('cluster-colocated'),
+                            count: (el.querySelector('.cluster-count') || {}).textContent || '',
+                            info: (el.querySelector('.cluster-info') || {}).textContent || '',
+                        });
+                    } catch (e) { /* marker mid-rebuild */ }
+                });
+                return out;
+            }
+
+            drawClusterPie(ctx, cl, cx, cy, r) {
+                const stops = [];
+                if (cl.bgImage && cl.bgImage.includes('conic-gradient')) {
+                    // Computed style serialises the inline
+                    // `color 0% 80%, color 80% 100%` as single-position
+                    // stops (`color 0%, color 80%, color 80%, color 100%`),
+                    // so parse the stop list and rebuild the segments:
+                    // an interval takes the colour of the stop at its start.
+                    const body = cl.bgImage.slice(cl.bgImage.indexOf('(') + 1, cl.bgImage.lastIndexOf(')'));
+                    const parts = [];
+                    let depth = 0, cur = '';
+                    for (const ch of body) {
+                        if (ch === '(') depth++;
+                        if (ch === ')') depth--;
+                        if (ch === ',' && depth === 0) { parts.push(cur); cur = ''; } else cur += ch;
+                    }
+                    if (cur.trim()) parts.push(cur);
+                    const pts = parts.map(part => {
+                        const m = part.trim().match(/^(rgba?\([^)]+\)|hsla?\([^)]+\)|#[0-9a-fA-F]{3,8}|[a-zA-Z]+)/);
+                        if (!m) return null;
+                        const pos = [...part.matchAll(/(-?[\d.]+)%/g)].map(x => +x[1]);
+                        return { color: m[1], pos };
+                    }).filter(Boolean);
+                    if (pts.some(p => p.pos.length >= 2)) {
+                        pts.filter(p => p.pos.length >= 2).forEach(p => stops.push({ color: p.color, from: p.pos[0], to: p.pos[1] }));
+                    } else {
+                        pts.forEach((p, i) => {
+                            const from = p.pos.length ? p.pos[0] : (i === 0 ? 0 : 100);
+                            const to = i + 1 < pts.length && pts[i + 1].pos.length ? pts[i + 1].pos[0] : 100;
+                            if (to > from) stops.push({ color: p.color, from, to });
+                        });
+                    }
+                }
+                ctx.save();
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
+                if (stops.length) {
+                    stops.forEach(s => {
+                        ctx.fillStyle = s.color;
+                        ctx.beginPath(); ctx.moveTo(cx, cy);
+                        ctx.arc(cx, cy, r, -Math.PI / 2 + s.from / 100 * Math.PI * 2, -Math.PI / 2 + s.to / 100 * Math.PI * 2);
+                        ctx.closePath(); ctx.fill();
+                    });
+                } else {
+                    ctx.fillStyle = (cl.bgColor && cl.bgColor !== 'rgba(0, 0, 0, 0)') ? cl.bgColor : '#3b82f6';
+                    ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+                }
+                ctx.restore();
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.strokeStyle = cl.colocated ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = cl.colocated ? 2.5 : 2;
+                if (cl.colocated) ctx.setLineDash([6, 4]);
+                ctx.stroke(); ctx.setLineDash([]);
+                ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.shadowColor = 'rgba(0,0,0,0.9)'; ctx.shadowBlur = 4;
+                ctx.font = `700 ${Math.max(11, r * 0.62)}px Heebo, Arial, sans-serif`;
+                ctx.fillText(cl.count, cx, cy - (cl.info ? r * 0.18 : 0));
+                if (cl.info && r > 17) {
+                    ctx.font = `500 ${Math.max(9, r * 0.42)}px Heebo, Arial, sans-serif`;
+                    ctx.fillText(cl.info, cx, cy + r * 0.34);
+                }
+                ctx.shadowBlur = 0;
+            }
+
+            async exportPNG() {
+                const btn = document.getElementById('export-png');
+                if (!this.map || !this.tsneData || (btn && btn.disabled)) return;
+                const oldText = btn ? btn.textContent : '';
+                if (btn) { btn.disabled = true; btn.textContent = '⏳ …'; }
+                try {
+                    try { await document.fonts.ready; } catch (e) { }
+                    // Let clusters settle at the current zoom before reading them.
+                    await new Promise(res => { let d = false; const f = () => { if (!d) { d = true; res(); } }; this.map.once('idle', f); setTimeout(f, 900); this.map.triggerRepaint(); });
+
+                    const srcCanvas = this.map.getCanvas();
+                    const srcW = srcCanvas.width, srcH = srcCanvas.height;
+                    const srcScale = srcW / Math.max(1, this.map.getContainer().clientWidth);
+                    let mapImg = null, srcUrl = null;
+                    try { srcUrl = srcCanvas.toDataURL('image/png'); } catch (e) { /* tainted canvas */ }
+                    if (srcUrl) mapImg = await new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = srcUrl; });
+                    const clusters = this.captureClusters(srcScale);
+                    const items = this.viewportItems();
+                    const stats = this.viewportStats(items);
+                    const E = i18n.getLang() === 'en';
+
+                    // Poster geometry: map box keeps the viewport's aspect.
+                    const W = 2000, MX = 40, MY = 182, PX = 1256, PW = W - 48 - PX;
+                    let MW = PX - MX - 40, MH = Math.round(MW * srcH / srcW);
+                    if (MH > 1030) { MH = 1030; MW = Math.round(MH * srcW / srcH); }
+                    // A wide, short viewport makes the map shorter than the
+                    // panel: the poster grows to fit whichever is taller.
+                    const legendH0 = this.colorMode === 'winner' ? 118 : this.colorMode === 'embed' ? 158 : 102;
+                    const panelH = 48 + 74 + 22 + legendH0 + 22
+                        + (this.colorMode === 'party' && this.selectedParty ? 98 : 0)
+                        + 42 + Math.min(8, stats.topParties.length) * 36 + 10
+                        + (stats.topSettlements.length ? 42 + Math.min(5, stats.topSettlements.length) * 30 : 0) + 40;
+                    const contentH = Math.max(MH, panelH);
+                    const H = MY + contentH + 168;
+
+                    const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+                    const ctx = cv.getContext('2d');
+                    const INK = '#f3f5f8', DIM = '#b9bfcc', MUT = '#878ea0', GOLD = '#f0b429', CARD = '#1b1e25', LINE = '#2c303c';
+                    ctx.fillStyle = '#101216'; ctx.fillRect(0, 0, W, H);
+                    const box = (x, y, w, h, fill) => { ctx.fillStyle = fill || CARD; ctx.beginPath(); ctx.roundRect(x, y, w, h, 16); ctx.fill(); ctx.strokeStyle = LINE; ctx.lineWidth = 1.5; ctx.stroke(); };
+                    const txt = (s, x, y, font, color, align) => { ctx.font = font; ctx.fillStyle = color || INK; ctx.textAlign = align || 'right'; ctx.textBaseline = 'middle'; ctx.fillText(String(s), x, y); };
+                    const F = (w, s) => `${w} ${s}px Heebo, Arial, sans-serif`;
+                    const startX = E ? 48 : W - 48, startAlign = E ? 'left' : 'right';
+                    const endX = E ? W - 48 : 48, endAlign = E ? 'right' : 'left';
+                    const pTx = E ? PX + 24 : PX + PW - 24, pAlign = E ? 'left' : 'right';
+                    const pOx = E ? PX + PW - 24 : PX + 24, pOAlign = E ? 'right' : 'left';
+
+                    // Header
+                    ctx.direction = E ? 'ltr' : 'rtl';
+                    txt(E ? 'Migrating Votes' : 'קולות נודדים', startX, 44, F(800, 26), GOLD, startAlign);
+                    txt(E ? `Geographic map · Knesset ${this.currentElection}` : `מפה גיאוגרפית · כנסת ${this.currentElection}`, startX, 92, F(900, 50), INK, startAlign);
+                    const legendTitle = (document.getElementById('legend-title') || {}).textContent || '';
+                    txt(`${legendTitle} · ${E ? 'the open viewport, as shown on screen' : 'המבט הפתוח, כפי שהוא נראה על המסך'}`, startX, 136, F(400, 23), MUT, startAlign);
+                    txt(new Date().toLocaleDateString(E ? 'en-GB' : 'he-IL'), endX, 92, F(600, 24), DIM, endAlign);
+                    ctx.strokeStyle = LINE; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.moveTo(48, 162); ctx.lineTo(W - 48, 162); ctx.stroke();
+
+                    // Map: captured viewport, exact fit (no crop), clusters on top.
+                    box(MX, MY, MW, MH, '#0b0c0f');
+                    ctx.save(); ctx.beginPath(); ctx.roundRect(MX, MY, MW, MH, 16); ctx.clip();
+                    const sc = Math.min(MW / srcW, MH / srcH), dw = srcW * sc, dh = srcH * sc;
+                    const ox = MX + (MW - dw) / 2, oy = MY + (MH - dh) / 2;
+                    if (mapImg) {
+                        ctx.drawImage(mapImg, ox, oy, dw, dh);
+                    } else {
+                        // Canvas readback blocked: redraw the dots from the data.
+                        ctx.fillStyle = '#16181d'; ctx.fillRect(ox, oy, dw, dh);
+                        items.forEach(it => {
+                            const pt = this.map.project([it.origLng, it.origLat]);
+                            ctx.fillStyle = it.color; ctx.globalAlpha = 0.75;
+                            ctx.beginPath(); ctx.arc(ox + pt.x * srcScale * sc, oy + pt.y * srcScale * sc, Math.max(2, it.radius * srcScale * sc), 0, Math.PI * 2); ctx.fill();
+                        });
+                        ctx.globalAlpha = 1;
+                    }
+                    clusters.forEach(cl => {
+                        const cx = ox + cl.x * sc, cy = oy + cl.y * sc;
+                        if (cx < MX - 60 || cx > MX + MW + 60 || cy < MY - 60 || cy > MY + MH + 60) return;
+                        this.drawClusterPie(ctx, cl, cx, cy, Math.max(9, cl.size * sc / 2));
+                    });
+                    // North arrow + zoom chip
+                    const chip = (x, y, w, h) => { ctx.fillStyle = 'rgba(16,18,22,0.82)'; ctx.beginPath(); ctx.roundRect(x, y, w, h, 10); ctx.fill(); ctx.strokeStyle = LINE; ctx.stroke(); };
+                    chip(MX + MW - 58, MY + 14, 44, 58);
+                    ctx.fillStyle = GOLD; ctx.beginPath();
+                    ctx.moveTo(MX + MW - 36, MY + 24); ctx.lineTo(MX + MW - 29, MY + 44); ctx.lineTo(MX + MW - 43, MY + 44); ctx.closePath(); ctx.fill();
+                    txt(E ? 'N' : 'צ', MX + MW - 36, MY + 60, F(700, 16), INK, 'center');
+                    const zoomTxt = `${E ? 'zoom' : 'זום'} ${this.map.getZoom().toFixed(1)}`;
+                    ctx.font = F(600, 19); const zw = ctx.measureText(zoomTxt).width + 28;
+                    chip(MX + 14, MY + 14, zw, 36);
+                    txt(zoomTxt, MX + 14 + zw / 2, MY + 33, F(600, 19), DIM, 'center');
+                    // Scale bar
+                    try {
+                        const c = this.map.getCenter(), pa = this.map.project([c.lng, c.lat]), pb = this.map.project([c.lng + 0.01, c.lat]);
+                        const mPerPosterPx = (0.01 * 111320 * Math.cos(c.lat * Math.PI / 180)) / Math.max(1, Math.abs(pb.x - pa.x)) / (dw / Math.max(1, this.map.getContainer().clientWidth));
+                        const raw = mPerPosterPx * 130, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+                        const nice = [5, 2, 1].map(m => m * mag).find(v => v <= raw) || mag;
+                        const barW = nice / mPerPosterPx, bx = MX + 18, by = MY + MH - 30;
+                        ctx.fillStyle = 'rgba(16,18,22,0.82)'; ctx.fillRect(bx - 8, by - 20, barW + 16, 34);
+                        ctx.fillStyle = INK; ctx.fillRect(bx, by, barW, 5);
+                        txt(nice >= 1000 ? `${nice / 1000} ${E ? 'km' : 'ק״מ'}` : `${nice} ${E ? 'm' : 'מ׳'}`, bx + barW / 2, by - 11, F(600, 16), INK, 'center');
+                    } catch (e) { }
+                    ctx.restore();
+                    txt('© OpenStreetMap contributors © CARTO', MX, MY + MH + 24, F(400, 18), MUT, 'left');
+
+                    // ── Side panel: the current view ──
+                    let y = MY;
+                    txt(E ? 'The current view' : 'המבט הנוכחי', pTx, y + 16, F(800, 30), INK, pAlign); y += 48;
+                    const cards = [
+                        [E ? 'Ballots in frame' : 'קלפיות במסגרת', i18n.fmtNum(stats.ballots)],
+                        [E ? 'Voters in frame' : 'מצביעים במסגרת', i18n.fmtNum(Math.round(stats.voters))],
+                        [E ? 'Eligible' : 'בעלי זכות בחירה', i18n.fmtNum(Math.round(stats.eligible))],
+                        [E ? 'Turnout in frame' : 'הצבעה במסגרת', stats.turnout.toFixed(1) + '%'],
+                    ];
+                    const bw = (PW - 18) / 4, bh = 74;
+                    cards.forEach(([lab, val], i) => {
+                        const col = E ? i : 3 - i;
+                        const bx = PX + col * (bw + 6);
+                        box(bx, y, bw, bh);
+                        txt(val, E ? bx + 16 : bx + bw - 16, y + 26, F(900, 29), GOLD, pAlign === 'right' ? 'right' : 'left');
+                        txt(lab, E ? bx + 16 : bx + bw - 16, y + 55, F(500, 17), MUT, pAlign === 'right' ? 'right' : 'left');
+                    });
+                    y += bh + 22;
+
+                    // Legend box (mirrors the on-screen legend)
+                    const isEmbed = this.colorMode === 'embed', isWinner = this.colorMode === 'winner';
+                    const legendH = isWinner ? 118 : isEmbed ? 158 : 102;
+                    box(PX, y, PW, legendH);
+                    txt(legendTitle, pTx, y + 28, F(800, 24), INK, pAlign);
+                    const barX = PX + 24, barW = PW - 48;
+                    // Gradient + labels exactly as the on-screen legend:
+                    // low at the left, high at the right, labels LTR so
+                    // signed percentages are not bidi-flipped.
+                    const gradBar = (stops, minL, midL, maxL) => {
+                        const g = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+                        stops.forEach(([o, col]) => g.addColorStop(o, col));
+                        ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(barX, y + 48, barW, 16, 6); ctx.fill();
+                        ctx.save(); ctx.direction = 'ltr';
+                        txt(minL, barX, y + 82, F(500, 18), MUT, 'left');
+                        if (midL) txt(midL, PX + PW / 2, y + 82, F(500, 18), MUT, 'center');
+                        txt(maxL, barX + barW, y + 82, F(500, 18), MUT, 'right');
+                        ctx.restore();
+                    };
+                    if (this.colorMode === 'turnout') gradBar([[0, '#ef4444'], [0.5, '#fbbf24'], [1, '#10b981']], '40%', '', '90%');
+                    else if (this.colorMode === 'socioeconomic') gradBar([[0, '#9e0142'], [0.25, '#f46d43'], [0.5, '#fee08b'], [0.75, '#66c2a5'], [1, '#5e4fa2']], '1', '', '10');
+                    else if (this.colorMode === 'party' && this.selectedParty && this.compareElection) {
+                        gradBar([[0, '#d97706'], [0.5, '#f5f5f5'], [1, '#0d9488']],
+                            (document.getElementById('legend-min') || {}).textContent || '',
+                            (document.getElementById('legend-mid') || {}).textContent || '',
+                            (document.getElementById('legend-max') || {}).textContent || '');
+                    } else if (this.colorMode === 'party' && this.selectedParty) {
+                        gradBar([[0, this.lightenColor(this.selectedParty.color, 0.85)], [1, this.selectedParty.color]], '0%', '', `${this.partyScaleMax}%`);
+                    } else if (isWinner) {
+                        [i18n.t('legend_single_ballot'), i18n.t('legend_spread_cluster'), i18n.t('legend_pie_explain')].forEach((line, i) => {
+                            ctx.fillStyle = ['#2563eb', '#06b6d4', GOLD][i];
+                            ctx.beginPath(); ctx.arc(E ? barX + 8 : barX + barW - 8, y + 52 + i * 24, 7, 0, Math.PI * 2); ctx.fill();
+                            txt(line, E ? barX + 26 : barX + barW - 26, y + 53 + i * 24, F(400, 18), DIM, pAlign);
+                        });
+                    } else if (isEmbed) {
+                        const off = document.createElement('canvas'); off.width = off.height = 112;
+                        this.drawEmbedLegend(off);
+                        const ex = E ? barX : barX + barW - 112;
+                        ctx.drawImage(off, ex, y + 44, 92, 92);
+                        txt(i18n.t('embed_note'), E ? ex + 108 : ex - 16, y + 90, F(400, 18), DIM, E ? 'left' : 'right');
+                    }
+                    y += legendH + 22;
+
+                    // Selected-party insight (party mode)
+                    if (this.colorMode === 'party' && this.selectedParty) {
+                        box(PX, y, PW, 76, '#221d10');
+                        const frameShare = stats.totalPartyVotes > 0
+                            ? [...this.currentSet].reduce((a, n) => a + (stats.partyVotes[n] || 0), 0) / stats.totalPartyVotes * 100 : 0;
+                        if (this.compareElection) {
+                            let sw = 0, wsum = 0, matched = 0;
+                            items.forEach(it => { const d = this.getStationDiff(it.station); if (d === undefined) return; const v = it.station.v || 0; sw += d * v; wsum += v; matched++; });
+                            txt(E ? 'Mean change in frame' : 'שינוי ממוצע במסגרת', pTx, y + 24, F(600, 20), DIM, pAlign);
+                            txt(wsum > 0 ? `\u2066${this.fmtSigned(sw / wsum)}\u2069 · ${i18n.fmtNum(matched)} ${E ? 'matched' : 'מותאמות'}` : '—', pTx, y + 54, F(800, 25), GOLD, pAlign);
+                        } else {
+                            const nat = this.nationalShares(this.tsneData);
+                            const natShare = [...this.currentSet].reduce((a, n) => a + (nat[n] || 0), 0);
+                            txt(`${i18n.partyName(this.selectedParty)} — ${E ? 'in frame vs national' : 'במסגרת מול ארצי'}`, pTx, y + 24, F(600, 20), DIM, pAlign);
+                            txt(`${frameShare.toFixed(1)}% · ${natShare.toFixed(1)}%`, pTx, y + 54, F(800, 25), GOLD, pAlign);
+                        }
+                        y += 76 + 22;
+                    }
+
+                    // Leading parties in frame
+                    txt(E ? 'Leading parties in frame' : 'המפלגות המובילות במסגרת', pTx, y + 14, F(800, 27), INK, pAlign); y += 42;
+                    const top = stats.topParties.slice(0, 8);
+                    const maxPct = top.length && stats.totalPartyVotes > 0 ? top[0][1] / stats.totalPartyVotes * 100 : 0;
+                    top.forEach(([name, votes]) => {
+                        const party = this.parties.find(p => p.name === name);
+                        const pct = stats.totalPartyVotes > 0 ? votes / stats.totalPartyVotes * 100 : 0;
+                        ctx.fillStyle = party ? party.color : '#888';
+                        ctx.beginPath(); ctx.arc(E ? PX + 10 : PX + PW - 10, y - 4, 7, 0, Math.PI * 2); ctx.fill();
+                        txt(i18n.partyName(party || name), E ? PX + 26 : PX + PW - 26, y, F(700, 22), INK, pAlign);
+                        txt(pct.toFixed(1) + '%', pOx, y, F(600, 21), DIM, pOAlign);
+                        const tw = PW, fx = E ? PX : PX + PW - tw * (maxPct > 0 ? pct / maxPct : 0);
+                        ctx.fillStyle = 'rgba(255,255,255,0.07)'; ctx.fillRect(PX, y + 13, tw, 6);
+                        ctx.fillStyle = party ? party.color : '#888'; ctx.fillRect(E ? PX : fx, y + 13, tw * (maxPct > 0 ? pct / maxPct : 0), 6);
+                        y += 36;
+                    });
+                    y += 10;
+
+                    // Largest settlements in frame
+                    if (stats.topSettlements.length) {
+                        txt(E ? 'Largest settlements in frame' : 'היישובים הגדולים במסגרת', pTx, y + 14, F(800, 27), INK, pAlign); y += 42;
+                        stats.topSettlements.slice(0, 5).forEach(s => {
+                            txt(i18n.settlementName(s.name), pTx, y, F(600, 21), INK, pAlign);
+                            const t = s.eligible > 0 ? Math.round(s.voters / s.eligible * 100) : 0;
+                            txt(`${i18n.fmtNum(s.ballots)} ${E ? 'ballots' : 'קלפיות'} · ${t}%`, pOx, y, F(500, 20), MUT, pOAlign);
+                            y += 30;
+                        });
+                    }
+                    txt(E ? 'Dot size = voters in the ballot' : 'גודל הנקודה = מספר המצביעים בקלפי', pTx, y + 16, F(400, 18), MUT, pAlign);
+
+                    // Reading guide under a short map, when the panel is taller.
+                    if (contentH - MH > 90) {
+                        const gy = MY + MH + 44, gh = MY + contentH - gy;
+                        box(MX, gy, MW, gh);
+                        const gx = E ? MX + 24 : MX + MW - 24;
+                        txt(E ? 'How to read this map' : 'איך קוראים את המפה', gx, gy + 30, F(800, 26), INK, pAlign === 'right' ? 'right' : 'left');
+                        // The cluster sentence describes the current colour
+                        // mode — the same aggregation createClusterIcon uses.
+                        const partyLabel = this.selectedParty ? i18n.partyName(this.selectedParty) : '';
+                        const clusterGuide = {
+                            winner: E
+                                ? 'Numbered circles summarise nearby ballots: their slices show each ballot\u2019s winning party, and the percentage is the winner\u2019s share across the cluster.'
+                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות: הפלחים מראים את המפלגה המנצחת בכל קלפי, והאחוז הוא חלקה של המנצחת בכלל המקבץ.',
+                            turnout: E
+                                ? 'Numbered circles summarise nearby ballots, and the percentage inside is their average turnout.'
+                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות, והאחוז בתוכם הוא שיעור ההצבעה הממוצע בהן.',
+                            socioeconomic: E
+                                ? 'Numbered circles summarise nearby ballots, labelled with the most common socioeconomic cluster among them.'
+                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות, ומצוין בהם האשכול החברתי־כלכלי השכיח ביותר בהן.',
+                            embed: E
+                                ? 'Numbered circles summarise nearby ballots, coloured by their average voting pattern.'
+                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות, וצבעם הוא דפוס ההצבעה הממוצע בהן.',
+                            party: this.compareElection
+                                ? (E
+                                    ? `Numbered circles summarise nearby ballots, and the value inside is their voter-weighted average change for ${partyLabel}.`
+                                    : `עיגולים ממוספרים מסכמים קלפיות סמוכות, והערך בתוכם הוא השינוי הממוצע (משוקלל במצביעים) בתמיכה ב${partyLabel}.`)
+                                : (E
+                                    ? `Numbered circles summarise nearby ballots, and the percentage inside is their combined support for ${partyLabel}.`
+                                    : `עיגולים ממוספרים מסכמים קלפיות סמוכות, והאחוז בתוכם הוא התמיכה המשותפת בהן ב${partyLabel}.`),
+                        }[this.colorMode] || '';
+                        const guide = (E
+                            ? `Each dot is one ballot box, sized by its voters and coloured as in the legend. ${clusterGuide} This image shows exactly the frame that was open on screen; scan the code below to reopen it.`
+                            : `כל נקודה היא קלפי אחת, גודלה לפי מספר המצביעים בה וצבעה כבמקרא. ${clusterGuide} התמונה מציגה בדיוק את המסגרת שהייתה פתוחה על המסך; סרקו את הקוד למטה כדי לפתוח אותה שוב.`);
+                        ctx.font = F(400, 21); ctx.fillStyle = DIM; ctx.textAlign = pAlign; ctx.textBaseline = 'top';
+                        const words = guide.split(' '); let line = '', ly = gy + 52;
+                        const maxW = MW - 48, lineX = gx;
+                        for (const wd of words) {
+                            const test = line ? line + ' ' + wd : wd;
+                            if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, lineX, ly); ly += 30; line = wd; if (ly > gy + gh - 30) { line = ''; break; } }
+                            else line = test;
+                        }
+                        if (line && ly <= gy + gh - 30) ctx.fillText(line, lineX, ly);
+                        ctx.textBaseline = 'middle';
+                    }
+
+                    // Footer: QR + link + credit (as in regional.html)
+                    const FY = H - 118;
+                    ctx.strokeStyle = LINE; ctx.lineWidth = 1.5;
+                    ctx.beginPath(); ctx.moveTo(48, FY - 20); ctx.lineTo(W - 48, FY - 20); ctx.stroke();
+                    const url = this.exportViewURL();
+                    try {
+                        const qr = qrcode(0, 'M'); qr.addData(url); qr.make();
+                        const cnt = qr.getModuleCount(), qs = 92, cell = qs / cnt, qx = 48, qy = FY;
+                        ctx.fillStyle = '#fff'; ctx.fillRect(qx - 6, qy - 6, qs + 12, qs + 12);
+                        ctx.fillStyle = '#000';
+                        for (let r = 0; r < cnt; r++) for (let c = 0; c < cnt; c++)
+                            if (qr.isDark(r, c)) ctx.fillRect(qx + c * cell, qy + r * cell, cell, cell);
+                    } catch (e) { }
+                    ctx.direction = 'ltr';
+                    txt('kolot-nodedim.netlify.app/geomap.html', 158, FY + 30, F(700, 22), GOLD, 'left');
+                    ctx.direction = E ? 'ltr' : 'rtl';
+                    txt(E ? 'Scan to reopen this exact view' : 'סרקו כדי לפתוח בדיוק את המבט הזה', 158, FY + 60, F(400, 20), MUT, 'left');
+                    txt(E ? 'Migrating Votes · © Harel Cain · CC BY-NC-SA 4.0' : 'קולות נודדים · © הראל קין · CC BY-NC-SA 4.0', W - 48, FY + 30, F(600, 22), DIM);
+                    txt(E ? 'Ballot data: Central Elections Committee · Map: © OpenStreetMap contributors © CARTO' : 'נתוני קלפיות: ועדת הבחירות המרכזית · מפה: OpenStreetMap ו־CARTO', W - 48, FY + 60, F(400, 19), MUT);
+
+                    const a = document.createElement('a');
+                    const sym = this.selectedParty ? String(this.selectedParty.symbol).replace(/[^\p{L}\p{N}]/gu, '') : '';
+                    a.download = `geomap-k${this.currentElection}-${this.colorMode}${sym ? '-' + sym : ''}-z${this.map.getZoom().toFixed(1)}.png`;
+                    a.href = cv.toDataURL('image/png');
+                    a.click();
+                } finally {
+                    if (btn) { btn.disabled = false; btn.textContent = oldText; }
+                }
             }
 
             renderMarkers() {

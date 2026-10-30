@@ -2,7 +2,7 @@
 <html lang="he" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/irregular.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/irregular.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -841,6 +841,7 @@
     </style>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes -->
@@ -981,6 +982,11 @@
         // Current data
         let currentData = null;
         let currentElection = i18n.SHOW_E26 ? '26' : '25';
+        // Deep link: ?e=24
+        if (window.DL) {
+            const e = DL.get('e');
+            if (/^(1[6-9]|2[0-6])$/.test(e || '') && (e !== '26' || i18n.SHOW_E26)) currentElection = e;
+        }
 
         // Party data from loaded data (full objects)
         let partyData = {};
@@ -989,6 +995,9 @@
         let tooltip = null;
 
         async function loadData(electionId) {
+            if (window.DL) DL.sync({ e: electionId }, { e: i18n.SHOW_E26 ? '26' : '25' });
+            document.querySelectorAll('.election-btn[data-election]').forEach(b =>
+                b.classList.toggle('active', b.dataset.election === String(electionId)));
             const container = document.getElementById('irregularities-container');
             container.innerHTML = `
                 <div class="loading">
@@ -1337,6 +1346,7 @@
         document.getElementById('export-png').addEventListener('click', () => {
             alert(tl('export_png_wip'));
         });
+        if (window.DL) DL.addCopyButton('#export-png');
 
         // Re-render dynamic content when language changes
         window.addEventListener('langchange', () => {

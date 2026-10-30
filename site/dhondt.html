@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <script>if (new URLSearchParams(location.search).get('embed') === '1') document.documentElement.classList.add('embed');</script>
-    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search).get('lang');location.replace('m/dhondt.html'+(lp?'?lang='+lp:''))}</script>
+    <script>if(/Android|iPhone|iPod/i.test(navigator.userAgent)&&!location.search.includes('desktop')){var lp=new URLSearchParams(location.search);lp.delete('desktop');var qs=lp.toString();location.replace('m/dhondt.html'+(qs?'?'+qs:''))}</script>
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta property="og:type" content="website">
@@ -1023,6 +1023,8 @@
     </style>
     <link rel="stylesheet" href="i18n.css">
     <script src="i18n.js"></script>
+    <script src="deeplink.js"></script>
+    <script src="qrcode.min.js"></script>
 </head>
 <body>
     <!-- Animated sand dunes - חולות נודדים -->
@@ -1216,6 +1218,11 @@
         };
 
         let currentElection = i18n.SHOW_E26 ? '26' : '25';
+        // Deep link: ?e=25&th=3.25&seats=120&v=<idx>:<votes>,…&ag=<i>-<j>,…
+        if (window.DL) {
+            const e = DL.get('e');
+            if (e === '25' || (e === '26' && i18n.SHOW_E26)) currentElection = e;
+        }
         const defaultParties = presets[currentElection].parties;
         const defaultAgreements = presets[currentElection].agreements;
 
@@ -1229,7 +1236,43 @@
                 this.otherVotes = presets[currentElection].others || 0;
                 this.tooltip = d3.select('#tooltip');
 
+                // Apply deep-linked edits (indices are the preset's party order)
+                if (window.DL) {
+                    const th = parseFloat(DL.get('th'));
+                    if (isFinite(th) && th >= 0 && th <= 10) this.threshold = th;
+                    const seats = parseInt(DL.get('seats'));
+                    if (isFinite(seats) && seats >= 10 && seats <= 600) this.totalSeats = seats;
+                    (DL.get('v') || '').split(',').forEach(pair => {
+                        const [i, v] = pair.split(':');
+                        const idx = parseInt(i), votes = parseInt(v);
+                        if (this.parties[idx] && isFinite(votes) && votes >= 0) this.parties[idx].votes = votes;
+                    });
+                    const ag = DL.get('ag');
+                    if (ag !== null) {
+                        this.agreements = ag === 'none' ? [] : ag.split(',').map(p => p.split('-').map(Number))
+                            .filter(a => a.length === 2 && this.parties[a[0]] && this.parties[a[1]] && a[0] !== a[1]);
+                    }
+                }
+
                 this.init();
+                const thEl = document.getElementById('threshold');
+                if (thEl) thEl.value = this.threshold;
+                const tsEl = document.getElementById('total-seats');
+                if (tsEl) tsEl.value = this.totalSeats;
+            }
+
+            syncDL() {
+                if (!window.DL) return;
+                const preset = presets[currentElection];
+                const deltas = this.parties
+                    .map((p, i) => p.votes !== preset.parties[i].votes ? `${i}:${p.votes}` : null)
+                    .filter(Boolean).join(',');
+                const agDiff = JSON.stringify(this.agreements) !== JSON.stringify(preset.agreements);
+                DL.sync({
+                    e: currentElection, th: this.threshold, seats: this.totalSeats,
+                    v: deltas || null,
+                    ag: agDiff ? (this.agreements.length ? this.agreements.map(a => a.join('-')).join(',') : 'none') : null
+                }, { e: i18n.SHOW_E26 ? '26' : '25', th: 3.25, seats: 120 });
             }
 
             init() {
@@ -1445,21 +1488,18 @@
                     this.loadPreset(currentElection);
                 });
 
-                // Show E26 button if feature flag is set (and make it the active toggle)
+                // Show E26 button if feature flag is set; active = current (possibly deep-linked) election
                 if (i18n.SHOW_E26) {
                     const e26Btn = document.getElementById('e26-btn');
-                    if (e26Btn) {
-                        e26Btn.style.display = '';
-                        e26Btn.classList.add('active');
-                        e26Btn.style.background = 'var(--accent-primary)';
-                        e26Btn.style.color = '#1a1408';
-                    }
-                    document.querySelectorAll('.election-toggle-btn[data-election="25"]').forEach(b => {
-                        b.classList.remove('active');
-                        b.style.background = 'transparent';
-                        b.style.color = 'var(--text-secondary)';
+                    if (e26Btn) e26Btn.style.display = '';
+                    document.querySelectorAll('.election-toggle-btn').forEach(b => {
+                        const isActive = b.dataset.election === currentElection;
+                        b.classList.toggle('active', isActive);
+                        b.style.background = isActive ? 'var(--accent-primary)' : 'transparent';
+                        b.style.color = isActive ? '#1a1408' : 'var(--text-secondary)';
                     });
                 }
+                if (window.DL) DL.addCopyButton('#export-png');
 
                 // Election toggle
                 document.querySelectorAll('.election-toggle-btn').forEach(btn => {
@@ -1491,6 +1531,7 @@
             }
 
             calculate() {
+                this.syncDL();
                 const totalVotes = this.parties.reduce((sum, p) => sum + p.votes, 0) + this.otherVotes;
                 const thresholdVotes = totalVotes * (this.threshold / 100);
 
@@ -2163,6 +2204,8 @@
 
         // QR Code generator for fixed URL (minimal implementation)
         function generateQRCodeDataURL() {
+            const _dl = window.DL && DL.qrDataURL(DL.url());
+            if (_dl) return _dl;
             // Pre-computed QR code for https://kolot-nodedim.netlify.app/
             // This is a simplified 25x25 QR code matrix
             const qrMatrix = [
