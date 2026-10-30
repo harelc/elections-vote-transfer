@@ -1450,6 +1450,15 @@
         try { noticeClosed = sessionStorage.getItem('e26_notice_closed') === '1'; } catch (e) {}
 
         function paint() {
+            // The count is over: no floating provenance card or
+            // "About this count" pill in the corner any more.
+            if (SHOW_E26 && k26Status.kind === 'official') {
+                widget.style.display = 'none';
+                widget.className = '';
+                widget.innerHTML = '';
+                return;
+            }
+            widget.style.display = '';
             if (SHOW_E26 && noticeClosed) {
                 const live = k26Live();
                 widget.className = 'collapsed ' + (live ? 'official' : 'sim');

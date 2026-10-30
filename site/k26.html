@@ -49,6 +49,13 @@
         .count-banner { max-width:none; margin:1rem 1.5rem 0; padding:1.05rem 1.25rem; border-radius:14px; display:flex; gap:1.4rem; align-items:center; justify-content:center; border:1.5px solid #f59e0b; background:linear-gradient(135deg,rgba(245,158,11,.2),rgba(239,68,68,.1)); box-shadow:0 10px 34px rgba(245,158,11,.16); }
         .count-banner[hidden] { display:none; }
         .count-banner.official { border-color:#22c55e; background:linear-gradient(135deg,rgba(34,197,94,.18),rgba(240,180,41,.08)); box-shadow:0 10px 34px rgba(34,197,94,.12); }
+        /* Count is over: the official banner is just a slim source line. */
+        .count-banner.slim { margin-top:.6rem; padding:.5rem 1rem; border-radius:999px; border-width:1px; box-shadow:none; justify-content:flex-start; gap:.6rem; }
+        .count-banner.slim .count-pulse { width:9px; height:9px; }
+        .count-banner.slim .count-main { display:flex; align-items:baseline; flex-wrap:wrap; gap:.25rem .6rem; flex:1 1 auto; min-width:0; max-width:none; }
+        .count-banner.slim .count-title { font-size:.95rem; font-weight:800; }
+        .count-banner.slim .count-note { margin-top:0; font-size:.82rem; }
+        .count-banner.slim .count-numbers { display:none; }
         .count-pulse { width:16px; height:16px; border-radius:50%; background:#f59e0b; flex:none; box-shadow:0 0 0 0 rgba(245,158,11,.55); animation:count-pulse 1.6s infinite; }
         .count-banner.official .count-pulse { background:#22c55e; box-shadow:none; animation:none; }
         @keyframes count-pulse { 70% { box-shadow:0 0 0 12px rgba(245,158,11,0); } 100% { box-shadow:0 0 0 0 rgba(245,158,11,0); } }
@@ -852,6 +859,7 @@
         if ((s.kind !== 'partial' && s.kind !== 'official') || !hasCount) { banner.hidden = true; return; }
         banner.hidden = false;
         banner.classList.toggle('official', s.kind === 'official');
+        banner.classList.toggle('slim', s.kind === 'official');
         let titleKey = s.kind === 'official' ? 'k26_count_official_title' : 'k26_count_partial_title';
         let noteKey = s.kind === 'official' ? 'k26_count_official_note' : 'k26_count_partial_note';
         if (s.kind === 'partial' && extPending && rosterDone) {
@@ -881,6 +889,10 @@
         if (s.as_of) { const d = new Date(s.as_of); if (!isNaN(d)) updated = `${i18n.t('k26_count_updated')}: ${d.toLocaleString(en() ? 'en-GB' : 'he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'medium', timeStyle: 'short' })}`; }
         document.getElementById('count-updated').textContent = updated;
         document.getElementById('count-source').textContent = en() ? (s.source_en || '') : (s.source_he || '');
+        if (s.kind === 'official') {
+            const src = en() ? (s.source_en || '') : (s.source_he || '');
+            document.getElementById('count-note').textContent = [src, updated].filter(Boolean).join(' · ');
+        }
     }
     i18n.whenK26Status().then(s => { if (PREVIEW_PARTIAL || PREVIEW_FULLCOUNT) return; K26STATUS = s || K26STATUS; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } });
     window.addEventListener('k26statuschange', e => { if (PREVIEW_PARTIAL || PREVIEW_FULLCOUNT) return; if (e.detail) { K26STATUS = e.detail; initPreviewSwitch(); renderCountStatus(); if (DATA && DATA.cc) { renderNowcast(); } } });
