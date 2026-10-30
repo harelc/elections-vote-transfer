@@ -518,7 +518,7 @@
             if (window.DL) {
                 const lat = parseFloat(DL.get('lat')), lng = parseFloat(DL.get('lng')), z = parseFloat(DL.get('z'));
                 this._dl = {
-                    mode: ['winner', 'turnout', 'socioeconomic', 'embed', 'party'].includes(DL.get('mode')) ? DL.get('mode') : null,
+                    mode: ['winner', 'voteshare', 'turnout', 'socioeconomic', 'embed', 'party'].includes(DL.get('mode')) ? DL.get('mode') : null,
                     party: DL.get('party'), cmp: /^(1[6-9]|2[0-6])$/.test(DL.get('cmp') || '') ? DL.get('cmp') : null,
                     lat: isFinite(lat) ? lat : null, lng: isFinite(lng) ? lng : null, z: isFinite(z) ? z : null
                 };
@@ -736,6 +736,7 @@
             const container = document.getElementById('color-fabs');
             const modes = [
                 { id: 'winner', bg: 'linear-gradient(135deg, #2563eb, #dc2626, #16a34a)', label: i18n.t('winner') },
+                { id: 'voteshare', bg: 'conic-gradient(#eab308 0 45%, #2563eb 45% 75%, #16a34a 75% 100%)', label: i18n.t('voteshare_pie') },
                 { id: 'turnout', bg: 'linear-gradient(to bottom, #10b981, #fbbf24, #ef4444)', label: i18n.t('turnout') },
                 { id: 'socioeconomic', bg: 'linear-gradient(to bottom, #5e4fa2, #66c2a5, #9e0142)', label: i18n.t('socioeconomic') },
                 { id: 'embed', bg: 'conic-gradient(from 0deg, #84f514, #f5bc14, #f51414, #f514bc, #8414f5, #144cf5, #14f5f5, #14f54c, #84f514)', label: i18n.t('embed_color') },
@@ -880,6 +881,15 @@
                 min.textContent = '';
                 max.textContent = '';
                 clusterLegend.classList.add('visible');
+                document.querySelector('.cluster-legend-explain').textContent = i18n.t('legend_pie_explain');
+            } else if (this.colorMode === 'voteshare') {
+                el.style.display = 'block';
+                title.textContent = i18n.t('voteshare_pie');
+                bar.style.display = 'none';
+                min.textContent = '';
+                max.textContent = '';
+                clusterLegend.classList.add('visible');
+                document.querySelector('.cluster-legend-explain').textContent = i18n.t('legend_pie_shares');
             } else if (this.colorMode === 'embed') {
                 el.style.display = 'block';
                 title.textContent = i18n.t('embed_color');
@@ -971,7 +981,7 @@
             let bgColor = 'rgba(59,130,246,0.8)';
             let info = '';
 
-            if (this.colorMode === 'winner' && winner) {
+            if ((this.colorMode === 'winner' || this.colorMode === 'voteshare') && winner) {
                 const party = this.parties.find(p => p.name === winner[0]);
                 bgColor = party ? this.hexToRgba(party.color, 0.8) : bgColor;
                 info = `${Math.round(winner[1] / totalVoters * 100)}%`;
@@ -1036,36 +1046,43 @@
                 return ll.lat === firstLL.lat && ll.lng === firstLL.lng;
             });
 
-            // Pie chart background for clusters in winner mode
+            // Pie chart background for clusters. Winner mode counts
+            // ballots (each ballot's winner); voteshare mode uses the
+            // actual aggregated votes, weighted by each ballot's voters.
             let bgStyle = `background:${bgColor}`;
-            if (this.colorMode === 'winner' && count > 1) {
-                const winnerCounts = {};
-                children.forEach(m => {
-                    const s = m.options.stationData;
-                    if (!s) return;
-                    const p = s.p || {};
-                    const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
-                    if (w) winnerCounts[w[0]] = (winnerCounts[w[0]] || 0) + 1;
-                });
-                let slices = Object.entries(winnerCounts).sort((a, b) => b[1] - a[1]);
-                if (slices.length > 1) {
-                    let otherCount = 0;
-                    if (slices.length > 5) {
-                        otherCount = slices.slice(5).reduce((s, e) => s + e[1], 0);
-                        slices = slices.slice(0, 5);
+            if ((this.colorMode === 'winner' || this.colorMode === 'voteshare') && count > 1) {
+                let rawSlices;
+                if (this.colorMode === 'voteshare') {
+                    const totalShare = Object.values(partyVotes).reduce((a, v) => a + v, 0);
+                    rawSlices = sorted.map(([party, votes]) => [party, totalShare > 0 ? votes / totalShare * 100 : 0]);
+                } else {
+                    const winnerCounts = {};
+                    children.forEach(m => {
+                        const s = m.options.stationData;
+                        if (!s) return;
+                        const p = s.p || {};
+                        const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
+                        if (w) winnerCounts[w[0]] = (winnerCounts[w[0]] || 0) + 1;
+                    });
+                    rawSlices = Object.entries(winnerCounts).sort((a, b) => b[1] - a[1])
+                        .map(([party, n]) => [party, count > 0 ? n / count * 100 : 0]);
+                }
+                if (rawSlices.length > 1) {
+                    let otherPct = 0;
+                    if (rawSlices.length > 5) {
+                        otherPct = rawSlices.slice(5).reduce((s, e) => s + e[1], 0);
+                        rawSlices = rawSlices.slice(0, 5);
                     }
                     let angle = 0;
                     const stops = [];
-                    slices.forEach(([party, n]) => {
+                    rawSlices.forEach(([party, pct]) => {
                         const p = this.parties.find(pp => pp.name === party);
                         const color = p ? p.color : '#6b7280';
-                        const pct = n / count * 100;
                         stops.push(`${color} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
                         angle += pct;
                     });
-                    if (otherCount > 0) {
-                        const pct = otherCount / count * 100;
-                        stops.push(`#4b5563 ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
+                    if (otherPct > 0) {
+                        stops.push(`#4b5563 ${angle.toFixed(1)}% ${(angle + otherPct).toFixed(1)}%`);
                     }
                     bgStyle = `background:conic-gradient(${stops.join(', ')})`;
                 }
@@ -1507,7 +1524,7 @@
                 const colors = ['#9e0142','#d53e4f','#f46d43','#fdae61','#fee08b','#e6f598','#abdda4','#66c2a5','#3288bd','#5e4fa2'];
                 return colors[Math.min(Math.max(se.cluster, 1), 10) - 1];
             }
-            if (this.colorMode === 'winner') {
+            if (this.colorMode === 'winner' || this.colorMode === 'voteshare') {
                 const p = station.p || {};
                 const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
                 if (w) {

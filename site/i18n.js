@@ -228,6 +228,8 @@
         display_settings:      { he: 'הגדרות תצוגה', en: 'Display settings' },
         color_mode:            { he: 'צביעה:', en: 'Color:' },
         winner:                { he: 'מפלגה מנצחת', en: 'Winning party' },
+        voteshare_pie:         { he: 'עוגת חלוקת קולות', en: 'Vote-share pies' },
+        legend_pie_shares:     { he: 'צבעי העוגה במקבצים: חלוקת הקולות בפועל בין המפלגות (משוקלל במצביעים)', en: 'Cluster pie colors: actual vote shares (voter-weighted)' },
         embed_color:           { he: 'דפוס הצבעה', en: 'Voting pattern' },
         embed_note:            { he: 'הצבע הוא המיקום בהטלת t-SNE. צבע דומה הוא דפוס הצבעה דומה.', en: 'Color is position in the t-SNE plot. Similar colors voted alike.' },
         specific_party:        { he: 'מפלגה ספציפית', en: 'Specific party' },

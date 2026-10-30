@@ -1059,6 +1059,10 @@
                         <span class="color-swatch" style="background: linear-gradient(135deg, #2563eb, #dc2626, #16a34a);"></span>
                         <span class="color-label" data-i18n="winner">מפלגה מנצחת</span>
                     </div>
+                    <div class="color-option" data-mode="voteshare">
+                        <span class="color-swatch" style="background: conic-gradient(#eab308 0 45%, #2563eb 45% 75%, #16a34a 75% 100%);"></span>
+                        <span class="color-label" data-i18n="voteshare_pie">עוגת חלוקת קולות</span>
+                    </div>
                     <div class="color-option" data-mode="turnout">
                         <span class="color-swatch" style="background: linear-gradient(to left, #10b981, #fbbf24, #ef4444);"></span>
                         <span class="color-label" data-i18n="turnout">שיעור הצבעה</span>
@@ -1202,7 +1206,7 @@
                 this.urlState = (q.get('e') || q.get('mode') || q.get('party') || q.get('cmp') || isFinite(lat))
                     ? {
                         e: /^(1[6-9]|2[0-6])$/.test(q.get('e') || '') ? q.get('e') : null,
-                        mode: ['winner', 'turnout', 'socioeconomic', 'embed', 'party'].includes(q.get('mode')) ? q.get('mode') : null,
+                        mode: ['winner', 'voteshare', 'turnout', 'socioeconomic', 'embed', 'party'].includes(q.get('mode')) ? q.get('mode') : null,
                         party: q.get('party') || null,
                         cmp: /^\d+$/.test(q.get('cmp') || '') ? q.get('cmp') : null,
                         lat: isFinite(lat) ? lat : null, lng: isFinite(lng) ? lng : null,
@@ -1995,6 +1999,14 @@
                     legendMin.textContent = '';
                     legendMax.textContent = '';
                     document.getElementById('cluster-legend').classList.add('visible');
+                    document.querySelector('.cluster-legend-explain').textContent = i18n.t('legend_pie_explain');
+                } else if (this.colorMode === 'voteshare') {
+                    legendTitle.textContent = i18n.t('voteshare_pie');
+                    legendBar.style.display = 'none';
+                    legendMin.textContent = '';
+                    legendMax.textContent = '';
+                    document.getElementById('cluster-legend').classList.add('visible');
+                    document.querySelector('.cluster-legend-explain').textContent = i18n.t('legend_pie_shares');
                 } else if (this.colorMode === 'embed') {
                     legendTitle.textContent = i18n.t('embed_color');
                     legendBar.style.display = 'none';
@@ -2156,7 +2168,7 @@
                     return colors[Math.min(Math.max(se.cluster, 1), 10) - 1];
                 }
 
-                if (this.colorMode === 'winner') {
+                if (this.colorMode === 'winner' || this.colorMode === 'voteshare') {
                     const proportions = station.p || station.proportions || {};
                     const winner = Object.entries(proportions).sort((a, b) => b[1] - a[1])[0];
                     if (winner) {
@@ -2608,7 +2620,7 @@
                     const colors = ['#9e0142', '#d53e4f', '#f46d43', '#fdae61', '#fee08b', '#e6f598', '#abdda4', '#66c2a5', '#3288bd', '#5e4fa2'];
                     bgColor = colors[Math.min(Math.max(parseInt(avgCluster), 1), 10) - 1];
                     infoText = i18n.getLang() === 'en' ? `Cl. ${avgCluster}` : `אשכול ${avgCluster}`;
-                } else if (this.colorMode === 'winner' && winnerName) {
+                } else if ((this.colorMode === 'winner' || this.colorMode === 'voteshare') && winnerName) {
                     const party = this.parties.find(p => p.name === winnerName);
                     bgColor = party ? party.color : '#6b7280';
                     const winnerPct = totalVoters > 0 ? Math.round(partyVotes[winnerName] / totalVoters * 100) : 0;
@@ -2666,37 +2678,45 @@
                     return ll.lat === firstLL.lat && ll.lng === firstLL.lng;
                 });
 
-                // Pie chart background for clusters in winner mode
+                // Pie chart background for clusters. Winner mode counts
+                // ballots (each ballot's winner); voteshare mode uses the
+                // actual aggregated votes, weighted by each ballot's voters.
                 let bgStyle = `background: ${bgColor}`;
-                if (this.colorMode === 'winner' && count > 1) {
-                    const winnerCounts = {};
-                    childMarkers.forEach(m => {
-                        const s = m.options.stationData;
-                        if (!s) return;
-                        const p = s.p || s.proportions || {};
-                        const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
-                        if (w) winnerCounts[w[0]] = (winnerCounts[w[0]] || 0) + 1;
-                    });
-                    let slices = Object.entries(winnerCounts).sort((a, b) => b[1] - a[1]);
-                    if (slices.length > 1) {
+                if ((this.colorMode === 'winner' || this.colorMode === 'voteshare') && count > 1) {
+                    let rawSlices;
+                    if (this.colorMode === 'voteshare') {
+                        const totalShare = Object.values(partyVotes).reduce((a, v) => a + v, 0);
+                        rawSlices = Object.entries(partyVotes).sort((a, b) => b[1] - a[1])
+                            .map(([party, votes]) => [party, totalShare > 0 ? votes / totalShare * 100 : 0]);
+                    } else {
+                        const winnerCounts = {};
+                        childMarkers.forEach(m => {
+                            const s = m.options.stationData;
+                            if (!s) return;
+                            const p = s.p || s.proportions || {};
+                            const w = Object.entries(p).sort((a, b) => b[1] - a[1])[0];
+                            if (w) winnerCounts[w[0]] = (winnerCounts[w[0]] || 0) + 1;
+                        });
+                        rawSlices = Object.entries(winnerCounts).sort((a, b) => b[1] - a[1])
+                            .map(([party, n]) => [party, count > 0 ? n / count * 100 : 0]);
+                    }
+                    if (rawSlices.length > 1) {
                         // Cap at top 5 parties, lump rest into grey "other"
-                        let otherCount = 0;
-                        if (slices.length > 5) {
-                            otherCount = slices.slice(5).reduce((s, e) => s + e[1], 0);
-                            slices = slices.slice(0, 5);
+                        let otherPct = 0;
+                        if (rawSlices.length > 5) {
+                            otherPct = rawSlices.slice(5).reduce((s, e) => s + e[1], 0);
+                            rawSlices = rawSlices.slice(0, 5);
                         }
                         let angle = 0;
                         const stops = [];
-                        slices.forEach(([party, n]) => {
+                        rawSlices.forEach(([party, pct]) => {
                             const p = this.parties.find(pp => pp.name === party);
                             const color = p ? p.color : '#6b7280';
-                            const pct = n / count * 100;
                             stops.push(`${color} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
                             angle += pct;
                         });
-                        if (otherCount > 0) {
-                            const pct = otherCount / count * 100;
-                            stops.push(`#4b5563 ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
+                        if (otherPct > 0) {
+                            stops.push(`#4b5563 ${angle.toFixed(1)}% ${(angle + otherPct).toFixed(1)}%`);
                         }
                         bgStyle = `background: conic-gradient(${stops.join(', ')})`;
                     }
@@ -2866,7 +2886,7 @@
                     if (MH > 1030) { MH = 1030; MW = Math.round(MH * srcW / srcH); }
                     // A wide, short viewport makes the map shorter than the
                     // panel: the poster grows to fit whichever is taller.
-                    const legendH0 = this.colorMode === 'winner' ? 118 : this.colorMode === 'embed' ? 158 : 102;
+                    const legendH0 = (this.colorMode === 'winner' || this.colorMode === 'voteshare') ? 118 : this.colorMode === 'embed' ? 158 : 102;
                     const panelH = 48 + 74 + 22 + legendH0 + 22
                         + (this.colorMode === 'party' && this.selectedParty ? 98 : 0)
                         + 42 + Math.min(8, stats.topParties.length) * 36 + 10
@@ -2962,7 +2982,7 @@
                     y += bh + 22;
 
                     // Legend box (mirrors the on-screen legend)
-                    const isEmbed = this.colorMode === 'embed', isWinner = this.colorMode === 'winner';
+                    const isEmbed = this.colorMode === 'embed', isWinner = this.colorMode === 'winner' || this.colorMode === 'voteshare';
                     const legendH = isWinner ? 118 : isEmbed ? 158 : 102;
                     box(PX, y, PW, legendH);
                     txt(legendTitle, pTx, y + 28, F(800, 24), INK, pAlign);
@@ -2990,7 +3010,7 @@
                     } else if (this.colorMode === 'party' && this.selectedParty) {
                         gradBar([[0, this.lightenColor(this.selectedParty.color, 0.85)], [1, this.selectedParty.color]], '0%', '', `${this.partyScaleMax}%`);
                     } else if (isWinner) {
-                        [i18n.t('legend_single_ballot'), i18n.t('legend_spread_cluster'), i18n.t('legend_pie_explain')].forEach((line, i) => {
+                        [i18n.t('legend_single_ballot'), i18n.t('legend_spread_cluster'), i18n.t(this.colorMode === 'voteshare' ? 'legend_pie_shares' : 'legend_pie_explain')].forEach((line, i) => {
                             ctx.fillStyle = ['#2563eb', '#06b6d4', GOLD][i];
                             ctx.beginPath(); ctx.arc(E ? barX + 8 : barX + barW - 8, y + 52 + i * 24, 7, 0, Math.PI * 2); ctx.fill();
                             txt(line, E ? barX + 26 : barX + barW - 26, y + 53 + i * 24, F(400, 18), DIM, pAlign);
@@ -3066,6 +3086,9 @@
                             winner: E
                                 ? 'Numbered circles summarise nearby ballots: their slices show each ballot\u2019s winning party, and the percentage is the winner\u2019s share across the cluster.'
                                 : 'עיגולים ממוספרים מסכמים קלפיות סמוכות: הפלחים מראים את המפלגה המנצחת בכל קלפי, והאחוז הוא חלקה של המנצחת בכלל המקבץ.',
+                            voteshare: E
+                                ? 'Numbered circles summarise nearby ballots: their slices are the parties\u2019 actual vote shares across the cluster (weighted by voters), and the percentage is the leading party\u2019s share.'
+                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות: הפלחים הם חלוקת הקולות בפועל בין המפלגות בכלל המקבץ (משוקלל במצביעים), והאחוז הוא חלקה של המפלגה המובילה.',
                             turnout: E
                                 ? 'Numbered circles summarise nearby ballots, and the percentage inside is their average turnout.'
                                 : 'עיגולים ממוספרים מסכמים קלפיות סמוכות, והאחוז בתוכם הוא שיעור ההצבעה הממוצע בהן.',
