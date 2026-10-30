@@ -775,7 +775,7 @@
         day.setAttribute('href', location.pathname + '?turnout=1');
         day.classList.toggle('gold', TURNOUT_ACTIVE);
         const labels = {
-            '': live ? (en() ? 'Count centre — results' : 'מרכז הספירה — תוצאות') : (en() ? 'Full count' : 'ספירה מלאה'),
+            '': live ? (kind === 'official' ? (en() ? 'Knesset 26 results' : 'תוצאות כנסת 26') : (en() ? 'Count centre — results' : 'מרכז הספירה — תוצאות')) : (en() ? 'Full count' : 'ספירה מלאה'),
             partial12: en() ? '12% counted' : '12% נספרו',
             partial17: en() ? '17% counted' : '17% נספרו',
             partial: en() ? '45% counted' : '45% נספרו',
@@ -2752,7 +2752,7 @@
         ctx.fillStyle = ink; ctx.font = '700 22px Heebo, Arial';
         ctx.fillText('kolot-nodedim.netlify.app', PAD + 128, fy + 40);
         ctx.fillStyle = mut; ctx.font = '400 18px Heebo, Arial';
-        ctx.fillText(E ? 'Scan for the live count centre' : 'סרקו למרכז הספירה החי', PAD + 128, fy + 68);
+        ctx.fillText(E ? 'Scan for the Knesset 26 centre' : 'סרקו למרכז המידע של כנסת 26', PAD + 128, fy + 68);
         ctx.textAlign = 'right'; ctx.fillStyle = mut; ctx.font = '400 19px Heebo, Arial';
         ctx.fillText(`${E ? 'Kolot Nodedim' : 'קולות נודדים'} · ${E ? 'vote-migration model' : 'מודל נדידת קולות'} 25←26${sk && sk.r_squared != null ? ` · R²=${Number(sk.r_squared).toFixed(2)}` : ''} · © ${E ? 'Harel Cain' : 'הראל קין'}, CC BY-NC-SA 4.0`, W - PAD, fy + 40);
         ctx.fillText(`${E ? 'Data as of' : 'נתונים נכון ל'} ${when(K26STATUS.as_of)} · ${E ? 'graphic generated' : 'הגרפיקה הופקה'} ${when(new Date().toISOString())}`, W - PAD, fy + 68);

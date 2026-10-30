@@ -150,7 +150,7 @@ test("K26_POLL=0 stops fetching inside the window", () => {
 test("a roster-prefilled file with nothing counted does not dispatch", async () => {
   const body = "\uFEFFסמל ועדה,קלפי,בזב,מצביעים,כשרים,מחל\n1,1,500,0,0,0\n1,2,500,0,0,0\n";
   const stub = async () => new Response(body, { status: 200 });
-  const result = await poll({}, new Date("2026-10-27T19:00:00Z"), stub);
+  const result = await poll({ K26_POLL: "1" }, new Date("2026-10-27T19:00:00Z"), stub);
   assert.equal(result.action, "reject");
   assert.equal(result.reason, "no counted ballots yet");
 });
@@ -161,7 +161,7 @@ test("uncounted roster rows do not inflate the ballot count", () => {
   assert.equal(inspect(body).ballotCount, 2);
 });
 
-test("today does not fetch the results URL", async () => {
+test("the committed switch stops polling after the count", async () => {
   const result = await poll({ K26_RESULTS_URL: "https://example.invalid/count" });
-  assert.equal(result.reason, "outside the polling window");
+  assert.equal(result.reason, "polling stopped");
 });

@@ -2,29 +2,23 @@
 command = "echo 'Static site'"
 publish = "site"
 
-# Results poller — schedule removed 28 Oct 2026: media26 is behind a
-# gov.il bot challenge that a plain fetch cannot pass, so the polling
-# moved to the GitHub-scheduled k26-refresh workflow (Chrome download
-# fallback). The function stays deployed (k26_control.json poll:false
-# also gates it) in case it is ever needed manually; re-add a
-# `schedule = "*/5 * * * *"` line here to resume Netlify-side polling.
+# Results poller — no schedule: media26 is behind a gov.il bot
+# challenge that a plain fetch cannot pass, so refreshing moved to the
+# GitHub-scheduled k26-refresh workflow (Chrome download fallback).
+# The function stays deployed (k26_control.json poll:false also gates
+# it) in case it is ever needed manually.
 [functions."k26-poll"]
 included_files = ["k26_control.json"]
 
-# Reliable 5-minute trigger for the GitHub count refresh: GitHub's
-# own cron lagged >15 min without a single run on election night, so
-# this only dispatches k26-refresh.yml (the runner downloads and
-# rebuilds; dispatches no-op when the snapshot is unchanged).
-# Gated by k26_control.json auto + the poll window (through 31 Oct).
+# Retired after election night: this only dispatches the GitHub count
+# refresh, which now runs on its own daily schedule through 9 Nov 2026.
+# The function stays deployed for a manual call if ever needed.
 [functions."k26-dispatch"]
-schedule = "*/5 * * * *"
 included_files = ["k26_control.json"]
 
-# Election-day turnout poller: every 2 minutes inside the daytime
-# turnout window (07:00-22:00 on 27 Oct 2026, gated by k26_control.json);
-# dispatch stays off while turnout_auto is false.
+# Election-day turnout polling is over; the function stays deployed for
+# manual/rehearsal use but has no schedule.
 [functions."k26-turnout-poll"]
-schedule = "*/2 * * * *"
 included_files = ["k26_control.json"]
 
 [[headers]]

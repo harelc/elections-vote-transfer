@@ -27,9 +27,9 @@ assert.equal(strongholds.settlements.length, 5);
 assert.ok(strongholds.settlements.every((row) => row.voters >= 500));
 assert.ok(strongholds.settlements[0].share_pct >= strongholds.settlements[1].share_pct);
 
-const simulated = officialResults(26);
-assert.equal(simulated.simulated, true);
-assert.match(simulated.note, /SIMULATED/);
+const counted = officialResults(26);
+assert.equal(counted.simulated, false);
+assert.match(counted.note, /Central Elections Committee/);
 
 assert.equal(k26Caveat({ kind: "simulated" }).instruction, "Election 26 is not a real result. Say so whenever you cite it.");
 const partialCaveat = k26Caveat({ kind: "partial", as_of: "2026-10-27T22:40:00+03:00", ballots: 4820, ballots_total: 12018 });

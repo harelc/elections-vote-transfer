@@ -68,7 +68,7 @@ test("an html page or unrelated csv is not a turnout feed", () => {
 });
 
 test("a missing turnout URL does not dispatch", async () => {
-  const result = await pollTurnout({}, new Date("2026-10-27T10:00:00Z"));
+  const result = await pollTurnout({ K26_TURNOUT_POLL: "1" }, new Date("2026-10-27T10:00:00Z"));
   assert.equal(result.action, "skip");
   assert.equal(result.reason, "K26_TURNOUT_URL unset");
 });
@@ -76,7 +76,7 @@ test("a missing turnout URL does not dispatch", async () => {
 test("outside the turnout window nothing is fetched", async () => {
   let fetched = false;
   const result = await pollTurnout(
-    { K26_TURNOUT_URL: "https://example.invalid/turnout" },
+    { K26_TURNOUT_POLL: "1", K26_TURNOUT_URL: "https://example.invalid/turnout" },
     new Date("2026-10-26T10:00:00Z"),
     async () => { fetched = true; throw new Error("must not fetch"); },
   );

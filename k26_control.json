@@ -2,14 +2,15 @@
   "auto": true,
   "poll": false,
   "poll_start": "2026-10-27T21:00",
-  "poll_end": "2026-10-31T23:59",
+  "poll_end": "2026-11-09T23:59",
+  "refresh_until": "2026-11-09T23:59",
   "nowcast_model": "abs",
-  "turnout_auto": true,
-  "turnout_poll": true,
+  "turnout_auto": false,
+  "turnout_poll": false,
   "turnout_poll_start": "2026-10-27T07:00",
   "turnout_poll_end": "2026-10-27T22:00",
   "timezone": "Asia/Jerusalem",
   "roster": 12018,
   "external_envelopes_expected": 750,
-  "_comment": "The Netlify schedule fires every 10 minutes all year. The function fetches only from poll_start through poll_end, Israel local time, and only while poll is true. Set poll to false to stop early. auto false notices a newer file and does not deploy it. K26_AUTO=0 on Netlify stops dispatch even when auto is true. K26_AUTO=1 allows dispatch even when auto is false. K26_POLL=0 stops fetching even inside the window. Turnout (pre-results, election day): turnout_poll/turnout_poll_start/turnout_poll_end gate k26-turnout-poll the same way over the daytime window; turnout_auto is its chicken bit (K26_TURNOUT_AUTO / K26_TURNOUT_POLL env overrides; feed URL is K26_TURNOUT_URL). nowcast_model: which transfer model the count centre opens with for every visitor -- 'abs' = with non-voters (default), 'plain' = without non-voters. Both are always computed; visitors can still flip locally. Takes effect at the next data refresh after the change is pushed."
+  "_comment": "Election-night polling is over. The GitHub k26-refresh workflow runs once daily at 06:23 Asia/Jerusalem through refresh_until (9 Nov 2026) and rebuilds only if the CEC snapshot changed. Netlify scheduled dispatch and turnout polling are retired in netlify.toml. Set auto to false to stop the daily refresh early; a forced manual workflow run bypasses the date gate. nowcast_model: which transfer model the count centre opens with for every visitor -- 'abs' = with non-voters (default), 'plain' = without non-voters."
 }

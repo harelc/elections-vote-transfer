@@ -185,14 +185,18 @@ def external_envelope_status(rows):
     }
 
 
-def publish_kind(ballots, final):
-    """Official is only set when the refresh workflow passes --final (CEC certified).
+def publish_kind(ballots, final, regular_ballots=None, external_pending=True):
+    """Decide whether the site is still mid-count.
 
-    Reaching the 12,018-box roster (or more, once 9999 rows land) is not
-    enough: double-envelope ballots drop later and totals stay provisional.
+    ``--final`` always publishes as official. Otherwise the count is
+    treated as complete once the regular roster is present (allowing a
+    handful of zero-vote boxes the refresh strips) and the
+    double-envelope boxes are no longer pending; until then it is
+    partial even if the combined row count passes the roster.
     """
-    del ballots  # roster size alone must not flip the site to official
     if final:
+        return "official"
+    if regular_ballots is not None and regular_ballots >= ROSTER - 25 and not external_pending:
         return "official"
     return "partial"
 
@@ -208,7 +212,7 @@ def status_document(summary, kind, as_of, sha256, ci_coverage):
         # vs double-envelope (settlement 9999) boxes. `ballots` mixes both,
         # which is how the total can exceed the regular roster.
         "regular_ballots": summary["ballots"] - summary["external_envelopes_counted"],
-        "roster_complete": summary["ballots"] >= ROSTER,
+        "roster_complete": (summary["ballots"] - summary["external_envelopes_counted"]) >= ROSTER - 25,
         "external_envelopes_expected": summary["external_envelopes_expected"],
         "external_envelopes_counted": summary["external_envelopes_counted"],
         "external_envelopes_pending": summary["external_envelopes_pending"],
@@ -278,8 +282,8 @@ def update_party_seats(text, summary):
 def wiki_notes(kind):
     if kind == "official":
         return (
-            "Final certified results from the Central Elections Committee.",
-            "Certified CEC results",
+            "Knesset 26 results published by the Central Elections Committee after the count.",
+            "CEC results",
         )
     return (
         "Provisional count from the Central Elections Committee — not the certified final result. Totals change as ballots arrive, including double-envelope (9999) boxes.",
@@ -392,7 +396,12 @@ def main():
     if not args.publish:
         raise SystemExit("refusing to write totals without --publish")
     summary = summarize(args.csv)
-    kind = args.kind or publish_kind(summary["ballots"], args.final)
+    kind = args.kind or publish_kind(
+        summary["ballots"],
+        args.final,
+        regular_ballots=summary["ballots"] - summary["external_envelopes_counted"],
+        external_pending=summary["external_envelopes_pending"],
+    )
     previous = {}
     if STATUS.exists():
         previous = json.loads(STATUS.read_text(encoding="utf-8"))

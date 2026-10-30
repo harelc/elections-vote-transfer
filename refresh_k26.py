@@ -221,7 +221,12 @@ def main():
     from k26_live import ROSTER, STATUS as status_path, publish_kind, summarize
 
     summary = summarize(ballot_path)
-    kind = publish_kind(summary["ballots"], args.final)
+    kind = publish_kind(
+        summary["ballots"],
+        args.final,
+        regular_ballots=summary["ballots"] - summary["external_envelopes_counted"],
+        external_pending=summary["external_envelopes_pending"],
+    )
     if kind == "official":
         refresh_turnout()
     previous_ci = 0

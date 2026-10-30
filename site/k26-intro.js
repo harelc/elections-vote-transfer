@@ -20,7 +20,7 @@
     }
 
     function countdownHtml() {
-        if (kind === 'partial' || Date.now() >= POLLS_CLOSE) return '';
+        if (kind === 'partial' || kind === 'official' || Date.now() >= POLLS_CLOSE) return '';
         var cells = UNITS.map(function (u, i) {
             return '<div class="k26i-unit" data-unit="' + i + '">' +
                 '<span class="k26i-num"></span>' +
@@ -53,7 +53,7 @@
     }
 
     function stepClass(index) {
-        var active = kind === 'partial' ? 1 : 0;
+        var active = kind === 'partial' ? 1 : kind === 'official' ? 2 : 0;
         if (index < active) return 'is-done';
         if (index === active) return 'is-now';
         return 'is-next';
@@ -61,6 +61,7 @@
 
     function panelHtml() {
         var partial = kind === 'partial';
+        var official = kind === 'official';
         var steps = [
             ['k26_intro_now', 'k26_intro_now_d'],
             ['k26_intro_night', 'k26_intro_night_d'],
@@ -77,9 +78,9 @@
         return '<div class="k26i-panel">' +
             '<button type="button" class="k26i-x" aria-label="' + t('k26_intro_close') + '">×</button>' +
             '<div class="k26i-scroll">' +
-            '<h2 id="k26-intro-title">' + t(partial ? 'k26_intro_title_partial' : 'k26_intro_title') + '</h2>' +
+            '<h2 id="k26-intro-title">' + t(official ? 'k26_intro_title_official' : partial ? 'k26_intro_title_partial' : 'k26_intro_title') + '</h2>' +
             countdownHtml() +
-            '<p class="k26i-lead">' + t(partial ? 'k26_intro_lead_partial' : 'k26_intro_lead') + '</p>' +
+            '<p class="k26i-lead">' + t(official ? 'k26_intro_lead_official' : partial ? 'k26_intro_lead_partial' : 'k26_intro_lead') + '</p>' +
             '<ol class="k26i-steps">' + steps + '</ol>' +
             '<h3 class="k26i-ready-title">' + t('k26_intro_ready_title') + '</h3>' +
             '<ul class="k26i-ready">' + ready + '</ul>' +
@@ -193,7 +194,7 @@
 
     function open(nextKind) {
         if (document.getElementById('k26-intro')) return;
-        kind = nextKind === 'partial' ? 'partial' : 'simulated';
+        kind = nextKind === 'partial' || nextKind === 'official' ? nextKind : 'simulated';
         ensureStyle();
         var overlay = document.createElement('div');
         overlay.id = 'k26-intro';

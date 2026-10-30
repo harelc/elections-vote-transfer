@@ -55,26 +55,26 @@
         nav_animation:         { he: '▶ אנימציה', en: '▶ Animation' },
         nav_k26:               { he: '🎛️ מרכז מידע כנסת 26', en: '🎛️ K26 Information Center' },
         card_k26_desc:         { he: 'כל כנסת 26 במסך אחד: קולות מוחלטים, מנדטים, נדידת קולות 25←26, מפה וקלפיות', en: 'All of Knesset 26 on one screen: absolute votes, seats, 25→26 vote flow, map and ballots' },
-        card_k26_badge:        { he: '🗳️ יום הבחירות — מרכז הבקרה החי', en: '🗳️ Election day — the live command centre' },
-        card_count_badge:      { he: '🔴 ספירה חיה', en: '🔴 Live count' },
-        card_count_title:      { he: 'מרכז הספירה — כנסת 26', en: 'Knesset 26 count centre' },
-        card_count_desc:       { he: 'תוצאות חיות בנייד: מנדטים, קולות, התקדמות הספירה ותחזית לסוף הספירה', en: 'Live results on mobile: seats, votes, count progress and the final-count forecast' },
-        card_turnout_title:    { he: 'אחוזי ההצבעה — מפה חיה לפי קלפי', en: 'Turnout — live per-ballot map' },
-        card_turnout_desc:     { he: 'מפת אחוזי הצבעה לפי קלפי, שחזור מול כנסת 25 ומי יוצא להצביע — מתעדכן במהלך היום', en: 'Per-ballot turnout map, recovery vs Knesset 25 and who is turning out — updated through the day' },
+        card_k26_badge:        { he: '🗳️ תוצאות כנסת 26', en: '🗳️ Knesset 26 results' },
+        card_count_badge:      { he: 'תוצאות כנסת 26', en: 'Knesset 26 results' },
+        card_count_title:      { he: 'מרכז המידע — כנסת 26', en: 'Knesset 26 information centre' },
+        card_count_desc:       { he: 'תוצאות כנסת 26 בנייד: מנדטים, קולות וכל התצוגות', en: 'Knesset 26 results on mobile: seats, votes and every view' },
+        card_turnout_title:    { he: 'אחוזי ההצבעה — מפה לפי קלפי', en: 'Turnout — per-ballot map' },
+        card_turnout_desc:     { he: 'מפת אחוזי הצבעה לפי קלפי, שחזור מול כנסת 25 ומי יצא להצביע — מיום הבחירות', en: 'Per-ballot turnout map, recovery vs Knesset 25 and who turned out — from election day' },
         k26_title:             { he: 'מרכז המידע — כנסת 26', en: 'Information Center — Knesset 26' },
         k26_subtitle:          { he: 'קולות מוחלטים, חלוקת מנדטים וכל התצוגות של כנסת 26 במסך אחד', en: 'Absolute votes, seat distribution and every Knesset 26 view on one screen' },
         k26_simulated:         { he: 'תרחיש מדומה — לא תוצאות אמת', en: 'Simulated scenario — not real results' },
         k26_live_partial:      { he: 'ספירה חלקית', en: 'Partial count' },
-        k26_live_official:     { he: 'תוצאות סופיות מאושרות', en: 'Certified final results' },
+        k26_live_official:     { he: 'תוצאות כנסת 26', en: 'Knesset 26 results' },
         k26_count_partial_title: { he: 'ספירה חלקית — כל התוצאות בעמוד זמניות', en: 'Partial count — every result on this page is provisional' },
-        k26_count_official_title: { he: 'תוצאות סופיות מאושרות', en: 'Certified final results' },
+        k26_count_official_title: { he: 'תוצאות כנסת 26', en: 'Knesset 26 results' },
         k26_count_awaiting_external_title: { he: 'קלפיות רגילות נספרו — ממתינים למעטפות החיצוניות', en: 'Regular boxes are in — double-envelope ballots still pending' },
         k26_count_counted:     { he: 'קלפיות שנספרו', en: 'Ballots counted' },
         k26_count_remaining:   { he: 'קלפיות שטרם נספרו', en: 'Ballots not yet counted' },
         k26_count_updated:     { he: 'עודכן', en: 'Updated' },
         k26_count_partial_note: { he: 'הקולות, המנדטים, המפות ושאר התצוגות מבוססים רק על הקלפיות שנספרו עד כה — והם ישתנו ככל שיגיעו קלפיות נוספות.', en: 'Votes, seats, maps and every other view are based only on the ballots counted so far — and will change as more ballots arrive.' },
         k26_count_awaiting_external_note: { he: 'התוצאות בעמוד זמניות ואינן רשמיות. קולות המעטפות החיצוניות (חיילים, אסירים, נופשים וכו׳) טרם נספרו במלואן ויגיעו בהמשך.', en: 'Everything here is provisional, not the certified final result. Double-envelope votes (military, prisoners, tourists, etc.) are still being counted.' },
-        k26_count_official_note: { he: 'ועדת הבחירות פרסמה תוצאות סופיות מאושרות. הנתונים בעמוד משקפים את הספירה הרשמית.', en: 'The Central Elections Committee has published certified final results. The figures on this page reflect that official count.' },
+        k26_count_official_note: { he: 'הספירה המעשית הסתיימה. הנתונים בעמוד משקפים את תוצאות ועדת הבחירות כפי שפורסמו; עד 9 בנובמבר האתר יבדוק פעם ביום אם פורסם קובץ מעודכן.', en: 'The count is complete in practice. The figures on this page reflect the Central Elections Committee results as published; through 9 November the site will check once a day for an updated file.' },
         nav_mcp_cta:           { he: '✨ חקור את הנתונים בעזרת MCP', en: '✨ Explore the data with MCP' },
         k26_votes_seats:       { he: 'קולות ומנדטים', en: 'Votes & seats' },
         k26_threshold:         { he: 'אחוז חסימה 3.25%', en: 'Threshold 3.25%' },
@@ -575,7 +575,7 @@
             he: 'המספרים במצב הזה אינם נתוני אמת עדיין, אלא נתוני סימולציה שתואמת את ממוצע הסקרים. המטרה העיקרית היא לבדוק את מוכנות האתר.',
             en: 'These figures are not real data yet. They are a simulation matched to the polling average. Its main goal is to test the site\'s preparedness.'
         },
-        e26_official_headline: { he: 'תוצאות סופיות מאושרות', en: 'Certified final results' },
+        e26_official_headline: { he: 'תוצאות כנסת 26', en: 'Knesset 26 results' },
         e26_partial_headline:  { he: 'ספירה חלקית', en: 'Partial count' },
         e26_as_of_missing:     { he: 'חותמת הזמן של הספירה חסרה', en: 'The count has no timestamp' },
         e26_ballots:           { he: '{n} קלפיות', en: '{n} ballots' },
@@ -593,6 +593,16 @@
             he: 'הסימולציה כבר ירדה מהאתר. המפה, נדידת הקולות ומפת הקלפיות מציגות רק קלפיות שוועדת הבחירות פרסמה. קלפיות שטרם נספרו חסרות, והסיכומים הארציים עוד ישתנו.',
             en: 'The simulation is gone. The map, the vote flow, and the clusters show only ballots the committee has published. Ballots not yet counted are missing, and the national totals will still change.'
         },
+        k26_intro_title_official: { he: 'בחירות כנסת 26 הסתיימו', en: 'The Knesset 26 election is over' },
+        k26_intro_lead_official: {
+            he: 'הספירה המעשית הסתיימה, ותוצאות ועדת הבחירות מופיעות כעת במפה, בתרשים נדידת הקולות ובמפת התפלגות הקלפיות, לצד עשר מערכות הבחירות הקודמות. עד 9 בנובמבר האתר יבדוק פעם ביום אם פורסם קובץ מעודכן.',
+            en: 'The count is complete in practice, and the committee’s results now appear in the map, the vote flow, and the ballot clusters, alongside the ten previous Knessets. Through 9 November the site will check once a day for an updated file.'
+        },
+        k26_intro_now_official: { he: 'לפני הבחירות', en: 'Before the election' },
+        k26_intro_night_official: { he: 'ליל הבחירות', en: 'Election night' },
+        k26_intro_done_official: { he: 'עכשיו', en: 'Now' },
+        k26_intro_ready_2_official: { he: 'מליל הבחירות ועד 9 בנובמבר, האתר בדק אם ועדת הבחירות פרסמה תוצאות חדשות; כעת הבדיקה היא פעם ביום, והתצוגות מציגות את תוצאות הספירה שהסתיימה', en: 'From election night through 9 November the site checked for new committee results; it now checks once a day, and the views show the completed count' },
+        k26_intro_ready_3_official: { he: 'תוצאות כנסת 26 נקלטו, עובדו ופורסמו באתר מקצה לקצה', en: 'The Knesset 26 results were taken in, processed, and published end to end' },
         k26_intro_now:         { he: 'עכשיו', en: 'Now' },
         k26_intro_now_partial: { he: 'לפני הספירה', en: 'Before the count' },
         k26_intro_now_d:       { he: 'סימולציה ברמת הקלפי, לפי הסקרים', en: 'A per-ballot scenario, fitted to the polls' },
@@ -619,10 +629,10 @@
         k26_intro_close:       { he: 'סגור', en: 'Close' },
         mcp_k26_note:          { he: 'כנסת 26 היא תרחיש מדומה.', en: 'Knesset 26 is a simulated scenario.' },
         mcp_k26_note_partial:  { he: 'כנסת 26 היא ספירה חלקית של ועדת הבחירות המרכזית ({k26_count}, נכון ל־{k26_when}).', en: 'Knesset 26 is a partial Central Elections Committee count ({k26_count}, as of {k26_when}).' },
-        mcp_k26_note_official: { he: 'כנסת 26 היא הספירה הרשמית של ועדת הבחירות המרכזית.', en: 'Knesset 26 is the official Central Elections Committee count.' },
+        mcp_k26_note_official: { he: 'כנסת 26 היא תוצאות ועדת הבחירות המרכזית כפי שפורסמו לאחר הספירה.', en: 'Knesset 26 is the Central Elections Committee result as published after the count.' },
         mcp_k26_note_short:    { he: 'כנסת 26 היא תרחיש מדומה.', en: 'Knesset 26 is simulated.' },
         mcp_k26_note_short_partial: { he: 'כנסת 26 היא ספירה חלקית ({k26_count}).', en: 'Knesset 26 is a partial count ({k26_count}).' },
-        mcp_k26_note_short_official: { he: 'כנסת 26 היא הספירה הרשמית.', en: 'Knesset 26 is the official count.' },
+        mcp_k26_note_short_official: { he: 'כנסת 26 היא תוצאות ועדת הבחירות.', en: 'Knesset 26 is the CEC result.' },
         irregular_k26_stale:    { he: 'רשימת הקלפיות החריגות של כנסת 26 עוד לא חושבה מחדש על הספירה האמיתית. נסו שוב בעוד כמה דקות.', en: 'The Knesset 26 unusual-ballot list has not been recomputed on the real count yet. Check back in a few minutes.' },
         turnout_k26_paused_title: { he: 'מחשבון אחוז ההצבעה מושהה', en: 'The turnout calculator is paused' },
         turnout_k26_paused:     { he: 'המחשבון מושהה בזמן ספירת הקולות. הוא יחזור כשוועדת הבחירות תפרסם את התוצאות הרשמיות, ונקודת המוצא שלו תהיה התוצאות האלה.', en: 'The calculator is paused while the votes are counted. It returns once the committee publishes the official results, and those results become its starting point.' },
@@ -1606,7 +1616,7 @@
                 if (!force && localStorage.getItem('k26_intro_v1') === '1') return;
             } catch (e) {}
             if (window.K26Intro) {
-                window.K26Intro.open(force && kind === 'official' ? 'simulated' : kind);
+                window.K26Intro.open(kind);
                 return;
             }
             const script = document.querySelector('script[src*="i18n.js"]');
@@ -1614,7 +1624,7 @@
             const intro = document.createElement('script');
             intro.src = src.replace(/i18n\.js(?:\?.*)?$/, 'k26-intro.js');
             intro.onload = () => {
-                if (window.K26Intro) window.K26Intro.open(force && kind === 'official' ? 'simulated' : kind);
+                if (window.K26Intro) window.K26Intro.open(kind);
             };
             document.head.appendChild(intro);
         }

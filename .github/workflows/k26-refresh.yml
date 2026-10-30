@@ -1,15 +1,15 @@
 name: Refresh K26 count
 
 # Two entry points:
-#  * schedule (every 5 min) — fully unattended: downloads the CEC file
-#    itself (Chrome fallback for the gov.il bot challenge, see
-#    download_expb.js), rebuilds only when the snapshot actually moved.
-#  * workflow_dispatch — the Netlify poller still dispatches with the
-#    sha it accepted; if the file moved since, the inspect step skips
-#    and the next tick/schedule run picks the new one up.
+#  * schedule (daily through 9 Nov 2026) — post-count tidy-up: downloads
+#    the CEC file itself (Chrome fallback for the gov.il bot challenge,
+#    see download_expb.js), rebuilds only when the snapshot actually moved.
+#  * workflow_dispatch — manual runs, optionally with the sha a caller accepted.
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    # 06:23 Asia/Jerusalem (UTC+2 in November). The gate below stops
+    # scheduled runs after refresh_until in k26_control.json.
+    - cron: "23 4 * * *"
   workflow_dispatch:
     inputs:
       sha256:
@@ -57,11 +57,20 @@ jobs:
         run: |
           python - <<'PY'
           import json, os
+          from datetime import datetime
+          from zoneinfo import ZoneInfo
           forced = os.environ["K26_FORCE"] == "true"
-          auto = json.load(open("k26_control.json", encoding="utf-8")).get("auto") is True
-          proceed = forced or auto
+          control = json.load(open("k26_control.json", encoding="utf-8"))
+          auto = control.get("auto") is True
+          refresh_until = str(control.get("refresh_until") or control.get("poll_end") or "")
+          now_local = datetime.now(ZoneInfo(control.get("timezone", "Asia/Jerusalem"))).strftime("%Y-%m-%dT%H:%M")
+          within_refresh_window = not refresh_until or now_local <= refresh_until[:16]
+          proceed = forced or (auto and (os.environ.get("GITHUB_EVENT_NAME") != "schedule" or within_refresh_window))
           if not proceed:
-              print("k26_control.json auto is false; leaving the site as it is")
+              if not auto:
+                  print("k26_control.json auto is false; leaving the site as it is")
+              else:
+                  print(f"scheduled refresh window ended at {refresh_until}; leaving the site as it is")
           with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as handle:
               handle.write("proceed=" + ("true" if proceed else "false") + "\n")
           PY
