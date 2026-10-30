@@ -229,7 +229,8 @@
         color_mode:            { he: 'צביעה:', en: 'Color:' },
         winner:                { he: 'מפלגה מנצחת', en: 'Winning party' },
         voteshare_pie:         { he: 'עוגת חלוקת קולות', en: 'Vote-share pies' },
-        legend_pie_shares:     { he: 'צבעי העוגה במקבצים: חלוקת הקולות בפועל בין המפלגות (משוקלל במצביעים)', en: 'Cluster pie colors: actual vote shares (voter-weighted)' },
+        legend_pie_shares:     { he: 'צבעי העוגה במקבצים: חלוקת הקולות בפועל בין המפלגות (משוקלל במצביעים) · פלח מפוספס = שאר המפלגות', en: 'Cluster pie colors: actual vote shares (voter-weighted) · striped slice = other parties' },
+        legend_single_pie:     { he: 'קלפי בודדת — עוגה של חלוקת הקולות בה', en: 'Single ballot — a pie of its own vote shares' },
         embed_color:           { he: 'דפוס הצבעה', en: 'Voting pattern' },
         embed_note:            { he: 'הצבע הוא המיקום בהטלת t-SNE. צבע דומה הוא דפוס הצבעה דומה.', en: 'Color is position in the t-SNE plot. Similar colors voted alike.' },
         specific_party:        { he: 'מפלגה ספציפית', en: 'Specific party' },
@@ -469,7 +470,7 @@
         legend_single_ballot:      { he: 'קלפי בודדת — הצבע מייצג את המפלגה המנצחת', en: 'Single ballot — color is the winning party' },
         legend_spread_cluster:     { he: 'מקבץ של אתרי הצבעה שונים — לחץ כדי להתקרב', en: 'Multiple voting sites — click to zoom in' },
         legend_colocated_cluster:  { he: 'מקבץ קלפיות באותו מקום', en: 'Ballots at same location' },
-        legend_pie_explain:        { he: 'צבעי העוגה במקבצים: חלוקת המפלגה המנצחת בכל קלפי', en: 'Cluster pie colors: winning party share per ballot' },
+        legend_pie_explain:        { he: 'צבעי העוגה במקבצים: חלוקת המפלגה המנצחת בכל קלפי · פלח מפוספס = שאר המפלגות', en: 'Cluster pie colors: winning party share per ballot · striped slice = other parties' },
         search_settlement_profile: { he: 'חיפוש יישוב...', en: 'Search settlement...' },
 
         /* ── Mobile about ── */

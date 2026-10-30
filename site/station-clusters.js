@@ -22,6 +22,12 @@
         this.handlers = handlers || {};
         this.items = [];
         this.clusterMarkers = [];
+        // Opt-in (handlers.singleHTML + showSingles): unclustered stations
+        // rendered as HTML markers instead of WebGL circles — used by the
+        // geomap vote-share mode to draw each ballot as its own pie.
+        this.singleMarkers = [];
+        this.showSingles = false;
+        this.singleKey = null;
         this.token = 0;
         this.ready = false;
         this.popup = null;
@@ -132,9 +138,72 @@
         this.clusterMarkers = [];
     };
 
+    StationClusterLayer.prototype.clearSingleMarkers = function () {
+        this.singleMarkers.forEach(function (marker) { marker.remove(); });
+        this.singleMarkers = [];
+    };
+
+    StationClusterLayer.prototype.syncSingles = function () {
+        if (!this.ready || !this.map.getSource('stations')) return;
+        if (this.map.getLayer('station-circles')) {
+            try {
+                this.map.setPaintProperty('station-circles', 'circle-opacity', this.showSingles ? 0 : 0.75);
+            } catch (e) { /* style not ready */ }
+        }
+        if (!this.showSingles || !this.handlers.singleHTML) {
+            if (this.singleMarkers.length) { this.clearSingleMarkers(); this.singleKey = null; }
+            return;
+        }
+        const features = this.map.querySourceFeatures('stations', {
+            filter: ['!', ['has', 'point_count']],
+        });
+        const seen = new Set();
+        const singles = [];
+        features.forEach(function (feature) {
+            const i = Number(feature.properties.i);
+            if (seen.has(i)) return;
+            seen.add(i);
+            singles.push(feature);
+        });
+        const key = Array.from(seen).sort(function (a, b) { return a - b; }).join(',');
+        if (!this.dirty && key === this.singleKey && this.singleMarkers.length === singles.length) return;
+        const built = [];
+        const self = this;
+        singles.forEach(function (feature) {
+            const item = self.items[Number(feature.properties.i)];
+            if (!item) return;
+            const icon = self.handlers.singleHTML(item);
+            if (!icon) return;
+            const el = document.createElement('div');
+            el.className = icon.className || 'custom-cluster';
+            el.style.width = icon.size + 'px';
+            el.style.height = icon.size + 'px';
+            el.style.cursor = 'pointer';
+            el.innerHTML = icon.html;
+            el.addEventListener('mouseenter', function () {
+                if (self.handlers.onStationEnter) self.handlers.onStationEnter(item, self.map.project([item.lng, item.lat]));
+            });
+            el.addEventListener('mouseleave', function () {
+                if (self.handlers.onStationLeave) self.handlers.onStationLeave();
+            });
+            el.addEventListener('click', function (event) {
+                event.stopPropagation();
+                if (self.handlers.onStationClick) self.handlers.onStationClick(item);
+            });
+            built.push(new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat([item.lng, item.lat]));
+        });
+        this.clearSingleMarkers();
+        this.singleKey = key;
+        built.forEach(function (marker) {
+            marker.addTo(self.map);
+            self.singleMarkers.push(marker);
+        });
+    };
+
     // Rebuilding swaps every cluster element, which drops a tap that lands mid-swap.
     StationClusterLayer.prototype.syncClusters = async function (settled) {
         if (!this.ready || !this.map.getSource('stations')) return;
+        this.syncSingles();
         const features = this.map.querySourceFeatures('stations', {
             filter: ['has', 'point_count'],
         });

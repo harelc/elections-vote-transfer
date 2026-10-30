@@ -1335,6 +1335,7 @@
                 const viz = this;
                 this.stationsLayer = new StationClusterLayer(this.map, {
                     clusterHTML: (stations, lng, lat) => viz.createClusterIcon(asLeafletCluster(stations, lng, lat)),
+                    singleHTML: (item) => viz.createSinglePieIcon(item),
                     onClusterEnter: (stations, lng, lat) => viz.showClusterTooltip({ layer: asLeafletCluster(stations, lng, lat) }),
                     onClusterLeave: () => viz.scheduleHideTooltip(),
                     onStationEnter: (item, point) => {
@@ -2000,6 +2001,7 @@
                     legendMax.textContent = '';
                     document.getElementById('cluster-legend').classList.add('visible');
                     document.querySelector('.cluster-legend-explain').textContent = i18n.t('legend_pie_explain');
+                    document.querySelector('.cluster-legend-row span:last-child').textContent = i18n.t('legend_single_ballot');
                 } else if (this.colorMode === 'voteshare') {
                     legendTitle.textContent = i18n.t('voteshare_pie');
                     legendBar.style.display = 'none';
@@ -2007,6 +2009,7 @@
                     legendMax.textContent = '';
                     document.getElementById('cluster-legend').classList.add('visible');
                     document.querySelector('.cluster-legend-explain').textContent = i18n.t('legend_pie_shares');
+                    document.querySelector('.cluster-legend-row span:last-child').textContent = i18n.t('legend_single_pie');
                 } else if (this.colorMode === 'embed') {
                     legendTitle.textContent = i18n.t('embed_color');
                     legendBar.style.display = 'none';
@@ -2555,6 +2558,55 @@
                 this.syncDL();
             }
 
+            // Conic-gradient stops for a pie from sorted [party, pct]
+            // slices: top 5 parties, the rest as a striped "other" (a
+            // solid grey would be United Torah Judaism's colour).
+            pieStops(rawSlices) {
+                let slices = rawSlices;
+                let otherPct = 0;
+                if (slices.length > 5) {
+                    otherPct = slices.slice(5).reduce((s, e) => s + e[1], 0);
+                    slices = slices.slice(0, 5);
+                }
+                let angle = 0;
+                const stops = [];
+                slices.forEach(([party, pct]) => {
+                    const p = this.parties.find(pp => pp.name === party);
+                    const color = p ? p.color : '#6b7280';
+                    stops.push(`${color} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
+                    angle += pct;
+                });
+                if (otherPct > 0) {
+                    const end = angle + otherPct;
+                    let flip = false;
+                    for (let a = angle; a < end - 0.05; a += 1.8) {
+                        stops.push(`${flip ? '#e5e7eb' : '#111827'} ${a.toFixed(1)}% ${Math.min(a + 1.8, end).toFixed(1)}%`);
+                        flip = !flip;
+                    }
+                }
+                return stops;
+            }
+
+            // In voteshare mode an unclustered ballot is a small pie of
+            // its own vote shares (rendered as an HTML marker by
+            // StationClusterLayer; null in every other mode).
+            createSinglePieIcon(item) {
+                if (this.colorMode !== 'voteshare') return null;
+                const entries = Object.entries(item.station.p || {})
+                    .filter(([, pct]) => pct > 0).sort((a, b) => b[1] - a[1]);
+                if (!entries.length) return null;
+                const total = entries.reduce((a, [, pct]) => a + pct, 0) || 1;
+                const raw = entries.map(([party, pct]) => [party, pct / total * 100]);
+                const bg = raw.length > 1
+                    ? `conic-gradient(${this.pieStops(raw).join(', ')})`
+                    : (this.parties.find(p => p.name === raw[0][0])?.color || '#6b7280');
+                return {
+                    html: `<div class="cluster-inner" style="background: ${bg}"></div>`,
+                    className: 'custom-cluster single-pie',
+                    size: Math.max(16, Math.min(32, Math.round(item.radius * 2.2)))
+                };
+            }
+
             createClusterIcon(cluster) {
                 const childMarkers = cluster.getAllChildMarkers();
                 const count = childMarkers.length;
@@ -2701,24 +2753,7 @@
                             .map(([party, n]) => [party, count > 0 ? n / count * 100 : 0]);
                     }
                     if (rawSlices.length > 1) {
-                        // Cap at top 5 parties, lump rest into grey "other"
-                        let otherPct = 0;
-                        if (rawSlices.length > 5) {
-                            otherPct = rawSlices.slice(5).reduce((s, e) => s + e[1], 0);
-                            rawSlices = rawSlices.slice(0, 5);
-                        }
-                        let angle = 0;
-                        const stops = [];
-                        rawSlices.forEach(([party, pct]) => {
-                            const p = this.parties.find(pp => pp.name === party);
-                            const color = p ? p.color : '#6b7280';
-                            stops.push(`${color} ${angle.toFixed(1)}% ${(angle + pct).toFixed(1)}%`);
-                            angle += pct;
-                        });
-                        if (otherPct > 0) {
-                            stops.push(`#4b5563 ${angle.toFixed(1)}% ${(angle + otherPct).toFixed(1)}%`);
-                        }
-                        bgStyle = `background: conic-gradient(${stops.join(', ')})`;
+                        bgStyle = `background: conic-gradient(${this.pieStops(rawSlices).join(', ')})`;
                     }
                 }
 
@@ -2777,7 +2812,7 @@
             // pixels so they can be re-projected onto the poster map.
             captureClusters(srcScale) {
                 const out = [];
-                (this.stationsLayer.clusterMarkers || []).forEach(m => {
+                [...(this.stationsLayer.clusterMarkers || []), ...(this.stationsLayer.singleMarkers || [])].forEach(m => {
                     try {
                         const el = m.getElement(), inner = el.querySelector('.cluster-inner');
                         if (!inner) return;
@@ -2829,6 +2864,17 @@
                         });
                     }
                 }
+                // Soft drop shadow under the pie, matching .cluster-inner
+                // on the live map (box-shadow: 0 2px 8px rgba(0,0,0,.4)).
+                // Drawn as a shadow-casting disc first, so the slices
+                // themselves stay flat.
+                ctx.save();
+                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowBlur = Math.max(5, r * 0.45);
+                ctx.shadowOffsetY = Math.max(1, r * 0.12);
+                ctx.fillStyle = 'rgba(0,0,0,0.4)';
+                ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+                ctx.restore();
                 ctx.save();
                 ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.clip();
                 if (stops.length) {
@@ -2886,7 +2932,7 @@
                     if (MH > 1030) { MH = 1030; MW = Math.round(MH * srcW / srcH); }
                     // A wide, short viewport makes the map shorter than the
                     // panel: the poster grows to fit whichever is taller.
-                    const legendH0 = (this.colorMode === 'winner' || this.colorMode === 'voteshare') ? 118 : this.colorMode === 'embed' ? 158 : 102;
+                    const legendH0 = (this.colorMode === 'winner' || this.colorMode === 'voteshare') ? 144 : this.colorMode === 'embed' ? 158 : 102;
                     const panelH = 48 + 74 + 22 + legendH0 + 22
                         + (this.colorMode === 'party' && this.selectedParty ? 98 : 0)
                         + 42 + Math.min(8, stats.topParties.length) * 36 + 10
@@ -2983,7 +3029,7 @@
 
                     // Legend box (mirrors the on-screen legend)
                     const isEmbed = this.colorMode === 'embed', isWinner = this.colorMode === 'winner' || this.colorMode === 'voteshare';
-                    const legendH = isWinner ? 118 : isEmbed ? 158 : 102;
+                    const legendH = isWinner ? 144 : isEmbed ? 158 : 102;
                     box(PX, y, PW, legendH);
                     txt(legendTitle, pTx, y + 28, F(800, 24), INK, pAlign);
                     const barX = PX + 24, barW = PW - 48;
@@ -3010,11 +3056,58 @@
                     } else if (this.colorMode === 'party' && this.selectedParty) {
                         gradBar([[0, this.lightenColor(this.selectedParty.color, 0.85)], [1, this.selectedParty.color]], '0%', '', `${this.partyScaleMax}%`);
                     } else if (isWinner) {
-                        [i18n.t('legend_single_ballot'), i18n.t('legend_spread_cluster'), i18n.t(this.colorMode === 'voteshare' ? 'legend_pie_shares' : 'legend_pie_explain')].forEach((line, i) => {
-                            ctx.fillStyle = ['#2563eb', '#06b6d4', GOLD][i];
-                            ctx.beginPath(); ctx.arc(E ? barX + 8 : barX + barW - 8, y + 52 + i * 24, 7, 0, Math.PI * 2); ctx.fill();
-                            txt(line, E ? barX + 26 : barX + barW - 26, y + 53 + i * 24, F(400, 18), DIM, pAlign);
+                        // The three rows are three different marker designs
+                        // (as in the on-screen legend), not three colours:
+                        // a single ballot, a spread-out cluster pie, and a
+                        // co-located cluster pie with a dashed border.
+                        const iconX = E ? barX + 12 : barX + barW - 12;
+                        const pieIcon = (cy, slices, label, dashed) => {
+                            ctx.save();
+                            ctx.beginPath(); ctx.arc(iconX, cy, 11, 0, Math.PI * 2); ctx.clip();
+                            let a = -Math.PI / 2;
+                            slices.forEach(([col, pct]) => {
+                                ctx.fillStyle = col;
+                                ctx.beginPath(); ctx.moveTo(iconX, cy);
+                                ctx.arc(iconX, cy, 11, a, a + pct / 100 * Math.PI * 2);
+                                ctx.closePath(); ctx.fill();
+                                a += pct / 100 * Math.PI * 2;
+                            });
+                            ctx.restore();
+                            ctx.beginPath(); ctx.arc(iconX, cy, 11, 0, Math.PI * 2);
+                            ctx.strokeStyle = dashed ? 'rgba(255,255,255,0.6)' : 'rgba(255,255,255,0.3)';
+                            ctx.lineWidth = dashed ? 2.5 : 2;
+                            if (dashed) ctx.setLineDash([4, 3]);
+                            ctx.stroke(); ctx.setLineDash([]);
+                            if (label) {
+                                ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                                ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 3;
+                                ctx.font = F(700, 11);
+                                ctx.fillText(label, iconX, cy);
+                                ctx.shadowBlur = 0;
+                            }
+                        };
+                        const rows = [
+                            i18n.t(this.colorMode === 'voteshare' ? 'legend_single_pie' : 'legend_single_ballot'),
+                            i18n.t('legend_spread_cluster'),
+                            i18n.t('legend_colocated_cluster'),
+                        ];
+                        rows.forEach((line, i) => {
+                            const cy = y + 52 + i * 24;
+                            if (i === 0 && this.colorMode === 'voteshare') {
+                                pieIcon(cy, [['#eab308', 45], ['#2563eb', 30], ['#16a34a', 25]], '', false);
+                            } else if (i === 0) {
+                                ctx.fillStyle = '#2563eb';
+                                ctx.beginPath(); ctx.arc(iconX, cy, 7, 0, Math.PI * 2); ctx.fill();
+                                ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.lineWidth = 2; ctx.stroke();
+                            } else if (i === 1) {
+                                pieIcon(cy, [['#2563eb', 60], ['#06b6d4', 40]], '5', false);
+                            } else {
+                                pieIcon(cy, [['#2563eb', 70], ['#dc2626', 30]], '3', true);
+                            }
+                            txt(line, E ? iconX + 20 : iconX - 20, cy + 1, F(400, 18), DIM, pAlign);
                         });
+                        txt(i18n.t(this.colorMode === 'voteshare' ? 'legend_pie_shares' : 'legend_pie_explain'),
+                            E ? iconX + 20 : iconX - 20, y + 52 + 3 * 24, F(400, 14), MUT, pAlign);
                     } else if (isEmbed) {
                         const off = document.createElement('canvas'); off.width = off.height = 112;
                         this.drawEmbedLegend(off);
@@ -3084,11 +3177,11 @@
                         const partyLabel = this.selectedParty ? i18n.partyName(this.selectedParty) : '';
                         const clusterGuide = {
                             winner: E
-                                ? 'Numbered circles summarise nearby ballots: their slices show each ballot\u2019s winning party, and the percentage is the winner\u2019s share across the cluster.'
-                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות: הפלחים מראים את המפלגה המנצחת בכל קלפי, והאחוז הוא חלקה של המנצחת בכלל המקבץ.',
+                                ? 'Numbered circles summarise nearby ballots: their slices show each ballot\u2019s winning party, and the percentage is the winner\u2019s share across the cluster. A striped slice collects the smaller parties.'
+                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות: הפלחים מראים את המפלגה המנצחת בכל קלפי, והאחוז הוא חלקה של המנצחת בכלל המקבץ. פלח מפוספס מאגד את המפלגות הקטנות.',
                             voteshare: E
-                                ? 'Numbered circles summarise nearby ballots: their slices are the parties\u2019 actual vote shares across the cluster (weighted by voters), and the percentage is the leading party\u2019s share.'
-                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות: הפלחים הם חלוקת הקולות בפועל בין המפלגות בכלל המקבץ (משוקלל במצביעים), והאחוז הוא חלקה של המפלגה המובילה.',
+                                ? 'Numbered circles summarise nearby ballots: their slices are the parties\u2019 actual vote shares across the cluster (weighted by voters), and the percentage is the leading party\u2019s share. A striped slice collects the smaller parties.'
+                                : 'עיגולים ממוספרים מסכמים קלפיות סמוכות: הפלחים הם חלוקת הקולות בפועל בין המפלגות בכלל המקבץ (משוקלל במצביעים), והאחוז הוא חלקה של המפלגה המובילה. פלח מפוספס מאגד את המפלגות הקטנות.',
                             turnout: E
                                 ? 'Numbered circles summarise nearby ballots, and the percentage inside is their average turnout.'
                                 : 'עיגולים ממוספרים מסכמים קלפיות סמוכות, והאחוז בתוכם הוא שיעור ההצבעה הממוצע בהן.',
@@ -3106,9 +3199,13 @@
                                     ? `Numbered circles summarise nearby ballots, and the percentage inside is their combined support for ${partyLabel}.`
                                     : `עיגולים ממוספרים מסכמים קלפיות סמוכות, והאחוז בתוכם הוא התמיכה המשותפת בהן ב${partyLabel}.`),
                         }[this.colorMode] || '';
-                        const guide = (E
-                            ? `Each dot is one ballot box, sized by its voters and coloured as in the legend. ${clusterGuide} This image shows exactly the frame that was open on screen; scan the code below to reopen it.`
-                            : `כל נקודה היא קלפי אחת, גודלה לפי מספר המצביעים בה וצבעה כבמקרא. ${clusterGuide} התמונה מציגה בדיוק את המסגרת שהייתה פתוחה על המסך; סרקו את הקוד למטה כדי לפתוח אותה שוב.`);
+                        const guide = this.colorMode === 'voteshare'
+                            ? (E
+                                ? `Each unclustered ballot is a small pie of its own vote shares, sized by its voters. ${clusterGuide} This image shows exactly the frame that was open on screen; scan the code below to reopen it.`
+                                : `כל קלפי לא־מקובצת היא עוגה קטנה של חלוקת הקולות בה, וגודלה לפי מספר המצביעים בה. ${clusterGuide} התמונה מציגה בדיוק את המסגרת שהייתה פתוחה על המסך; סרקו את הקוד למטה כדי לפתוח אותה שוב.`)
+                            : (E
+                                ? `Each dot is one ballot box, sized by its voters and coloured as in the legend. ${clusterGuide} This image shows exactly the frame that was open on screen; scan the code below to reopen it.`
+                                : `כל נקודה היא קלפי אחת, גודלה לפי מספר המצביעים בה וצבעה כבמקרא. ${clusterGuide} התמונה מציגה בדיוק את המסגרת שהייתה פתוחה על המסך; סרקו את הקוד למטה כדי לפתוח אותה שוב.`);
                         ctx.font = F(400, 21); ctx.fillStyle = DIM; ctx.textAlign = pAlign; ctx.textBaseline = 'top';
                         const words = guide.split(' '); let line = '', ly = gy + 52;
                         const maxW = MW - 48, lineX = gx;
@@ -3193,6 +3290,9 @@
                     });
                 });
 
+                // Voteshare mode draws unclustered ballots as HTML pies,
+                // so the WebGL dots hide and the singles layer takes over.
+                this.stationsLayer.showSingles = this.colorMode === 'voteshare';
                 this.stationsLayer.setStations(items);
                 document.getElementById('station-count').textContent = i18n.fmtNum(items.length);
                 document.getElementById('total-count').textContent = i18n.fmtNum(stations.length);
