@@ -1120,7 +1120,7 @@
                         <span data-i18n="dynamic_range">טווח דינמי</span>
                     </label>
                     <label class="color-scale-toggle hidden" id="center-mean-wrap">
-                        <input type="checkbox" id="center-mean-toggle" checked>
+                        <input type="checkbox" id="center-mean-toggle">
                         <span id="center-mean-label"></span>
                     </label>
                     <div class="cluster-legend" id="cluster-legend">
@@ -1194,7 +1194,8 @@
                 this.compareSet = new Set();
                 // In group mode every Knesset can be compared, even if no group-A party ran in it
                 this.groupMode = false;
-                this.centerOnMean = true;
+                // Legend centred at 0 by default; "center on mean" is opt-in.
+                this.centerOnMean = false;
                 this.diffMean = 0;
                 this.diffCenter = 0;
                 this.diffHalfRange = 20;
