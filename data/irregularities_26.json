@@ -6,7 +6,7 @@
     "date": "2026-10-27",
     "total_ballots": 12926,
     "analyzed_ballots": 12911,
-    "irregular_found": 185
+    "irregular_found": 182
   },
   "parties": [
     {
@@ -33,7 +33,7 @@
       "symbol": "רק",
       "name": "ביחד",
       "color": "#f97316",
-      "votes": 531414,
+      "votes": 531476,
       "proportion": "9.34%",
       "description": "ביחד בראשות נפתלי בנט, רשימה משותפת עם יש עתיד. אותיות רק.",
       "ideology": "מרכז-ימין, ממלכתיות, ליברליזם",
@@ -123,7 +123,7 @@
       "symbol": "די",
       "name": "המילואימניקים והכלכלית",
       "color": "#9333ea",
-      "votes": 154950,
+      "votes": 154995,
       "proportion": "2.72%",
       "description": "המילואימניקים והכלכלית בראשות יועז הנדל וירון זליכה. אותיות די.",
       "ideology": "מרכז, כלכלה, ממלכתיות",
@@ -173,7 +173,7 @@
       "symbol": "בי",
       "name": "צומת בית ישראל",
       "color": "#08C26B",
-      "votes": 5710,
+      "votes": 5712,
       "proportion": "0.10%",
       "description": "צומת בית ישראל. אותיות בי.",
       "ideology": "",
@@ -183,7 +183,7 @@
       "symbol": "ד",
       "name": "השותפות לכולם",
       "color": "#64748b",
-      "votes": 4339,
+      "votes": 4294,
       "proportion": "0.08%",
       "description": "השותפות לכולם. אות ד.",
       "ideology": "לאומנות ערבית, שמאל",
@@ -210,22 +210,22 @@
       "leader": ""
     },
     {
-      "symbol": "רץ",
-      "name": "הקהל",
-      "color": "#AEEA94",
-      "votes": 1074,
+      "symbol": "צף",
+      "name": "הפיראטים",
+      "color": "#8B639B",
+      "votes": 1050,
       "proportion": "0.02%",
-      "description": "הקהל. אותיות רץ.",
+      "description": "הפיראטים. אותיות צף.",
       "ideology": "",
       "leader": ""
     },
     {
-      "symbol": "צף",
-      "name": "הפיראטים",
-      "color": "#8B639B",
-      "votes": 1051,
+      "symbol": "רץ",
+      "name": "הקהל",
+      "color": "#AEEA94",
+      "votes": 1011,
       "proportion": "0.02%",
-      "description": "הפיראטים. אותיות צף.",
+      "description": "הקהל. אותיות רץ.",
       "ideology": "",
       "leader": ""
     },
@@ -293,7 +293,7 @@
       "symbol": "קץ",
       "name": "משפט צדק",
       "color": "#FFEDB9",
-      "votes": 773,
+      "votes": 774,
       "proportion": "0.01%",
       "description": "משפט צדק. אותיות קץ.",
       "ideology": "חירות",
@@ -323,7 +323,7 @@
       "symbol": "ק",
       "name": "תקומה",
       "color": "#6cb334",
-      "votes": 579,
+      "votes": 581,
       "proportion": "0.01%",
       "description": "תקומה. אות ק.",
       "ideology": "סביבה",
@@ -371,763 +371,6 @@
     }
   ],
   "irregularities": [
-    {
-      "id": "עין קנייא_2.0",
-      "settlement": "עין קנייא",
-      "settlement_code": 4502,
-      "ballot": "2.0",
-      "eligible": 406,
-      "voted": 195,
-      "valid": 195,
-      "invalid": 0,
-      "votes": {
-        "אמת": 14,
-        "דרך": 28,
-        "ט": 1,
-        "י": 71,
-        "ך": 3,
-        "ל": 61,
-        "מחל": 9,
-        "עם": 2,
-        "רק": 6
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "ט",
-              "unexpected": "י",
-              "missing_votes": 1,
-              "unexpected_votes": 71,
-              "expected_missing": "5.1%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 15,
-              "unexpected_position": 16,
-              "direction": "→",
-              "adjacent_symbols": "ט → י"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "95.74"
-          }
-        },
-        {
-          "type": "extreme_dominance",
-          "severity": "high",
-          "description": "שליטה קיצונית של מפלגה אחת",
-          "details": {
-            "party": "י",
-            "party_name": "ישראל תחילה",
-            "proportion": "36.4%",
-            "votes": 71,
-            "type": "small_party_dominance"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "י",
-              "party_name": "ישראל תחילה",
-              "votes": 71,
-              "proportion": "36.41%",
-              "national_avg": "0.017%",
-              "ratio": "364x"
-            }
-          ]
-        }
-      ],
-      "score": 67.69141114191159,
-      "status": "verified"
-    },
-    {
-      "id": "מודיעין-מכבים-רעות_86.0",
-      "settlement": "מודיעין-מכבים-רעות",
-      "settlement_code": 1200,
-      "ballot": "86.0",
-      "eligible": 741,
-      "voted": 626,
-      "valid": 626,
-      "invalid": 0,
-      "votes": {
-        "אמת": 26,
-        "ב": 30,
-        "די": 40,
-        "דרך": 150,
-        "זך": 4,
-        "ט": 25,
-        "ך": 33,
-        "ל": 45,
-        "מחל": 144,
-        "רץ": 122,
-        "שס": 7
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "רק",
-              "unexpected": "רץ",
-              "missing_votes": 0,
-              "unexpected_votes": 122,
-              "expected_missing": "9.3%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "52.39"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 122,
-              "proportion": "19.49%",
-              "national_avg": "0.019%",
-              "ratio": "195x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 122,
-              "expected_votes": "0.0",
-              "proportion": "19.49%",
-              "expected_share": "0.006%",
-              "ratio": ">10x",
-              "z_score": "243.9",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 52.19611785155732,
-      "status": "verified"
-    },
-    {
-      "id": "עידן_1.0",
-      "settlement": "עידן",
-      "settlement_code": 1175,
-      "ballot": "1.0",
-      "eligible": 420,
-      "voted": 261,
-      "valid": 260,
-      "invalid": 1,
-      "votes": {
-        "אמת": 42,
-        "ב": 5,
-        "ג": 1,
-        "די": 20,
-        "דרך": 74,
-        "ט": 11,
-        "ך": 2,
-        "ל": 14,
-        "מחל": 23,
-        "עם": 10,
-        "פה": 1,
-        "צף": 1,
-        "רץ": 56
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "רק",
-              "unexpected": "רץ",
-              "missing_votes": 0,
-              "unexpected_votes": 56,
-              "expected_missing": "9.3%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "58.04"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 56,
-              "proportion": "21.54%",
-              "national_avg": "0.019%",
-              "ratio": "215x"
-            }
-          ]
-        }
-      ],
-      "score": 47.02226030683544,
-      "status": "verified"
-    },
-    {
-      "id": "עין קנייא_1.0",
-      "settlement": "עין קנייא",
-      "settlement_code": 4502,
-      "ballot": "1.0",
-      "eligible": 426,
-      "voted": 191,
-      "valid": 191,
-      "invalid": 0,
-      "votes": {
-        "אמת": 14,
-        "די": 5,
-        "דרך": 23,
-        "ודם": 2,
-        "י": 39,
-        "ל": 80,
-        "מחל": 23,
-        "עם": 3,
-        "רק": 2
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "ט",
-              "unexpected": "י",
-              "missing_votes": 0,
-              "unexpected_votes": 39,
-              "expected_missing": "5.1%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 15,
-              "unexpected_position": 16,
-              "direction": "→",
-              "adjacent_symbols": "ט → י"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "53.79"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "י",
-              "party_name": "ישראל תחילה",
-              "votes": 39,
-              "proportion": "20.42%",
-              "national_avg": "0.017%",
-              "ratio": "204x"
-            }
-          ]
-        }
-      ],
-      "score": 44.89597680908095,
-      "status": "verified"
-    },
-    {
-      "id": "טירת כרמל_35.0",
-      "settlement": "טירת כרמל",
-      "settlement_code": 2100,
-      "ballot": "35.0",
-      "eligible": 668,
-      "voted": 536,
-      "valid": 533,
-      "invalid": 3,
-      "votes": {
-        "אמת": 13,
-        "ב": 55,
-        "בי": 1,
-        "די": 30,
-        "דרך": 102,
-        "ודם": 4,
-        "זך": 2,
-        "ט": 19,
-        "ך": 12,
-        "ל": 57,
-        "מחל": 157,
-        "עם": 1,
-        "רץ": 73,
-        "שס": 7
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "רק",
-              "unexpected": "רץ",
-              "missing_votes": 0,
-              "unexpected_votes": 73,
-              "expected_missing": "9.3%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "36.80"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 73,
-              "proportion": "13.70%",
-              "national_avg": "0.019%",
-              "ratio": "137x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 73,
-              "expected_votes": "0.0",
-              "proportion": "13.70%",
-              "expected_share": "0.006%",
-              "ratio": ">10x",
-              "z_score": "145.9",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 44.39753102386115,
-      "status": "verified"
-    },
-    {
-      "id": "עראמשה_1.0",
-      "settlement": "עראמשה",
-      "settlement_code": 1246,
-      "ballot": "1.0",
-      "eligible": 551,
-      "voted": 411,
-      "valid": 410,
-      "invalid": 1,
-      "votes": {
-        "אמת": 50,
-        "ב": 1,
-        "בד": 1,
-        "די": 1,
-        "דרך": 19,
-        "ה": 105,
-        "מחל": 11,
-        "נקי": 1,
-        "עם": 217,
-        "צדק": 3,
-        "רק": 1
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "ודם",
-              "unexpected": "ה",
-              "missing_votes": 0,
-              "unexpected_votes": 105,
-              "expected_missing": "8.8%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 11,
-              "unexpected_position": 10,
-              "direction": "←",
-              "adjacent_symbols": "ה ← ודם"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "36.65"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "ה",
-              "party_name": "גן עדן",
-              "votes": 105,
-              "proportion": "25.61%",
-              "national_avg": "0.016%",
-              "ratio": "256x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "ה",
-              "party_name": "גן עדן",
-              "votes": 105,
-              "expected_votes": "0.0",
-              "proportion": "25.61%",
-              "expected_share": "0.000%",
-              "ratio": ">10x",
-              "z_score": "210.0",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 44.32330500795297,
-      "status": "verified"
-    },
-    {
-      "id": "קרית טבעון_4.0",
-      "settlement": "קרית טבעון",
-      "settlement_code": 2300,
-      "ballot": "4.0",
-      "eligible": 543,
-      "voted": 399,
-      "valid": 396,
-      "invalid": 3,
-      "votes": {
-        "אמת": 115,
-        "ב": 8,
-        "ג": 7,
-        "די": 7,
-        "דרך": 142,
-        "ודם": 2,
-        "זך": 1,
-        "ט": 4,
-        "ל": 20,
-        "מחל": 32,
-        "עם": 4,
-        "צדק": 1,
-        "רץ": 50,
-        "שס": 3
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "רק",
-              "unexpected": "רץ",
-              "missing_votes": 0,
-              "unexpected_votes": 50,
-              "expected_missing": "9.3%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "34.08"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 50,
-              "proportion": "12.63%",
-              "national_avg": "0.019%",
-              "ratio": "126x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 50,
-              "expected_votes": "0.1",
-              "proportion": "12.63%",
-              "expected_share": "0.026%",
-              "ratio": ">10x",
-              "z_score": "99.8",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 43.04210687746075,
-      "status": "verified"
-    },
-    {
-      "id": "מעטפות חיצוניות_1110.0",
-      "settlement": "מעטפות חיצוניות",
-      "settlement_code": 9999,
-      "ballot": "1110.0",
-      "eligible": 0,
-      "voted": 501,
-      "valid": 495,
-      "invalid": 6,
-      "votes": {
-        "אמת": 37,
-        "ב": 26,
-        "בי": 2,
-        "ג": 33,
-        "ד": 2,
-        "די": 20,
-        "דרך": 79,
-        "ודם": 21,
-        "זך": 2,
-        "ט": 30,
-        "י": 1,
-        "יק": 1,
-        "ך": 10,
-        "ל": 31,
-        "מחל": 96,
-        "ני": 1,
-        "עם": 10,
-        "צדק": 1,
-        "קך": 1,
-        "קץ": 1,
-        "רץ": 62,
-        "שס": 28
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "רק",
-              "unexpected": "רץ",
-              "missing_votes": 0,
-              "unexpected_votes": 62,
-              "expected_missing": "9.3%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "34.04"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 62,
-              "proportion": "12.53%",
-              "national_avg": "0.019%",
-              "ratio": "125x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 62,
-              "expected_votes": "0.1",
-              "proportion": "12.53%",
-              "expected_share": "0.017%",
-              "ratio": ">10x",
-              "z_score": "123.8",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 43.017658069668016,
-      "status": "verified"
-    },
-    {
-      "id": "תל אביב - יפו_727.6",
-      "settlement": "תל אביב - יפו",
-      "settlement_code": 5000,
-      "ballot": "727.6",
-      "eligible": 601,
-      "voted": 392,
-      "valid": 387,
-      "invalid": 5,
-      "votes": {
-        "אמת": 18,
-        "ב": 21,
-        "ג": 11,
-        "די": 11,
-        "דרך": 58,
-        "ט": 12,
-        "ך": 4,
-        "ל": 44,
-        "מחל": 138,
-        "קה": 1,
-        "רץ": 46,
-        "שס": 23
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "רק",
-              "unexpected": "רץ",
-              "missing_votes": 0,
-              "unexpected_votes": 46,
-              "expected_missing": "9.3%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
-            }
-          ]
-        },
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "32.15"
-          }
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 46,
-              "proportion": "11.89%",
-              "national_avg": "0.019%",
-              "ratio": "119x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 46,
-              "expected_votes": "0.0",
-              "proportion": "11.89%",
-              "expected_share": "0.006%",
-              "ratio": ">10x",
-              "z_score": "92.0",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 42.07667198001096,
-      "status": "verified"
-    },
     {
       "id": "קלנסווה_15.0",
       "settlement": "קלנסווה",
@@ -1177,6 +420,14 @@
           ]
         },
         {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "107.55"
+          }
+        },
+        {
           "type": "extreme_dominance",
           "severity": "high",
           "description": "שליטה קיצונית של מפלגה אחת",
@@ -1222,61 +473,31 @@
           ]
         }
       ],
-      "score": 39.83683360258482,
+      "score": 93.61349489151696,
       "status": "verified"
     },
     {
-      "id": "עכו_56.5",
-      "settlement": "עכו",
-      "settlement_code": 7600,
-      "ballot": "56.5",
-      "eligible": 648,
-      "voted": 367,
-      "valid": 365,
+      "id": "עין מאהל_6.0",
+      "settlement": "עין מאהל",
+      "settlement_code": 532,
+      "ballot": "6.0",
+      "eligible": 721,
+      "voted": 640,
+      "valid": 638,
       "invalid": 2,
       "votes": {
-        "אמת": 7,
-        "ב": 17,
-        "ג": 2,
-        "די": 6,
-        "דרך": 34,
-        "ודם": 35,
-        "ט": 7,
-        "ך": 5,
-        "ל": 64,
-        "מחל": 140,
-        "עם": 6,
-        "צדק": 1,
-        "קך": 1,
-        "רץ": 27,
-        "שס": 13
+        "אמת": 2,
+        "ד": 2,
+        "ודם": 466,
+        "נקי": 168
       },
       "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "רק",
-              "unexpected": "רץ",
-              "missing_votes": 0,
-              "unexpected_votes": 27,
-              "expected_missing": "9.3%",
-              "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
-            }
-          ]
-        },
         {
           "type": "statistical_outlier",
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "20.28"
+            "distance_score": "109.26"
           }
         },
         {
@@ -1285,12 +506,12 @@
           "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
           "details": [
             {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 27,
-              "proportion": "7.40%",
-              "national_avg": "0.019%",
-              "ratio": "74x"
+              "party": "נקי",
+              "party_name": "התיקון לשיטת הבחירות והממשל",
+              "votes": 168,
+              "proportion": "26.33%",
+              "national_avg": "0.016%",
+              "ratio": "263x"
             }
           ]
         },
@@ -1300,20 +521,107 @@
           "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
           "details": [
             {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 27,
-              "expected_votes": "0.0",
-              "proportion": "7.40%",
-              "expected_share": "0.007%",
+              "party": "נקי",
+              "party_name": "התיקון לשיטת הבחירות והממשל",
+              "votes": 168,
+              "expected_votes": "0.2",
+              "proportion": "26.33%",
+              "expected_share": "0.025%",
               "ratio": ">10x",
-              "z_score": "54.0",
+              "z_score": "335.7",
               "baseline": "settlement"
             }
           ]
         }
       ],
-      "score": 36.13920580112771,
+      "score": 70.63196410115663,
+      "status": "verified"
+    },
+    {
+      "id": "עראמשה_1.0",
+      "settlement": "עראמשה",
+      "settlement_code": 1246,
+      "ballot": "1.0",
+      "eligible": 551,
+      "voted": 411,
+      "valid": 410,
+      "invalid": 1,
+      "votes": {
+        "אמת": 50,
+        "ב": 1,
+        "בד": 1,
+        "די": 1,
+        "דרך": 19,
+        "ה": 105,
+        "מחל": 11,
+        "נקי": 1,
+        "עם": 217,
+        "צדק": 3,
+        "רק": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "ודם",
+              "unexpected": "ה",
+              "missing_votes": 0,
+              "unexpected_votes": 105,
+              "expected_missing": "8.8%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 11,
+              "unexpected_position": 10,
+              "direction": "←",
+              "adjacent_symbols": "ה ← ודם"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "36.58"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "ה",
+              "party_name": "גן עדן",
+              "votes": 105,
+              "proportion": "25.61%",
+              "national_avg": "0.016%",
+              "ratio": "256x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "ה",
+              "party_name": "גן עדן",
+              "votes": 105,
+              "expected_votes": "0.0",
+              "proportion": "25.61%",
+              "expected_share": "0.000%",
+              "ratio": ">10x",
+              "z_score": "210.0",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 44.28867331521958,
       "status": "verified"
     },
     {
@@ -1368,7 +676,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "18.54"
+            "distance_score": "19.12"
           }
         },
         {
@@ -1381,7 +689,7 @@
               "party_name": "הקהל",
               "votes": 26,
               "proportion": "6.16%",
-              "national_avg": "0.019%",
+              "national_avg": "0.018%",
               "ratio": "62x"
             }
           ]
@@ -1405,33 +713,30 @@
           ]
         }
       ],
-      "score": 35.27113752119939,
+      "score": 35.55855369905422,
       "status": "verified"
     },
     {
-      "id": "שקד_1.0",
-      "settlement": "שקד",
-      "settlement_code": 3649,
-      "ballot": "1.0",
-      "eligible": 742,
-      "voted": 555,
-      "valid": 555,
+      "id": "מודיעין-מכבים-רעות_86.0",
+      "settlement": "מודיעין-מכבים-רעות",
+      "settlement_code": 1200,
+      "ballot": "86.0",
+      "eligible": 741,
+      "voted": 626,
+      "valid": 626,
       "invalid": 0,
       "votes": {
-        "אמת": 12,
-        "ב": 63,
-        "ד": 31,
-        "דרך": 91,
-        "זך": 1,
-        "ט": 59,
-        "ך": 29,
-        "ל": 44,
-        "מחל": 164,
-        "ני": 2,
-        "נף": 1,
-        "צף": 1,
-        "רק": 54,
-        "שס": 3
+        "אמת": 26,
+        "ב": 30,
+        "די": 40,
+        "דרך": 150,
+        "זך": 4,
+        "ט": 25,
+        "ך": 33,
+        "ל": 45,
+        "מחל": 144,
+        "רץ": 122,
+        "שס": 7
       },
       "anomalies": [
         {
@@ -1440,16 +745,16 @@
           "description": "חשד להזנת קולות בעמודה הלא נכונה",
           "details": [
             {
-              "missing": "ג",
-              "unexpected": "ד",
+              "missing": "רק",
+              "unexpected": "רץ",
               "missing_votes": 0,
-              "unexpected_votes": 31,
-              "expected_missing": "5.5%",
-              "expected_unexpected": "0.1%",
-              "missing_position": 6,
-              "unexpected_position": 7,
-              "direction": "→",
-              "adjacent_symbols": "ג → ד"
+              "unexpected_votes": 122,
+              "expected_missing": "9.3%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 37,
+              "unexpected_position": 36,
+              "direction": "←",
+              "adjacent_symbols": "רץ ← רק"
             }
           ]
         },
@@ -1458,7 +763,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "24.92"
+            "distance_score": "18.79"
           }
         },
         {
@@ -1467,17 +772,126 @@
           "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
           "details": [
             {
-              "party": "ד",
-              "party_name": "השותפות לכולם",
-              "votes": 31,
-              "proportion": "5.59%",
-              "national_avg": "0.076%",
-              "ratio": "56x"
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 122,
+              "proportion": "19.49%",
+              "national_avg": "0.018%",
+              "ratio": "195x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 122,
+              "expected_votes": "0.0",
+              "proportion": "19.49%",
+              "expected_share": "0.006%",
+              "ratio": ">10x",
+              "z_score": "243.9",
+              "baseline": "settlement"
             }
           ]
         }
       ],
-      "score": 30.458589799465223,
+      "score": 35.39625993753344,
+      "status": "verified"
+    },
+    {
+      "id": "עכו_56.5",
+      "settlement": "עכו",
+      "settlement_code": 7600,
+      "ballot": "56.5",
+      "eligible": 648,
+      "voted": 367,
+      "valid": 365,
+      "invalid": 2,
+      "votes": {
+        "אמת": 7,
+        "ב": 17,
+        "ג": 2,
+        "די": 6,
+        "דרך": 34,
+        "ודם": 35,
+        "ט": 7,
+        "ך": 5,
+        "ל": 64,
+        "מחל": 140,
+        "עם": 6,
+        "צדק": 1,
+        "קך": 1,
+        "רץ": 27,
+        "שס": 13
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "רק",
+              "unexpected": "רץ",
+              "missing_votes": 0,
+              "unexpected_votes": 27,
+              "expected_missing": "9.3%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 37,
+              "unexpected_position": 36,
+              "direction": "←",
+              "adjacent_symbols": "רץ ← רק"
+            }
+          ]
+        },
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "16.26"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 27,
+              "proportion": "7.40%",
+              "national_avg": "0.018%",
+              "ratio": "74x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 27,
+              "expected_votes": "0.0",
+              "proportion": "7.40%",
+              "expected_share": "0.007%",
+              "ratio": ">10x",
+              "z_score": "54.0",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 34.129560261974,
       "status": "verified"
     },
     {
@@ -1513,7 +927,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "28.40"
+            "distance_score": "29.61"
           }
         },
         {
@@ -1550,29 +964,32 @@
           ]
         }
       ],
-      "score": 30.1987440142401,
+      "score": 30.805737111863536,
       "status": "verified"
     },
     {
-      "id": "ניר עוז_1.0",
-      "settlement": "ניר עוז",
-      "settlement_code": 69,
+      "id": "עידן_1.0",
+      "settlement": "עידן",
+      "settlement_code": 1175,
       "ballot": "1.0",
-      "eligible": 314,
-      "voted": 79,
-      "valid": 79,
-      "invalid": 0,
+      "eligible": 420,
+      "voted": 261,
+      "valid": 260,
+      "invalid": 1,
       "votes": {
-        "אמת": 35,
-        "די": 1,
-        "דרך": 24,
-        "ודם": 1,
-        "ט": 2,
-        "י": 1,
-        "ל": 3,
-        "מחל": 4,
-        "רץ": 7,
-        "שס": 1
+        "אמת": 42,
+        "ב": 5,
+        "ג": 1,
+        "די": 20,
+        "דרך": 74,
+        "ט": 11,
+        "ך": 2,
+        "ל": 14,
+        "מחל": 23,
+        "עם": 10,
+        "פה": 1,
+        "צף": 1,
+        "רץ": 56
       },
       "anomalies": [
         {
@@ -1584,7 +1001,7 @@
               "missing": "רק",
               "unexpected": "רץ",
               "missing_votes": 0,
-              "unexpected_votes": 7,
+              "unexpected_votes": 56,
               "expected_missing": "9.3%",
               "expected_unexpected": "0.0%",
               "missing_position": 37,
@@ -1599,7 +1016,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "24.39"
+            "distance_score": "25.25"
           }
         },
         {
@@ -1610,71 +1027,94 @@
             {
               "party": "רץ",
               "party_name": "הקהל",
-              "votes": 7,
-              "proportion": "8.86%",
-              "national_avg": "0.019%",
-              "ratio": "89x"
+              "votes": 56,
+              "proportion": "21.54%",
+              "national_avg": "0.018%",
+              "ratio": "215x"
             }
           ]
         }
       ],
-      "score": 30.196981467408527,
+      "score": 30.624799088587483,
       "status": "verified"
     },
     {
-      "id": "חריש_7.0",
-      "settlement": "חריש",
-      "settlement_code": 1247,
-      "ballot": "7.0",
-      "eligible": 546,
-      "voted": 447,
-      "valid": 445,
-      "invalid": 2,
+      "id": "עין קנייא_2.0",
+      "settlement": "עין קנייא",
+      "settlement_code": 4502,
+      "ballot": "2.0",
+      "eligible": 406,
+      "voted": 195,
+      "valid": 195,
+      "invalid": 0,
       "votes": {
-        "אמת": 15,
-        "ב": 54,
-        "ג": 12,
-        "די": 10,
-        "דרך": 65,
-        "ודם": 2,
-        "זך": 3,
-        "ט": 46,
-        "ל": 26,
-        "מחל": 120,
-        "ני": 3,
-        "ק": 12,
-        "רק": 41,
-        "שס": 36
+        "אמת": 14,
+        "דרך": 28,
+        "ט": 1,
+        "י": 71,
+        "ך": 3,
+        "ל": 61,
+        "מחל": 9,
+        "עם": 2,
+        "רק": 6
       },
       "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "ט",
+              "unexpected": "י",
+              "missing_votes": 1,
+              "unexpected_votes": 71,
+              "expected_missing": "5.1%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 15,
+              "unexpected_position": 16,
+              "direction": "→",
+              "adjacent_symbols": "ט → י"
+            }
+          ]
+        },
         {
           "type": "statistical_outlier",
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "43.64"
+            "distance_score": "21.09"
           }
         },
         {
-          "type": "unexpected_party_votes",
+          "type": "extreme_dominance",
           "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "description": "שליטה קיצונית של מפלגה אחת",
+          "details": {
+            "party": "י",
+            "party_name": "ישראל תחילה",
+            "proportion": "36.4%",
+            "votes": 71,
+            "type": "small_party_dominance"
+          }
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
           "details": [
             {
-              "party": "ק",
-              "party_name": "תקומה",
-              "votes": 12,
-              "expected_votes": "0.0",
-              "proportion": "2.70%",
-              "expected_share": "0.000%",
-              "ratio": ">10x",
-              "z_score": "24.0",
-              "baseline": "settlement"
+              "party": "י",
+              "party_name": "ישראל תחילה",
+              "votes": 71,
+              "proportion": "36.41%",
+              "national_avg": "0.017%",
+              "ratio": "364x"
             }
           ]
         }
       ],
-      "score": 29.82137410054108,
+      "score": 30.363790279737348,
       "status": "verified"
     },
     {
@@ -1706,7 +1146,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "42.85"
+            "distance_score": "43.25"
           }
         },
         {
@@ -1728,29 +1168,28 @@
           ]
         }
       ],
-      "score": 29.422924187277218,
+      "score": 29.622960481535156,
       "status": "verified"
     },
     {
-      "id": "מצפה_1.0",
-      "settlement": "מצפה",
-      "settlement_code": 58,
+      "id": "עין קנייא_1.0",
+      "settlement": "עין קנייא",
+      "settlement_code": 4502,
       "ballot": "1.0",
-      "eligible": 114,
-      "voted": 91,
-      "valid": 91,
+      "eligible": 426,
+      "voted": 191,
+      "valid": 191,
       "invalid": 0,
       "votes": {
-        "אמת": 12,
-        "ב": 5,
-        "די": 2,
-        "דרך": 31,
-        "ט": 2,
-        "ך": 3,
-        "ל": 5,
-        "מחל": 20,
-        "רץ": 7,
-        "שס": 4
+        "אמת": 14,
+        "די": 5,
+        "דרך": 23,
+        "ודם": 2,
+        "י": 39,
+        "ל": 80,
+        "מחל": 23,
+        "עם": 3,
+        "רק": 2
       },
       "anomalies": [
         {
@@ -1759,16 +1198,16 @@
           "description": "חשד להזנת קולות בעמודה הלא נכונה",
           "details": [
             {
-              "missing": "רק",
-              "unexpected": "רץ",
+              "missing": "ט",
+              "unexpected": "י",
               "missing_votes": 0,
-              "unexpected_votes": 7,
-              "expected_missing": "9.3%",
+              "unexpected_votes": 39,
+              "expected_missing": "5.1%",
               "expected_unexpected": "0.0%",
-              "missing_position": 37,
-              "unexpected_position": 36,
-              "direction": "←",
-              "adjacent_symbols": "רץ ← רק"
+              "missing_position": 15,
+              "unexpected_position": 16,
+              "direction": "→",
+              "adjacent_symbols": "ט → י"
             }
           ]
         },
@@ -1777,7 +1216,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "20.81"
+            "distance_score": "21.09"
           }
         },
         {
@@ -1786,17 +1225,17 @@
           "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
           "details": [
             {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 7,
-              "proportion": "7.69%",
-              "national_avg": "0.019%",
-              "ratio": "77x"
+              "party": "י",
+              "party_name": "ישראל תחילה",
+              "votes": 39,
+              "proportion": "20.42%",
+              "national_avg": "0.017%",
+              "ratio": "204x"
             }
           ]
         }
       ],
-      "score": 28.4047334056279,
+      "score": 28.543277459224527,
       "status": "verified"
     },
     {
@@ -1834,7 +1273,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "23.58"
+            "distance_score": "24.24"
           }
         },
         {
@@ -1847,7 +1286,7 @@
               "party_name": "השותפות לכולם",
               "votes": 26,
               "proportion": "5.23%",
-              "national_avg": "0.076%",
+              "national_avg": "0.075%",
               "ratio": "52x"
             }
           ]
@@ -1871,7 +1310,141 @@
           ]
         }
       ],
-      "score": 27.78912824326379,
+      "score": 28.121445787875984,
+      "status": "verified"
+    },
+    {
+      "id": "חריש_7.0",
+      "settlement": "חריש",
+      "settlement_code": 1247,
+      "ballot": "7.0",
+      "eligible": 546,
+      "voted": 447,
+      "valid": 445,
+      "invalid": 2,
+      "votes": {
+        "אמת": 15,
+        "ב": 54,
+        "ג": 12,
+        "די": 10,
+        "דרך": 65,
+        "ודם": 2,
+        "זך": 3,
+        "ט": 46,
+        "ל": 26,
+        "מחל": 120,
+        "ני": 3,
+        "ק": 12,
+        "רק": 41,
+        "שס": 36
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "39.66"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "ק",
+              "party_name": "תקומה",
+              "votes": 12,
+              "expected_votes": "0.0",
+              "proportion": "2.70%",
+              "expected_share": "0.000%",
+              "ratio": ">10x",
+              "z_score": "24.0",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 27.831626808684835,
+      "status": "verified"
+    },
+    {
+      "id": "אלעד_41.0",
+      "settlement": "אלעד",
+      "settlement_code": 1309,
+      "ballot": "41.0",
+      "eligible": 595,
+      "voted": 516,
+      "valid": 516,
+      "invalid": 0,
+      "votes": {
+        "אמת": 1,
+        "ב": 21,
+        "ג": 272,
+        "די": 1,
+        "זך": 3,
+        "ט": 21,
+        "מחל": 18,
+        "ני": 2,
+        "נר": 52,
+        "שס": 125
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "עם",
+              "unexpected": "נר",
+              "missing_votes": 0,
+              "unexpected_votes": 52,
+              "expected_missing": "5.9%",
+              "expected_unexpected": "0.2%",
+              "missing_position": 27,
+              "unexpected_position": 26,
+              "direction": "←",
+              "adjacent_symbols": "נר ← עם"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 52,
+              "proportion": "10.08%",
+              "national_avg": "0.198%",
+              "ratio": "51x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 52,
+              "expected_votes": "5.7",
+              "proportion": "10.08%",
+              "expected_share": "1.099%",
+              "ratio": "9x",
+              "z_score": "19.6",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 26,
       "status": "verified"
     },
     {
@@ -2117,87 +1690,6 @@
       "status": "verified"
     },
     {
-      "id": "נתיבות_54.0",
-      "settlement": "נתיבות",
-      "settlement_code": 246,
-      "ballot": "54.0",
-      "eligible": 671,
-      "voted": 551,
-      "valid": 551,
-      "invalid": 0,
-      "votes": {
-        "אמת": 1,
-        "ב": 134,
-        "ג": 36,
-        "די": 2,
-        "דרך": 8,
-        "זך": 1,
-        "ט": 35,
-        "ך": 8,
-        "ל": 7,
-        "מחל": 157,
-        "נר": 29,
-        "רק": 8,
-        "שס": 125
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "עם",
-              "unexpected": "נר",
-              "missing_votes": 0,
-              "unexpected_votes": 29,
-              "expected_missing": "5.9%",
-              "expected_unexpected": "0.2%",
-              "missing_position": 27,
-              "unexpected_position": 26,
-              "direction": "←",
-              "adjacent_symbols": "נר ← עם"
-            }
-          ]
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 29,
-              "proportion": "5.26%",
-              "national_avg": "0.198%",
-              "ratio": "27x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 29,
-              "expected_votes": "1.1",
-              "proportion": "5.26%",
-              "expected_share": "0.198%",
-              "ratio": "27x",
-              "z_score": "26.8",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 26,
-      "status": "verified"
-    },
-    {
       "id": "בית שמש_31.0",
       "settlement": "בית שמש",
       "settlement_code": 2610,
@@ -2421,6 +1913,88 @@
               "expected_share": "1.046%",
               "ratio": "7x",
               "z_score": "13.3",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 26,
+      "status": "verified"
+    },
+    {
+      "id": "טירת כרמל_35.0",
+      "settlement": "טירת כרמל",
+      "settlement_code": 2100,
+      "ballot": "35.0",
+      "eligible": 668,
+      "voted": 536,
+      "valid": 533,
+      "invalid": 3,
+      "votes": {
+        "אמת": 13,
+        "ב": 55,
+        "בי": 1,
+        "די": 30,
+        "דרך": 102,
+        "ודם": 4,
+        "זך": 2,
+        "ט": 19,
+        "ך": 12,
+        "ל": 57,
+        "מחל": 157,
+        "עם": 1,
+        "רץ": 73,
+        "שס": 7
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "רק",
+              "unexpected": "רץ",
+              "missing_votes": 0,
+              "unexpected_votes": 73,
+              "expected_missing": "9.3%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 37,
+              "unexpected_position": 36,
+              "direction": "←",
+              "adjacent_symbols": "רץ ← רק"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 73,
+              "proportion": "13.70%",
+              "national_avg": "0.018%",
+              "ratio": "137x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 73,
+              "expected_votes": "0.0",
+              "proportion": "13.70%",
+              "expected_share": "0.006%",
+              "ratio": ">10x",
+              "z_score": "145.9",
               "baseline": "settlement"
             }
           ]
@@ -4333,84 +3907,6 @@
       "status": "verified"
     },
     {
-      "id": "אלעד_41.0",
-      "settlement": "אלעד",
-      "settlement_code": 1309,
-      "ballot": "41.0",
-      "eligible": 595,
-      "voted": 516,
-      "valid": 516,
-      "invalid": 0,
-      "votes": {
-        "אמת": 1,
-        "ב": 21,
-        "ג": 272,
-        "די": 1,
-        "זך": 3,
-        "ט": 21,
-        "מחל": 18,
-        "ני": 2,
-        "נר": 52,
-        "שס": 125
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "עם",
-              "unexpected": "נר",
-              "missing_votes": 0,
-              "unexpected_votes": 52,
-              "expected_missing": "5.9%",
-              "expected_unexpected": "0.2%",
-              "missing_position": 27,
-              "unexpected_position": 26,
-              "direction": "←",
-              "adjacent_symbols": "נר ← עם"
-            }
-          ]
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 52,
-              "proportion": "10.08%",
-              "national_avg": "0.198%",
-              "ratio": "51x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 52,
-              "expected_votes": "5.7",
-              "proportion": "10.08%",
-              "expected_share": "1.099%",
-              "ratio": "9x",
-              "z_score": "19.6",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 26,
-      "status": "verified"
-    },
-    {
       "id": "מעטפות חיצוניות_10.0",
       "settlement": "מעטפות חיצוניות",
       "settlement_code": 9999,
@@ -4498,6 +3994,249 @@
       "status": "verified"
     },
     {
+      "id": "נתיבות_54.0",
+      "settlement": "נתיבות",
+      "settlement_code": 246,
+      "ballot": "54.0",
+      "eligible": 671,
+      "voted": 551,
+      "valid": 551,
+      "invalid": 0,
+      "votes": {
+        "אמת": 1,
+        "ב": 134,
+        "ג": 36,
+        "די": 2,
+        "דרך": 8,
+        "זך": 1,
+        "ט": 35,
+        "ך": 8,
+        "ל": 7,
+        "מחל": 157,
+        "נר": 29,
+        "רק": 8,
+        "שס": 125
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "עם",
+              "unexpected": "נר",
+              "missing_votes": 0,
+              "unexpected_votes": 29,
+              "expected_missing": "5.9%",
+              "expected_unexpected": "0.2%",
+              "missing_position": 27,
+              "unexpected_position": 26,
+              "direction": "←",
+              "adjacent_symbols": "נר ← עם"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 29,
+              "proportion": "5.26%",
+              "national_avg": "0.198%",
+              "ratio": "27x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 29,
+              "expected_votes": "1.1",
+              "proportion": "5.26%",
+              "expected_share": "0.198%",
+              "ratio": "27x",
+              "z_score": "26.8",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 26,
+      "status": "verified"
+    },
+    {
+      "id": "קרית טבעון_4.0",
+      "settlement": "קרית טבעון",
+      "settlement_code": 2300,
+      "ballot": "4.0",
+      "eligible": 543,
+      "voted": 399,
+      "valid": 396,
+      "invalid": 3,
+      "votes": {
+        "אמת": 115,
+        "ב": 8,
+        "ג": 7,
+        "די": 7,
+        "דרך": 142,
+        "ודם": 2,
+        "זך": 1,
+        "ט": 4,
+        "ל": 20,
+        "מחל": 32,
+        "עם": 4,
+        "צדק": 1,
+        "רץ": 50,
+        "שס": 3
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "רק",
+              "unexpected": "רץ",
+              "missing_votes": 0,
+              "unexpected_votes": 50,
+              "expected_missing": "9.3%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 37,
+              "unexpected_position": 36,
+              "direction": "←",
+              "adjacent_symbols": "רץ ← רק"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 50,
+              "proportion": "12.63%",
+              "national_avg": "0.018%",
+              "ratio": "126x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 50,
+              "expected_votes": "0.1",
+              "proportion": "12.63%",
+              "expected_share": "0.026%",
+              "ratio": ">10x",
+              "z_score": "99.8",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 26,
+      "status": "verified"
+    },
+    {
+      "id": "תל אביב - יפו_727.6",
+      "settlement": "תל אביב - יפו",
+      "settlement_code": 5000,
+      "ballot": "727.6",
+      "eligible": 601,
+      "voted": 392,
+      "valid": 387,
+      "invalid": 5,
+      "votes": {
+        "אמת": 18,
+        "ב": 21,
+        "ג": 11,
+        "די": 11,
+        "דרך": 58,
+        "ט": 12,
+        "ך": 4,
+        "ל": 44,
+        "מחל": 138,
+        "קה": 1,
+        "רץ": 46,
+        "שס": 23
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "רק",
+              "unexpected": "רץ",
+              "missing_votes": 0,
+              "unexpected_votes": 46,
+              "expected_missing": "9.3%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 37,
+              "unexpected_position": 36,
+              "direction": "←",
+              "adjacent_symbols": "רץ ← רק"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 46,
+              "proportion": "11.89%",
+              "national_avg": "0.018%",
+              "ratio": "119x"
+            }
+          ]
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 46,
+              "expected_votes": "0.0",
+              "proportion": "11.89%",
+              "expected_share": "0.006%",
+              "ratio": ">10x",
+              "z_score": "92.0",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 26,
+      "status": "verified"
+    },
+    {
       "id": "חדרה_20.0",
       "settlement": "חדרה",
       "settlement_code": 6500,
@@ -4532,7 +4271,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "19.16"
+            "distance_score": "19.07"
           }
         },
         {
@@ -4569,7 +4308,7 @@
           ]
         }
       ],
-      "score": 25.580183191718852,
+      "score": 25.533917946645566,
       "status": "verified"
     },
     {
@@ -4608,7 +4347,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "17.94"
+            "distance_score": "18.69"
           }
         },
         {
@@ -4645,7 +4384,7 @@
           ]
         }
       ],
-      "score": 24.970909163440034,
+      "score": 25.346223832859472,
       "status": "verified"
     },
     {
@@ -4680,7 +4419,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "15.66"
+            "distance_score": "16.10"
           }
         },
         {
@@ -4717,7 +4456,7 @@
           ]
         }
       ],
-      "score": 23.82758798223218,
+      "score": 24.050756989744883,
       "status": "verified"
     },
     {
@@ -4754,7 +4493,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "15.48"
+            "distance_score": "15.73"
           }
         },
         {
@@ -4791,7 +4530,7 @@
           ]
         }
       ],
-      "score": 23.737822756754145,
+      "score": 23.864772834973255,
       "status": "verified"
     },
     {
@@ -4826,7 +4565,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "29.70"
+            "distance_score": "29.85"
           }
         },
         {
@@ -4848,7 +4587,7 @@
           ]
         }
       ],
-      "score": 22.85028105990596,
+      "score": 22.926971918939955,
       "status": "verified"
     },
     {
@@ -4880,7 +4619,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "21.39"
+            "distance_score": "22.01"
           }
         },
         {
@@ -4902,7 +4641,7 @@
           ]
         }
       ],
-      "score": 18.695547978423285,
+      "score": 19.00339860706157,
       "status": "verified"
     },
     {
@@ -4937,7 +4676,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "20.55"
+            "distance_score": "21.09"
           }
         },
         {
@@ -4959,7 +4698,66 @@
           ]
         }
       ],
-      "score": 18.27297819175231,
+      "score": 18.544392308207627,
+      "status": "verified"
+    },
+    {
+      "id": "אלעד_9.0",
+      "settlement": "אלעד",
+      "settlement_code": 1309,
+      "ballot": "9.0",
+      "eligible": 716,
+      "voted": 603,
+      "valid": 601,
+      "invalid": 2,
+      "votes": {
+        "ב": 19,
+        "ג": 357,
+        "די": 1,
+        "זך": 2,
+        "ט": 17,
+        "מחל": 20,
+        "נר": 35,
+        "רק": 2,
+        "שס": 148
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "עם",
+              "unexpected": "נר",
+              "missing_votes": 0,
+              "unexpected_votes": 35,
+              "expected_missing": "5.9%",
+              "expected_unexpected": "0.2%",
+              "missing_position": 27,
+              "unexpected_position": 26,
+              "direction": "←",
+              "adjacent_symbols": "נר ← עם"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 35,
+              "proportion": "5.82%",
+              "national_avg": "0.198%",
+              "ratio": "29x"
+            }
+          ]
+        }
+      ],
+      "score": 18,
       "status": "verified"
     },
     {
@@ -6601,65 +6399,6 @@
               "proportion": "7.28%",
               "national_avg": "0.198%",
               "ratio": "37x"
-            }
-          ]
-        }
-      ],
-      "score": 18,
-      "status": "verified"
-    },
-    {
-      "id": "אלעד_9.0",
-      "settlement": "אלעד",
-      "settlement_code": 1309,
-      "ballot": "9.0",
-      "eligible": 716,
-      "voted": 603,
-      "valid": 601,
-      "invalid": 2,
-      "votes": {
-        "ב": 19,
-        "ג": 357,
-        "די": 1,
-        "זך": 2,
-        "ט": 17,
-        "מחל": 20,
-        "נר": 35,
-        "רק": 2,
-        "שס": 148
-      },
-      "anomalies": [
-        {
-          "type": "shift_error",
-          "severity": "high",
-          "description": "חשד להזנת קולות בעמודה הלא נכונה",
-          "details": [
-            {
-              "missing": "עם",
-              "unexpected": "נר",
-              "missing_votes": 0,
-              "unexpected_votes": 35,
-              "expected_missing": "5.9%",
-              "expected_unexpected": "0.2%",
-              "missing_position": 27,
-              "unexpected_position": 26,
-              "direction": "←",
-              "adjacent_symbols": "נר ← עם"
-            }
-          ]
-        },
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 35,
-              "proportion": "5.82%",
-              "national_avg": "0.198%",
-              "ratio": "29x"
             }
           ]
         }
@@ -8468,6 +8207,126 @@
       "status": "verified"
     },
     {
+      "id": "מצפה_1.0",
+      "settlement": "מצפה",
+      "settlement_code": 58,
+      "ballot": "1.0",
+      "eligible": 114,
+      "voted": 91,
+      "valid": 91,
+      "invalid": 0,
+      "votes": {
+        "אמת": 12,
+        "ב": 5,
+        "די": 2,
+        "דרך": 31,
+        "ט": 2,
+        "ך": 3,
+        "ל": 5,
+        "מחל": 20,
+        "רץ": 7,
+        "שס": 4
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "רק",
+              "unexpected": "רץ",
+              "missing_votes": 0,
+              "unexpected_votes": 7,
+              "expected_missing": "9.3%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 37,
+              "unexpected_position": 36,
+              "direction": "←",
+              "adjacent_symbols": "רץ ← רק"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 7,
+              "proportion": "7.69%",
+              "national_avg": "0.018%",
+              "ratio": "77x"
+            }
+          ]
+        }
+      ],
+      "score": 18,
+      "status": "verified"
+    },
+    {
+      "id": "ניר עוז_1.0",
+      "settlement": "ניר עוז",
+      "settlement_code": 69,
+      "ballot": "1.0",
+      "eligible": 314,
+      "voted": 79,
+      "valid": 79,
+      "invalid": 0,
+      "votes": {
+        "אמת": 35,
+        "די": 1,
+        "דרך": 24,
+        "ודם": 1,
+        "ט": 2,
+        "י": 1,
+        "ל": 3,
+        "מחל": 4,
+        "רץ": 7,
+        "שס": 1
+      },
+      "anomalies": [
+        {
+          "type": "shift_error",
+          "severity": "high",
+          "description": "חשד להזנת קולות בעמודה הלא נכונה",
+          "details": [
+            {
+              "missing": "רק",
+              "unexpected": "רץ",
+              "missing_votes": 0,
+              "unexpected_votes": 7,
+              "expected_missing": "9.3%",
+              "expected_unexpected": "0.0%",
+              "missing_position": 37,
+              "unexpected_position": 36,
+              "direction": "←",
+              "adjacent_symbols": "רץ ← רק"
+            }
+          ]
+        },
+        {
+          "type": "small_party_spike",
+          "severity": "high",
+          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 7,
+              "proportion": "8.86%",
+              "national_avg": "0.018%",
+              "ratio": "89x"
+            }
+          ]
+        }
+      ],
+      "score": 18,
+      "status": "verified"
+    },
+    {
       "id": "מעטפות חיצוניות_1124.0",
       "settlement": "מעטפות חיצוניות",
       "settlement_code": 9999,
@@ -8499,7 +8358,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "17.36"
+            "distance_score": "17.84"
           }
         },
         {
@@ -8521,7 +8380,7 @@
           ]
         }
       ],
-      "score": 16.679354546469085,
+      "score": 16.918139284964347,
       "status": "verified"
     },
     {
@@ -8558,7 +8417,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "16.82"
+            "distance_score": "17.28"
           }
         },
         {
@@ -8580,7 +8439,176 @@
           ]
         }
       ],
-      "score": 16.408015418311543,
+      "score": 16.63864189352344,
+      "status": "verified"
+    },
+    {
+      "id": "נתניה_9.0",
+      "settlement": "נתניה",
+      "settlement_code": 7400,
+      "ballot": "9.0",
+      "eligible": 476,
+      "voted": 274,
+      "valid": 270,
+      "invalid": 4,
+      "votes": {
+        "אמת": 8,
+        "ב": 34,
+        "בי": 12,
+        "בקר": 1,
+        "די": 11,
+        "דרך": 21,
+        "זץ": 1,
+        "ט": 12,
+        "ך": 1,
+        "ל": 17,
+        "מחל": 120,
+        "רק": 11,
+        "שס": 21
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "16.69"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 12,
+              "expected_votes": "0.7",
+              "proportion": "4.44%",
+              "expected_share": "0.255%",
+              "ratio": ">10x",
+              "z_score": "13.6",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 16.347428241782925,
+      "status": "verified"
+    },
+    {
+      "id": "אשקלון_68.0",
+      "settlement": "אשקלון",
+      "settlement_code": 7100,
+      "ballot": "68.0",
+      "eligible": 496,
+      "voted": 292,
+      "valid": 286,
+      "invalid": 6,
+      "votes": {
+        "אמת": 1,
+        "ב": 25,
+        "בי": 14,
+        "ג": 4,
+        "ד": 1,
+        "די": 6,
+        "דרך": 11,
+        "ודם": 1,
+        "ט": 14,
+        "ל": 25,
+        "מחל": 154,
+        "צף": 2,
+        "רק": 6,
+        "שס": 22
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "16.69"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 14,
+              "expected_votes": "0.9",
+              "proportion": "4.90%",
+              "expected_share": "0.305%",
+              "ratio": ">10x",
+              "z_score": "14.1",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 16.346898743567507,
+      "status": "verified"
+    },
+    {
+      "id": "מעטפות חיצוניות_1187.0",
+      "settlement": "מעטפות חיצוניות",
+      "settlement_code": 9999,
+      "ballot": "1187.0",
+      "eligible": 0,
+      "voted": 530,
+      "valid": 506,
+      "invalid": 24,
+      "votes": {
+        "אמת": 23,
+        "ב": 62,
+        "בד": 1,
+        "ג": 22,
+        "ד": 18,
+        "דרך": 56,
+        "ודם": 2,
+        "זך": 4,
+        "ט": 83,
+        "ך": 18,
+        "ל": 20,
+        "מחל": 104,
+        "ני": 6,
+        "נר": 4,
+        "רק": 60,
+        "שס": 23
+      },
+      "anomalies": [
+        {
+          "type": "statistical_outlier",
+          "severity": "medium",
+          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
+          "details": {
+            "distance_score": "16.57"
+          }
+        },
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "ד",
+              "party_name": "השותפות לכולם",
+              "votes": 18,
+              "expected_votes": "0.4",
+              "proportion": "3.56%",
+              "expected_share": "0.084%",
+              "ratio": ">10x",
+              "z_score": "27.0",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 16.287479771098234,
       "status": "verified"
     },
     {
@@ -8617,7 +8645,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "16.19"
+            "distance_score": "16.37"
           }
         },
         {
@@ -8639,90 +8667,35 @@
           ]
         }
       ],
-      "score": 16.092739303196865,
+      "score": 16.185795529885688,
       "status": "verified"
     },
     {
-      "id": "מעטפות חיצוניות_1187.0",
+      "id": "מעטפות חיצוניות_482.0",
       "settlement": "מעטפות חיצוניות",
       "settlement_code": 9999,
-      "ballot": "1187.0",
+      "ballot": "482.0",
       "eligible": 0,
-      "voted": 530,
-      "valid": 506,
-      "invalid": 24,
+      "voted": 509,
+      "valid": 503,
+      "invalid": 6,
       "votes": {
-        "אמת": 23,
-        "ב": 62,
-        "בד": 1,
-        "ג": 22,
+        "אמת": 20,
+        "ב": 28,
+        "ג": 19,
         "ד": 18,
-        "דרך": 56,
-        "ודם": 2,
-        "זך": 4,
-        "ט": 83,
-        "ך": 18,
-        "ל": 20,
-        "מחל": 104,
-        "ני": 6,
-        "נר": 4,
-        "רק": 60,
-        "שס": 23
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "16.15"
-          }
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "ד",
-              "party_name": "השותפות לכולם",
-              "votes": 18,
-              "expected_votes": "0.4",
-              "proportion": "3.56%",
-              "expected_share": "0.084%",
-              "ratio": ">10x",
-              "z_score": "27.0",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 16.074522927956266,
-      "status": "verified"
-    },
-    {
-      "id": "נתניה_9.0",
-      "settlement": "נתניה",
-      "settlement_code": 7400,
-      "ballot": "9.0",
-      "eligible": 476,
-      "voted": 274,
-      "valid": 270,
-      "invalid": 4,
-      "votes": {
-        "אמת": 8,
-        "ב": 34,
-        "בי": 12,
-        "בקר": 1,
-        "די": 11,
-        "דרך": 21,
-        "זץ": 1,
-        "ט": 12,
-        "ך": 1,
-        "ל": 17,
-        "מחל": 120,
-        "רק": 11,
-        "שס": 21
+        "דרך": 59,
+        "ודם": 42,
+        "זך": 1,
+        "ט": 26,
+        "ך": 8,
+        "ל": 11,
+        "מחל": 94,
+        "ני": 2,
+        "עם": 93,
+        "קץ": 1,
+        "רק": 44,
+        "שס": 37
       },
       "anomalies": [
         {
@@ -8739,20 +8712,20 @@
           "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
           "details": [
             {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 12,
-              "expected_votes": "0.7",
-              "proportion": "4.44%",
-              "expected_share": "0.255%",
+              "party": "ד",
+              "party_name": "השותפות לכולם",
+              "votes": 18,
+              "expected_votes": "0.4",
+              "proportion": "3.58%",
+              "expected_share": "0.084%",
               "ratio": ">10x",
-              "z_score": "13.6",
+              "z_score": "27.1",
               "baseline": "settlement"
             }
           ]
         }
       ],
-      "score": 16.0724728273597,
+      "score": 16.071073949739038,
       "status": "verified"
     },
     {
@@ -8803,59 +8776,6 @@
               "expected_share": "0.000%",
               "ratio": ">10x",
               "z_score": "528.0",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 16,
-      "status": "verified"
-    },
-    {
-      "id": "עין מאהל_6.0",
-      "settlement": "עין מאהל",
-      "settlement_code": 532,
-      "ballot": "6.0",
-      "eligible": 721,
-      "voted": 640,
-      "valid": 638,
-      "invalid": 2,
-      "votes": {
-        "אמת": 2,
-        "ד": 2,
-        "ודם": 466,
-        "נקי": 168
-      },
-      "anomalies": [
-        {
-          "type": "small_party_spike",
-          "severity": "high",
-          "description": "תוצאות גבוהות באופן חריג למפלגות קטנות",
-          "details": [
-            {
-              "party": "נקי",
-              "party_name": "התיקון לשיטת הבחירות והממשל",
-              "votes": 168,
-              "proportion": "26.33%",
-              "national_avg": "0.016%",
-              "ratio": "263x"
-            }
-          ]
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נקי",
-              "party_name": "התיקון לשיטת הבחירות והממשל",
-              "votes": 168,
-              "expected_votes": "0.2",
-              "proportion": "26.33%",
-              "expected_share": "0.025%",
-              "ratio": ">10x",
-              "z_score": "335.7",
               "baseline": "settlement"
             }
           ]
@@ -8995,64 +8915,6 @@
       "status": "verified"
     },
     {
-      "id": "מעטפות חיצוניות_482.0",
-      "settlement": "מעטפות חיצוניות",
-      "settlement_code": 9999,
-      "ballot": "482.0",
-      "eligible": 0,
-      "voted": 509,
-      "valid": 503,
-      "invalid": 6,
-      "votes": {
-        "אמת": 20,
-        "ב": 28,
-        "ג": 19,
-        "ד": 18,
-        "דרך": 59,
-        "ודם": 42,
-        "זך": 1,
-        "ט": 26,
-        "ך": 8,
-        "ל": 11,
-        "מחל": 94,
-        "ני": 2,
-        "עם": 93,
-        "קץ": 1,
-        "רק": 44,
-        "שס": 37
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "15.69"
-          }
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "ד",
-              "party_name": "השותפות לכולם",
-              "votes": 18,
-              "expected_votes": "0.4",
-              "proportion": "3.58%",
-              "expected_share": "0.084%",
-              "ratio": ">10x",
-              "z_score": "27.1",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 15.846449338394041,
-      "status": "verified"
-    },
-    {
       "id": "כפר יהושע_2.0",
       "settlement": "כפר יהושע",
       "settlement_code": 140,
@@ -9079,7 +8941,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "15.47"
+            "distance_score": "15.93"
           }
         },
         {
@@ -9101,63 +8963,7 @@
           ]
         }
       ],
-      "score": 15.734917263008647,
-      "status": "verified"
-    },
-    {
-      "id": "אשקלון_68.0",
-      "settlement": "אשקלון",
-      "settlement_code": 7100,
-      "ballot": "68.0",
-      "eligible": 496,
-      "voted": 292,
-      "valid": 286,
-      "invalid": 6,
-      "votes": {
-        "אמת": 1,
-        "ב": 25,
-        "בי": 14,
-        "ג": 4,
-        "ד": 1,
-        "די": 6,
-        "דרך": 11,
-        "ודם": 1,
-        "ט": 14,
-        "ל": 25,
-        "מחל": 154,
-        "צף": 2,
-        "רק": 6,
-        "שס": 22
-      },
-      "anomalies": [
-        {
-          "type": "statistical_outlier",
-          "severity": "medium",
-          "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
-          "details": {
-            "distance_score": "15.21"
-          }
-        },
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 14,
-              "expected_votes": "0.9",
-              "proportion": "4.90%",
-              "expected_share": "0.305%",
-              "ratio": ">10x",
-              "z_score": "14.1",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 15.605766380994725,
+      "score": 15.967000926161209,
       "status": "verified"
     },
     {
@@ -9189,7 +8995,7 @@
           "severity": "medium",
           "description": "דפוס הצבעה חריג שלא מתאים לאף אשכול דמוגרפי",
           "details": {
-            "distance_score": "15.11"
+            "distance_score": "15.51"
           }
         },
         {
@@ -9211,7 +9017,7 @@
           ]
         }
       ],
-      "score": 15.553337465549369,
+      "score": 15.753819351530186,
       "status": "verified"
     },
     {
@@ -9440,205 +9246,6 @@
               "expected_share": "0.286%",
               "ratio": "13x",
               "z_score": "14.4",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "עפולה_9.1",
-      "settlement": "עפולה",
-      "settlement_code": 7700,
-      "ballot": "9.1",
-      "eligible": 662,
-      "voted": 406,
-      "valid": 402,
-      "invalid": 4,
-      "votes": {
-        "אמת": 5,
-        "ב": 34,
-        "בי": 18,
-        "ג": 42,
-        "די": 11,
-        "דרך": 22,
-        "ט": 7,
-        "ך": 4,
-        "ל": 20,
-        "מחל": 185,
-        "ני": 2,
-        "עם": 2,
-        "רק": 9,
-        "שס": 41
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 18,
-              "expected_votes": "1.9",
-              "proportion": "4.48%",
-              "expected_share": "0.469%",
-              "ratio": "10x",
-              "z_score": "11.8",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "עפולה_38.3",
-      "settlement": "עפולה",
-      "settlement_code": 7700,
-      "ballot": "38.3",
-      "eligible": 718,
-      "voted": 512,
-      "valid": 505,
-      "invalid": 7,
-      "votes": {
-        "אמת": 6,
-        "ב": 47,
-        "בד": 1,
-        "בי": 15,
-        "ג": 122,
-        "ד": 1,
-        "די": 13,
-        "דרך": 29,
-        "ודם": 2,
-        "זך": 4,
-        "ט": 17,
-        "ך": 5,
-        "ל": 12,
-        "מחל": 146,
-        "ני": 1,
-        "נקי": 1,
-        "צדק": 1,
-        "רק": 15,
-        "שס": 67
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 15,
-              "expected_votes": "2.4",
-              "proportion": "2.97%",
-              "expected_share": "0.479%",
-              "ratio": "6x",
-              "z_score": "8.1",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "עפולה_61.0",
-      "settlement": "עפולה",
-      "settlement_code": 7700,
-      "ballot": "61.0",
-      "eligible": 736,
-      "voted": 566,
-      "valid": 562,
-      "invalid": 4,
-      "votes": {
-        "אמת": 11,
-        "ב": 46,
-        "בי": 3,
-        "ג": 1,
-        "ד": 11,
-        "די": 13,
-        "דרך": 83,
-        "ודם": 1,
-        "ט": 18,
-        "ל": 74,
-        "מחל": 236,
-        "עם": 2,
-        "רק": 54,
-        "שס": 9
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "ד",
-              "party_name": "השותפות לכולם",
-              "votes": 11,
-              "expected_votes": "0.3",
-              "proportion": "1.96%",
-              "expected_share": "0.054%",
-              "ratio": ">10x",
-              "z_score": "19.4",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "נתיבות_16.0",
-      "settlement": "נתיבות",
-      "settlement_code": 246,
-      "ballot": "16.0",
-      "eligible": 569,
-      "voted": 423,
-      "valid": 417,
-      "invalid": 6,
-      "votes": {
-        "אמת": 2,
-        "ב": 82,
-        "בד": 1,
-        "בי": 20,
-        "ג": 8,
-        "די": 15,
-        "דרך": 5,
-        "ה": 1,
-        "ט": 21,
-        "ך": 4,
-        "ל": 16,
-        "מחל": 176,
-        "ני": 3,
-        "נקי": 1,
-        "רק": 7,
-        "שס": 55
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 20,
-              "expected_votes": "1.0",
-              "proportion": "4.80%",
-              "expected_share": "0.243%",
-              "ratio": "20x",
-              "z_score": "18.9",
               "baseline": "settlement"
             }
           ]
@@ -9986,6 +9593,99 @@
       "status": "verified"
     },
     {
+      "id": "דאלית אל-כרמל_10.0",
+      "settlement": "דאלית אל-כרמל",
+      "settlement_code": 494,
+      "ballot": "10.0",
+      "eligible": 771,
+      "voted": 557,
+      "valid": 555,
+      "invalid": 2,
+      "votes": {
+        "אמת": 15,
+        "ב": 3,
+        "די": 4,
+        "דרך": 358,
+        "ודם": 46,
+        "ט": 1,
+        "ל": 50,
+        "מחל": 52,
+        "עם": 9,
+        "צדק": 1,
+        "קץ": 1,
+        "רץ": 15
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "רץ",
+              "party_name": "הקהל",
+              "votes": 15,
+              "expected_votes": "0.0",
+              "proportion": "2.70%",
+              "expected_share": "0.000%",
+              "ratio": ">10x",
+              "z_score": "30.0",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "הוד השרון_51.0",
+      "settlement": "הוד השרון",
+      "settlement_code": 9700,
+      "ballot": "51.0",
+      "eligible": 650,
+      "voted": 523,
+      "valid": 522,
+      "invalid": 1,
+      "votes": {
+        "אמת": 68,
+        "ב": 24,
+        "ד": 11,
+        "די": 18,
+        "דרך": 146,
+        "ודם": 3,
+        "זך": 1,
+        "ט": 13,
+        "י": 1,
+        "ל": 23,
+        "מחל": 120,
+        "רק": 81,
+        "שס": 13
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "ד",
+              "party_name": "השותפות לכולם",
+              "votes": 11,
+              "expected_votes": "0.1",
+              "proportion": "2.11%",
+              "expected_share": "0.024%",
+              "ratio": ">10x",
+              "z_score": "21.7",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
       "id": "חדרה_22.1",
       "settlement": "חדרה",
       "settlement_code": 6500,
@@ -10210,6 +9910,55 @@
               "expected_share": "0.927%",
               "ratio": "5x",
               "z_score": "9.4",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "כפר יונה_8.0",
+      "settlement": "כפר יונה",
+      "settlement_code": 168,
+      "ballot": "8.0",
+      "eligible": 564,
+      "voted": 376,
+      "valid": 369,
+      "invalid": 7,
+      "votes": {
+        "אמת": 9,
+        "ב": 39,
+        "בי": 12,
+        "ג": 2,
+        "די": 23,
+        "דרך": 42,
+        "ט": 9,
+        "ך": 2,
+        "ל": 9,
+        "מחל": 180,
+        "נר": 7,
+        "ק": 1,
+        "קה": 2,
+        "רק": 13,
+        "שס": 19
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 12,
+              "expected_votes": "0.5",
+              "proportion": "3.25%",
+              "expected_share": "0.135%",
+              "ratio": ">10x",
+              "z_score": "16.3",
               "baseline": "settlement"
             }
           ]
@@ -10445,586 +10194,6 @@
       "status": "verified"
     },
     {
-      "id": "נתניה_157.1",
-      "settlement": "נתניה",
-      "settlement_code": 7400,
-      "ballot": "157.1",
-      "eligible": 591,
-      "voted": 330,
-      "valid": 327,
-      "invalid": 3,
-      "votes": {
-        "אמת": 2,
-        "ב": 23,
-        "בי": 14,
-        "ג": 2,
-        "די": 22,
-        "דרך": 26,
-        "ט": 14,
-        "ך": 1,
-        "ל": 28,
-        "מחל": 156,
-        "נקי": 1,
-        "צדק": 1,
-        "רק": 14,
-        "שס": 23
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 14,
-              "expected_votes": "0.8",
-              "proportion": "4.28%",
-              "expected_share": "0.254%",
-              "ratio": ">10x",
-              "z_score": "14.5",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "נתניה_89.0",
-      "settlement": "נתניה",
-      "settlement_code": 7400,
-      "ballot": "89.0",
-      "eligible": 671,
-      "voted": 440,
-      "valid": 438,
-      "invalid": 2,
-      "votes": {
-        "אמת": 10,
-        "ב": 76,
-        "בד": 1,
-        "בי": 14,
-        "ג": 6,
-        "די": 15,
-        "דרך": 53,
-        "ט": 28,
-        "ך": 7,
-        "ל": 41,
-        "מחל": 140,
-        "קה": 1,
-        "רק": 13,
-        "שס": 33
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 14,
-              "expected_votes": "1.1",
-              "proportion": "3.20%",
-              "expected_share": "0.254%",
-              "ratio": "13x",
-              "z_score": "12.2",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "פתח תקווה_38.0",
-      "settlement": "פתח תקווה",
-      "settlement_code": 7900,
-      "ballot": "38.0",
-      "eligible": 683,
-      "voted": 427,
-      "valid": 421,
-      "invalid": 6,
-      "votes": {
-        "אמת": 2,
-        "ב": 30,
-        "בי": 12,
-        "ג": 5,
-        "די": 15,
-        "דרך": 32,
-        "זך": 5,
-        "ט": 31,
-        "ך": 7,
-        "ל": 20,
-        "מחל": 172,
-        "ני": 1,
-        "עם": 1,
-        "קה": 1,
-        "רץ": 1,
-        "רק": 20,
-        "שס": 66
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 12,
-              "expected_votes": "0.8",
-              "proportion": "2.85%",
-              "expected_share": "0.192%",
-              "ratio": ">10x",
-              "z_score": "12.5",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "פתח תקווה_43.0",
-      "settlement": "פתח תקווה",
-      "settlement_code": 7900,
-      "ballot": "43.0",
-      "eligible": 656,
-      "voted": 399,
-      "valid": 396,
-      "invalid": 3,
-      "votes": {
-        "אמת": 7,
-        "ב": 21,
-        "בי": 15,
-        "די": 9,
-        "דרך": 37,
-        "ט": 18,
-        "ך": 2,
-        "ל": 30,
-        "מחל": 184,
-        "ני": 2,
-        "נקי": 1,
-        "פה": 1,
-        "קה": 1,
-        "רץ": 1,
-        "רק": 32,
-        "שס": 35
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 15,
-              "expected_votes": "0.8",
-              "proportion": "3.79%",
-              "expected_share": "0.190%",
-              "ratio": ">10x",
-              "z_score": "16.4",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "פתח תקווה_186.0",
-      "settlement": "פתח תקווה",
-      "settlement_code": 7900,
-      "ballot": "186.0",
-      "eligible": 631,
-      "voted": 423,
-      "valid": 414,
-      "invalid": 9,
-      "votes": {
-        "אמת": 10,
-        "ב": 31,
-        "בד": 1,
-        "בי": 11,
-        "ג": 6,
-        "די": 11,
-        "דרך": 41,
-        "ה": 1,
-        "ט": 4,
-        "ך": 3,
-        "ל": 41,
-        "מחל": 188,
-        "ני": 1,
-        "רק": 24,
-        "שס": 41
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 11,
-              "expected_votes": "0.8",
-              "proportion": "2.66%",
-              "expected_share": "0.193%",
-              "ratio": ">10x",
-              "z_score": "11.4",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "פתח תקווה_198.2",
-      "settlement": "פתח תקווה",
-      "settlement_code": 7900,
-      "ballot": "198.2",
-      "eligible": 627,
-      "voted": 535,
-      "valid": 534,
-      "invalid": 1,
-      "votes": {
-        "אמת": 1,
-        "ב": 29,
-        "ג": 279,
-        "דרך": 7,
-        "זך": 4,
-        "ט": 68,
-        "ך": 13,
-        "ל": 2,
-        "מחל": 23,
-        "נר": 12,
-        "רק": 7,
-        "שס": 89
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 12,
-              "expected_votes": "0.4",
-              "proportion": "2.25%",
-              "expected_share": "0.068%",
-              "ratio": ">10x",
-              "z_score": "19.4",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "פתח תקווה_67.0",
-      "settlement": "פתח תקווה",
-      "settlement_code": 7900,
-      "ballot": "67.0",
-      "eligible": 475,
-      "voted": 360,
-      "valid": 360,
-      "invalid": 0,
-      "votes": {
-        "אמת": 2,
-        "ב": 48,
-        "בי": 1,
-        "ג": 9,
-        "די": 8,
-        "דרך": 41,
-        "ט": 13,
-        "ך": 6,
-        "ל": 6,
-        "מחל": 159,
-        "נר": 12,
-        "פה": 1,
-        "רק": 15,
-        "שס": 39
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 12,
-              "expected_votes": "0.2",
-              "proportion": "3.33%",
-              "expected_share": "0.067%",
-              "ratio": ">10x",
-              "z_score": "23.5",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "פתח תקווה_242.3",
-      "settlement": "פתח תקווה",
-      "settlement_code": 7900,
-      "ballot": "242.3",
-      "eligible": 643,
-      "voted": 537,
-      "valid": 536,
-      "invalid": 1,
-      "votes": {
-        "אמת": 18,
-        "ב": 26,
-        "בד": 1,
-        "ג": 12,
-        "ד": 14,
-        "דרך": 76,
-        "זך": 5,
-        "ט": 133,
-        "ך": 41,
-        "ל": 24,
-        "מחל": 107,
-        "ני": 2,
-        "רק": 67,
-        "שס": 10
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "ד",
-              "party_name": "השותפות לכולם",
-              "votes": 14,
-              "expected_votes": "0.3",
-              "proportion": "2.61%",
-              "expected_share": "0.050%",
-              "ratio": ">10x",
-              "z_score": "26.7",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "פתח תקווה_289.0",
-      "settlement": "פתח תקווה",
-      "settlement_code": 7900,
-      "ballot": "289.0",
-      "eligible": 670,
-      "voted": 539,
-      "valid": 537,
-      "invalid": 2,
-      "votes": {
-        "אמת": 36,
-        "ב": 17,
-        "ג": 1,
-        "ד": 15,
-        "די": 16,
-        "דרך": 181,
-        "ט": 19,
-        "ל": 49,
-        "מחל": 102,
-        "צף": 1,
-        "רק": 95,
-        "שס": 5
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "ד",
-              "party_name": "השותפות לכולם",
-              "votes": 15,
-              "expected_votes": "0.3",
-              "proportion": "2.79%",
-              "expected_share": "0.049%",
-              "ratio": ">10x",
-              "z_score": "28.8",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "צפת_32.0",
-      "settlement": "צפת",
-      "settlement_code": 8000,
-      "ballot": "32.0",
-      "eligible": 544,
-      "voted": 340,
-      "valid": 338,
-      "invalid": 2,
-      "votes": {
-        "אמת": 3,
-        "ב": 26,
-        "ג": 127,
-        "די": 4,
-        "דרך": 10,
-        "ודם": 3,
-        "ט": 16,
-        "ך": 5,
-        "ל": 21,
-        "מחל": 44,
-        "נר": 16,
-        "קץ": 1,
-        "רק": 7,
-        "שס": 55
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 16,
-              "expected_votes": "1.7",
-              "proportion": "4.73%",
-              "expected_share": "0.510%",
-              "ratio": "9x",
-              "z_score": "10.9",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "צפת_26.0",
-      "settlement": "צפת",
-      "settlement_code": 8000,
-      "ballot": "26.0",
-      "eligible": 600,
-      "voted": 369,
-      "valid": 369,
-      "invalid": 0,
-      "votes": {
-        "אמת": 3,
-        "ב": 43,
-        "ג": 97,
-        "די": 2,
-        "דרך": 8,
-        "ודם": 2,
-        "זך": 1,
-        "ט": 14,
-        "ך": 2,
-        "ל": 18,
-        "מחל": 72,
-        "ני": 2,
-        "נר": 14,
-        "עם": 1,
-        "פה": 1,
-        "רק": 6,
-        "שס": 83
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 14,
-              "expected_votes": "1.9",
-              "proportion": "3.79%",
-              "expected_share": "0.524%",
-              "ratio": "7x",
-              "z_score": "8.7",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "הוד השרון_51.0",
-      "settlement": "הוד השרון",
-      "settlement_code": 9700,
-      "ballot": "51.0",
-      "eligible": 650,
-      "voted": 523,
-      "valid": 522,
-      "invalid": 1,
-      "votes": {
-        "אמת": 68,
-        "ב": 24,
-        "ד": 11,
-        "די": 18,
-        "דרך": 146,
-        "ודם": 3,
-        "זך": 1,
-        "ט": 13,
-        "י": 1,
-        "ל": 23,
-        "מחל": 120,
-        "רק": 81,
-        "שס": 13
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "ד",
-              "party_name": "השותפות לכולם",
-              "votes": 11,
-              "expected_votes": "0.1",
-              "proportion": "2.11%",
-              "expected_share": "0.024%",
-              "ratio": ">10x",
-              "z_score": "21.7",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
       "id": "מגדל העמק_875.0",
       "settlement": "מגדל העמק",
       "settlement_code": 874,
@@ -11062,145 +10231,6 @@
               "expected_share": "0.000%",
               "ratio": ">10x",
               "z_score": "44.0",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "נוף הגליל_66.0",
-      "settlement": "נוף הגליל",
-      "settlement_code": 1061,
-      "ballot": "66.0",
-      "eligible": 664,
-      "voted": 488,
-      "valid": 484,
-      "invalid": 4,
-      "votes": {
-        "אמת": 78,
-        "ב": 13,
-        "די": 10,
-        "דרך": 41,
-        "ודם": 150,
-        "ט": 6,
-        "ל": 52,
-        "מחל": 87,
-        "נר": 22,
-        "רק": 25
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "נר",
-              "party_name": "צבע שחור",
-              "votes": 22,
-              "expected_votes": "0.2",
-              "proportion": "4.55%",
-              "expected_share": "0.039%",
-              "ratio": ">10x",
-              "z_score": "43.6",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "דאלית אל-כרמל_10.0",
-      "settlement": "דאלית אל-כרמל",
-      "settlement_code": 494,
-      "ballot": "10.0",
-      "eligible": 771,
-      "voted": 557,
-      "valid": 555,
-      "invalid": 2,
-      "votes": {
-        "אמת": 15,
-        "ב": 3,
-        "די": 4,
-        "דרך": 358,
-        "ודם": 46,
-        "ט": 1,
-        "ל": 50,
-        "מחל": 52,
-        "עם": 9,
-        "צדק": 1,
-        "קץ": 1,
-        "רץ": 15
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "רץ",
-              "party_name": "הקהל",
-              "votes": 15,
-              "expected_votes": "0.0",
-              "proportion": "2.70%",
-              "expected_share": "0.000%",
-              "ratio": ">10x",
-              "z_score": "30.0",
-              "baseline": "settlement"
-            }
-          ]
-        }
-      ],
-      "score": 8,
-      "status": "verified"
-    },
-    {
-      "id": "כפר יונה_8.0",
-      "settlement": "כפר יונה",
-      "settlement_code": 168,
-      "ballot": "8.0",
-      "eligible": 564,
-      "voted": 376,
-      "valid": 369,
-      "invalid": 7,
-      "votes": {
-        "אמת": 9,
-        "ב": 39,
-        "בי": 12,
-        "ג": 2,
-        "די": 23,
-        "דרך": 42,
-        "ט": 9,
-        "ך": 2,
-        "ל": 9,
-        "מחל": 180,
-        "נר": 7,
-        "ק": 1,
-        "קה": 2,
-        "רק": 13,
-        "שס": 19
-      },
-      "anomalies": [
-        {
-          "type": "unexpected_party_votes",
-          "severity": "high",
-          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
-          "details": [
-            {
-              "party": "בי",
-              "party_name": "צומת בית ישראל",
-              "votes": 12,
-              "expected_votes": "0.5",
-              "proportion": "3.25%",
-              "expected_share": "0.135%",
-              "ratio": ">10x",
-              "z_score": "16.3",
               "baseline": "settlement"
             }
           ]
@@ -11251,9 +10281,9 @@
               "votes": 22,
               "expected_votes": "0.1",
               "proportion": "4.02%",
-              "expected_share": "0.026%",
+              "expected_share": "0.012%",
               "ratio": ">10x",
-              "z_score": "43.7",
+              "z_score": "43.9",
               "baseline": "settlement"
             }
           ]
@@ -11767,6 +10797,734 @@
               "expected_share": "0.254%",
               "ratio": "11x",
               "z_score": "11.5",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "נוף הגליל_66.0",
+      "settlement": "נוף הגליל",
+      "settlement_code": 1061,
+      "ballot": "66.0",
+      "eligible": 664,
+      "voted": 488,
+      "valid": 484,
+      "invalid": 4,
+      "votes": {
+        "אמת": 78,
+        "ב": 13,
+        "די": 10,
+        "דרך": 41,
+        "ודם": 150,
+        "ט": 6,
+        "ל": 52,
+        "מחל": 87,
+        "נר": 22,
+        "רק": 25
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 22,
+              "expected_votes": "0.2",
+              "proportion": "4.55%",
+              "expected_share": "0.039%",
+              "ratio": ">10x",
+              "z_score": "43.6",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "נתיבות_16.0",
+      "settlement": "נתיבות",
+      "settlement_code": 246,
+      "ballot": "16.0",
+      "eligible": 569,
+      "voted": 423,
+      "valid": 417,
+      "invalid": 6,
+      "votes": {
+        "אמת": 2,
+        "ב": 82,
+        "בד": 1,
+        "בי": 20,
+        "ג": 8,
+        "די": 15,
+        "דרך": 5,
+        "ה": 1,
+        "ט": 21,
+        "ך": 4,
+        "ל": 16,
+        "מחל": 176,
+        "ני": 3,
+        "נקי": 1,
+        "רק": 7,
+        "שס": 55
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 20,
+              "expected_votes": "1.0",
+              "proportion": "4.80%",
+              "expected_share": "0.243%",
+              "ratio": "20x",
+              "z_score": "18.9",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "נתניה_157.1",
+      "settlement": "נתניה",
+      "settlement_code": 7400,
+      "ballot": "157.1",
+      "eligible": 591,
+      "voted": 330,
+      "valid": 327,
+      "invalid": 3,
+      "votes": {
+        "אמת": 2,
+        "ב": 23,
+        "בי": 14,
+        "ג": 2,
+        "די": 22,
+        "דרך": 26,
+        "ט": 14,
+        "ך": 1,
+        "ל": 28,
+        "מחל": 156,
+        "נקי": 1,
+        "צדק": 1,
+        "רק": 14,
+        "שס": 23
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 14,
+              "expected_votes": "0.8",
+              "proportion": "4.28%",
+              "expected_share": "0.254%",
+              "ratio": ">10x",
+              "z_score": "14.5",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "נתניה_89.0",
+      "settlement": "נתניה",
+      "settlement_code": 7400,
+      "ballot": "89.0",
+      "eligible": 671,
+      "voted": 440,
+      "valid": 438,
+      "invalid": 2,
+      "votes": {
+        "אמת": 10,
+        "ב": 76,
+        "בד": 1,
+        "בי": 14,
+        "ג": 6,
+        "די": 15,
+        "דרך": 53,
+        "ט": 28,
+        "ך": 7,
+        "ל": 41,
+        "מחל": 140,
+        "קה": 1,
+        "רק": 13,
+        "שס": 33
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 14,
+              "expected_votes": "1.1",
+              "proportion": "3.20%",
+              "expected_share": "0.254%",
+              "ratio": "13x",
+              "z_score": "12.2",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "עפולה_9.1",
+      "settlement": "עפולה",
+      "settlement_code": 7700,
+      "ballot": "9.1",
+      "eligible": 662,
+      "voted": 406,
+      "valid": 402,
+      "invalid": 4,
+      "votes": {
+        "אמת": 5,
+        "ב": 34,
+        "בי": 18,
+        "ג": 42,
+        "די": 11,
+        "דרך": 22,
+        "ט": 7,
+        "ך": 4,
+        "ל": 20,
+        "מחל": 185,
+        "ני": 2,
+        "עם": 2,
+        "רק": 9,
+        "שס": 41
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 18,
+              "expected_votes": "1.9",
+              "proportion": "4.48%",
+              "expected_share": "0.469%",
+              "ratio": "10x",
+              "z_score": "11.8",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "עפולה_38.3",
+      "settlement": "עפולה",
+      "settlement_code": 7700,
+      "ballot": "38.3",
+      "eligible": 718,
+      "voted": 512,
+      "valid": 505,
+      "invalid": 7,
+      "votes": {
+        "אמת": 6,
+        "ב": 47,
+        "בד": 1,
+        "בי": 15,
+        "ג": 122,
+        "ד": 1,
+        "די": 13,
+        "דרך": 29,
+        "ודם": 2,
+        "זך": 4,
+        "ט": 17,
+        "ך": 5,
+        "ל": 12,
+        "מחל": 146,
+        "ני": 1,
+        "נקי": 1,
+        "צדק": 1,
+        "רק": 15,
+        "שס": 67
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 15,
+              "expected_votes": "2.4",
+              "proportion": "2.97%",
+              "expected_share": "0.479%",
+              "ratio": "6x",
+              "z_score": "8.1",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "עפולה_61.0",
+      "settlement": "עפולה",
+      "settlement_code": 7700,
+      "ballot": "61.0",
+      "eligible": 736,
+      "voted": 566,
+      "valid": 562,
+      "invalid": 4,
+      "votes": {
+        "אמת": 11,
+        "ב": 46,
+        "בי": 3,
+        "ג": 1,
+        "ד": 11,
+        "די": 13,
+        "דרך": 83,
+        "ודם": 1,
+        "ט": 18,
+        "ל": 74,
+        "מחל": 236,
+        "עם": 2,
+        "רק": 54,
+        "שס": 9
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "ד",
+              "party_name": "השותפות לכולם",
+              "votes": 11,
+              "expected_votes": "0.3",
+              "proportion": "1.96%",
+              "expected_share": "0.054%",
+              "ratio": ">10x",
+              "z_score": "19.4",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "פתח תקווה_38.0",
+      "settlement": "פתח תקווה",
+      "settlement_code": 7900,
+      "ballot": "38.0",
+      "eligible": 683,
+      "voted": 427,
+      "valid": 421,
+      "invalid": 6,
+      "votes": {
+        "אמת": 2,
+        "ב": 30,
+        "בי": 12,
+        "ג": 5,
+        "די": 15,
+        "דרך": 32,
+        "זך": 5,
+        "ט": 31,
+        "ך": 7,
+        "ל": 20,
+        "מחל": 172,
+        "ני": 1,
+        "עם": 1,
+        "קה": 1,
+        "רץ": 1,
+        "רק": 20,
+        "שס": 66
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 12,
+              "expected_votes": "0.8",
+              "proportion": "2.85%",
+              "expected_share": "0.192%",
+              "ratio": ">10x",
+              "z_score": "12.5",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "פתח תקווה_43.0",
+      "settlement": "פתח תקווה",
+      "settlement_code": 7900,
+      "ballot": "43.0",
+      "eligible": 656,
+      "voted": 399,
+      "valid": 396,
+      "invalid": 3,
+      "votes": {
+        "אמת": 7,
+        "ב": 21,
+        "בי": 15,
+        "די": 9,
+        "דרך": 37,
+        "ט": 18,
+        "ך": 2,
+        "ל": 30,
+        "מחל": 184,
+        "ני": 2,
+        "נקי": 1,
+        "פה": 1,
+        "קה": 1,
+        "רץ": 1,
+        "רק": 32,
+        "שס": 35
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 15,
+              "expected_votes": "0.8",
+              "proportion": "3.79%",
+              "expected_share": "0.190%",
+              "ratio": ">10x",
+              "z_score": "16.4",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "פתח תקווה_186.0",
+      "settlement": "פתח תקווה",
+      "settlement_code": 7900,
+      "ballot": "186.0",
+      "eligible": 631,
+      "voted": 423,
+      "valid": 414,
+      "invalid": 9,
+      "votes": {
+        "אמת": 10,
+        "ב": 31,
+        "בד": 1,
+        "בי": 11,
+        "ג": 6,
+        "די": 11,
+        "דרך": 41,
+        "ה": 1,
+        "ט": 4,
+        "ך": 3,
+        "ל": 41,
+        "מחל": 188,
+        "ני": 1,
+        "רק": 24,
+        "שס": 41
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "בי",
+              "party_name": "צומת בית ישראל",
+              "votes": 11,
+              "expected_votes": "0.8",
+              "proportion": "2.66%",
+              "expected_share": "0.193%",
+              "ratio": ">10x",
+              "z_score": "11.4",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "פתח תקווה_198.2",
+      "settlement": "פתח תקווה",
+      "settlement_code": 7900,
+      "ballot": "198.2",
+      "eligible": 627,
+      "voted": 535,
+      "valid": 534,
+      "invalid": 1,
+      "votes": {
+        "אמת": 1,
+        "ב": 29,
+        "ג": 279,
+        "דרך": 7,
+        "זך": 4,
+        "ט": 68,
+        "ך": 13,
+        "ל": 2,
+        "מחל": 23,
+        "נר": 12,
+        "רק": 7,
+        "שס": 89
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 12,
+              "expected_votes": "0.4",
+              "proportion": "2.25%",
+              "expected_share": "0.068%",
+              "ratio": ">10x",
+              "z_score": "19.4",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "פתח תקווה_67.0",
+      "settlement": "פתח תקווה",
+      "settlement_code": 7900,
+      "ballot": "67.0",
+      "eligible": 475,
+      "voted": 360,
+      "valid": 360,
+      "invalid": 0,
+      "votes": {
+        "אמת": 2,
+        "ב": 48,
+        "בי": 1,
+        "ג": 9,
+        "די": 8,
+        "דרך": 41,
+        "ט": 13,
+        "ך": 6,
+        "ל": 6,
+        "מחל": 159,
+        "נר": 12,
+        "פה": 1,
+        "רק": 15,
+        "שס": 39
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 12,
+              "expected_votes": "0.2",
+              "proportion": "3.33%",
+              "expected_share": "0.067%",
+              "ratio": ">10x",
+              "z_score": "23.5",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "פתח תקווה_289.0",
+      "settlement": "פתח תקווה",
+      "settlement_code": 7900,
+      "ballot": "289.0",
+      "eligible": 670,
+      "voted": 539,
+      "valid": 537,
+      "invalid": 2,
+      "votes": {
+        "אמת": 36,
+        "ב": 17,
+        "ג": 1,
+        "ד": 15,
+        "די": 16,
+        "דרך": 181,
+        "ט": 19,
+        "ל": 49,
+        "מחל": 102,
+        "צף": 1,
+        "רק": 95,
+        "שס": 5
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "ד",
+              "party_name": "השותפות לכולם",
+              "votes": 15,
+              "expected_votes": "0.2",
+              "proportion": "2.79%",
+              "expected_share": "0.039%",
+              "ratio": ">10x",
+              "z_score": "29.6",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "צפת_32.0",
+      "settlement": "צפת",
+      "settlement_code": 8000,
+      "ballot": "32.0",
+      "eligible": 544,
+      "voted": 340,
+      "valid": 338,
+      "invalid": 2,
+      "votes": {
+        "אמת": 3,
+        "ב": 26,
+        "ג": 127,
+        "די": 4,
+        "דרך": 10,
+        "ודם": 3,
+        "ט": 16,
+        "ך": 5,
+        "ל": 21,
+        "מחל": 44,
+        "נר": 16,
+        "קץ": 1,
+        "רק": 7,
+        "שס": 55
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 16,
+              "expected_votes": "1.7",
+              "proportion": "4.73%",
+              "expected_share": "0.510%",
+              "ratio": "9x",
+              "z_score": "10.9",
+              "baseline": "settlement"
+            }
+          ]
+        }
+      ],
+      "score": 8,
+      "status": "verified"
+    },
+    {
+      "id": "צפת_26.0",
+      "settlement": "צפת",
+      "settlement_code": 8000,
+      "ballot": "26.0",
+      "eligible": 600,
+      "voted": 369,
+      "valid": 369,
+      "invalid": 0,
+      "votes": {
+        "אמת": 3,
+        "ב": 43,
+        "ג": 97,
+        "די": 2,
+        "דרך": 8,
+        "ודם": 2,
+        "זך": 1,
+        "ט": 14,
+        "ך": 2,
+        "ל": 18,
+        "מחל": 72,
+        "ני": 2,
+        "נר": 14,
+        "עם": 1,
+        "פה": 1,
+        "רק": 6,
+        "שס": 83
+      },
+      "anomalies": [
+        {
+          "type": "unexpected_party_votes",
+          "severity": "high",
+          "description": "קולות חריגים למפלגה קטנה ביחס לצפוי מהיישוב — חשד להזנה בעמודה הלא נכונה",
+          "details": [
+            {
+              "party": "נר",
+              "party_name": "צבע שחור",
+              "votes": 14,
+              "expected_votes": "1.9",
+              "proportion": "3.79%",
+              "expected_share": "0.524%",
+              "ratio": "7x",
+              "z_score": "8.7",
               "baseline": "settlement"
             }
           ]
