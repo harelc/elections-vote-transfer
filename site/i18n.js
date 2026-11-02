@@ -981,8 +981,11 @@
             navViews.splice(1, 0, { id: 'k26', href: 'k26.html', i18n: 'nav_k26', text: 'מרכז כנסת 26' });
         }
 
-        // Preserve export button if present
-        const exportBtn = nav.querySelector('.header-export');
+        // Preserve export (and share) buttons if present. Match by ID, not
+        // .header-export: DL.addCopyButton() clones that class onto the share
+        // button and inserts it before the export button, so a class query
+        // would preserve the share button and let innerHTML wipe the export.
+        const preservedBtns = nav.querySelectorAll('#export-png, #export-png-btn, #copy-link-btn');
 
         // K26 is on by default, so clean URLs need no flag. Only the
         // explicit opt-out is propagated (?e26=0).
@@ -1020,7 +1023,7 @@
             nav.parentElement.appendChild(extrasRow);
         }
         extrasRow.innerHTML = extraLinks.map(viewLink).join('\n');
-        if (exportBtn) extrasRow.appendChild(exportBtn);
+        preservedBtns.forEach(btn => extrasRow.appendChild(btn));
         injectLangToggle('.nav-extras');
         applyTranslations();
     }
