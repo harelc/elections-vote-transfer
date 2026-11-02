@@ -12,5 +12,5 @@
   "timezone": "Asia/Jerusalem",
   "roster": 12018,
   "external_envelopes_expected": 750,
-  "_comment": "Election-night polling is over. The GitHub k26-refresh workflow runs once daily at 06:23 Asia/Jerusalem through refresh_until (9 Nov 2026) and rebuilds only if the CEC snapshot changed. Netlify scheduled dispatch and turnout polling are retired in netlify.toml. Set auto to false to stop the daily refresh early; a forced manual workflow run bypasses the date gate. nowcast_model: which transfer model the count centre opens with for every visitor -- 'abs' = with non-voters (default), 'plain' = without non-voters."
+  "_comment": "Election-night polling is over. The GitHub k26-refresh workflow runs every 6 hours (at :23 past 00/06/12/18 UTC) through refresh_until (9 Nov 2026) and rebuilds only if the CEC snapshot changed. Netlify scheduled dispatch and turnout polling are retired in netlify.toml. Set auto to false to stop the scheduled refresh early; a forced manual workflow run bypasses the date gate. nowcast_model: which transfer model the count centre opens with for every visitor -- 'abs' = with non-voters (default), 'plain' = without non-voters."
 }

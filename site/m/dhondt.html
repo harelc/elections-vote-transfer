@@ -560,6 +560,46 @@
             border-color: var(--accent);
             color: #1a1408;
         }
+
+        /* Bloc seat-flip pane (top of the results list) */
+        .bloc-flip-pane { padding: 10px 2px 12px; border-bottom: 1px solid var(--border); margin-bottom: 4px; }
+        .bloc-flip-pane h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+        .bloc-flip-sub { font-size: 0.7rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 10px; }
+        .flip-hero, .flip-card {
+            border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+            margin-bottom: 8px; background: rgba(255,255,255,0.02);
+        }
+        .flip-hero { border-color: var(--accent); background: rgba(240,180,41,0.07); }
+        .flip-card-label { font-size: 0.65rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 4px; }
+        .flip-hero .flip-card-label { color: var(--accent); }
+        .flip-votes { font-size: 1.45rem; font-weight: 800; line-height: 1.1; font-variant-numeric: tabular-nums; }
+        .flip-votes small { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
+        .flip-move { font-size: 0.9rem; font-weight: 600; line-height: 1.55; margin-top: 3px; }
+        .party-chip { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+        .party-chip i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; flex: none; }
+        .flip-arrow { color: var(--accent); font-weight: 800; padding: 0 2px; }
+        .flip-seats { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.6; margin-top: 4px; font-variant-numeric: tabular-nums; }
+        .flip-seats b { color: var(--text-primary); }
+        .flip-badge {
+            display: inline-block; font-size: 0.6rem; font-weight: 700; color: #fbbf24;
+            background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.4);
+            border-radius: 4px; padding: 0 4px; margin-top: 4px;
+        }
+        .flip-apply {
+            margin-top: 8px; padding: 7px 14px; border-radius: 8px; cursor: pointer;
+            border: 1px solid var(--accent); background: transparent; color: var(--accent);
+            font-family: inherit; font-size: 0.75rem; font-weight: 700;
+        }
+        .flip-apply:active { background: var(--accent); color: #1a1408; }
+        .flip-none { font-size: 0.78rem; color: var(--text-muted); padding: 4px 0; }
+        .flip-pane-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+        .flip-pane-actions .flip-apply { margin-top: 0; }
+        .flip-pane-actions .flip-reset {
+            background: var(--accent); color: #1a1408; border-color: var(--accent);
+            font-size: 0.85rem; font-weight: 800; padding: 9px 18px;
+            box-shadow: 0 2px 10px rgba(240, 180, 41, 0.35);
+        }
+        .flip-pane-actions .flip-reset:active { filter: brightness(1.1); }
     </style>
 </head>
 <body>
@@ -585,7 +625,6 @@
             <div class="parliament-center-text" id="seats-label">120 מושבים</div>
         </div>
         <div class="results-area" id="results-list"></div>
-        <a class="turnout-banner k26-hide-partial" href="../turnout.html" data-i18n="turnout_banner" style="display:block;margin:0.75rem 0.75rem 5.5rem;padding:0.75rem 1rem;border:1px solid var(--accent-primary,#f0b429);border-radius:10px;background:rgba(240,180,41,0.08);color:var(--accent-primary,#f0b429);text-decoration:none;font-weight:600;text-align:center">מה אם יותר אנשים יצביעו? ראו איך אחוז ההצבעה מזיז את המנדטים בכנסת 26 ←</a>
     </div>
 
     <!-- Edit votes FAB -->
@@ -867,6 +906,7 @@
         // ---- Load preset ----
         loadPreset(electionId) {
             const preset = presets[electionId];
+            this._flipUndo = null;
             this.parties = JSON.parse(JSON.stringify(preset.parties));
             this.agreements = JSON.parse(JSON.stringify(preset.agreements));
             this.otherVotes = preset.others || 0;
@@ -1100,6 +1140,8 @@
 
             // Marginal votes
             const marginals = this.calcMarginals(thresholdVotes);
+            // Cheapest stay-home moves that flip a seat
+            this._seatFlips = this.computeSeatFlips(marginals, thresholdVotes);
 
             // Build results
             const results = this.parties.map((p, i) => ({
@@ -1236,6 +1278,186 @@
             return seats;
         }
 
+        // ── Cheapest seat-flipping vote moves ──────────────────────────
+        // (See computeSeatFlips for the subtract-only move definition.)
+        // `overall` = any party loses/gains a seat, including flips inside a
+        // bloc; `right`/`left` = that displayed bloc gains at least one seat.
+        blocSide(party) { return party.block === 'right' ? 'right' : 'left'; }
+
+        allocateFast(votes, thresholdVotes) {
+            const n = votes.length;
+            const seats = new Array(n).fill(0);
+            const eligible = [];
+            for (let i = 0; i < n; i++) if (votes[i] >= thresholdVotes) eligible.push(i);
+            if (!eligible.length) return seats;
+            const eligSet = new Set(eligible);
+            const groupOf = new Array(n).fill(-1);
+            const groups = [];
+            this.agreements.forEach(([a, b]) => {
+                if (!eligSet.has(a) || !eligSet.has(b)) return;
+                const ga = groupOf[a], gb = groupOf[b];
+                if (ga === -1 && gb === -1) { groupOf[a] = groupOf[b] = groups.length; groups.push([a, b]); }
+                else if (ga !== -1 && gb === -1) { groups[ga].push(b); groupOf[b] = ga; }
+                else if (ga === -1 && gb !== -1) { groups[gb].push(a); groupOf[a] = gb; }
+            });
+            const entities = [];
+            const seenGroup = new Set();
+            eligible.forEach(i => {
+                const g = groupOf[i];
+                if (g === -1) entities.push([i]);
+                else if (!seenGroup.has(g)) { seenGroup.add(g); entities.push(groups[g]); }
+            });
+            const entVotes = entities.map(m => m.reduce((s, i) => s + votes[i], 0));
+            const entSeats = new Array(entities.length).fill(0);
+            for (let s = 0; s < this.totalSeats; s++) {
+                let bestE = -1, bestQ = -1, bestMember = -1;
+                for (let e = 0; e < entities.length; e++) {
+                    const q = entVotes[e] / (entSeats[e] + 1);
+                    if (q <= bestQ) continue;
+                    let member = entities[e][0], memberQ = -1;
+                    entities[e].forEach(i => {
+                        const iq = votes[i] / (seats[i] + 1);
+                        if (iq > memberQ) { memberQ = iq; member = i; }
+                    });
+                    bestQ = q; bestE = e; bestMember = member;
+                }
+                if (bestE === -1) break;
+                seats[bestMember]++;
+                entSeats[bestE]++;
+            }
+            return seats;
+        }
+
+        // A "move" is subtract-only: x of a party's voters stay home.
+        // The votes go nowhere — the total, and with it the threshold
+        // in votes, drops — and the freed seat lands wherever the
+        // allocator puts it (often first with a surplus partner).
+        computeSeatFlips(marginalVotes, thresholdVotes) {
+            const baseVotes = this.parties.map(p => p.votes);
+            const baseTotal = baseVotes.reduce((s, v) => s + v, 0) + this.otherVotes;
+            const baseSeats = this.allocateFast(baseVotes, thresholdVotes);
+            const sideTotal = seats => {
+                const t = { right: 0, left: 0 };
+                seats.forEach((s, i) => { t[this.blocSide(this.parties[i])] += s; });
+                return t;
+            };
+            const baseSides = sideTotal(baseSeats);
+            const movedSeats = seats => seats.reduce((sum, s, i) => sum + Math.max(0, s - baseSeats[i]), 0);
+            const best = { overall: null, right: null, left: null };
+
+            const consider = (cat, src, pred) => {
+                const cur = best[cat];
+                const cap = Math.min(baseVotes[src], cur ? cur.votes : baseVotes[src]);
+                if (cap < 1) return;
+                const testAt = x => {
+                    const v = baseVotes.slice();
+                    v[src] -= x;
+                    return this.allocateFast(v, (baseTotal - x) * (this.threshold / 100));
+                };
+                if (!pred(testAt(cap))) return;
+                let lo = 1, hi = cap;
+                while (lo < hi) {
+                    const mid = (lo + hi) >> 1;
+                    if (pred(testAt(mid))) hi = mid; else lo = mid + 1;
+                }
+                const seatsAfter = testAt(lo);
+                const thresholdAfter = (baseTotal - lo) * (this.threshold / 100);
+                let dst = -1, dstGain = 0;
+                seatsAfter.forEach((s, i) => {
+                    const gain = s - baseSeats[i];
+                    if (gain > dstGain && (cat === 'overall' || this.blocSide(this.parties[i]) === cat)) {
+                        dst = i; dstGain = gain;
+                    }
+                });
+                const record = {
+                    votes: lo, src, dst, seatsAfter,
+                    sidesAfter: sideTotal(seatsAfter),
+                    seatsMoved: movedSeats(seatsAfter),
+                    srcBelowAfter: baseVotes[src] - lo < thresholdAfter && baseVotes[src] >= thresholdVotes,
+                    dstAboveAfter: dst >= 0 && baseVotes[dst] >= thresholdAfter && baseVotes[dst] < thresholdVotes,
+                };
+                if (!cur || lo < cur.votes) best[cat] = record;
+            };
+
+            const sources = this.parties
+                .map((p, src) => ({ src, hint: marginalVotes[p.name]?.toLose ?? Infinity }))
+                .filter(s => baseVotes[s.src] > 0)
+                .sort((a, b) => a.hint - b.hint);
+            for (const { src } of sources) {
+                consider('overall', src, seats => seats.some((s, i) => s !== baseSeats[i]));
+                const gainSide = this.blocSide(this.parties[src]) === 'right' ? 'left' : 'right';
+                consider(gainSide, src, seats => sideTotal(seats)[gainSide] > baseSides[gainSide]);
+            }
+            return { best, baseSeats, baseSides };
+        }
+
+        flipCardHtml(flip, label, hero) {
+            if (!flip) return `<div class="${hero ? 'flip-hero' : 'flip-card'}"><div class="flip-card-label">${label}</div><div class="flip-none">${i18n.t('bloc_flip_no_move')}</div></div>`;
+            const src = this.parties[flip.src], dst = this.parties[flip.dst];
+            const chip = (p) => `<span class="party-chip"><i style="background:${p.color}"></i>${i18n.partyName(p)}</span>`;
+            const flips = this._seatFlips;
+            // RTL: source sits on the right, flow runs right-to-left, so
+            // arrows point left (before→after reads right-to-left); LTR keeps →.
+            const arrow = i18n.getLang() === 'en' ? '→' : '←';
+            const seatChanges = flip.seatsAfter
+                .map((s, i) => ({ i, before: flips.baseSeats[i], after: s }))
+                .filter(c => c.after !== c.before)
+                .map(c => `${chip(this.parties[c.i])} <b>${i18n.fmtNum(c.before)} ${arrow} ${i18n.fmtNum(c.after)}</b>`)
+                .join(' · ');
+            const sides = ['right', 'left'].map(side =>
+                `${i18n.t(side + '_bloc')}: <b>${i18n.fmtNum(flips.baseSides[side])} ${arrow} ${i18n.fmtNum(flip.sidesAfter[side])}</b>`).join(' · ');
+            const badges = [
+                flip.seatsMoved > 1 ? `<span class="flip-badge">${i18n.t('bloc_flip_n_seats', { n: i18n.fmtNum(flip.seatsMoved) })}</span>` : '',
+                flip.srcBelowAfter ? `<span class="flip-badge">${i18n.t('bloc_flip_via_src_threshold')}</span>` : '',
+                flip.dstAboveAfter ? `<span class="flip-badge">${i18n.t('bloc_flip_via_dst_threshold')}</span>` : '',
+            ].join(' ');
+            return `
+            <div class="${hero ? 'flip-hero' : 'flip-card'}">
+                <div class="flip-card-label">${label}</div>
+                <div class="flip-move">${flip.dst >= 0 ? i18n.t('bloc_flip_sentence', { n: i18n.fmtNum(flip.votes), src: i18n.partyName(src), dst: i18n.partyName(dst) }) : ''}</div>
+                <div class="flip-seats">${seatChanges}<br>${sides}</div>
+                ${badges}
+                <div><button class="flip-apply" data-src="${flip.src}" data-dst="${flip.dst}" data-votes="${flip.votes}">${i18n.t('bloc_flip_apply')}</button></div>
+            </div>`;
+        }
+
+        blocFlipPaneHtml() {
+            const flips = this._seatFlips;
+            if (!flips) return '';
+            return `<div class="bloc-flip-pane">
+                <h3>${i18n.t('bloc_flip_title')}</h3>
+                <div class="bloc-flip-sub">${i18n.t('bloc_flip_sub')}</div>
+                ${this.flipCardHtml(flips.best.overall, i18n.t('bloc_flip_cheapest'), true)}
+                ${i18n.getLang() === 'en'
+                    ? this.flipCardHtml(flips.best.left, i18n.t('bloc_flip_to', { bloc: i18n.t('left_bloc') }), false)
+                        + this.flipCardHtml(flips.best.right, i18n.t('bloc_flip_to', { bloc: i18n.t('right_bloc') }), false)
+                    : this.flipCardHtml(flips.best.right, i18n.t('bloc_flip_to', { bloc: i18n.t('right_bloc') }), false)
+                        + this.flipCardHtml(flips.best.left, i18n.t('bloc_flip_to', { bloc: i18n.t('left_bloc') }), false)}
+                <div class="flip-pane-actions">
+                    ${this._flipUndo ? `<button class="flip-apply flip-undo">${i18n.t('bloc_flip_undo')}</button>` : ''}
+                    <button class="flip-apply flip-reset">${i18n.getLang() === 'en' ? `Reset to Knesset ${currentElection}` : `אפס לתוצאות כנסת ${currentElection}`}</button>
+                </div>
+            </div>`;
+        }
+
+        // Stay-home move: subtract from the source only; the seat's
+        // recipient (dst) gains no votes.
+        applyBlocFlip(src, dst, votes) {
+            if (!(votes > 0) || this.parties[src].votes < votes) return;
+            this._flipUndo = this.parties.map(p => p.votes);
+            this.parties[src].votes -= votes;
+            this.calculate();
+            if (this.activeSheet === 'edit-sheet') this.renderEditList();
+        }
+
+        undoBlocFlip() {
+            if (!this._flipUndo) return;
+            this.parties.forEach((p, i) => { p.votes = this._flipUndo[i]; });
+            this._flipUndo = null;
+            this.calculate();
+            if (this.activeSheet === 'edit-sheet') this.renderEditList();
+        }
+
         seatBlocksHtml(r, seatCost, maxVotes) {
             if (!r.eligible || r.seats <= 0) return '';
             const seatW = 100 * seatCost / Math.max(maxVotes, 1);
@@ -1338,7 +1560,15 @@
                 </div>`;
             }).join('');
 
-            container.innerHTML = `<div class="threshold-banner"><div>${cutoffLabel} · ${i18n.t('seat_block_legend')}</div><div class="derived-inline"><span>${i18n.t('mandate_quotient')} <span class="mandate-quotient">—</span></span><span>${i18n.t('turnout_pct')} <span class="turnout-pct">—</span></span></div></div>` + rows;
+            container.innerHTML = `<div class="threshold-banner"><div>${cutoffLabel} · ${i18n.t('seat_block_legend')}</div><div class="derived-inline"><span>${i18n.t('mandate_quotient')} <span class="mandate-quotient">—</span></span><span>${i18n.t('turnout_pct')} <span class="turnout-pct">—</span></span></div></div>` + this.blocFlipPaneHtml() + rows;
+            container.querySelectorAll('.flip-apply[data-src]').forEach(btn => {
+                btn.addEventListener('click', () => this.applyBlocFlip(
+                    parseInt(btn.dataset.src), parseInt(btn.dataset.dst), parseInt(btn.dataset.votes)));
+            });
+            const undoBtn = container.querySelector('.flip-undo');
+            if (undoBtn) undoBtn.addEventListener('click', () => this.undoBlocFlip());
+            const resetBtn = container.querySelector('.flip-reset');
+            if (resetBtn) resetBtn.addEventListener('click', () => this.loadPreset(currentElection));
             this.liveFigures(totalVotes, thresholdVotes);
 
             // Coalition counts
