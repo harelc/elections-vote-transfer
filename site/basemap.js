@@ -96,6 +96,9 @@
             const lng = Array.isArray(center) ? center[1] : center.lng;
             map.easeTo({ center: [lng, lat], zoom: zoom });
         };
+        // Capture MapLibre's native fitBounds before shadowing it — calling
+        // map.fitBounds() from inside the shim would recurse forever.
+        const nativeFitBounds = map.fitBounds.bind(map);
         map.fitBounds = function (latlngs, fitOpts) {
             const pts = latlngs.map(function (p) {
                 return [p[1], p[0]];
@@ -109,7 +112,7 @@
             });
             let padding = (fitOpts && fitOpts.padding) || 40;
             if (Array.isArray(padding)) padding = padding[0];
-            map.fitBounds([[west, south], [east, north]], {
+            nativeFitBounds([[west, south], [east, north]], {
                 padding: padding,
                 maxZoom: fitOpts && fitOpts.maxZoom,
             });
