@@ -727,8 +727,8 @@ ELECTIONS = {
         # Simulated on the official K26 roster (CEC 6 Sep 2026): 12,018 boxes,
         # 7,331,981 eligible. Letter symbols are the final CEC signs.
         'eligible_voters': 7331981,
-        'votes_cast': 5716679,
-        'valid_votes': 5690691,
+        'votes_cast': 5717386,
+        'valid_votes': 5691396,
         'turnout_percent': 78.0,
         'major_parties': {
             'symbols': ['דרך', 'מחל', 'רק', 'אמת', 'ל', 'ודם', 'ג', 'שס', 'ב', 'ט', 'עם', 'ך', 'די', 'זך', 'ני'],
