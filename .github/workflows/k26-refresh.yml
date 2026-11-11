@@ -1,15 +1,9 @@
 name: Refresh K26 count
 
-# Two entry points:
-#  * schedule (every 6 hours through 9 Nov 2026) — post-count tidy-up: downloads
-#    the CEC file itself (Chrome fallback for the gov.il bot challenge,
-#    see download_expb.js), rebuilds only when the snapshot actually moved.
-#  * workflow_dispatch — manual runs, optionally with the sha a caller accepted.
+# Retired 11 Nov 2026: K26 is official and sworn in, so the scheduled
+# refresh is gone. workflow_dispatch remains for a one-off manual rebuild
+# (pass force=true — k26_control.json auto is now false).
 on:
-  schedule:
-    # Every 6 hours at :23 UTC (02:23/08:23/14:23/20:23 UTC). The gate
-    # below stops scheduled runs after refresh_until in k26_control.json.
-    - cron: "23 */6 * * *"
   workflow_dispatch:
     inputs:
       sha256:
